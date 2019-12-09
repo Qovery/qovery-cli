@@ -1,0 +1,17 @@
+builds:
+  - main: qovery.go
+    binary: qovery
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+checksum:
+  name_template: 'checksums.txt'
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
