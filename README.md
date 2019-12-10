@@ -61,34 +61,52 @@ once you have init a `.qovery.yml` file, all the following tasks are done automa
 qovery project list
 ```
 
-#### Delete a project
-This requires 2 steps auth validation
-```
-qovery project delete <name>
-```
-
 ### Application
 #### List all environments
+```
+qovery environment list
+```
+or
 ```
 qovery environment list -p <project_name>
 ```
 
 #### Show environment status
 ```
+qovery status
+```
+or
+```
+qovery environment status
+```
+or
+```
 qovery environment status -p <project_name>
 ```
 
 #### List all applications from environment
+```
+qovery application list
+```
+or
 ```
 qovery application list -p <project_name> -e <environment_name>
 ```
 
 #### List all routes from environment
 ```
+qovery route list
+```
+or
+```
 qovery route list -p <project_name> -e <environment_name>
 ```
 
 #### List all databases from environment
+```
+qovery database list
+```
+or
 ```
 qovery database list -p <project_name> -e <environment_name>
 ```
@@ -101,10 +119,4 @@ qovery broker list -p <project_name> -e <environment_name>
 #### List all storage from environment
 ```
 qovery storage list -p <project_name> -e <environment_name>
-```
-
-### Status
-#### Show status from current project and environment
-```
-qovery status
 ```

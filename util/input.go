@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"strconv"
 )
 
 func AskForInput(optional bool, message string) string {
@@ -24,14 +25,54 @@ func AskForInput(optional bool, message string) string {
 	return strResponse
 }
 
-func AskForConfirmation(noPrompt bool, msg string, defaultValue string) bool {
+func AskForSelect(choices []string, message string, defaultChoice string) string {
+	var response string
+
+	fmt.Println("➤ " + message + ": ")
+
+	if defaultChoice == "" {
+		fmt.Println("0. none")
+	}
+
+	for k, v := range choices {
+		fmt.Printf("%d. %s\n", k+1, v)
+	}
+
+	fmt.Printf("➤ Your choice (between 1 and %d): ", len(choices))
+	_, err := fmt.Scanln(&response)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	strChoice := fmt.Sprint(response)
+
+	if defaultChoice != "" && strChoice == "" {
+		fmt.Printf("Please choose an option between 1 and %d\n", len(choices))
+		return AskForSelect(choices, message, defaultChoice)
+	}
+
+	choice, err := strconv.Atoi(strChoice)
+	if err != nil && (choice < 0 || choice > len(choices)) {
+		fmt.Printf("Please choose an option between 1 and %d\n", len(choices))
+		return AskForSelect(choices, message, defaultChoice)
+	}
+
+	if choice == 0 {
+		return ""
+	}
+
+	return choices[choice-1]
+}
+
+func AskForConfirmation(noPrompt bool, message string, defaultValue string) bool {
 	var response string
 
 	if noPrompt {
 		return true
 	}
 
-	if msg == "" {
+	if message == "" {
 		if defaultValue == "" {
 			fmt.Print("➤ Are you sure? (y/n): ")
 		} else {
@@ -39,9 +80,9 @@ func AskForConfirmation(noPrompt bool, msg string, defaultValue string) bool {
 		}
 	} else {
 		if defaultValue == "" {
-			fmt.Print("➤ " + msg + " (y/n): ")
+			fmt.Print("➤ " + message + " (y/n): ")
 		} else {
-			fmt.Print("➤ " + msg + " (y/n) [default=" + defaultValue + "]: ")
+			fmt.Print("➤ " + message + " (y/n) [default=" + defaultValue + "]: ")
 		}
 	}
 
@@ -53,7 +94,7 @@ func AskForConfirmation(noPrompt bool, msg string, defaultValue string) bool {
 
 	if err != nil && defaultValue == "" {
 		fmt.Println("Please type yes or no and then press enter:")
-		return AskForConfirmation(noPrompt, msg, defaultValue)
+		return AskForConfirmation(noPrompt, message, defaultValue)
 	}
 
 	okayResponses := []string{"y", "Y", "yes", "Yes", "YES"}
@@ -65,7 +106,7 @@ func AskForConfirmation(noPrompt bool, msg string, defaultValue string) bool {
 		return false
 	} else {
 		fmt.Println("Please type yes or no and then press enter:")
-		return AskForConfirmation(noPrompt, msg, defaultValue)
+		return AskForConfirmation(noPrompt, message, defaultValue)
 	}
 }
 

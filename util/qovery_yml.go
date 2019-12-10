@@ -7,19 +7,36 @@ import (
 )
 
 type QoveryYML struct {
-	Application QoveryYMLApplication `yaml:"application"`
-	Databases   []QoveryYMLDatabase  `yaml:"databases"`
+	Application QoveryYMLApplication `yaml:"application,omitempty"`
+	Network     QoveryYMLNetwork     `yaml:"network,omitempty"`
+	Databases   []QoveryYMLDatabase  `yaml:"databases,omitempty"`
+	Brokers     []QoveryYMLBroker    `yaml:"brokers,omitempty"`
+	// Storage   []QoveryYMLStorage  `yaml:"storage"`
 }
 
 type QoveryYMLApplication struct {
-	Name               string `yaml:"name"`
-	Project            string `yaml:"project"`
-	PubliclyAccessible bool   `yaml:"publicly_accessible"`
+	Name               string `yaml:"name,omitempty"`
+	Project            string `yaml:"project,omitempty"`
+	PubliclyAccessible bool   `yaml:"publicly_accessible,omitempty"`
 }
 
 type QoveryYMLDatabase struct {
-	Name string `yaml:"name"`
-	Type string `yaml:"type"`
+	Name string `yaml:"name,omitempty"`
+	Type string `yaml:"type,omitempty"`
+}
+
+type QoveryYMLNetwork struct {
+	DNS string `yaml:"dns,omitempty"`
+}
+
+type QoveryYMLBroker struct {
+	Name string `yaml:"name,omitempty"`
+	Type string `yaml:"type,omitempty"`
+}
+
+type QoveryYMLStorage struct {
+	Name string `yaml:"name,omitempty"`
+	Type string `yaml:"type,omitempty"`
 }
 
 func CurrentQoveryYML() QoveryYML {
