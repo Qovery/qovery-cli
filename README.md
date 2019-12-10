@@ -35,16 +35,16 @@ brew install qovery
 #### Authentication
 ```
 qovery auth
-
-Authentication code: *******
-
+Waiting for authentication...
+Authentication successful!
 ```
-Copy/paste the authentication code that you will receive from your browser.
+An authentication page will be opened on your browser, and the local port 10999 will be opened to receive the authentication token once logged in.
 
 #### Start using Qovery within your application
 ```
 qovery init
 ```
+Execute this command to generate the `.qovery.yml` file at the root of your project
 
 ## Advanced usage
 Once Qovery is linked to your Github, Bitbucket or Gitlab account AND
