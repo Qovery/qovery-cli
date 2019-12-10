@@ -113,10 +113,18 @@ qovery database list -p <project_name> -e <environment_name>
 
 #### List all brokers from environment
 ```
+qovery broker list
+```
+or
+```
 qovery broker list -p <project_name> -e <environment_name>
 ```
 
 #### List all storage from environment
+```
+qovery storage list
+```
+or
 ```
 qovery storage list -p <project_name> -e <environment_name>
 ```
