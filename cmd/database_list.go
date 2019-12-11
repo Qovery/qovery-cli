@@ -15,10 +15,10 @@ var databaseListCmd = &cobra.Command{
 	qovery database list`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			EnvironmentName = util.CurrentBranchName()
+			BranchName = util.CurrentBranchName()
 			ProjectName = util.CurrentQoveryYML().Application.Project
 
-			if EnvironmentName == "" || ProjectName == "" {
+			if BranchName == "" || ProjectName == "" {
 				fmt.Println("The current directory is not a Qovery project (-h for help)")
 				os.Exit(0)
 			}
@@ -30,7 +30,7 @@ var databaseListCmd = &cobra.Command{
 
 func init() {
 	databaseListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
-	databaseListCmd.PersistentFlags().StringVarP(&EnvironmentName, "environment", "e", "", "Your environment name")
+	databaseListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 
 	databaseCmd.AddCommand(databaseListCmd)
 }

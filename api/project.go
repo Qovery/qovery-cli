@@ -22,10 +22,18 @@ type Project struct {
 	}
 }
 
-func ListProjects() Projects {
-	account := GetAccount()
+func GetProjectByName(name string) *Project {
+	for _, v := range ListProjects().Results {
+		if v.Name == name {
+			return &v
+		}
+	}
 
-	req, _ := http.NewRequest("GET", RootURL+"/user/"+account.Id+"/project", nil)
+	return nil
+}
+
+func ListProjects() Projects {
+	req, _ := http.NewRequest("GET", RootURL+"/user/"+GetAccountId()+"/project", nil)
 	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
 
 	client := http.Client{}

@@ -90,7 +90,7 @@ qovery application list
 ```
 or
 ```
-qovery application list -p <project_name> -e <environment_name>
+qovery application list -p <project_name> -b <branch_name>
 ```
 
 #### List all routes from environment
@@ -99,7 +99,7 @@ qovery route list
 ```
 or
 ```
-qovery route list -p <project_name> -e <environment_name>
+qovery route list -p <project_name> -b <branch_name>
 ```
 
 #### List all databases from environment
@@ -108,7 +108,7 @@ qovery database list
 ```
 or
 ```
-qovery database list -p <project_name> -e <environment_name>
+qovery database list -p <project_name> -b <branch_name>
 ```
 
 #### List all brokers from environment
@@ -117,7 +117,7 @@ qovery broker list
 ```
 or
 ```
-qovery broker list -p <project_name> -e <environment_name>
+qovery broker list -p <project_name> -b <branch_name>
 ```
 
 #### List all storage from environment
@@ -126,5 +126,5 @@ qovery storage list
 ```
 or
 ```
-qovery storage list -p <project_name> -e <environment_name>
+qovery storage list -p <project_name> -b <branch_name>
 ```

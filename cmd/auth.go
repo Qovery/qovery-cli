@@ -46,6 +46,7 @@ var authCmd = &cobra.Command{
 			accessToken := request.URL.Query()["access_token"][0]
 
 			api.SetAuthorizationToken(accessToken)
+			api.SetAccountId(api.GetAccount().Id)
 
 			go func() {
 				time.Sleep(time.Duration(1) * time.Second)

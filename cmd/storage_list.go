@@ -15,10 +15,10 @@ var storageListCmd = &cobra.Command{
 	qovery storage list`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			EnvironmentName = util.CurrentBranchName()
+			BranchName = util.CurrentBranchName()
 			ProjectName = util.CurrentQoveryYML().Application.Project
 
-			if EnvironmentName == "" || ProjectName == "" {
+			if BranchName == "" || ProjectName == "" {
 				fmt.Println("The current directory is not a Qovery project (-h for help)")
 				os.Exit(0)
 			}
@@ -30,7 +30,7 @@ var storageListCmd = &cobra.Command{
 
 func init() {
 	storageListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
-	storageListCmd.PersistentFlags().StringVarP(&EnvironmentName, "environment", "e", "", "Your environment name")
+	storageListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 
 	storageCmd.AddCommand(storageListCmd)
 }

@@ -15,10 +15,10 @@ var brokerListCmd = &cobra.Command{
 	qovery broker list`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			EnvironmentName = util.CurrentBranchName()
+			BranchName = util.CurrentBranchName()
 			ProjectName = util.CurrentQoveryYML().Application.Project
 
-			if EnvironmentName == "" || ProjectName == "" {
+			if BranchName == "" || ProjectName == "" {
 				fmt.Println("The current directory is not a Qovery project (-h for help)")
 				os.Exit(0)
 			}
@@ -30,7 +30,7 @@ var brokerListCmd = &cobra.Command{
 
 func init() {
 	brokerListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
-	brokerListCmd.PersistentFlags().StringVarP(&EnvironmentName, "environment", "e", "", "Your environment name")
+	brokerListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 
 	brokerCmd.AddCommand(brokerListCmd)
 }

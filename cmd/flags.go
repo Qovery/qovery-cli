@@ -9,7 +9,7 @@ import (
 var DebugFlag bool
 var Name string
 var ProjectName string
-var EnvironmentName string
+var BranchName string
 
 func hasFlagChanged(cmd *cobra.Command) bool {
 	flagChanged := false

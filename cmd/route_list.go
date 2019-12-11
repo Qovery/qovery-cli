@@ -15,10 +15,10 @@ var routeListCmd = &cobra.Command{
 	qovery route list`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			EnvironmentName = util.CurrentBranchName()
+			BranchName = util.CurrentBranchName()
 			ProjectName = util.CurrentQoveryYML().Application.Project
 
-			if EnvironmentName == "" || ProjectName == "" {
+			if BranchName == "" || ProjectName == "" {
 				fmt.Println("The current directory is not a Qovery project (-h for help)")
 				os.Exit(0)
 			}
@@ -30,7 +30,7 @@ var routeListCmd = &cobra.Command{
 
 func init() {
 	routeListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
-	routeListCmd.PersistentFlags().StringVarP(&EnvironmentName, "environment", "e", "", "Your environment name")
+	routeListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 
 	routeCmd.AddCommand(routeListCmd)
 }

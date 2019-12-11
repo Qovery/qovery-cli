@@ -16,7 +16,7 @@ var projectListCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		output := []string{
-			"id | name | region",
+			"name | region",
 		}
 
 		projects := api.ListProjects()
@@ -27,7 +27,7 @@ var projectListCmd = &cobra.Command{
 		}
 
 		for _, p := range projects.Results {
-			output = append(output, p.Id+" | "+p.Name+" | "+"eu-west-1")
+			output = append(output, p.Name+" | "+"eu-west-1")
 		}
 
 		fmt.Println(columnize.SimpleFormat(output))
