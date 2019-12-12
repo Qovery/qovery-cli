@@ -11,7 +11,6 @@ type AggregatedEnvironments struct {
 }
 
 type AggregatedEnvironment struct {
-	ObjectType        string `json:"object_type"`
 	BranchId          string `json:"branch_id"`
 	Status            string `json:"status"`
 	TotalApplications *int   `json:"total_applications"`

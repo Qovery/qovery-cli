@@ -2,9 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/ryanuber/columnize"
 	"github.com/spf13/cobra"
 	"os"
+	"qovery.go/api"
 	"qovery.go/util"
+	"strconv"
 )
 
 var applicationListCmd = &cobra.Command{
@@ -24,7 +27,24 @@ var applicationListCmd = &cobra.Command{
 			}
 		}
 
-		// TODO API call
+		output := []string{
+			"name | status | databases | brokers | storage",
+		}
+
+		// TODO check nil
+		applications := api.ListApplications(api.GetProjectByName(ProjectName).Id, BranchName)
+
+		if applications.Results == nil || len(applications.Results) == 0 {
+			fmt.Println(columnize.SimpleFormat(output))
+			return
+		}
+
+		for _, a := range applications.Results {
+			output = append(output, a.Name+" | "+a.Status+" | "+strconv.Itoa(*a.TotalDatabases)+" | "+
+				strconv.Itoa(*a.TotalBrokers)+" | "+strconv.Itoa(*a.TotalStorage))
+		}
+
+		fmt.Println(columnize.SimpleFormat(output))
 	},
 }
 
