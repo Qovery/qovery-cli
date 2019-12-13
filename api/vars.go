@@ -1,3 +1,3 @@
 package api
 
-var RootURL = "http://localhost:8080/api/v1"
+var RootURL = "https://api.qovery.io/api/v1"
