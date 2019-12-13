@@ -27,8 +27,15 @@ var initCmd = &cobra.Command{
 
 		p := util.QoveryYML{}
 
+		currentDirectoryName := currentDirectoryName()
+
+		p.Application.Name = util.AskForInput(true, fmt.Sprintf("Enter the application name [default: %s]", currentDirectoryName))
+
+		if p.Application.Name == "" {
+			p.Application.Name = currentDirectoryName
+		}
+
 		p.Application.Project = util.AskForInput(false, "Enter the project name")
-		p.Application.Name = util.AskForInput(false, "Enter the application name")
 		p.Application.PubliclyAccessible = util.AskForConfirmation(false, "Would you like to expose publicly your application?", "y")
 
 		if p.Application.PubliclyAccessible {
@@ -146,4 +153,15 @@ func AddBrokerWizard() *util.QoveryYMLBroker {
 	name := util.AskForInput(false, "Set the broker name")
 
 	return &util.QoveryYMLBroker{Name: name, Type: strings.ToLower(choice)}
+}
+
+func currentDirectoryName() string {
+	currentDirectoryPath, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s := strings.Split(currentDirectoryPath, string(os.PathSeparator))
+
+	return s[len(s)-1]
 }
