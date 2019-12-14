@@ -7,6 +7,7 @@ import (
 	"os"
 	"qovery.go/api"
 	"qovery.go/util"
+	"strconv"
 )
 
 var brokerListCmd = &cobra.Command{
@@ -27,7 +28,7 @@ var brokerListCmd = &cobra.Command{
 		}
 
 		output := []string{
-			"name | status | type | version | application",
+			"name | status | type | version | host | port | username | password | application",
 		}
 
 		// TODO check nil
@@ -45,7 +46,8 @@ var brokerListCmd = &cobra.Command{
 				applicationName = a.Application.Name
 			}
 
-			output = append(output, a.Name+" | "+a.Status+" | "+a.Type+" | "+a.Version+" | "+applicationName)
+			output = append(output, a.Name+" | "+a.Status+" | "+a.Type+" | "+a.Version+" | "+a.Host+" | "+strconv.Itoa(*a.Port)+
+				" | "+a.Username+" | "+a.Password+" | "+applicationName)
 		}
 
 		fmt.Println(columnize.SimpleFormat(output))

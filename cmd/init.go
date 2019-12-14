@@ -128,6 +128,8 @@ func AddDatabaseWizard() *util.QoveryYMLDatabase {
 		return nil
 	}
 
+	// TODO ask for version
+
 	name := util.AskForInput(false, "Set the database name")
 
 	return &util.QoveryYMLDatabase{Name: name, Type: strings.ToLower(choice)}
@@ -149,6 +151,8 @@ func AddBrokerWizard() *util.QoveryYMLBroker {
 	if choice == "" {
 		return nil
 	}
+
+	// TODO ask for version
 
 	name := util.AskForInput(false, "Set the broker name")
 

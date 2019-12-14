@@ -28,7 +28,7 @@ var environmentListCmd = &cobra.Command{
 		}
 
 		output := []string{
-			"branch | status | applications | databases | brokers | storage",
+			"branch | status | url | applications | databases | brokers | storage",
 		}
 
 		// TODO check nil
@@ -40,7 +40,7 @@ var environmentListCmd = &cobra.Command{
 		}
 
 		for _, a := range aggEnvs.Results {
-			output = append(output, a.BranchId+" | "+a.Status+" | "+strconv.Itoa(*a.TotalApplications)+
+			output = append(output, a.BranchId+" | "+a.Status+" | "+a.ConnectionURI+" | "+strconv.Itoa(*a.TotalApplications)+
 				" | "+strconv.Itoa(*a.TotalDatabases)+" | "+strconv.Itoa(*a.TotalBrokers)+" | "+strconv.Itoa(*a.TotalStorage))
 		}
 

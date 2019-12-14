@@ -21,8 +21,9 @@ type QoveryYMLApplication struct {
 }
 
 type QoveryYMLDatabase struct {
-	Name string `yaml:"name,omitempty"`
-	Type string `yaml:"type,omitempty"`
+	Type    string `yaml:"type,omitempty"`
+	Version string `yaml:"version,omitempty"`
+	Name    string `yaml:"name,omitempty"`
 }
 
 type QoveryYMLNetwork struct {
@@ -30,13 +31,15 @@ type QoveryYMLNetwork struct {
 }
 
 type QoveryYMLBroker struct {
-	Name string `yaml:"name,omitempty"`
-	Type string `yaml:"type,omitempty"`
+	Type    string `yaml:"type,omitempty"`
+	Version string `yaml:"version,omitempty"`
+	Name    string `yaml:"name,omitempty"`
 }
 
 type QoveryYMLStorage struct {
-	Name string `yaml:"name,omitempty"`
-	Type string `yaml:"type,omitempty"`
+	Type    string `yaml:"type,omitempty"`
+	Version string `yaml:"version,omitempty"`
+	Name    string `yaml:"name,omitempty"`
 }
 
 func CurrentQoveryYML() QoveryYML {

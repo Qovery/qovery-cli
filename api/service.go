@@ -16,6 +16,10 @@ type Service struct {
 	Type        string       `json:"type"`
 	Version     string       `json:"version"`
 	Status      string       `json:"status"`
+	Host        string       `json:"host"`
+	Port        *int         `json:"port"`
+	Username    string       `json:"username"`
+	Password    string       `json:"password"`
 	Application *Application `json:"application"`
 }
 

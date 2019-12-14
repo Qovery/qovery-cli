@@ -13,6 +13,7 @@ type AggregatedEnvironments struct {
 type AggregatedEnvironment struct {
 	BranchId          string `json:"branch_id"`
 	Status            string `json:"status"`
+	ConnectionURI     string `json:"connection_uri"`
 	TotalApplications *int   `json:"total_applications"`
 	TotalDatabases    *int   `json:"total_databases"`
 	TotalBrokers      *int   `json:"total_brokers"`
