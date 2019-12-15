@@ -27,7 +27,7 @@ var projectListCmd = &cobra.Command{
 		}
 
 		for _, p := range projects.Results {
-			output = append(output, p.Name+" | "+"eu-west-1")
+			output = append(output, p.Name+" | "+p.CloudProviderRegion.FullName)
 		}
 
 		fmt.Println(columnize.SimpleFormat(output))

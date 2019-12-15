@@ -128,11 +128,32 @@ func AddDatabaseWizard() *util.QoveryYMLDatabase {
 		return nil
 	}
 
-	// TODO ask for version
+	var versionChoices []string
+	switch choice {
+	case "PostgreSQL":
+		versionChoices = []string{"12", "11.5", "11.4", "11.2", "11.1", "10.10", "9.6"}
+	case "MongoDB":
+		versionChoices = []string{"3.6"}
+	case "MySQL":
+		versionChoices = []string{"8.0", "5.7", "5.6", "5.5"}
+	case "Redis":
+		versionChoices = []string{"5.0", "4.0", "3.2", "2.8", "2.6"}
+	case "Memcached":
+		versionChoices = []string{"1.5", "1.4"}
+	case "Elasticsearch":
+		versionChoices = []string{"7.1", "6.8", "5.6", "2.3", "1.5"}
+	default:
+		versionChoices = []string{}
+	}
+
+	versionChoice := util.AskForSelect(versionChoices, fmt.Sprintf("Choose the %s version you want", choice), "")
+	if versionChoice == "" {
+		return nil
+	}
 
 	name := util.AskForInput(false, "Set the database name")
 
-	return &util.QoveryYMLDatabase{Name: name, Type: strings.ToLower(choice)}
+	return &util.QoveryYMLDatabase{Name: name, Type: strings.ToLower(choice), Version: versionChoice}
 }
 
 func askForAddBroker(firstTime bool) bool {
@@ -152,11 +173,24 @@ func AddBrokerWizard() *util.QoveryYMLBroker {
 		return nil
 	}
 
-	// TODO ask for version
+	var versionChoices []string
+	switch choice {
+	case "RabbitMQ":
+		versionChoices = []string{"3.8", "3.7", "3.6"}
+	case "Kafka":
+		versionChoices = []string{"2.3", "2.2", "2.1"}
+	default:
+		versionChoices = []string{}
+	}
+
+	versionChoice := util.AskForSelect(versionChoices, fmt.Sprintf("Choose the %s version you want", choice), "")
+	if versionChoice == "" {
+		return nil
+	}
 
 	name := util.AskForInput(false, "Set the broker name")
 
-	return &util.QoveryYMLBroker{Name: name, Type: strings.ToLower(choice)}
+	return &util.QoveryYMLBroker{Name: name, Type: strings.ToLower(choice), Version: versionChoice}
 }
 
 func currentDirectoryName() string {

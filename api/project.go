@@ -11,15 +11,12 @@ type Projects struct {
 }
 
 type Project struct {
-	ObjectType          string `json:"object_type"`
-	Id                  string `json:"id"`
-	CreatedAt           string `json:"created_at"`
-	UpdatedAt           string `json:"updated_at"`
-	Name                string `json:"name"`
-	CloudProviderRegion struct {
-		ObjectType string `json:"object_type"`
-		Id         string `json:"id"`
-	}
+	ObjectType          string              `json:"object_type"`
+	Id                  string              `json:"id"`
+	CreatedAt           string              `json:"created_at"`
+	UpdatedAt           string              `json:"updated_at"`
+	Name                string              `json:"name"`
+	CloudProviderRegion CloudProviderRegion `json:"cloud_provider_region"`
 }
 
 func GetProjectByName(name string) *Project {
