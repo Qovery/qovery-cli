@@ -6,6 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"log"
 	"os"
+	"qovery.go/api"
 	"qovery.go/util"
 	"strings"
 )
@@ -27,15 +28,26 @@ var initCmd = &cobra.Command{
 
 		p := util.QoveryYML{}
 
+		// check the user is auth; if not then exit
+		if api.GetAccountId() == "" && api.GetAccount().Id == "" {
+			fmt.Println("You must use 'qovery auth' before using 'qovery init'!")
+			os.Exit(1)
+		}
+
+		project := AskForProject()
+		p.Application.Project = project.Name
+
 		currentDirectoryName := currentDirectoryName()
 
 		p.Application.Name = util.AskForInput(true, fmt.Sprintf("Enter the application name [default: %s]", currentDirectoryName))
+		// check if the application name already exists and ask to confirm if it does exist
+		// if it does not exist, then create it to get the ID
+		// TODO
 
 		if p.Application.Name == "" {
 			p.Application.Name = currentDirectoryName
 		}
 
-		p.Application.Project = util.AskForInput(false, "Enter the project name")
 		p.Application.PubliclyAccessible = util.AskForConfirmation(false, "Would you like to expose publicly your application?", "y")
 
 		if p.Application.PubliclyAccessible {
@@ -117,6 +129,59 @@ func askForAddDatabase(firstTime bool) bool {
 	} else {
 		return util.AskForConfirmation(false, "Do you want to add another database?", "n")
 	}
+}
+
+func AskForProject() api.Project {
+	// select project from existing ones or ask to create a new one; then take the ID
+	projects := api.ListProjects().Results
+
+	var projectNames = []string{"Create new project"}
+	for _, v := range projects {
+		projectNames = append(projectNames, v.Name)
+	}
+
+	choice := "Create new project"
+	if len(projectNames) > 0 {
+		choice = util.AskForSelect(projectNames, "Choose the project you want (or create a new one)", "Create new project")
+	}
+
+	if choice == "Create new project" {
+		name := util.AskForInput(false, "Enter the project name")
+		region := AskForCloudRegions()
+		return api.CreateProject(api.Project{Name: name, CloudProviderRegion: region})
+	}
+
+	for _, v := range projects {
+		if v.Name == choice {
+			return v
+		}
+	}
+
+	return api.Project{}
+}
+
+func AskForCloudRegions() api.CloudProviderRegion {
+	clouds := api.ListCloudProviders().Results
+
+	var names []string
+	for _, c := range clouds {
+		for _, r := range c.Regions {
+			names = append(names, fmt.Sprintf("%s/%s", c.Name, r.FullName))
+		}
+	}
+
+	choice := util.AskForSelect(names, "Choose the region where you want to host your project and applications", "")
+
+	for _, c := range clouds {
+		for _, r := range c.Regions {
+			choiceName := fmt.Sprintf("%s/%s", c.Name, r.FullName)
+			if choiceName == choice {
+				return r
+			}
+		}
+	}
+
+	return api.CloudProviderRegion{}
 }
 
 func AddDatabaseWizard() *util.QoveryYMLDatabase {

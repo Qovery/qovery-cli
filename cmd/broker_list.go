@@ -28,7 +28,7 @@ var brokerListCmd = &cobra.Command{
 		}
 
 		output := []string{
-			"name | status | type | version | host | port | username | password | application",
+			"name | status | type | version | endpoint | port | username | password | application",
 		}
 
 		// TODO check nil
@@ -46,7 +46,7 @@ var brokerListCmd = &cobra.Command{
 				applicationName = a.Application.Name
 			}
 
-			output = append(output, a.Name+" | "+a.Status+" | "+a.Type+" | "+a.Version+" | "+a.Host+" | "+strconv.Itoa(*a.Port)+
+			output = append(output, a.Name+" | "+a.Status+" | "+a.Type+" | "+a.Version+" | "+a.FQDN+" | "+strconv.Itoa(*a.Port)+
 				" | "+a.Username+" | "+a.Password+" | "+applicationName)
 		}
 

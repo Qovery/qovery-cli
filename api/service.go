@@ -16,7 +16,7 @@ type Service struct {
 	Type        string       `json:"type"`
 	Version     string       `json:"version"`
 	Status      string       `json:"status"`
-	Host        string       `json:"host"`
+	FQDN        string       `json:"fqdn"`
 	Port        *int         `json:"port"`
 	Username    string       `json:"username"`
 	Password    string       `json:"password"`

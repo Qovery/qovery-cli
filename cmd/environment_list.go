@@ -8,6 +8,7 @@ import (
 	"qovery.go/api"
 	"qovery.go/util"
 	"strconv"
+	"strings"
 )
 
 var environmentListCmd = &cobra.Command{
@@ -28,7 +29,7 @@ var environmentListCmd = &cobra.Command{
 		}
 
 		output := []string{
-			"branch | status | url | applications | databases | brokers | storage",
+			"branch | status | endpoints | applications | databases | brokers | storage",
 		}
 
 		// TODO check nil
@@ -40,7 +41,7 @@ var environmentListCmd = &cobra.Command{
 		}
 
 		for _, a := range aggEnvs.Results {
-			output = append(output, a.BranchId+" | "+a.Status+" | "+a.ConnectionURI+" | "+strconv.Itoa(*a.TotalApplications)+
+			output = append(output, a.BranchId+" | "+a.Status+" | "+strings.Join(a.ConnectionURIs, ", ")+" | "+strconv.Itoa(*a.TotalApplications)+
 				" | "+strconv.Itoa(*a.TotalDatabases)+" | "+strconv.Itoa(*a.TotalBrokers)+" | "+strconv.Itoa(*a.TotalStorage))
 		}
 

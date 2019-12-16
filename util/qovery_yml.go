@@ -14,6 +14,10 @@ type QoveryYML struct {
 	// Storage   []QoveryYMLStorage  `yaml:"storage"`
 }
 
+type QoveryYMLQovery struct {
+	Key string `yaml:"key,omitempty"`
+}
+
 type QoveryYMLApplication struct {
 	Name               string `yaml:"name,omitempty"`
 	Project            string `yaml:"project,omitempty"`
