@@ -23,6 +23,9 @@ var checkoutCmd = &cobra.Command{
 		api.DeleteLocalConfiguration()
 
 		branch := args[0]
+		// checkout branch
+		util.Checkout(branch)
+
 		branchName := util.CurrentBranchName()
 		projectName := util.CurrentQoveryYML().Application.Project
 
@@ -36,9 +39,6 @@ var checkoutCmd = &cobra.Command{
 			fmt.Println("The project does not exist. Are you well authenticated with the right user? Do 'qovery auth' to be sure")
 			os.Exit(1)
 		}
-
-		// checkout branch
-		util.Checkout(branch)
 
 		applications := api.ListApplicationsRaw(project.Id, branchName)
 		api.SaveLocalConfiguration(applications)
