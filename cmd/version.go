@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -13,15 +12,10 @@ var versionCmd = &cobra.Command{
 
 	qovery version`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Debug("version called")
-		showVersion()
+		fmt.Println("Qovery version 1.0.0b")
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(versionCmd)
-}
-
-func showVersion() {
-	fmt.Println("Qovery version 1.0.0b")
 }

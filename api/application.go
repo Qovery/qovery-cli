@@ -19,8 +19,8 @@ type Application struct {
 	TotalStorage   *int   `json:"total_storage"`
 }
 
-func ListApplications(projectId string, branchId string) Applications {
-	req, _ := http.NewRequest("GET", RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchId+"/application", nil)
+func ListApplications(projectId string, branchName string) Applications {
+	req, _ := http.NewRequest("GET", RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/application", nil)
 	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
 
 	client := http.Client{}

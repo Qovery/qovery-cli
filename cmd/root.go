@@ -54,5 +54,5 @@ func generateBashCompletion() {
 		fmt.Println("Error: ", err2.Error())
 	}
 	defer file.Close()
-	RootCmd.GenBashCompletion(file)
+	_ = RootCmd.GenBashCompletion(file)
 }

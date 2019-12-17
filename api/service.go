@@ -23,8 +23,8 @@ type Service struct {
 	Application *Application `json:"application"`
 }
 
-func ListServices(projectId string, branchId string, resourcePath string) Services {
-	req, _ := http.NewRequest("GET", RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchId+"/"+resourcePath, nil)
+func ListServices(projectId string, branchName string, resourcePath string) Services {
+	req, _ := http.NewRequest("GET", RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/"+resourcePath, nil)
 	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
 
 	client := http.Client{}
@@ -43,14 +43,50 @@ func ListServices(projectId string, branchId string, resourcePath string) Servic
 	return services
 }
 
-func ListDatabases(projectId string, branchId string) Services {
-	return ListServices(projectId, branchId, "database")
+func ListDatabases(projectId string, branchName string) Services {
+	return ListServices(projectId, branchName, "database")
 }
 
-func ListBrokers(projectId string, branchId string) Services {
-	return ListServices(projectId, branchId, "broker")
+func ListBrokers(projectId string, branchName string) Services {
+	return ListServices(projectId, branchName, "broker")
 }
 
-func ListStorage(projectId string, branchId string) Services {
-	return ListServices(projectId, branchId, "storage")
+func ListStorage(projectId string, branchName string) Services {
+	return ListServices(projectId, branchName, "storage")
+}
+
+func ListServicesRaw(projectId string, branchName string, resourcePath string) map[string]interface{} {
+	req, _ := http.NewRequest("GET", RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/"+resourcePath, nil)
+	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
+
+	client := http.Client{}
+	resp, err := client.Do(req)
+
+	itf := map[string]interface{}{}
+
+	if err != nil {
+		return itf
+	}
+
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	_ = json.Unmarshal(body, &itf)
+
+	return itf
+}
+
+func ListDatabasesRaw(projectId string, branchName string) map[string]interface{} {
+	return ListServicesRaw(projectId, branchName, "database")
+}
+
+func ListBrokersRaw(projectId string, branchName string) map[string]interface{} {
+	return ListServicesRaw(projectId, branchName, "broker")
+}
+
+func ListStorageRaw(projectId string, branchName string) map[string]interface{} {
+	return ListServicesRaw(projectId, branchName, "storage")
+}
+
+func ListApplicationsRaw(projectId string, branchName string) map[string]interface{} {
+	return ListServicesRaw(projectId, branchName, "application")
 }
