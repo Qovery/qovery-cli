@@ -26,8 +26,10 @@ var checkoutCmd = &cobra.Command{
 		// checkout branch
 		util.Checkout(branch)
 
+		qConf := util.CurrentQoveryYML()
 		branchName := util.CurrentBranchName()
-		projectName := util.CurrentQoveryYML().Application.Project
+		projectName := qConf.Application.Project
+		appName := qConf.Application.Name
 
 		if branchName == "" || projectName == "" {
 			fmt.Println("The current directory is not a Qovery project. Please consider using 'qovery init'")
@@ -41,7 +43,16 @@ var checkoutCmd = &cobra.Command{
 		}
 
 		applications := api.ListApplicationsRaw(project.Id, branchName)
-		api.SaveLocalConfiguration(applications)
+		if val, ok := applications["results"]; ok {
+			results := val.([]interface{})
+			for _, application := range results {
+				a := application.(map[string]interface{})
+				if a["name"] == appName {
+					api.SaveLocalConfiguration(a)
+					break
+				}
+			}
+		}
 	},
 }
 

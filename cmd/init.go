@@ -186,7 +186,7 @@ func AskForCloudRegion() api.CloudProviderRegion {
 }
 
 func AskForRepository(project api.Project) api.Repository {
-	currentDirectoryName := currentDirectoryName()
+	currentDirectoryName := CurrentDirectoryName()
 
 	// check if the application name already exists and ask to confirm if it does exist
 	// if it does not exist, then create it to get the ID
@@ -307,7 +307,7 @@ func AddBrokerWizard() *util.QoveryYMLBroker {
 	return &util.QoveryYMLBroker{Name: name, Type: strings.ToLower(choice), Version: versionChoice}
 }
 
-func currentDirectoryName() string {
+func CurrentDirectoryName() string {
 	currentDirectoryPath, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
