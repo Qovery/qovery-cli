@@ -7,6 +7,7 @@ import (
 )
 
 type QoveryYML struct {
+	Qovery      QoveryYMLQovery      `yaml:"qovery,omitempty"`
 	Application QoveryYMLApplication `yaml:"application,omitempty"`
 	Network     QoveryYMLNetwork     `yaml:"network,omitempty"`
 	Databases   []QoveryYMLDatabase  `yaml:"databases,omitempty"`

@@ -35,19 +35,11 @@ var initCmd = &cobra.Command{
 		}
 
 		project := AskForProject()
+		repository := AskForRepository(project)
+
+		p.Qovery.Key = fmt.Sprintf("%s/%s/%s", api.GetAccountId(), project.Id, repository.Id)
 		p.Application.Project = project.Name
-
-		currentDirectoryName := currentDirectoryName()
-
-		p.Application.Name = util.AskForInput(true, fmt.Sprintf("Enter the application name [default: %s]", currentDirectoryName))
-		// check if the application name already exists and ask to confirm if it does exist
-		// if it does not exist, then create it to get the ID
-		// TODO
-
-		if p.Application.Name == "" {
-			p.Application.Name = currentDirectoryName
-		}
-
+		p.Application.Name = repository.Name
 		p.Application.PubliclyAccessible = util.AskForConfirmation(false, "Would you like to expose publicly your application?", "y")
 
 		if p.Application.PubliclyAccessible {
@@ -146,8 +138,17 @@ func AskForProject() api.Project {
 	}
 
 	if choice == "Create new project" {
-		name := util.AskForInput(false, "Enter the project name")
-		region := AskForCloudRegions()
+		var name string
+		for {
+			name = util.AskForInput(false, "Enter the project name")
+			if api.GetProjectByName(name) == nil {
+				break
+			}
+
+			fmt.Printf("This project name (%s) already exists, please choose another one\n", name)
+		}
+
+		region := AskForCloudRegion()
 		return api.CreateProject(api.Project{Name: name, CloudProviderRegion: region})
 	}
 
@@ -160,7 +161,7 @@ func AskForProject() api.Project {
 	return api.Project{}
 }
 
-func AskForCloudRegions() api.CloudProviderRegion {
+func AskForCloudRegion() api.CloudProviderRegion {
 	clouds := api.ListCloudProviders().Results
 
 	var names []string
@@ -182,6 +183,54 @@ func AskForCloudRegions() api.CloudProviderRegion {
 	}
 
 	return api.CloudProviderRegion{}
+}
+
+func AskForRepository(project api.Project) api.Repository {
+	currentDirectoryName := currentDirectoryName()
+
+	// check if the application name already exists and ask to confirm if it does exist
+	// if it does not exist, then create it to get the ID
+
+	// select repository from existing ones or ask to create a new one; then take the ID
+	repositories := api.ListRepositories(project.Id).Results
+
+	var repoNames = []string{"Create new application"}
+	for _, v := range repositories {
+		repoNames = append(repoNames, v.Name)
+	}
+
+	choice := "Create new application"
+	if len(repoNames) > 0 {
+		choice = util.AskForSelect(repoNames, "Choose the application you want (or create a new one)", "Create new application")
+	}
+
+	if choice == "Create new application" {
+		var name string
+		for {
+			name = util.AskForInput(true, fmt.Sprintf("Enter the application name [default: %s]", currentDirectoryName))
+
+			if name == "" {
+				name = currentDirectoryName
+			}
+
+			if api.GetRepositoryByName(project.Id, name) == nil {
+				break
+			}
+
+			fmt.Printf("This application name (%s) already exists, please choose another one\n", name)
+		}
+
+		url := util.AskForInput(false, "Enter the application/repository git URL")
+		return api.CreateRepository(project.Id, api.Repository{Name: name, URL: url})
+	}
+
+	for _, r := range repositories {
+		if r.Name == choice {
+			return r
+		}
+	}
+
+	return api.Repository{}
 }
 
 func AddDatabaseWizard() *util.QoveryYMLDatabase {

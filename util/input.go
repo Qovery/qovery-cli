@@ -38,7 +38,7 @@ func AskForSelect(choices []string, message string, defaultChoice string) string
 		fmt.Printf("%d. %s\n", k+1, v)
 	}
 
-	fmt.Printf("➤ Your choice (between 1 and %d): ", len(choices))
+	fmt.Print("➤ Your choice: ")
 	_, err := fmt.Scanln(&response)
 
 	if err != nil {
