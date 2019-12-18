@@ -107,7 +107,10 @@ var initCmd = &cobra.Command{
 		}
 
 		fmt.Println("✓ Your Qovery configuration file has been successfully created (.qovery.yml)")
-		fmt.Println("✓ Commit into your repository and push it to get this deployed")
+		fmt.Println("➤ 1/ Commit into your repository and push it to get your app deployed")
+		fmt.Println("➤ commands: git add .qovery.yml && git commit")
+		fmt.Println("➤ 2/ Check the status of your deployment")
+		fmt.Println("➤ commands: qovery status")
 	},
 }
 

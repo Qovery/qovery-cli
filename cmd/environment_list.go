@@ -24,7 +24,7 @@ var environmentListCmd = &cobra.Command{
 
 			if ProjectName == "" {
 				fmt.Println("The current directory is not a Qovery project (-h for help)")
-				os.Exit(0)
+				os.Exit(1)
 			}
 		}
 

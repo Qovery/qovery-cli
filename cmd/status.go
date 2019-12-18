@@ -20,12 +20,11 @@ var statusCmd = &cobra.Command{
 
 			if BranchName == "" || ProjectName == "" {
 				fmt.Println("The current directory is not a Qovery project (-h for help)")
-				os.Exit(0)
+				os.Exit(1)
 			}
 		}
 
-		// TODO API call
-
+		ShowEnvironmentStatus(ProjectName, BranchName)
 	},
 }
 

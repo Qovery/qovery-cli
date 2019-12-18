@@ -1,7 +1,14 @@
 package cmd
 
 import (
+	"fmt"
+	"github.com/ryanuber/columnize"
 	"github.com/spf13/cobra"
+	"os"
+	"qovery.go/api"
+	"qovery.go/util"
+	"strconv"
+	"strings"
 )
 
 var environmentStatusCmd = &cobra.Command{
@@ -12,10 +19,40 @@ var environmentStatusCmd = &cobra.Command{
 	qovery environment status`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO API call to list all instances
+		if !hasFlagChanged(cmd) {
+			BranchName = util.CurrentBranchName()
+			ProjectName = util.CurrentQoveryYML().Application.Project
+
+			if BranchName == "" || ProjectName == "" {
+				fmt.Println("The current directory is not a Qovery project (-h for help)")
+				os.Exit(1)
+			}
+		}
+
+		ShowEnvironmentStatus(ProjectName, BranchName)
 	},
 }
 
 func init() {
+	environmentStatusCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
+	environmentStatusCmd.PersistentFlags().StringVarP(&BranchName, "environment", "e", "", "Your environment name")
+
 	environmentCmd.AddCommand(environmentStatusCmd)
+}
+
+func ShowEnvironmentStatus(projectName string, branchName string) {
+	output := []string{
+		"status | endpoints | applications | databases | brokers | storage",
+	}
+
+	a := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName)
+	if a == nil {
+		fmt.Println(columnize.SimpleFormat(output))
+		return
+	}
+
+	output = append(output, a.Status+" | "+strings.Join(a.ConnectionURIs, ", ")+" | "+strconv.Itoa(*a.TotalApplications)+
+		" | "+strconv.Itoa(*a.TotalDatabases)+" | "+strconv.Itoa(*a.TotalBrokers)+" | "+strconv.Itoa(*a.TotalStorage))
+
+	fmt.Println(columnize.SimpleFormat(output))
 }
