@@ -59,6 +59,7 @@ var runCmd = &cobra.Command{
 				a := application.(map[string]interface{})
 				if a["name"] == appName {
 
+					ReloadEnvironment()
 					image := buildContainer(dockerClient, qYML.Application.DockerfilePath())
 					runContainer(dockerClient, image, a) // TODO docker file content
 
