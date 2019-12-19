@@ -23,6 +23,16 @@ type QoveryYMLApplication struct {
 	Name               string `yaml:"name,omitempty"`
 	Project            string `yaml:"project,omitempty"`
 	PubliclyAccessible bool   `yaml:"publicly_accessible,omitempty"`
+	Dockerfile         string `yaml:"dockerfile,omitempty"`
+}
+
+func (q *QoveryYMLApplication) DockerfilePath() string {
+	dockerfilePath := q.Dockerfile
+	if dockerfilePath == "" {
+		dockerfilePath = "Dockerfile"
+	}
+
+	return dockerfilePath
 }
 
 type QoveryYMLDatabase struct {
