@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"io"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"qovery.go/api"
 	"qovery.go/util"
@@ -140,13 +141,22 @@ func runContainer(client *client.Client, image *types.ImageSummary, configuratio
 			Follow:     true,
 		}
 
-		out, err := client.ContainerLogs(context.TODO(), c.ID, containerLogsOptions)
+		out, err := client.ContainerLogs(context.Background(), c.ID, containerLogsOptions)
 
 		if err != nil {
 			panic(err)
 		}
 
 		_, _ = io.Copy(os.Stdout, out)
+	}()
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt)
+	go func() {
+		for range ch {
+			// sig is a ^C, handle it
+			_ = client.ContainerStop(context.Background(), c.ID, nil)
+		}
 	}()
 
 	_, _ = client.ContainerWait(context.Background(), c.ID)
