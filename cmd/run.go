@@ -61,7 +61,7 @@ var runCmd = &cobra.Command{
 
 					ReloadEnvironment()
 					image := buildContainer(dockerClient, qYML.Application.DockerfilePath())
-					runContainer(dockerClient, image, a) // TODO docker file content
+					runContainer(dockerClient, image, branchName, a)
 
 					break
 				}
@@ -112,11 +112,16 @@ func buildContainer(client *client.Client, dockerfilePath string) *types.ImageSu
 	return &image
 }
 
-func runContainer(client *client.Client, image *types.ImageSummary, configurationMap map[string]interface{}) {
+func runContainer(client *client.Client, image *types.ImageSummary, branchName string, configurationMap map[string]interface{}) {
 	j, _ := json.Marshal(configurationMap)
 	configurationMapB64 := base64.StdEncoding.EncodeToString(j)
 
-	config := &container.Config{Image: image.ID, Env: []string{fmt.Sprintf("QOVERY_JSON_B64=%s", configurationMapB64)}}
+	config := &container.Config{Image: image.ID, Env: []string{
+		fmt.Sprintf("QOVERY_JSON_B64=%s", configurationMapB64),
+		"QOVERY_IS_PRODUCTION=false",
+		fmt.Sprintf("QOVERY_BRANCH_NAME=%s", branchName),
+	}}
+
 	hostConfig := &container.HostConfig{}
 
 	exposePorts := util.ExposePortsFromCurrentDockerfile()
