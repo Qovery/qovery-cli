@@ -59,7 +59,7 @@ var runCmd = &cobra.Command{
 				a := application.(map[string]interface{})
 				if a["name"] == appName {
 
-					ReloadEnvironment()
+					ReloadEnvironment(ConfigurationDirectoryRoot)
 					image := buildContainer(dockerClient, qYML.Application.DockerfilePath())
 					runContainer(dockerClient, image, branchName, a)
 
@@ -71,6 +71,8 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
+	runCmd.PersistentFlags().StringVarP(&ConfigurationDirectoryRoot, "configuration-directory-root", "c", ".", "Your configuration directory root path")
+
 	RootCmd.AddCommand(runCmd)
 }
 

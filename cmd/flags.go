@@ -10,6 +10,7 @@ var DebugFlag bool
 var Name string
 var ProjectName string
 var BranchName string
+var ConfigurationDirectoryRoot string
 
 func hasFlagChanged(cmd *cobra.Command) bool {
 	flagChanged := false

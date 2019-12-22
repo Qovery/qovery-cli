@@ -24,16 +24,18 @@ var checkoutCmd = &cobra.Command{
 		// checkout branch
 		util.Checkout(branch)
 
-		LoadAndSaveLocalConfiguration()
+		LoadAndSaveLocalConfiguration(ConfigurationDirectoryRoot)
 	},
 }
 
 func init() {
+	checkoutCmd.PersistentFlags().StringVarP(&ConfigurationDirectoryRoot, "configuration-directory-root", "c", ".", "Your configuration directory root path")
+
 	RootCmd.AddCommand(checkoutCmd)
 }
 
-func LoadAndSaveLocalConfiguration() {
-	api.DeleteLocalConfiguration()
+func LoadAndSaveLocalConfiguration(configurationDirectoryRoot string) {
+	api.DeleteLocalConfiguration(configurationDirectoryRoot)
 
 	qConf := util.CurrentQoveryYML()
 	branchName := util.CurrentBranchName()
@@ -57,7 +59,7 @@ func LoadAndSaveLocalConfiguration() {
 		for _, application := range results {
 			a := application.(map[string]interface{})
 			if a["name"] == appName {
-				api.SaveLocalConfiguration(a)
+				api.SaveLocalConfiguration(configurationDirectoryRoot, a)
 				break
 			}
 		}

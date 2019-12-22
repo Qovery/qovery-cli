@@ -9,12 +9,12 @@ import (
 	"qovery.go/util"
 )
 
-var connectCmd = &cobra.Command{
-	Use:   "connect",
-	Short: "Connect to your remote environment (databases, brokers...)",
-	Long: `CONNECT open a secured tunnel between your local machine and your remote environment. Perfect to connect to your remote databases and other services example:
+var devCmd = &cobra.Command{
+	Use:   "dev",
+	Short: "Dev to your remote environment (databases, brokers...)",
+	Long: `DEV open a secured tunnel between your local machine and your remote environment. Perfect to dev with your remote databases and other services example:
 
-	qovery connect`,
+	qovery dev`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
 			BranchName = util.CurrentBranchName()
@@ -26,16 +26,17 @@ var connectCmd = &cobra.Command{
 			}
 		}
 
-		ReloadEnvironment()
+		ReloadEnvironment(ConfigurationDirectoryRoot)
 		watchForBranchCheckout()
 	},
 }
 
 func init() {
-	connectCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
-	connectCmd.PersistentFlags().StringVarP(&BranchName, "environment", "e", "", "Your environment name")
+	devCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
+	devCmd.PersistentFlags().StringVarP(&BranchName, "environment", "e", "", "Your environment name")
+	devCmd.PersistentFlags().StringVarP(&ConfigurationDirectoryRoot, "configuration-directory-root", "c", ".", "Your configuration directory root path")
 
-	RootCmd.AddCommand(connectCmd)
+	RootCmd.AddCommand(devCmd)
 }
 
 func watchForBranchCheckout() {
@@ -57,7 +58,7 @@ func watchForBranchCheckout() {
 				}
 
 				if event.Op&fsnotify.Create == fsnotify.Create {
-					ReloadEnvironment()
+					ReloadEnvironment(ConfigurationDirectoryRoot)
 				}
 
 			case err, ok := <-watcher.Errors:
@@ -78,9 +79,9 @@ func watchForBranchCheckout() {
 	<-done
 }
 
-func ReloadEnvironment() {
+func ReloadEnvironment(configurationDirectoryRoot string) {
 	branchName := util.CurrentBranchName()
 	log.Printf("reload %s environment: IN PROGRESS\n", branchName)
-	LoadAndSaveLocalConfiguration()
+	LoadAndSaveLocalConfiguration(configurationDirectoryRoot)
 	log.Printf("reload %s environment: DONE\n", branchName)
 }
