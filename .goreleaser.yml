@@ -15,3 +15,19 @@ changelog:
     exclude:
     - '^docs:'
     - '^test:'
+brews:
+  -
+    name: qovery-cli
+    goarm: 6
+    github:
+      owner: qovery
+      name: homebrew-qovery-cli
+    url_template: "https://github.com/Qovery/qovery-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
+    commit_author:
+      name: qovery
+      email: contact@qovery.com
+    folder: Formula
+    homepage: "https://docs.qovery.com"
+    description: "Deploy modern application in seconds"
+    skip_upload: false
