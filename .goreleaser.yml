@@ -30,3 +30,17 @@ brews:
     homepage: "https://docs.qovery.com"
     description: "Deploy modern application in seconds"
     skip_upload: false
+scoop:
+  url_template: "https://github.com/Qovery/qovery-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+  bucket:
+    owner: qovery
+    name: scoop-qovery-cli
+  commit_author:
+    name: qovery
+    email: contact@qovery.com
+  homepage: "https://docs.qovery.com"
+  description: "Deploy modern application in seconds"
+  license: GPL3
+  persist:
+  - "data"
+  - "config.toml"
