@@ -23,7 +23,6 @@ brews:
       owner: qovery
       name: homebrew-qovery-cli
     url_template: "https://github.com/Qovery/qovery-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
     commit_author:
       name: qovery
       email: contact@qovery.com
