@@ -42,7 +42,7 @@ func init() {
 
 func ShowEnvironmentStatus(projectName string, branchName string) {
 	output := []string{
-		"status | endpoints | applications | databases | brokers | storage",
+		"branch | status | endpoints | applications | databases | brokers | storage",
 	}
 
 	a := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName)
@@ -51,7 +51,7 @@ func ShowEnvironmentStatus(projectName string, branchName string) {
 		return
 	}
 
-	output = append(output, a.Status+" | "+strings.Join(a.ConnectionURIs, ", ")+" | "+strconv.Itoa(*a.TotalApplications)+
+	output = append(output, a.BranchId+" | "+a.Status+" | "+strings.Join(a.ConnectionURIs, ", ")+" | "+strconv.Itoa(*a.TotalApplications)+
 		" | "+strconv.Itoa(*a.TotalDatabases)+" | "+strconv.Itoa(*a.TotalBrokers)+" | "+strconv.Itoa(*a.TotalStorage))
 
 	fmt.Println(columnize.SimpleFormat(output))
