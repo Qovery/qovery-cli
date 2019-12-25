@@ -31,6 +31,8 @@ func GetProjectByName(name string) *Project {
 }
 
 func ListProjects() Projects {
+	CheckAuthenticationOrQuitWithMessage()
+
 	req, _ := http.NewRequest("GET", RootURL+"/user/"+GetAccountId()+"/project", nil)
 	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
 
@@ -51,6 +53,8 @@ func ListProjects() Projects {
 }
 
 func CreateProject(project Project) Project {
+	CheckAuthenticationOrQuitWithMessage()
+
 	b := new(bytes.Buffer)
 	_ = json.NewEncoder(b).Encode(project)
 

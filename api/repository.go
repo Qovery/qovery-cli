@@ -31,6 +31,8 @@ func GetRepositoryByName(projectId string, name string) *Repository {
 }
 
 func ListRepositories(projectId string) Repositories {
+	CheckAuthenticationOrQuitWithMessage()
+
 	req, _ := http.NewRequest("GET", RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/repository", nil)
 	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
 
@@ -51,6 +53,8 @@ func ListRepositories(projectId string) Repositories {
 }
 
 func CreateRepository(projectId string, repository Repository) Repository {
+	CheckAuthenticationOrQuitWithMessage()
+
 	b := new(bytes.Buffer)
 	_ = json.NewEncoder(b).Encode(repository)
 

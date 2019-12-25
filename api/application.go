@@ -20,6 +20,8 @@ type Application struct {
 }
 
 func ListApplications(projectId string, branchName string) Applications {
+	CheckAuthenticationOrQuitWithMessage()
+
 	req, _ := http.NewRequest("GET", RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/application", nil)
 	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
 

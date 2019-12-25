@@ -40,7 +40,7 @@ var initCmd = &cobra.Command{
 		p.Qovery.Key = fmt.Sprintf("%s/%s/%s", api.GetAccountId(), project.Id, repository.Id)
 		p.Application.Project = project.Name
 		p.Application.Name = repository.Name
-		p.Application.PubliclyAccessible = util.AskForConfirmation(false, "Would you like to expose publicly your application?", "y")
+		p.Application.PubliclyAccessible = util.AskForConfirmation(false, "Would you like to make your application publicly accessible?", "y")
 
 		if p.Application.PubliclyAccessible {
 			p.Network.DNS = util.AskForInput(true, "Do you want to set a custom domain (ex: api.foo.com)?")

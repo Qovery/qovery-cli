@@ -24,6 +24,8 @@ type CloudProviderRegion struct {
 }
 
 func ListCloudProviders() CloudProviders {
+	CheckAuthenticationOrQuitWithMessage()
+
 	req, _ := http.NewRequest("GET", RootURL+"/cloud", nil)
 	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
 
