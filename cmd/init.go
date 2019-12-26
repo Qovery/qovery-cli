@@ -118,7 +118,7 @@ var initCmd = &cobra.Command{
 
 		fmt.Println("✓ Your Qovery configuration file has been successfully created (.qovery.yml)")
 
-		fmt.Println("\n➤ Qovery needs to get access to your git repositories")
+		fmt.Println("\n➤ Qovery needs to get access to your git repository")
 		fmt.Println("➤ Qovery Github: https://github.com/apps/qovery/installations/new/permissions?target_id=55960755")
 
 		openLink := util.AskForConfirmation(false, "Would you like to open it?", "n")
@@ -299,27 +299,27 @@ func AddDatabaseWizard() *util.QoveryYMLDatabase {
 	var versionChoices []string
 	switch choice {
 	case "PostgreSQL":
-		versionChoices = []string{"12", "11.5", "11.4", "11.2", "11.1", "10.10", "9.6"}
+		versionChoices = []string{"latest", "12", "11.5", "11.4", "11.2", "11.1", "10.10", "9.6"}
 	case "MongoDB":
-		versionChoices = []string{"3.6"}
+		versionChoices = []string{"latest", "3.6"}
 	case "MySQL":
-		versionChoices = []string{"8.0", "5.7", "5.6", "5.5"}
+		versionChoices = []string{"latest", "8.0", "5.7", "5.6", "5.5"}
 	case "Redis":
-		versionChoices = []string{"5.0", "4.0", "3.2", "2.8", "2.6"}
+		versionChoices = []string{"latest", "5.0", "4.0", "3.2", "2.8", "2.6"}
 	case "Memcached":
-		versionChoices = []string{"1.5", "1.4"}
+		versionChoices = []string{"latest", "1.5", "1.4"}
 	case "Elasticsearch":
-		versionChoices = []string{"7.1", "6.8", "5.6", "2.3", "1.5"}
+		versionChoices = []string{"latest", "7.1", "6.8", "5.6", "2.3", "1.5"}
 	default:
 		versionChoices = []string{}
 	}
 
-	versionChoice := util.AskForSelect(versionChoices, fmt.Sprintf("Choose the %s version you want", choice), "")
-	if versionChoice == "" {
-		return nil
+	versionChoice := util.AskForSelect(versionChoices, fmt.Sprintf("Choose the %s version you want", choice), "latest")
+	if versionChoice == "latest" {
+		versionChoice = versionChoices[1]
 	}
 
-	name := util.AskForInput(false, "Set the database name")
+	name := fmt.Sprintf("my-%s-%d", strings.ToLower(choice), util.RandomInt())
 
 	return &util.QoveryYMLDatabase{Name: name, Type: strings.ToLower(choice), Version: versionChoice}
 }
@@ -344,19 +344,19 @@ func AddBrokerWizard() *util.QoveryYMLBroker {
 	var versionChoices []string
 	switch choice {
 	case "RabbitMQ":
-		versionChoices = []string{"3.8", "3.7", "3.6"}
+		versionChoices = []string{"latest", "3.8", "3.7", "3.6"}
 	case "Kafka":
-		versionChoices = []string{"2.3", "2.2", "2.1"}
+		versionChoices = []string{"latest", "2.3", "2.2", "2.1"}
 	default:
 		versionChoices = []string{}
 	}
 
-	versionChoice := util.AskForSelect(versionChoices, fmt.Sprintf("Choose the %s version you want", choice), "")
-	if versionChoice == "" {
-		return nil
+	versionChoice := util.AskForSelect(versionChoices, fmt.Sprintf("Choose the %s version you want", choice), "latest")
+	if versionChoice == "latest" {
+		versionChoice = versionChoices[1]
 	}
 
-	name := util.AskForInput(false, "Set the broker name")
+	name := fmt.Sprintf("my-%s-%d", strings.ToLower(choice), util.RandomInt())
 
 	return &util.QoveryYMLBroker{Name: name, Type: strings.ToLower(choice), Version: versionChoice}
 }

@@ -11,3 +11,9 @@ func RandomString(n int) string {
 	}
 	return string(b)
 }
+
+func RandomInt() int {
+	max := 9999999
+	min := 1000000
+	return rand.Intn(max-min) + min
+}

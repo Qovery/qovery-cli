@@ -48,8 +48,7 @@ func AskForSelect(choices []string, message string, defaultChoice string) string
 	strChoice := fmt.Sprint(response)
 
 	if defaultChoice != "" && strChoice == "" {
-		fmt.Printf("Please choose an option between 1 and %d\n", len(choices))
-		return AskForSelect(choices, message, defaultChoice)
+		return defaultChoice
 	}
 
 	choice, err := strconv.Atoi(strChoice)
