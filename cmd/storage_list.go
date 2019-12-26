@@ -27,30 +27,7 @@ var storageListCmd = &cobra.Command{
 			}
 		}
 
-		output := []string{
-			"name | status | type | version | endpoint | port | username | password | application",
-		}
-
-		// TODO check nil
-		services := api.ListStorage(api.GetProjectByName(ProjectName).Id, BranchName)
-
-		if services.Results == nil || len(services.Results) == 0 {
-			fmt.Println(columnize.SimpleFormat(output))
-			return
-		}
-
-		for _, a := range services.Results {
-			applicationName := "none"
-
-			if a.Application != nil {
-				applicationName = a.Application.Name
-			}
-
-			output = append(output, a.Name+" | "+a.Status+" | "+a.Type+" | "+a.Version+" | "+a.FQDN+" | "+strconv.Itoa(*a.Port)+
-				" | "+a.Username+" | "+a.Password+" | "+applicationName)
-		}
-
-		fmt.Println(columnize.SimpleFormat(output))
+		ShowStorageList(ProjectName, BranchName)
 	},
 }
 
@@ -59,4 +36,30 @@ func init() {
 	storageListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 
 	storageCmd.AddCommand(storageListCmd)
+}
+
+func ShowStorageList(projectName string, branchName string) {
+	output := []string{
+		"name | status | type | version | endpoint | port | username | password | application",
+	}
+
+	services := api.ListStorage(api.GetProjectByName(projectName).Id, branchName)
+
+	if services.Results == nil || len(services.Results) == 0 {
+		fmt.Println(columnize.SimpleFormat(output))
+		return
+	}
+
+	for _, a := range services.Results {
+		applicationName := "none"
+
+		if a.Application != nil {
+			applicationName = a.Application.Name
+		}
+
+		output = append(output, a.Name+" | "+a.Status+" | "+a.Type+" | "+a.Version+" | "+a.FQDN+" | "+strconv.Itoa(*a.Port)+
+			" | "+a.Username+" | "+a.Password+" | "+applicationName)
+	}
+
+	fmt.Println(columnize.SimpleFormat(output))
 }

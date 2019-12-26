@@ -24,7 +24,16 @@ var statusCmd = &cobra.Command{
 			}
 		}
 
+		fmt.Println("Environment")
 		ShowEnvironmentStatus(ProjectName, BranchName)
+		fmt.Println("\nApplications")
+		ShowApplicationList(ProjectName, BranchName)
+		fmt.Println("\nDatabases")
+		ShowDatabaseList(ProjectName, BranchName)
+		fmt.Println("\nBrokers")
+		ShowBrokerList(ProjectName, BranchName)
+		fmt.Println("\nStorage")
+		ShowStorageList(ProjectName, BranchName)
 	},
 }
 

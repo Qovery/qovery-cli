@@ -43,3 +43,24 @@ func Checkout(branch string) {
 
 	_ = w.Checkout(&git.CheckoutOptions{Branch: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branch))})
 }
+
+func ListRemoteURLs() []string {
+	repo, err := git.PlainOpen(".")
+	if err != nil {
+		return []string{}
+	}
+
+	c, err := repo.Config()
+	if err != nil {
+		return []string{}
+	}
+
+	var urls []string
+	for _, v := range c.Remotes {
+		for _, url := range v.URLs {
+			urls = append(urls, url)
+		}
+	}
+
+	return urls
+}

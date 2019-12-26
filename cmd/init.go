@@ -2,12 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 	"log"
 	"os"
 	"qovery.go/api"
 	"qovery.go/util"
+	"sort"
 	"strings"
 )
 
@@ -22,6 +24,11 @@ var initCmd = &cobra.Command{
 		if _, err := os.Stat(".qovery.yml"); err == nil {
 			fmt.Println("You already have a .qovery.yml file")
 			os.Exit(0)
+		}
+
+		if util.CurrentBranchName() == "" {
+			fmt.Println("The current directory is not a git repository. Consider using Qovery within a git project")
+			os.Exit(1)
 		}
 
 		// TODO check Dockerfile
@@ -40,11 +47,13 @@ var initCmd = &cobra.Command{
 		p.Qovery.Key = fmt.Sprintf("%s/%s/%s", api.GetAccountId(), project.Id, repository.Id)
 		p.Application.Project = project.Name
 		p.Application.Name = repository.Name
-		p.Application.PubliclyAccessible = util.AskForConfirmation(false, "Would you like to make your application publicly accessible?", "y")
+		// p.Application.PubliclyAccessible = util.AskForConfirmation(false, "Would you like to make your application publicly accessible?", "y") TODO
 
+		/** TODO
 		if p.Application.PubliclyAccessible {
 			p.Network.DNS = util.AskForInput(true, "Do you want to set a custom domain (ex: api.foo.com)?")
 		}
+		*/
 
 		count := 1
 		for count < 20 {
@@ -67,8 +76,8 @@ var initCmd = &cobra.Command{
 			count++
 		}
 
+		/** TODO
 		count = 1
-
 		for count < 20 {
 			addBroker := false
 			if count == 1 {
@@ -88,8 +97,7 @@ var initCmd = &cobra.Command{
 
 			count++
 		}
-
-		count = 1
+		*/
 
 		yaml, err := yaml.Marshal(&p)
 		if err != nil {
@@ -109,7 +117,16 @@ var initCmd = &cobra.Command{
 		addLinesToGitIgnore()
 
 		fmt.Println("✓ Your Qovery configuration file has been successfully created (.qovery.yml)")
-		fmt.Println("➤ 1/ Commit into your repository and push it to get your app deployed")
+
+		fmt.Println("\n➤ Qovery needs to get access to your git repositories")
+		fmt.Println("➤ Qovery Github: https://github.com/apps/qovery/installations/new/permissions?target_id=55960755")
+
+		openLink := util.AskForConfirmation(false, "Would you like to open it?", "n")
+		if openLink {
+			_ = browser.OpenURL("https://github.com/apps/qovery/installations/new/permissions?target_id=55960755")
+		}
+
+		fmt.Println("\n➤ 1/ Commit into your repository and push it to get your app deployed")
 		fmt.Println("➤ commands: git add .qovery.yml && git commit")
 		fmt.Println("➤ 2/ Check the status of your deployment")
 		fmt.Println("➤ commands: qovery status")
@@ -140,17 +157,19 @@ func AskForProject() api.Project {
 	// select project from existing ones or ask to create a new one; then take the ID
 	projects := api.ListProjects().Results
 
-	var projectNames = []string{"Create new project"}
+	var projectNames []string
 	for _, v := range projects {
 		projectNames = append(projectNames, v.Name)
 	}
 
-	choice := "Create new project"
-	if len(projectNames) > 0 {
-		choice = util.AskForSelect(projectNames, "Choose the project you want (or create a new one)", "Create new project")
+	sort.Strings(projectNames)
+
+	choice := "create a new project"
+	if len(projectNames) > 1 {
+		choice = util.AskForSelect([]string{"create a new project", "select an existing project"}, "What do you want?", "create a new project")
 	}
 
-	if choice == "Create new project" {
+	if choice == "create a new project" {
 		var name string
 		for {
 			name = util.AskForInput(false, "Enter the project name")
@@ -163,6 +182,12 @@ func AskForProject() api.Project {
 
 		region := AskForCloudRegion()
 		return api.CreateProject(api.Project{Name: name, CloudProviderRegion: region})
+	} else {
+		// select an existing project
+		choice = util.AskForSelect(projectNames, "Choose the project you want", "")
+		if choice == "" {
+			return AskForProject()
+		}
 	}
 
 	for _, v := range projects {
@@ -183,6 +208,8 @@ func AskForCloudRegion() api.CloudProviderRegion {
 			names = append(names, fmt.Sprintf("%s/%s", c.Name, r.FullName))
 		}
 	}
+
+	sort.Strings(names)
 
 	choice := util.AskForSelect(names, "Choose the region where you want to host your project and applications", "")
 
@@ -213,7 +240,7 @@ func AskForRepository(project api.Project) api.Repository {
 	}
 
 	choice := "Create new application"
-	if len(repoNames) > 0 {
+	if len(repoNames) > 1 {
 		choice = util.AskForSelect(repoNames, "Choose the application you want (or create a new one)", "Create new application")
 	}
 
@@ -233,8 +260,21 @@ func AskForRepository(project api.Project) api.Repository {
 			fmt.Printf("This application name (%s) already exists, please choose another one\n", name)
 		}
 
-		url := util.AskForInput(false, "Enter the application/repository git URL")
-		return api.CreateRepository(project.Id, api.Repository{Name: name, URL: url})
+		remoteURLs := util.ListRemoteURLs()
+		remoteURL := ""
+
+		if len(remoteURLs) == 1 {
+			remoteURL = remoteURLs[0]
+		} else if len(remoteURLs) > 1 {
+			// ask for selecting the remote
+			remoteURL = util.AskForSelect(remoteURLs, "Choose the git repository URL", "")
+		}
+
+		if remoteURL == "" {
+			remoteURL = util.AskForInput(false, "Enter the git repository URL")
+		}
+
+		return api.CreateRepository(project.Id, api.Repository{Name: name, URL: remoteURL})
 	}
 
 	for _, r := range repositories {
@@ -248,7 +288,8 @@ func AskForRepository(project api.Project) api.Repository {
 
 func AddDatabaseWizard() *util.QoveryYMLDatabase {
 
-	choices := []string{"PostgreSQL", "MongoDB", "MySQL", "Redis", "Memcached", "Elasticsearch"}
+	//choices := []string{"PostgreSQL", "MongoDB", "MySQL", "Redis", "Memcached", "Elasticsearch"}
+	choices := []string{"PostgreSQL", "MySQL"}
 
 	choice := util.AskForSelect(choices, "Choose the database you want to add", "")
 	if choice == "" {

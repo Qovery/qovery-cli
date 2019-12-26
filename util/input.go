@@ -53,7 +53,7 @@ func AskForSelect(choices []string, message string, defaultChoice string) string
 	}
 
 	choice, err := strconv.Atoi(strChoice)
-	if err != nil && (choice < 0 || choice > len(choices)) {
+	if err != nil || choice < 0 || choice > len(choices) {
 		fmt.Printf("Please choose an option between 1 and %d\n", len(choices))
 		return AskForSelect(choices, message, defaultChoice)
 	}
