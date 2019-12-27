@@ -154,7 +154,6 @@ func init() {
 }
 
 func addLinesToGitIgnore() {
-	_, _ = os.Create(".gitignore")
 	f, _ := os.OpenFile(".gitignore", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
 	defer f.Close()
