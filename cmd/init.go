@@ -36,8 +36,8 @@ var initCmd = &cobra.Command{
 		p := util.QoveryYML{}
 
 		// check the user is auth; if not then exit
-		if api.GetAccountId() == "" && api.GetAccount().Id == "" {
-			fmt.Println("You must use 'qovery auth' before using 'qovery init'!")
+		if api.GetAccount().Id == "" {
+			fmt.Println("You are not authenticated. Authenticate yourself with 'qovery auth' before using 'qovery init'!")
 			os.Exit(1)
 		}
 
