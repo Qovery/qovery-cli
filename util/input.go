@@ -8,7 +8,7 @@ import (
 func AskForInput(optional bool, message string) string {
 	var response string
 
-	fmt.Print("➤ " + message + ": ")
+	fmt.Print("\n➤ " + message + ": ")
 	_, err := fmt.Scanln(&response)
 
 	if err != nil {
@@ -28,7 +28,7 @@ func AskForInput(optional bool, message string) string {
 func AskForSelect(choices []string, message string, defaultChoice string) string {
 	var response string
 
-	fmt.Println("➤ " + message + ": ")
+	fmt.Println("\n➤ " + message + ": ")
 
 	if defaultChoice == "" {
 		fmt.Println("0. none")
@@ -73,15 +73,15 @@ func AskForConfirmation(noPrompt bool, message string, defaultValue string) bool
 
 	if message == "" {
 		if defaultValue == "" {
-			fmt.Print("➤ Are you sure? (y/n): ")
+			fmt.Print("\n➤ Are you sure? (y/n): ")
 		} else {
-			fmt.Print("➤ Are you sure? (y/n) [default=" + defaultValue + "]: ")
+			fmt.Print("\n➤ Are you sure? (y/n) [default=" + defaultValue + "]: ")
 		}
 	} else {
 		if defaultValue == "" {
-			fmt.Print("➤ " + message + " (y/n): ")
+			fmt.Print("\n➤ " + message + " (y/n): ")
 		} else {
-			fmt.Print("➤ " + message + " (y/n) [default=" + defaultValue + "]: ")
+			fmt.Print("\n➤ " + message + " (y/n) [default=" + defaultValue + "]: ")
 		}
 	}
 

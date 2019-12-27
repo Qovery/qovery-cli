@@ -41,19 +41,32 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		fmt.Println("Reply to the following questions to initialize Qovery for this application")
+		fmt.Println("For more info: https://docs.qovery.com")
+
 		project := AskForProject()
 		repository := AskForRepository(project)
 
 		p.Qovery.Key = fmt.Sprintf("%s/%s/%s", api.GetAccountId(), project.Id, repository.Id)
 		p.Application.Project = project.Name
 		p.Application.Name = repository.Name
-		// p.Application.PubliclyAccessible = util.AskForConfirmation(false, "Would you like to make your application publicly accessible?", "y") TODO
+		p.Application.PubliclyAccessible = true //util.AskForConfirmation(false, "Would you like to make your application publicly accessible?", "y") TODO
 
-		/** TODO
 		if p.Application.PubliclyAccessible {
-			p.Network.DNS = util.AskForInput(true, "Do you want to set a custom domain (ex: api.foo.com)?")
+			p.Routers = []util.QoveryYMLRouter{
+				{
+					Name: "main",
+					Routes: []util.QoveryYMLRoute{
+						{
+							ApplicationName: p.Application.Name,
+							Paths:           []string{"/*"},
+						},
+					},
+				},
+			}
+			// TODO
+			// p.Routers.DNS = util.AskForInput(true, "Do you want to set a custom domain (ex: api.foo.com)?")
 		}
-		*/
 
 		count := 1
 		for count < 20 {
@@ -118,18 +131,21 @@ var initCmd = &cobra.Command{
 
 		fmt.Println("✓ Your Qovery configuration file has been successfully created (.qovery.yml)")
 
-		fmt.Println("\n➤ Qovery needs to get access to your git repository")
-		fmt.Println("➤ Qovery Github: https://github.com/apps/qovery/installations/new/permissions?target_id=55960755")
+		fmt.Println("\n!!!IMPORTANT!!!")
+		fmt.Println("Qovery needs to get access to your git repository")
+		fmt.Println("https://github.com/apps/qovery/installations/new/permissions?target_id=55960755")
 
-		openLink := util.AskForConfirmation(false, "Would you like to open it?", "n")
+		openLink := util.AskForConfirmation(false, "Would you like to open the link above?", "n")
 		if openLink {
 			_ = browser.OpenURL("https://github.com/apps/qovery/installations/new/permissions?target_id=55960755")
 		}
 
-		fmt.Println("\n➤ 1/ Commit into your repository and push it to get your app deployed")
-		fmt.Println("➤ commands: git add .qovery.yml && git commit")
-		fmt.Println("➤ 2/ Check the status of your deployment")
-		fmt.Println("➤ commands: qovery status")
+		fmt.Println("\n!!!IMPORTANT!!!")
+		fmt.Println("1/ Commit and push the \".qovery.yml\" file to get your app deployed")
+		fmt.Println("➤ Run: git add .qovery.yml && git commit -m \"add .qovery.yml\" && git push -u origin master")
+		fmt.Println("\n2/ Check the status of your deployment")
+		fmt.Println("➤ Run: qovery status")
+		fmt.Println("\nEnjoy! 👋")
 	},
 }
 

@@ -9,10 +9,10 @@ import (
 type QoveryYML struct {
 	Qovery      QoveryYMLQovery      `yaml:"qovery,omitempty"`
 	Application QoveryYMLApplication `yaml:"application,omitempty"`
-	Network     QoveryYMLNetwork     `yaml:"network,omitempty"`
 	Databases   []QoveryYMLDatabase  `yaml:"databases,omitempty"`
 	Brokers     []QoveryYMLBroker    `yaml:"brokers,omitempty"`
 	// Storage   []QoveryYMLStorage  `yaml:"storage"`
+	Routers []QoveryYMLRouter `yaml:"routers,omitempty"`
 }
 
 type QoveryYMLQovery struct {
@@ -41,8 +41,15 @@ type QoveryYMLDatabase struct {
 	Name    string `yaml:"name,omitempty"`
 }
 
-type QoveryYMLNetwork struct {
-	DNS string `yaml:"dns,omitempty"`
+type QoveryYMLRouter struct {
+	Name   string           `yaml:"name,omitempty"`
+	DNS    string           `yaml:"dns,omitempty"`
+	Routes []QoveryYMLRoute `yaml:"routes,omitempty"`
+}
+
+type QoveryYMLRoute struct {
+	ApplicationName string   `yaml:"application_name,omitempty"`
+	Paths           []string `yaml:"paths,omitempty"`
 }
 
 type QoveryYMLBroker struct {
