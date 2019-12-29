@@ -39,6 +39,8 @@ func ListRepositories(projectId string) Repositories {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	CheckHTTPResponse(resp)
+
 	r := Repositories{}
 
 	if err != nil {
@@ -64,6 +66,8 @@ func CreateRepository(projectId string, repository Repository) Repository {
 
 	client := http.Client{}
 	resp, err := client.Do(req)
+
+	CheckHTTPResponse(resp)
 
 	r := Repository{}
 

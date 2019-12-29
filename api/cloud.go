@@ -32,6 +32,8 @@ func ListCloudProviders() CloudProviders {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	CheckHTTPResponse(resp)
+
 	c := CloudProviders{}
 
 	if err != nil {

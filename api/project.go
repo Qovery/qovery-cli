@@ -39,6 +39,8 @@ func ListProjects() Projects {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	CheckHTTPResponse(resp)
+
 	p := Projects{}
 
 	if err != nil {
@@ -64,6 +66,8 @@ func CreateProject(project Project) Project {
 
 	client := http.Client{}
 	resp, err := client.Do(req)
+
+	CheckHTTPResponse(resp)
 
 	p := Project{}
 

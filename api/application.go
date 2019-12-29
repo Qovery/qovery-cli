@@ -28,6 +28,8 @@ func ListApplications(projectId string, branchName string) Applications {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	CheckHTTPResponse(resp)
+
 	apps := Applications{}
 
 	if err != nil {

@@ -39,6 +39,8 @@ func ListBranches(projectId string) AggregatedEnvironments {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	CheckHTTPResponse(resp)
+
 	r := AggregatedEnvironments{}
 
 	if err != nil {

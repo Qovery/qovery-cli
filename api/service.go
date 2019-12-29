@@ -32,6 +32,8 @@ func ListServices(projectId string, branchName string, resourcePath string) Serv
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	CheckHTTPResponse(resp)
+
 	services := Services{}
 
 	if err != nil {
@@ -65,6 +67,8 @@ func ListServicesRaw(projectId string, branchName string, resourcePath string) m
 
 	client := http.Client{}
 	resp, err := client.Do(req)
+
+	CheckHTTPResponse(resp)
 
 	itf := map[string]interface{}{}
 
