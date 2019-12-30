@@ -17,7 +17,11 @@ jobs:
         name: Fetch tags
         run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       - name: Ensure tag match the current version
-        run: if [ $(grep "Qovery version" cmd/version.go | sed -r 's/.+version (.+)".+/\1/') != $(git tag | tail -1) ] ; then echo "Tag version do not match application version" ; exit 1 ; fi
+        run: |
+            if [ "v$(grep 'Qovery version' cmd/version.go | sed -r 's/.+version (.+)\".+/\1/')" != "$(git tag | tail -1)" ] ; then
+                echo "Tag version do not match application version"
+                exit 1
+            fi
       -
         name: Set up Go
         uses: actions/setup-go@master
