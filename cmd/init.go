@@ -133,11 +133,11 @@ var initCmd = &cobra.Command{
 
 		fmt.Println("\n!!!IMPORTANT!!!")
 		fmt.Println("Qovery needs to get access to your git repository")
-		fmt.Println("https://github.com/apps/qovery/installations/new/permissions?target_id=55960755")
+		fmt.Println("https://github.com/apps/qovery/installations/new")
 
 		openLink := util.AskForConfirmation(false, "Would you like to open the link above?", "n")
 		if openLink {
-			_ = browser.OpenURL("https://github.com/apps/qovery/installations/new/permissions?target_id=55960755")
+			_ = browser.OpenURL("https://github.com/apps/qovery/installations/new")
 		}
 
 		fmt.Println("\n!!!IMPORTANT!!!")
