@@ -40,12 +40,16 @@ var authCmd = &cobra.Command{
 		})
 
 		http.HandleFunc("/authorization/valid", func(writer http.ResponseWriter, request *http.Request) {
-			fmt.Println("Authentication successful!")
 
 			accessToken := request.URL.Query()["access_token"][0]
 
 			api.SetAuthorizationToken(accessToken)
-			api.SetAccountId(api.GetAccount().Id)
+
+			accountId := api.GetAccount().Id
+			if accountId != "" {
+				api.SetAccountId(accountId)
+				fmt.Println("Authentication successful!")
+			}
 
 			go func() {
 				time.Sleep(time.Duration(1) * time.Second)

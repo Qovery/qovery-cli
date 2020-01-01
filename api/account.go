@@ -18,6 +18,8 @@ func GetAccount() User {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	CheckHTTPResponse(resp)
+
 	u := User{}
 
 	if err != nil {
