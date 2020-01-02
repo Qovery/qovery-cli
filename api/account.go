@@ -12,8 +12,8 @@ type User struct {
 }
 
 func GetAccount() User {
-	req, _ := http.NewRequest("GET", RootURL+"/account", nil)
-	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/account", nil)
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}
 	resp, err := client.Do(req)

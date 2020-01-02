@@ -33,8 +33,8 @@ func GetRepositoryByName(projectId string, name string) *Repository {
 func ListRepositories(projectId string) Repositories {
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest("GET", RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/repository", nil)
-	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/repository", nil)
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}
 	resp, err := client.Do(req)
@@ -60,8 +60,8 @@ func CreateRepository(projectId string, repository Repository) Repository {
 	b := new(bytes.Buffer)
 	_ = json.NewEncoder(b).Encode(repository)
 
-	req, _ := http.NewRequest("POST", RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/repository", b)
-	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
+	req, _ := http.NewRequest(MethodPost, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/repository", b)
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 	req.Header.Set("Content-Type", "application/json")
 
 	client := http.Client{}
