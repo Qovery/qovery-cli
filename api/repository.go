@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -42,34 +41,6 @@ func ListRepositories(projectId string) Repositories {
 	CheckHTTPResponse(resp)
 
 	r := Repositories{}
-
-	if err != nil {
-		return r
-	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &r)
-
-	return r
-}
-
-func CreateRepository(projectId string, repository Repository) Repository {
-	CheckAuthenticationOrQuitWithMessage()
-
-	b := new(bytes.Buffer)
-	_ = json.NewEncoder(b).Encode(repository)
-
-	req, _ := http.NewRequest(MethodPost, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/repository", b)
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-	req.Header.Set("Content-Type", "application/json")
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	CheckHTTPResponse(resp)
-
-	r := Repository{}
 
 	if err != nil {
 		return r

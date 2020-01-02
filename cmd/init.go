@@ -44,12 +44,9 @@ var initCmd = &cobra.Command{
 		fmt.Println("Reply to the following questions to initialize Qovery for this application")
 		fmt.Println("For more info: https://docs.qovery.com")
 
-		project := AskForProject()
-		repository := AskForRepository(project)
-
-		p.Qovery.Key = fmt.Sprintf("%s/%s/%s", api.GetAccountId(), project.Id, repository.Id)
-		p.Application.Project = project.Name
-		p.Application.Name = repository.Name
+		p.Application.Project = AskForProject()
+		p.Application.Name = CurrentDirectoryName()
+		p.Application.CloudRegion = AskForCloudRegion()
 		p.Application.PubliclyAccessible = true //util.AskForConfirmation(false, "Would you like to make your application publicly accessible?", "y") TODO
 
 		if p.Application.PubliclyAccessible {
@@ -168,7 +165,7 @@ func askForAddDatabase(firstTime bool) bool {
 	}
 }
 
-func AskForProject() api.Project {
+func AskForProject() string {
 	// select project from existing ones or ask to create a new one; then take the ID
 	projects := api.ListProjects().Results
 
@@ -195,8 +192,7 @@ func AskForProject() api.Project {
 			fmt.Printf("This project name (%s) already exists, please choose another one\n", name)
 		}
 
-		region := AskForCloudRegion()
-		return api.CreateProject(api.Project{Name: name, CloudProviderRegion: region})
+		return name
 	} else {
 		// select an existing project
 		choice = util.AskForSelect(projectNames, "Choose the project you want", "")
@@ -205,16 +201,10 @@ func AskForProject() api.Project {
 		}
 	}
 
-	for _, v := range projects {
-		if v.Name == choice {
-			return v
-		}
-	}
-
-	return api.Project{}
+	return choice
 }
 
-func AskForCloudRegion() api.CloudProviderRegion {
+func AskForCloudRegion() string {
 	clouds := api.ListCloudProviders().Results
 
 	var names []string
@@ -228,83 +218,13 @@ func AskForCloudRegion() api.CloudProviderRegion {
 
 	choice := util.AskForSelect(names, "Choose the region where you want to host your project and applications", "")
 
-	for _, c := range clouds {
-		for _, r := range c.Regions {
-			choiceName := fmt.Sprintf("%s/%s", c.Name, r.FullName)
-			if choiceName == choice {
-				return r
-			}
-		}
-	}
-
-	return api.CloudProviderRegion{}
-}
-
-func AskForRepository(project api.Project) api.Repository {
-	currentDirectoryName := CurrentDirectoryName()
-
-	// check if the application name already exists and ask to confirm if it does exist
-	// if it does not exist, then create it to get the ID
-
-	// select repository from existing ones or ask to create a new one; then take the ID
-	repositories := api.ListRepositories(project.Id).Results
-
-	var repoNames = []string{"Create new application"}
-	for _, v := range repositories {
-		repoNames = append(repoNames, v.Name)
-	}
-
-	choice := "Create new application"
-	if len(repoNames) > 1 {
-		choice = util.AskForSelect(repoNames, "Choose the application you want (or create a new one)", "Create new application")
-	}
-
-	if choice == "Create new application" {
-		var name string
-		for {
-			name = util.AskForInput(true, fmt.Sprintf("Enter the application name [default: %s]", currentDirectoryName))
-
-			if name == "" {
-				name = currentDirectoryName
-			}
-
-			if api.GetRepositoryByName(project.Id, name) == nil {
-				break
-			}
-
-			fmt.Printf("This application name (%s) already exists, please choose another one\n", name)
-		}
-
-		remoteURLs := util.ListRemoteURLs()
-		remoteURL := ""
-
-		if len(remoteURLs) == 1 {
-			remoteURL = remoteURLs[0]
-		} else if len(remoteURLs) > 1 {
-			// ask for selecting the remote
-			remoteURL = util.AskForSelect(remoteURLs, "Choose the git repository URL", "")
-		}
-
-		if remoteURL == "" {
-			remoteURL = util.AskForInput(false, "Enter the git repository URL")
-		}
-
-		return api.CreateRepository(project.Id, api.Repository{Name: name, URL: remoteURL})
-	}
-
-	for _, r := range repositories {
-		if r.Name == choice {
-			return r
-		}
-	}
-
-	return api.Repository{}
+	return choice
 }
 
 func AddDatabaseWizard() *util.QoveryYMLDatabase {
 
 	//choices := []string{"PostgreSQL", "MongoDB", "MySQL", "Redis", "Memcached", "Elasticsearch"}
-	choices := []string{"PostgreSQL", "MySQL"}
+	choices := []string{"PostgreSQL"}
 
 	choice := util.AskForSelect(choices, "Choose the database you want to add", "")
 	if choice == "" {

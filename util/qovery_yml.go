@@ -7,7 +7,6 @@ import (
 )
 
 type QoveryYML struct {
-	Qovery      QoveryYMLQovery      `yaml:"qovery,omitempty"`
 	Application QoveryYMLApplication `yaml:"application,omitempty"`
 	Databases   []QoveryYMLDatabase  `yaml:"databases,omitempty"`
 	Brokers     []QoveryYMLBroker    `yaml:"brokers,omitempty"`
@@ -15,13 +14,10 @@ type QoveryYML struct {
 	Routers []QoveryYMLRouter `yaml:"routers,omitempty"`
 }
 
-type QoveryYMLQovery struct {
-	Key string `yaml:"key,omitempty"`
-}
-
 type QoveryYMLApplication struct {
 	Name               string `yaml:"name,omitempty"`
 	Project            string `yaml:"project,omitempty"`
+	CloudRegion        string `yaml:"cloud_region,omitempty"`
 	PubliclyAccessible bool   `yaml:"publicly_accessible,omitempty"`
 	Dockerfile         string `yaml:"dockerfile,omitempty"`
 }
