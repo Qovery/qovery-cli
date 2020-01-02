@@ -12,7 +12,7 @@ var versionCmd = &cobra.Command{
 
 	qovery version`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Qovery version 0.4.0")
+		fmt.Println("Qovery version 0.5.1")
 	},
 }
 
