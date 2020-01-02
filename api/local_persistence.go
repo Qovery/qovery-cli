@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -15,7 +16,10 @@ func qoveryDirectoryPath() string {
 
 func GetAuthorizationToken() string {
 	filePath := filepath.FromSlash(qoveryDirectoryPath() + "/access_token")
-	fileBytes, _ := ioutil.ReadFile(filePath)
+	fileBytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		log.Fatalf("fail to read file '%s': %s", filePath, err.Error())
+	}
 	return string(fileBytes)
 }
 
@@ -27,7 +31,10 @@ func SetAuthorizationToken(token string) {
 
 func GetAccountId() string {
 	filePath := filepath.FromSlash(qoveryDirectoryPath() + "/account")
-	fileBytes, _ := ioutil.ReadFile(filePath)
+	fileBytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		log.Fatalf("fail to read file '%s': %s", filePath, err.Error())
+	}
 	return string(fileBytes)
 }
 

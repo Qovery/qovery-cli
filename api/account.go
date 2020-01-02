@@ -1,8 +1,7 @@
 package api
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -12,23 +11,9 @@ type User struct {
 }
 
 func GetAccount() User {
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/account", nil)
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	CheckHTTPResponse(resp)
-
-	u := User{}
-
-	if err != nil {
-		return u
+	var u User
+	if err := NewRequest(http.MethodGet, "/account").Do(&u); err != nil {
+		log.Fatal(errorUnknownError)
 	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &u)
-
 	return u
 }

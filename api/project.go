@@ -1,9 +1,7 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
-	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -32,52 +30,18 @@ func GetProjectByName(name string) *Project {
 
 func ListProjects() Projects {
 	CheckAuthenticationOrQuitWithMessage()
-
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project", nil)
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	CheckHTTPResponse(resp)
-
-	p := Projects{}
-
-	if err != nil {
-		return p
+	var projects Projects
+	if err := NewRequest(http.MethodGet, "/user/%s/project", GetAccountId()).Do(&projects); err != nil {
+		log.Fatalf(errorUnknownError)
 	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &p)
-
-	return p
+	return projects
 }
 
 func CreateProject(project Project) Project {
 	CheckAuthenticationOrQuitWithMessage()
-
-	b := new(bytes.Buffer)
-	_ = json.NewEncoder(b).Encode(project)
-
-	req, _ := http.NewRequest(MethodPost, RootURL+"/user/"+GetAccountId()+"/project", b)
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-	req.Header.Set("Content-Type", "application/json")
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	CheckHTTPResponse(resp)
-
-	p := Project{}
-
-	if err != nil {
-		return p
+	var responseProject Project
+	if err := NewRequest(http.MethodPost, "/user/%s/project", GetAccountId()).SetJsonBody(&project).Do(&responseProject); err != nil {
+		log.Fatal(errorUnknownError)
 	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &p)
-
-	return p
+	return responseProject
 }

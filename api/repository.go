@@ -1,9 +1,7 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
-	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -32,52 +30,20 @@ func GetRepositoryByName(projectId string, name string) *Repository {
 
 func ListRepositories(projectId string) Repositories {
 	CheckAuthenticationOrQuitWithMessage()
-
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/repository", nil)
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	CheckHTTPResponse(resp)
-
-	r := Repositories{}
-
-	if err != nil {
-		return r
+	var repo Repositories
+	if err := NewRequest(http.MethodGet, "/user/%s/project/%s/repository", GetAccountId(), projectId).Do(&repo); err != nil {
+		log.Fatal(errorUnknownError)
 	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &r)
-
-	return r
+	return repo
 }
 
 func CreateRepository(projectId string, repository Repository) Repository {
 	CheckAuthenticationOrQuitWithMessage()
+	var r Repository
+	if err := NewRequest(http.MethodPost, "/user/%s/project/%s/repository", GetAccountId(), projectId).
+		SetJsonBody(repository).Do(&r); err != nil {
 
-	b := new(bytes.Buffer)
-	_ = json.NewEncoder(b).Encode(repository)
-
-	req, _ := http.NewRequest(MethodPost, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/repository", b)
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-	req.Header.Set("Content-Type", "application/json")
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	CheckHTTPResponse(resp)
-
-	r := Repository{}
-
-	if err != nil {
-		return r
+		log.Fatalf(errorUnknownError)
 	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &r)
-
 	return r
 }

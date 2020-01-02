@@ -1,8 +1,7 @@
 package api
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -21,24 +20,10 @@ type Application struct {
 
 func ListApplications(projectId string, branchName string) Applications {
 	CheckAuthenticationOrQuitWithMessage()
-
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/application", nil)
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	CheckHTTPResponse(resp)
-
-	apps := Applications{}
-
-	if err != nil {
-		return apps
+	var apps Applications
+	if err := NewRequest(http.MethodGet, "/user/%s/project/%s/branch/%s/application",
+		GetAccountId(), projectId, branchName).Do(&apps); err != nil {
+		log.Fatal(errorUnknownError)
 	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &apps)
-
 	return apps
 }

@@ -1,8 +1,7 @@
 package api
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -25,24 +24,9 @@ type CloudProviderRegion struct {
 
 func ListCloudProviders() CloudProviders {
 	CheckAuthenticationOrQuitWithMessage()
-
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/cloud", nil)
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	CheckHTTPResponse(resp)
-
-	c := CloudProviders{}
-
-	if err != nil {
-		return c
+	var providers CloudProviders
+	if err := NewRequest(http.MethodGet, "/cloud").Do(&providers); err != nil {
+		log.Fatal(errorUnknownError)
 	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &c)
-
-	return c
+	return providers
 }

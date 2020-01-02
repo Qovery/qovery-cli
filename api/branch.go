@@ -1,8 +1,7 @@
 package api
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -32,24 +31,9 @@ func GetBranchByName(projectId string, name string) *AggregatedEnvironment {
 
 func ListBranches(projectId string) AggregatedEnvironments {
 	CheckAuthenticationOrQuitWithMessage()
-
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch", nil)
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	CheckHTTPResponse(resp)
-
-	r := AggregatedEnvironments{}
-
-	if err != nil {
-		return r
+	var envs AggregatedEnvironments
+	if err := NewRequest(http.MethodGet, "/user/%s/project/%s/branch", GetAccountId(), projectId).Do(&envs); err != nil {
+		log.Fatal(errorUnknownError)
 	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &r)
-
-	return r
+	return envs
 }

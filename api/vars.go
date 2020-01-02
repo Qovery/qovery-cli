@@ -1,3 +1,8 @@
 package api
 
-var RootURL = DefaultRootUrl
+import "time"
+
+var (
+	RootURL = DefaultRootUrl
+	Timeout = time.Minute
+)

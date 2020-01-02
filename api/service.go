@@ -1,8 +1,7 @@
 package api
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -25,25 +24,10 @@ type Service struct {
 
 func ListServices(projectId string, branchName string, resourcePath string) Services {
 	CheckAuthenticationOrQuitWithMessage()
-
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/"+resourcePath, nil)
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	CheckHTTPResponse(resp)
-
-	services := Services{}
-
-	if err != nil {
-		return services
+	var services Services
+	if err := NewRequest(http.MethodGet, "/user/%s/project/%s/branch/%s/%s", GetAccountId(), projectId, branchName, resourcePath).Do(&services); err != nil {
+		log.Fatal(errorUnknownError)
 	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &services)
-
 	return services
 }
 
@@ -61,25 +45,10 @@ func ListStorage(projectId string, branchName string) Services {
 
 func ListServicesRaw(projectId string, branchName string, resourcePath string) map[string]interface{} {
 	CheckAuthenticationOrQuitWithMessage()
-
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/"+resourcePath, nil)
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	CheckHTTPResponse(resp)
-
-	itf := map[string]interface{}{}
-
-	if err != nil {
-		return itf
+	var itf map[string]interface{}
+	if err := NewRequest(http.MethodGet, "/user/%s/project/%s/branch/%s/%s", GetAccountId(), projectId, branchName, resourcePath).Do(&itf); err != nil {
+		log.Fatal(errorUnknownError)
 	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &itf)
-
 	return itf
 }
 
