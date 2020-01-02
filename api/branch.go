@@ -20,17 +20,23 @@ type AggregatedEnvironment struct {
 	TotalStorage      *int     `json:"total_storage"`
 }
 
-func GetBranchByName(projectId string, name string) *AggregatedEnvironment {
+func GetBranchByName(projectId string, name string) AggregatedEnvironment {
 	for _, v := range ListBranches(projectId).Results {
 		if v.BranchId == name {
-			return &v
+			return v
 		}
 	}
 
-	return nil
+	return AggregatedEnvironment{}
 }
 
 func ListBranches(projectId string) AggregatedEnvironments {
+	r := AggregatedEnvironments{}
+
+	if projectId == "" {
+		return r
+	}
+
 	CheckAuthenticationOrQuitWithMessage()
 
 	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch", nil)
@@ -40,8 +46,6 @@ func ListBranches(projectId string) AggregatedEnvironments {
 	resp, err := client.Do(req)
 
 	CheckHTTPResponse(resp)
-
-	r := AggregatedEnvironments{}
 
 	if err != nil {
 		return r

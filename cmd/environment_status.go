@@ -46,7 +46,7 @@ func ShowEnvironmentStatus(projectName string, branchName string) {
 	}
 
 	a := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName)
-	if a == nil {
+	if a.BranchId == "" {
 		fmt.Println(columnize.SimpleFormat(output))
 		return
 	}

@@ -24,6 +24,12 @@ type Service struct {
 }
 
 func ListServices(projectId string, branchName string, resourcePath string) Services {
+	services := Services{}
+
+	if projectId == "" || branchName == "" || resourcePath == "" {
+		return services
+	}
+
 	CheckAuthenticationOrQuitWithMessage()
 
 	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/"+resourcePath, nil)
@@ -33,8 +39,6 @@ func ListServices(projectId string, branchName string, resourcePath string) Serv
 	resp, err := client.Do(req)
 
 	CheckHTTPResponse(resp)
-
-	services := Services{}
 
 	if err != nil {
 		return services

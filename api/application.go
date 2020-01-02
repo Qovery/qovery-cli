@@ -20,6 +20,12 @@ type Application struct {
 }
 
 func ListApplications(projectId string, branchName string) Applications {
+	apps := Applications{}
+
+	if projectId == "" || branchName == "" {
+		return apps
+	}
+
 	CheckAuthenticationOrQuitWithMessage()
 
 	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/application", nil)
@@ -29,8 +35,6 @@ func ListApplications(projectId string, branchName string) Applications {
 	resp, err := client.Do(req)
 
 	CheckHTTPResponse(resp)
-
-	apps := Applications{}
 
 	if err != nil {
 		return apps

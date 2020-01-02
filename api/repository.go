@@ -19,17 +19,23 @@ type Repository struct {
 	URL        string `json:"url"`
 }
 
-func GetRepositoryByName(projectId string, name string) *Repository {
+func GetRepositoryByName(projectId string, name string) Repository {
 	for _, v := range ListRepositories(projectId).Results {
 		if v.Name == name {
-			return &v
+			return v
 		}
 	}
 
-	return nil
+	return Repository{}
 }
 
 func ListRepositories(projectId string) Repositories {
+	r := Repositories{}
+
+	if projectId == "" {
+		return r
+	}
+
 	CheckAuthenticationOrQuitWithMessage()
 
 	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/repository", nil)
@@ -39,8 +45,6 @@ func ListRepositories(projectId string) Repositories {
 	resp, err := client.Do(req)
 
 	CheckHTTPResponse(resp)
-
-	r := Repositories{}
 
 	if err != nil {
 		return r

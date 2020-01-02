@@ -185,7 +185,7 @@ func AskForProject() string {
 		var name string
 		for {
 			name = util.AskForInput(false, "Enter the project name")
-			if api.GetProjectByName(name) == nil {
+			if api.GetProjectByName(name).Id == "" {
 				break
 			}
 

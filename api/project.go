@@ -19,14 +19,14 @@ type Project struct {
 	CloudProviderRegion CloudProviderRegion `json:"cloud_provider_region"`
 }
 
-func GetProjectByName(name string) *Project {
-	for _, v := range ListProjects().Results {
-		if v.Name == name {
-			return &v
+func GetProjectByName(name string) Project {
+	for _, p := range ListProjects().Results {
+		if p.Name == name {
+			return p
 		}
 	}
 
-	return nil
+	return Project{}
 }
 
 func ListProjects() Projects {

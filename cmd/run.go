@@ -47,7 +47,7 @@ var runCmd = &cobra.Command{
 		appName := qConf.Application.Name
 
 		project := api.GetProjectByName(projectName)
-		if project == nil {
+		if project.Id == "" {
 			fmt.Println("The project does not exist. Are you well authenticated with the right user? Do 'qovery auth' to be sure")
 			os.Exit(1)
 		}
