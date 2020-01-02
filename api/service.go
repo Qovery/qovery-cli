@@ -26,8 +26,8 @@ type Service struct {
 func ListServices(projectId string, branchName string, resourcePath string) Services {
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest("GET", RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/"+resourcePath, nil)
-	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/"+resourcePath, nil)
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}
 	resp, err := client.Do(req)
@@ -62,8 +62,8 @@ func ListStorage(projectId string, branchName string) Services {
 func ListServicesRaw(projectId string, branchName string, resourcePath string) map[string]interface{} {
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest("GET", RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/"+resourcePath, nil)
-	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/"+resourcePath, nil)
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}
 	resp, err := client.Do(req)

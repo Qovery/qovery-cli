@@ -26,8 +26,8 @@ type CloudProviderRegion struct {
 func ListCloudProviders() CloudProviders {
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest("GET", RootURL+"/cloud", nil)
-	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/cloud", nil)
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}
 	resp, err := client.Do(req)

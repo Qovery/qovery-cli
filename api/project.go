@@ -33,8 +33,8 @@ func GetProjectByName(name string) *Project {
 func ListProjects() Projects {
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest("GET", RootURL+"/user/"+GetAccountId()+"/project", nil)
-	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project", nil)
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}
 	resp, err := client.Do(req)
@@ -60,8 +60,8 @@ func CreateProject(project Project) Project {
 	b := new(bytes.Buffer)
 	_ = json.NewEncoder(b).Encode(project)
 
-	req, _ := http.NewRequest("POST", RootURL+"/user/"+GetAccountId()+"/project", b)
-	req.Header.Set("Authorization", "Bearer "+GetAuthorizationToken())
+	req, _ := http.NewRequest(MethodPost, RootURL+"/user/"+GetAccountId()+"/project", b)
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 	req.Header.Set("Content-Type", "application/json")
 
 	client := http.Client{}
