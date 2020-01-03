@@ -66,7 +66,7 @@ func ListStorage(projectId string, branchName string) Services {
 func ListServicesRaw(projectId string, branchName string, resourcePath string) map[string]interface{} {
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch/"+branchName+"/"+resourcePath, nil)
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/branch/"+branchName+"/"+resourcePath, nil)
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}
