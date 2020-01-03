@@ -30,6 +30,7 @@ var environmentListCmd = &cobra.Command{
 		output := []string{
 			"branch | status | endpoints | applications | databases | brokers | storage",
 		}
+
 		// TODO check nil
 		aggEnvs := api.ListBranches(api.GetProjectByName(ProjectName).Id)
 
@@ -37,10 +38,10 @@ var environmentListCmd = &cobra.Command{
 			fmt.Println(columnize.SimpleFormat(output))
 			return
 		}
-
 		for _, a := range aggEnvs.Results {
 			output = append(output,
-				strings.Join([]string{a.Status.CodeMessage,
+				strings.Join([]string{a.BranchId,
+					a.Status.CodeMessage,
 					strings.Join(a.ConnectionURIs, ", "),
 					intPointerValue(a.TotalApplications),
 					intPointerValue(a.TotalDatabases),

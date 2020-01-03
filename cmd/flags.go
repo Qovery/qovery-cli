@@ -6,15 +6,15 @@ import (
 )
 
 //flags used by more than 1 command
-
 var (
 	DebugFlag                  bool
 	WatchFlag                  bool
-	FollowFlag bool
-	ApplicationName                       string
+	FollowFlag                 bool
+	Name                       string
+	ApplicationName            string
 	ProjectName                string
 	BranchName                 string
-	Tail int
+	Tail                       int
 	ConfigurationDirectoryRoot string
 )
 

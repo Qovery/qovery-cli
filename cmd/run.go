@@ -139,8 +139,15 @@ func buildContainer(client *client.Client, dockerfilePath string, buildArgs map[
 	return &image
 }
 
-func runContainer(client *client.Client, image *types.ImageSummary, environmentVariables []string) {
-	config := &container.Config{Image: image.ID, Env: environmentVariables}
+func runContainer(client *client.Client, image *types.ImageSummary, branchName string, configurationMap map[string]interface{}) {
+	j, _ := json.Marshal(configurationMap)
+	configurationMapB64 := base64.StdEncoding.EncodeToString(j)
+
+	config := &container.Config{Image: image.ID, Env: []string{
+		fmt.Sprintf("QOVERY_JSON_B64=%s", configurationMapB64),
+		"QOVERY_IS_PRODUCTION=false",
+		fmt.Sprintf("QOVERY_BRANCH_NAME=%s", branchName),
+	}}
 
 	hostConfig := &container.HostConfig{}
 

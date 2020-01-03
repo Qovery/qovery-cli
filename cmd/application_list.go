@@ -7,7 +7,7 @@ import (
 	"os"
 	"qovery.go/api"
 	"qovery.go/util"
-	"strconv"
+	"strings"
 )
 
 var applicationListCmd = &cobra.Command{
@@ -51,8 +51,13 @@ func ShowApplicationList(projectName string, branchName string) {
 	}
 
 	for _, a := range applications.Results {
-		output = append(output, a.Name+" | "+a.Status.CodeMessage+" | "+a.ConnectionURI+
-			" | "+strconv.Itoa(*a.TotalDatabases)+" | "+strconv.Itoa(*a.TotalBrokers)+" | "+strconv.Itoa(*a.TotalStorage))
+		output = append(output, strings.Join([]string{
+			a.Name,
+			a.ConnectionURI,
+			intPointerValue(a.TotalDatabases),
+			intPointerValue(a.TotalBrokers),
+			intPointerValue(a.TotalStorage),
+		}, " | "))
 	}
 
 	fmt.Println(columnize.SimpleFormat(output))
