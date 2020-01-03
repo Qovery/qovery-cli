@@ -6,11 +6,13 @@ import (
 )
 
 //flags used by more than 1 command
-var DebugFlag bool
-var Name string
-var ProjectName string
-var BranchName string
-var ConfigurationDirectoryRoot string
+var (
+	DebugFlag                  bool
+	Name                       string
+	ProjectName                string
+	BranchName                 string
+	ConfigurationDirectoryRoot string
+)
 
 func hasFlagChanged(cmd *cobra.Command) bool {
 	flagChanged := false

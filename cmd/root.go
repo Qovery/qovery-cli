@@ -49,9 +49,9 @@ func initConfig() {
 
 func generateBashCompletion() {
 	log.Debugf("generating bash completion script")
-	file, err2 := os.Create("/tmp/qovery-bash-completion.out")
-	if err2 != nil {
-		fmt.Println("Error: ", err2.Error())
+	file, err := os.Create("/tmp/qovery-bash-completion.out")
+	if err != nil {
+		fmt.Println("Error: ", err.Error())
 	}
 	defer file.Close()
 	_ = RootCmd.GenBashCompletion(file)

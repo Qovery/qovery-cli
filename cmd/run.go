@@ -13,6 +13,7 @@ import (
 	"github.com/mholt/archiver/v3"
 	"github.com/spf13/cobra"
 	"io"
+	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -51,23 +52,31 @@ var runCmd = &cobra.Command{
 			fmt.Println("The project does not exist. Are you well authenticated with the right user? Do 'qovery auth' to be sure")
 			os.Exit(1)
 		}
-
-		applications := api.ListApplicationsRaw(project.Id, branchName)
-		if val, ok := applications["results"]; ok {
-			results := val.([]interface{})
-			for _, application := range results {
-				a := application.(map[string]interface{})
-				if a["name"] == appName {
-
-					ReloadEnvironment(ConfigurationDirectoryRoot)
-					image := buildContainer(dockerClient, qYML.Application.DockerfilePath())
-					runContainer(dockerClient, image, branchName, a)
-
-					break
-				}
-			}
+		if configMap := getApplicationConfigByName(project.Id, branchName, appName); configMap != nil {
+			ReloadEnvironment(ConfigurationDirectoryRoot)
+			image := buildContainer(dockerClient, qYML.Application.DockerfilePath())
+			runContainer(dockerClient, image, branchName, configMap)
+		} else {
+			log.Printf("fail to locate app %s", appName)
 		}
 	},
+}
+
+func getApplicationConfigByName(projectId string, branchName string, appName string) map[string]interface{} {
+	return filterApplicationsByName(api.ListApplicationsRaw(projectId, branchName), appName)
+}
+
+func filterApplicationsByName(applications map[string]interface{}, appName string) map[string]interface{} {
+	if val, ok := applications["results"]; ok {
+		results := val.([]interface{})
+		for _, application := range results {
+			a := application.(map[string]interface{})
+			if name, found := a["name"]; found && name == appName {
+				return a
+			}
+		}
+	}
+	return nil
 }
 
 func init() {

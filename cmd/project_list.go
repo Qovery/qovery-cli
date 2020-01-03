@@ -21,7 +21,7 @@ var projectListCmd = &cobra.Command{
 
 		projects := api.ListProjects()
 
-		if projects.Results == nil || len(projects.Results) == 0 {
+		if len(projects.Results) == 0 {
 			fmt.Println(columnize.SimpleFormat(output))
 			return
 		}

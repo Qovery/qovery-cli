@@ -7,7 +7,7 @@ import (
 	"os"
 	"qovery.go/api"
 	"qovery.go/util"
-	"strconv"
+	"strings"
 )
 
 var databaseListCmd = &cobra.Command{
@@ -56,9 +56,16 @@ func ShowDatabaseList(projectName string, branchName string) {
 		if a.Application != nil {
 			applicationName = a.Application.Name
 		}
-
-		output = append(output, a.Name+" | "+a.Status+" | "+a.Type+" | "+a.Version+" | "+a.FQDN+" | "+strconv.Itoa(*a.Port)+
-			" | "+a.Username+" | "+a.Password+" | "+applicationName)
+		output = append(output, strings.Join([]string{
+			a.Status,
+			a.Type,
+			a.Version,
+			a.FQDN,
+			intPointerValue(a.Port),
+			a.Username,
+			a.Password,
+			applicationName,
+		}, " | "))
 	}
 
 	fmt.Println(columnize.SimpleFormat(output))
