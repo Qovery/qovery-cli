@@ -25,7 +25,7 @@ type Service struct {
 func ListServices(projectId string, branchName string, resourcePath string) Services {
 	CheckAuthenticationOrQuitWithMessage()
 	var services Services
-	if err := NewRequest(http.MethodGet, "/user/%s/project/%s/branch/%s/%s", GetAccountId(), projectId, branchName, resourcePath).Do(&services); err != nil {
+	if err := NewRequest(http.MethodGet, "/project/%s/branch/%s/%s", projectId, branchName, resourcePath).Do(&services); err != nil {
 		log.Fatal(errorUnknownError)
 	}
 	return services
