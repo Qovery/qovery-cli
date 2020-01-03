@@ -32,7 +32,7 @@ func GetProjectByName(name string) Project {
 func ListProjects() Projects {
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project", nil)
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project", nil)
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}

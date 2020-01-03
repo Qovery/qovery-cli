@@ -38,7 +38,7 @@ func ListRepositories(projectId string) Repositories {
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/repository", nil)
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/repository", nil)
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}

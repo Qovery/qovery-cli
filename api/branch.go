@@ -39,7 +39,7 @@ func ListBranches(projectId string) AggregatedEnvironments {
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/user/"+GetAccountId()+"/project/"+projectId+"/branch", nil)
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/branch", nil)
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}
