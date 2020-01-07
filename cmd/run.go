@@ -53,8 +53,9 @@ var runCmd = &cobra.Command{
 		}
 
 		applications := api.ListApplicationsRaw(project.Id, branchName)
-		if val, ok := applications["results"]; ok {
-			results := val.([]interface{})
+
+		if applications["results"] != nil {
+			results := applications["results"].([]interface{})
 			for _, application := range results {
 				a := application.(map[string]interface{})
 				if a["name"] == appName {
@@ -66,6 +67,8 @@ var runCmd = &cobra.Command{
 					break
 				}
 			}
+		} else {
+			fmt.Println("Please Commit and Push your project at least one time. We need to set up the remote environment first!")
 		}
 	},
 }
