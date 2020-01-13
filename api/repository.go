@@ -31,7 +31,7 @@ func GetRepositoryByName(projectId string, name string) *Repository {
 func ListRepositories(projectId string) Repositories {
 	CheckAuthenticationOrQuitWithMessage()
 	var repo Repositories
-	if err := NewRequest(http.MethodGet, "/user/%s/project/%s/repository", GetAccountId(), projectId).Do(&repo); err != nil {
+	if err := NewRequest(http.MethodGet, "/project/%s/repository", projectId).Do(&repo); err != nil {
 		log.Fatal(errorUnknownError)
 	}
 	return repo
@@ -40,7 +40,7 @@ func ListRepositories(projectId string) Repositories {
 func CreateRepository(projectId string, repository Repository) Repository {
 	CheckAuthenticationOrQuitWithMessage()
 	var r Repository
-	if err := NewRequest(http.MethodPost, "/user/%s/project/%s/repository", GetAccountId(), projectId).
+	if err := NewRequest(http.MethodPost, "/project/%s/repository", projectId).
 		SetJsonBody(repository).Do(&r); err != nil {
 
 		log.Fatalf(errorUnknownError)

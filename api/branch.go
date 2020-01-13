@@ -32,7 +32,7 @@ func GetBranchByName(projectId string, name string) *AggregatedEnvironment {
 func ListBranches(projectId string) AggregatedEnvironments {
 	CheckAuthenticationOrQuitWithMessage()
 	var envs AggregatedEnvironments
-	if err := NewRequest(http.MethodGet, "/user/%s/project/%s/branch", GetAccountId(), projectId).Do(&envs); err != nil {
+	if err := NewRequest(http.MethodGet, "/project/%s/branch", projectId).Do(&envs); err != nil {
 		log.Fatal(errorUnknownError)
 	}
 	return envs

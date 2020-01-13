@@ -21,8 +21,8 @@ type Application struct {
 func ListApplications(projectId string, branchName string) Applications {
 	CheckAuthenticationOrQuitWithMessage()
 	var apps Applications
-	if err := NewRequest(http.MethodGet, "/user/%s/project/%s/branch/%s/application",
-		GetAccountId(), projectId, branchName).Do(&apps); err != nil {
+	if err := NewRequest(http.MethodGet, "/project/%s/branch/%s/application",
+		projectId, branchName).Do(&apps); err != nil {
 		log.Fatal(errorUnknownError)
 	}
 	return apps

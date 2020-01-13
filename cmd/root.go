@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
+	"qovery.go/api"
 )
 
 // RootCmd represents the base command when called without any subcommands
@@ -40,6 +41,7 @@ func initConfig() {
 	if DebugFlag {
 		log.SetLevel(log.DebugLevel)
 		log.Debug("debug flag is set to true")
+		api.Debug = true
 	}
 
 	if os.Getenv("GENERATE_BASH_COMPLETION") != "" {

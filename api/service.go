@@ -46,7 +46,7 @@ func ListStorage(projectId string, branchName string) Services {
 func ListServicesRaw(projectId string, branchName string, resourcePath string) map[string]interface{} {
 	CheckAuthenticationOrQuitWithMessage()
 	var itf map[string]interface{}
-	if err := NewRequest(http.MethodGet, "/user/%s/project/%s/branch/%s/%s", GetAccountId(), projectId, branchName, resourcePath).Do(&itf); err != nil {
+	if err := NewRequest(http.MethodGet, "/project/%s/branch/%s/%s", projectId, branchName, resourcePath).Do(&itf); err != nil {
 		log.Fatal(errorUnknownError)
 	}
 	return itf

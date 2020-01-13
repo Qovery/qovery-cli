@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 )
 
 func NewRequest(method string, path string, parameters ...interface{}) *Request {
@@ -65,15 +67,38 @@ func (r *Request) getHttpRequest() (*http.Request, error) {
 func (r *Request) Do(response interface{}) error {
 	req, err := r.getHttpRequest()
 	if err != nil {
+
 		return err
 	}
 
 	httpClient := http.Client{Timeout: Timeout}
 	resp, err := httpClient.Do(req)
 	if err != nil {
+		printDebug("request fail: %s", err.Error())
 		return err
 	}
-	CheckHTTPResponse(resp)
 	defer resp.Body.Close()
-	return json.NewDecoder(resp.Body).Decode(response)
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if Debug {
+		printDebug("=======")
+		printDebug("token '%s'", req.Header.Get(headerAuthorization))
+		printDebug("%s %s", req.Method, req.URL)
+		printDebug("status code response: %d", resp.StatusCode)
+		printDebug("body: %s", body)
+		printDebug("=======")
+		//v, _ := ioutil.ReadAll(resp.Body)
+		//printDebug("body: %s\n", string(v))
+	}
+	if resp.StatusCode == http.StatusUnauthorized {
+		fmt.Println("Your authentication token has expired. Please re-authenticate yourself with 'qovery auth'")
+		os.Exit(1)
+	} else if resp.StatusCode == http.StatusForbidden {
+		fmt.Println("Your account must be approved by an administrator to get access to this resource. Please contact support@qovery.com or through intercom on qovery.com")
+		os.Exit(1)
+	} else if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		fmt.Println(errorUnknownError)
+		os.Exit(1)
+	}
+	return json.Unmarshal(body, response)
 }

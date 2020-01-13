@@ -31,7 +31,7 @@ func GetProjectByName(name string) *Project {
 func ListProjects() Projects {
 	CheckAuthenticationOrQuitWithMessage()
 	var projects Projects
-	if err := NewRequest(http.MethodGet, "/user/%s/project", GetAccountId()).Do(&projects); err != nil {
+	if err := NewRequest(http.MethodGet, "/project").Do(&projects); err != nil {
 		log.Fatalf(errorUnknownError)
 	}
 	return projects
@@ -40,7 +40,7 @@ func ListProjects() Projects {
 func CreateProject(project Project) Project {
 	CheckAuthenticationOrQuitWithMessage()
 	var responseProject Project
-	if err := NewRequest(http.MethodPost, "/user/%s/project", GetAccountId()).SetJsonBody(&project).Do(&responseProject); err != nil {
+	if err := NewRequest(http.MethodPost, "/project").SetJsonBody(&project).Do(&responseProject); err != nil {
 		log.Fatal(errorUnknownError)
 	}
 	return responseProject
