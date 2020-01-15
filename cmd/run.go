@@ -36,11 +36,12 @@ var runCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// TODO check docker is running
-		dockerClient, err := client.NewEnvClient()
+		dockerClient, _ := client.NewEnvClient()
+		_, err := dockerClient.ImageList(context.Background(), types.ImageListOptions{})
+
 		if err != nil {
-			fmt.Println("Is Docker installed?")
-			panic(err)
+			fmt.Println("Is Docker installed and running?")
+			os.Exit(1)
 		}
 
 		qConf := util.CurrentQoveryYML()
