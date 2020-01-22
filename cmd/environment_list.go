@@ -7,6 +7,7 @@ import (
 	"os"
 	"qovery.go/api"
 	"qovery.go/util"
+	"strconv"
 	"strings"
 )
 
@@ -30,7 +31,6 @@ var environmentListCmd = &cobra.Command{
 		output := []string{
 			"branch | status | endpoints | applications | databases | brokers | storage",
 		}
-
 		// TODO check nil
 		aggEnvs := api.ListBranches(api.GetProjectByName(ProjectName).Id)
 
@@ -38,9 +38,10 @@ var environmentListCmd = &cobra.Command{
 			fmt.Println(columnize.SimpleFormat(output))
 			return
 		}
+
 		for _, a := range aggEnvs.Results {
 			output = append(output,
-				strings.Join([]string{a.Status,
+				strings.Join([]string{a.Status.CodeMessage,
 					strings.Join(a.ConnectionURIs, ", "),
 					intPointerValue(a.TotalApplications),
 					intPointerValue(a.TotalDatabases),
@@ -55,6 +56,5 @@ var environmentListCmd = &cobra.Command{
 
 func init() {
 	environmentListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
-
 	environmentCmd.AddCommand(environmentListCmd)
 }

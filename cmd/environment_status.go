@@ -50,7 +50,8 @@ func ShowEnvironmentStatus(projectName string, branchName string) {
 		return
 	}
 	output = append(output, strings.Join([]string{
-		a.Status,
+		a.BranchId,
+		a.Status.CodeMessage,
 		strings.Join(a.ConnectionURIs, ", "),
 		intPointerValue(a.TotalApplications),
 		intPointerValue(a.TotalDatabases),

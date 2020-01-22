@@ -8,6 +8,7 @@ import (
 //flags used by more than 1 command
 var (
 	DebugFlag                  bool
+	WatchFlag                  bool
 	Name                       string
 	ProjectName                string
 	BranchName                 string
@@ -18,7 +19,7 @@ func hasFlagChanged(cmd *cobra.Command) bool {
 	flagChanged := false
 
 	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
-		if flag.Changed {
+		if flag.Changed && flag.Name != "watch" {
 			flagChanged = true
 		}
 	})
