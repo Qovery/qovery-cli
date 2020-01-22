@@ -13,7 +13,7 @@ type Applications struct {
 type Application struct {
 	Id             string `json:"id"`
 	Name           string `json:"name"`
-	Status         string `json:"status"`
+	Status         Status `json:"status"`
 	TotalDatabases *int   `json:"total_databases"`
 	TotalBrokers   *int   `json:"total_brokers"`
 	TotalStorage   *int   `json:"total_storage"`

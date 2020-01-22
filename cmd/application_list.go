@@ -51,7 +51,7 @@ func ShowApplicationList(projectName string, branchName string) {
 	}
 
 	for _, a := range applications.Results {
-		output = append(output, a.Name+" | "+a.Status+" | "+strconv.Itoa(*a.TotalDatabases)+" | "+
+		output = append(output, a.Name+" | "+a.Status.State+" | "+strconv.Itoa(*a.TotalDatabases)+" | "+
 			strconv.Itoa(*a.TotalBrokers)+" | "+strconv.Itoa(*a.TotalStorage))
 	}
 
