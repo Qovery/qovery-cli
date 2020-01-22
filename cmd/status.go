@@ -29,12 +29,12 @@ var statusCmd = &cobra.Command{
 		}
 
 		if WatchFlag {
-			bar := progressbar.NewOptions(100, progressbar.OptionSetRenderBlankState(true))
+			bar := progressbar.NewOptions(100, progressbar.OptionSetPredictTime(true))
 			projectId := api.GetProjectByName(ProjectName).Id
 
 			for {
 				a := api.GetBranchByName(projectId, BranchName)
-				_ = bar.Add(a.Status.ProgressionInPercent)
+				_ = bar.Set(a.Status.ProgressionInPercent)
 
 				if a.Status.State == "LIVE" || strings.Contains(a.Status.State, "_ERROR") {
 					break
