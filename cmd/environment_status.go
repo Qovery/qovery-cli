@@ -51,7 +51,8 @@ func ShowEnvironmentStatus(projectName string, branchName string) {
 		return
 	}
 
-	output = append(output, a.BranchId+" | "+a.Status+" | "+strings.Join(a.ConnectionURIs, ", ")+" | "+strconv.Itoa(*a.TotalApplications)+
+	output = append(output, a.BranchId+" | "+a.Status.CodeMessage+
+		" | "+strings.Join(a.ConnectionURIs, ", ")+" | "+strconv.Itoa(*a.TotalApplications)+
 		" | "+strconv.Itoa(*a.TotalDatabases)+" | "+strconv.Itoa(*a.TotalBrokers)+" | "+strconv.Itoa(*a.TotalStorage))
 
 	fmt.Println(columnize.SimpleFormat(output))

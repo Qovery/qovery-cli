@@ -57,7 +57,8 @@ func ShowDatabaseList(projectName string, branchName string) {
 			applicationName = a.Application.Name
 		}
 
-		output = append(output, a.Name+" | "+a.Status.State+" | "+a.Type+" | "+a.Version+" | "+a.FQDN+" | "+strconv.Itoa(*a.Port)+
+		output = append(output, a.Name+" | "+a.Status.CodeMessage+
+			" | "+a.Type+" | "+a.Version+" | "+a.FQDN+" | "+strconv.Itoa(*a.Port)+
 			" | "+a.Username+" | "+a.Password+" | "+applicationName)
 	}
 

@@ -28,12 +28,11 @@ var environmentListCmd = &cobra.Command{
 			}
 		}
 
+		aggEnvs := api.ListBranches(api.GetProjectByName(ProjectName).Id)
+
 		output := []string{
 			"branch | status | endpoints | applications | databases | brokers | storage",
 		}
-
-		// TODO check nil
-		aggEnvs := api.ListBranches(api.GetProjectByName(ProjectName).Id)
 
 		if aggEnvs.Results == nil || len(aggEnvs.Results) == 0 {
 			fmt.Println(columnize.SimpleFormat(output))
@@ -41,7 +40,8 @@ var environmentListCmd = &cobra.Command{
 		}
 
 		for _, a := range aggEnvs.Results {
-			output = append(output, a.BranchId+" | "+a.Status+" | "+strings.Join(a.ConnectionURIs, ", ")+" | "+strconv.Itoa(*a.TotalApplications)+
+			output = append(output, a.BranchId+" | "+a.Status.CodeMessage+
+				" | "+strings.Join(a.ConnectionURIs, ", ")+" | "+strconv.Itoa(*a.TotalApplications)+
 				" | "+strconv.Itoa(*a.TotalDatabases)+" | "+strconv.Itoa(*a.TotalBrokers)+" | "+strconv.Itoa(*a.TotalStorage))
 		}
 
@@ -51,6 +51,5 @@ var environmentListCmd = &cobra.Command{
 
 func init() {
 	environmentListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
-
 	environmentCmd.AddCommand(environmentListCmd)
 }

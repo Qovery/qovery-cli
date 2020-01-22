@@ -2,9 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/schollz/progressbar/v2"
 	"github.com/spf13/cobra"
 	"os"
+	"qovery.go/api"
 	"qovery.go/util"
+	"strings"
+	"time"
 )
 
 var statusCmd = &cobra.Command{
@@ -24,6 +28,30 @@ var statusCmd = &cobra.Command{
 			}
 		}
 
+		if WatchFlag {
+			bar := progressbar.NewOptions(100, progressbar.OptionSetRenderBlankState(true))
+			projectId := api.GetProjectByName(ProjectName).Id
+
+			for {
+				a := api.GetBranchByName(projectId, BranchName)
+				_ = bar.Add(a.Status.ProgressionInPercent)
+
+				if a.Status.State == "LIVE" || strings.Contains(a.Status.State, "_ERROR") {
+					break
+				}
+
+				time.Sleep(1 * time.Second)
+
+			}
+
+			a := api.GetBranchByName(projectId, BranchName)
+			if a.Status.State == "LIVE" {
+				fmt.Printf("\n\nYour environment is ready!\n\n")
+			} else {
+				fmt.Printf("\n\nSomething goes wrong\n\n")
+			}
+		}
+
 		fmt.Println("Environment")
 		ShowEnvironmentStatus(ProjectName, BranchName)
 		fmt.Println("\nApplications")
@@ -40,6 +68,7 @@ var statusCmd = &cobra.Command{
 func init() {
 	statusCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	statusCmd.PersistentFlags().StringVarP(&BranchName, "environment", "e", "", "Your environment name")
+	statusCmd.PersistentFlags().BoolVar(&WatchFlag, "watch", false, "Watch the progression until the environment is up and running")
 
 	RootCmd.AddCommand(statusCmd)
 }
