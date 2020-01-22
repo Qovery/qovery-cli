@@ -181,7 +181,7 @@ func AskForProject() string {
 	sort.Strings(projectNames)
 
 	choice := "create a new project"
-	if len(projectNames) > 1 {
+	if len(projectNames) > 0 {
 		choice = util.AskForSelect([]string{"create a new project", "select an existing project"}, "What do you want?", "create a new project")
 	}
 
