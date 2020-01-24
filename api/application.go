@@ -19,6 +19,16 @@ type Application struct {
 	TotalStorage   *int   `json:"total_storage"`
 }
 
+func GetApplicationByName(projectId string, branchName string, name string) Application {
+	for _, a := range ListApplications(projectId, branchName).Results {
+		if a.Name == name {
+			return a
+		}
+	}
+
+	return Application{}
+}
+
 func ListApplications(projectId string, branchName string) Applications {
 	apps := Applications{}
 

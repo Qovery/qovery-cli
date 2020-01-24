@@ -9,6 +9,7 @@ import (
 var DebugFlag bool
 var WatchFlag bool
 var Name string
+var ApplicationName string
 var ProjectName string
 var BranchName string
 var ConfigurationDirectoryRoot string

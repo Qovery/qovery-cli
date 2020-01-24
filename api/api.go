@@ -15,6 +15,11 @@ func CheckAuthenticationOrQuitWithMessage() {
 }
 
 func CheckHTTPResponse(resp *http.Response) {
+	if resp == nil {
+		fmt.Println("Qovery is in maintenance. Try again later or contact support@qovery.com")
+		os.Exit(1)
+	}
+
 	if resp.StatusCode == http.StatusUnauthorized {
 		fmt.Println("Your authentication token has expired. Please re-authenticate yourself with 'qovery auth'")
 		os.Exit(1)
