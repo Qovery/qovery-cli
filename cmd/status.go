@@ -35,6 +35,7 @@ var statusCmd = &cobra.Command{
 			for {
 				a := api.GetBranchByName(projectId, BranchName)
 				_ = bar.Set(a.Status.ProgressionInPercent)
+				bar.Describe(a.Status.CodeMessage)
 
 				if a.Status.State == "LIVE" || strings.Contains(a.Status.State, "_ERROR") {
 					break
@@ -48,8 +49,11 @@ var statusCmd = &cobra.Command{
 			if a.Status.State == "LIVE" {
 				fmt.Printf("\n\nYour environment is ready!\n\n")
 			} else {
-				fmt.Printf("\n\nSomething goes wrong\n\n")
+				fmt.Printf("\n\nSomething goes wrong:\n")
+				fmt.Printf("%s\n\n", a.Status.Output)
 			}
+
+			fmt.Printf("-- status output --\n\n")
 		}
 
 		fmt.Println("Environment")
