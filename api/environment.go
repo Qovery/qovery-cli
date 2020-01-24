@@ -11,13 +11,21 @@ type AggregatedEnvironments struct {
 }
 
 type AggregatedEnvironment struct {
-	BranchId          string   `json:"branch_id"`
-	Status            Status   `json:"status"`
-	ConnectionURIs    []string `json:"connection_uris"`
-	TotalApplications *int     `json:"total_applications"`
-	TotalDatabases    *int     `json:"total_databases"`
-	TotalBrokers      *int     `json:"total_brokers"`
-	TotalStorage      *int     `json:"total_storage"`
+	BranchId          string        `json:"branch_id"`
+	Status            Status        `json:"status"`
+	ConnectionURIs    []string      `json:"connection_uris"`
+	TotalApplications *int          `json:"total_applications"`
+	TotalDatabases    *int          `json:"total_databases"`
+	TotalBrokers      *int          `json:"total_brokers"`
+	TotalStorage      *int          `json:"total_storage"`
+	Environments      []Environment `json:"environments"`
+}
+
+type Environment struct {
+	Id          string      `json:"id"`
+	BranchId    string      `json:"branch_id"`
+	CommitId    string      `json:"commit_id"`
+	Application Application `json:"application"`
 }
 
 func GetBranchByName(projectId string, name string) AggregatedEnvironment {

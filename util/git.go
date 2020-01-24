@@ -64,3 +64,28 @@ func ListRemoteURLs() []string {
 
 	return urls
 }
+
+func ListCommits(nLast int) []string {
+	repo, err := git.PlainOpen(".")
+	if err != nil {
+		return []string{}
+	}
+
+	c, err := repo.CommitObjects()
+	if err != nil {
+		return []string{}
+	}
+
+	var commitIds []string
+
+	for i := 0; i < nLast; i++ {
+		commit, err := c.Next()
+		if err != nil {
+			break
+		}
+
+		commitIds = append(commitIds, commit.ID().String())
+	}
+
+	return commitIds
+}
