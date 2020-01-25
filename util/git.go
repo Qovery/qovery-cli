@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"sort"
 	"strings"
 )
 
@@ -65,27 +67,36 @@ func ListRemoteURLs() []string {
 	return urls
 }
 
-func ListCommits(nLast int) []string {
+func ListCommits(nLast int) []*object.Commit {
 	repo, err := git.PlainOpen(".")
 	if err != nil {
-		return []string{}
+		return []*object.Commit{}
 	}
 
 	c, err := repo.CommitObjects()
 	if err != nil {
-		return []string{}
+		return []*object.Commit{}
 	}
 
-	var commitIds []string
+	var commits []*object.Commit
 
-	for i := 0; i < nLast; i++ {
-		commit, err := c.Next()
-		if err != nil {
+	_ = c.ForEach(func(commit *object.Commit) error {
+		commits = append(commits, commit)
+		return nil
+	})
+
+	sort.Slice(commits, func(i, j int) bool {
+		return commits[i].Committer.When.Unix() > commits[j].Committer.When.Unix()
+	})
+
+	var finalCommits []*object.Commit
+	for k, commit := range commits {
+		if k == nLast {
 			break
 		}
 
-		commitIds = append(commitIds, commit.ID().String())
+		finalCommits = append(finalCommits, commit)
 	}
 
-	return commitIds
+	return finalCommits
 }

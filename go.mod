@@ -17,6 +17,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
+	github.com/xeonx/timeago v1.0.0-rc4
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/sys v0.0.0-20191008105621-543471e840be // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ryanuber/columnize"
 	"github.com/spf13/cobra"
+	"github.com/xeonx/timeago"
 	"os"
 	"qovery.go/api"
 	"qovery.go/util"
@@ -63,11 +64,14 @@ func ShowDeploymentList(projectName string, branchName string, applicationName s
 		return
 	}
 
-	for _, id := range util.ListCommits(10) {
-		if environment.CommitId == id {
-			output = append(output, branchName+" | "+"now"+" | "+id+" | "+"✓")
+	for _, commit := range util.ListCommits(10) {
+		config := timeago.English
+		config.Max = 30 * timeago.Day
+
+		if environment.CommitId == commit.ID().String() {
+			output = append(output, branchName+" | "+config.Format(commit.Committer.When)+" | "+commit.ID().String()+" | "+"✓")
 		} else {
-			output = append(output, branchName+" | "+"now"+" | "+id+" | "+"𐄂")
+			output = append(output, branchName+" | "+config.Format(commit.Committer.When)+" | "+commit.ID().String()+" | "+"𐄂")
 		}
 	}
 
