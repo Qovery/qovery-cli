@@ -40,7 +40,7 @@ var deployCmd = &cobra.Command{
 		api.Deploy(projectId, BranchName, applicationId, commitId)
 
 		fmt.Println("deployment in progress...")
-		fmt.Println("hint: type \"qovery status --watch\" to track the deployment progress")
+		fmt.Println("hint: type \"qovery status --watch\" to track the progression of deployment")
 	},
 }
 
