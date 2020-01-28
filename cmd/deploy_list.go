@@ -75,7 +75,5 @@ func ShowDeploymentList(projectName string, branchName string, applicationName s
 		}
 	}
 
-	fmt.Println(environment.BranchId)
-
 	fmt.Println(columnize.SimpleFormat(output))
 }
