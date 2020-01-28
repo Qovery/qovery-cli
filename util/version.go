@@ -9,7 +9,7 @@ import (
 )
 
 func GetCurrentVersion() string {
-	return "0.9.1" // ci-version-check
+	return "0.9.2" // ci-version-check
 }
 
 func GetLatestOnlineVersionUrl() (string, error) {
@@ -37,7 +37,7 @@ func CheckAvailableNewVersion() (bool, string, string) {
 		return false, "Error while trying to get latest version", ""
 	}
 	if GetCurrentVersion() != latestOnlineVersion {
-		return true, fmt.Sprintf("A new version has been found %s, please upgrade it!\n" +
+		return true, fmt.Sprintf("A new version has been found %s, please upgrade it!\n"+
 			"You can use your package manager or 'qovery upgrade' command.",
 			latestOnlineVersion), latestOnlineVersion
 	}

@@ -18,6 +18,8 @@ import (
 	"path/filepath"
 	"qovery.go/api"
 	"qovery.go/util"
+	"regexp"
+	"strings"
 )
 
 var runCmd = &cobra.Command{
@@ -122,11 +124,31 @@ func runContainer(client *client.Client, image *types.ImageSummary, branchName s
 	j, _ := json.Marshal(configurationMap)
 	configurationMapB64 := base64.StdEncoding.EncodeToString(j)
 
-	config := &container.Config{Image: image.ID, Env: []string{
+	var environmentVariables []string
+
+	environmentVariables = append(environmentVariables,
 		fmt.Sprintf("QOVERY_JSON_B64=%s", configurationMapB64),
 		"QOVERY_IS_PRODUCTION=false",
 		fmt.Sprintf("QOVERY_BRANCH_NAME=%s", branchName),
-	}}
+	)
+
+	reg, _ := regexp.Compile("[^a-zA-Z0-9]+")
+
+	for ck, cv := range configurationMap {
+		if ck == "databases" || ck == "brokers" || ck == "storage" {
+			for _, db := range cv.([]interface{}) {
+				m := db.(map[string]interface{})
+				for k, v := range m {
+					if val, err := v.(string); err {
+						env := strings.ToUpper(reg.ReplaceAllString("QOVERY_"+m["category"].(string)+"_"+m["name"].(string)+"_"+k, "_")) + "=" + val
+						environmentVariables = append(environmentVariables, env)
+					}
+				}
+			}
+		}
+	}
+
+	config := &container.Config{Image: image.ID, Env: environmentVariables}
 
 	hostConfig := &container.HostConfig{}
 
