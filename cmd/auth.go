@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"qovery.go/api"
+	"qovery.go/util"
 	"strconv"
 	"time"
 )
@@ -32,11 +33,16 @@ var authCmd = &cobra.Command{
 
 	qovery auth`,
 	Run: func(cmd *cobra.Command, args []string) {
+		available, message, _ := util.CheckAvailableNewVersion()
+		if available {
+			fmt.Println(message)
+		}
+
 		// TODO link to web auth
 		_ = browser.OpenURL(fmt.Sprintf(oAuthQoveryUrl, oAuthUrlParamValueClient, url.QueryEscape(oAuthParamValueResponseType),
 			url.QueryEscape(oAuthUrlParamValueAudience), url.QueryEscape(oAuthUrlParamValueRedirect)))
 
-		fmt.Println("Waiting for authentication...")
+		fmt.Println("\nOpening your browser, waiting for your authentication...")
 
 		srv := &http.Server{Addr: fmt.Sprintf("localhost:%d", httpAuthPort)}
 
