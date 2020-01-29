@@ -139,11 +139,17 @@ func runContainer(client *client.Client, image *types.ImageSummary, branchName s
 			for _, db := range cv.([]interface{}) {
 				m := db.(map[string]interface{})
 				for k, v := range m {
-					if val, err := v.(string); err {
-						env := strings.ToUpper(reg.ReplaceAllString("QOVERY_"+m["category"].(string)+"_"+m["name"].(string)+"_"+k, "_")) + "=" + val
-						environmentVariables = append(environmentVariables, env)
-					}
+					env := strings.ToUpper(reg.ReplaceAllString("QOVERY_"+m["category"].(string)+"_"+m["name"].(string)+"_"+k, "_")) +
+						"=" + fmt.Sprintf("%v", v)
+					environmentVariables = append(environmentVariables, env)
 				}
+			}
+		}
+
+		if ck == "environment_variables" {
+			for _, db := range cv.([]interface{}) {
+				m := db.(map[string]interface{})
+				environmentVariables = append(environmentVariables, m["key"].(string)+"="+fmt.Sprintf("%v", m["value"]))
 			}
 		}
 	}
