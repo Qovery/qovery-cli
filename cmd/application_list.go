@@ -40,7 +40,7 @@ func init() {
 
 func ShowApplicationList(projectName string, branchName string) {
 	output := []string{
-		"name | status | databases | brokers | storage",
+		"name | status | endpoint | databases | brokers | storage",
 	}
 
 	applications := api.ListApplications(api.GetProjectByName(projectName).Id, branchName)
@@ -51,7 +51,7 @@ func ShowApplicationList(projectName string, branchName string) {
 	}
 
 	for _, a := range applications.Results {
-		output = append(output, a.Name+" | "+a.Status.CodeMessage+
+		output = append(output, a.Name+" | "+a.Status.CodeMessage+" | "+a.ConnectionURI+
 			" | "+strconv.Itoa(*a.TotalDatabases)+" | "+strconv.Itoa(*a.TotalBrokers)+" | "+strconv.Itoa(*a.TotalStorage))
 	}
 

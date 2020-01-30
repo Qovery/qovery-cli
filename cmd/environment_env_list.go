@@ -9,10 +9,10 @@ import (
 
 var environmentEnvListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List environment variables of an application",
-	Long: `LIST show all environment variables from an application. For example:
+	Short: "List environment variables",
+	Long: `LIST show all environment variables from an environment. For example:
 
-	qovery application env list`,
+	qovery environment env list`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
 			BranchName = util.CurrentBranchName()
