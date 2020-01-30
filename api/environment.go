@@ -10,6 +10,10 @@ type AggregatedEnvironments struct {
 	Results []AggregatedEnvironment `json:"results"`
 }
 
+type Environments struct {
+	Results []Environment `json:"results"`
+}
+
 type AggregatedEnvironment struct {
 	BranchId          string        `json:"branch_id"`
 	Status            Status        `json:"status"`
@@ -26,6 +30,44 @@ type Environment struct {
 	BranchId    string      `json:"branch_id"`
 	CommitId    string      `json:"commit_id"`
 	Application Application `json:"application"`
+}
+
+func GetEnvironmentByBranchId(projectId string, repositoryId string, branchId string) Environment {
+	for _, v := range ListEnvironments(projectId, repositoryId).Results {
+		if v.BranchId == branchId {
+			return v
+		}
+	}
+
+	return Environment{}
+}
+
+func ListEnvironments(projectId string, repositoryId string) Environments {
+	r := Environments{}
+
+	if projectId == "" || repositoryId == "" {
+		return r
+	}
+
+	CheckAuthenticationOrQuitWithMessage()
+
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/repository/"+repositoryId+"/environment", nil)
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
+
+	client := http.Client{}
+	resp, err := client.Do(req)
+
+	CheckHTTPResponse(resp)
+
+	if err != nil {
+		return r
+	}
+
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	_ = json.Unmarshal(body, &r)
+
+	return r
 }
 
 func GetBranchByName(projectId string, name string) AggregatedEnvironment {
