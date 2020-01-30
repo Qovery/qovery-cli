@@ -9,7 +9,7 @@ import (
 
 var applicationEnvListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List environment variables of an application",
+	Short: "List environment variables",
 	Long: `LIST show all environment variables from an application. For example:
 
 	qovery application env list`,
