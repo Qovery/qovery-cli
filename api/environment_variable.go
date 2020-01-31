@@ -196,8 +196,8 @@ func ListApplicationEnvironmentVariables(projectId string, repositoryId string, 
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/repository/"+repositoryId+"/environment/"+
-		environmentId+"/application/"+applicationId+"/env", nil)
+	url := RootURL + "/project/" + projectId + "/repository/" + repositoryId + "/environment/" + environmentId + "/application/" + applicationId + "/env"
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
 
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
