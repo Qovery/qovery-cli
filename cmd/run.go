@@ -18,8 +18,6 @@ import (
 	"path/filepath"
 	"qovery.go/api"
 	"qovery.go/util"
-	"regexp"
-	"strings"
 )
 
 var runCmd = &cobra.Command{
@@ -46,9 +44,6 @@ var runCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		qConf := util.CurrentQoveryYML()
-		appName := qConf.Application.Name
-
 		project := api.GetProjectByName(projectName)
 		if project.Id == "" {
 			fmt.Println("The project does not exist. Are you well authenticated with the right user? Do 'qovery auth' to be sure")
@@ -61,11 +56,11 @@ var runCmd = &cobra.Command{
 			results := applications["results"].([]interface{})
 			for _, application := range results {
 				a := application.(map[string]interface{})
-				if a["name"] == appName {
+				if a["name"] == qYML.Application.Name {
 
 					ReloadEnvironment(ConfigurationDirectoryRoot)
 					image := buildContainer(dockerClient, qYML.Application.DockerfilePath())
-					runContainer(dockerClient, image, branchName, a)
+					runContainer(dockerClient, image, projectName, branchName, qYML.Application.Name, a)
 
 					break
 				}
@@ -120,39 +115,21 @@ func buildContainer(client *client.Client, dockerfilePath string) *types.ImageSu
 	return &image
 }
 
-func runContainer(client *client.Client, image *types.ImageSummary, branchName string, configurationMap map[string]interface{}) {
-	j, _ := json.Marshal(configurationMap)
-	configurationMapB64 := base64.StdEncoding.EncodeToString(j)
+func runContainer(client *client.Client, image *types.ImageSummary, projectName string, branchName string,
+	applicationName string, configurationMap map[string]interface{}) {
 
 	var environmentVariables []string
+	evs := ListEnvironmentVariables(projectName, branchName, applicationName)
 
-	environmentVariables = append(environmentVariables,
-		fmt.Sprintf("QOVERY_JSON_B64=%s", configurationMapB64),
-		"QOVERY_IS_PRODUCTION=false",
-		fmt.Sprintf("QOVERY_BRANCH_NAME=%s", branchName),
-	)
-
-	reg, _ := regexp.Compile("[^a-zA-Z0-9]+")
-
-	for ck, cv := range configurationMap {
-		if ck == "databases" || ck == "brokers" || ck == "storage" {
-			for _, db := range cv.([]interface{}) {
-				m := db.(map[string]interface{})
-				for k, v := range m {
-					env := strings.ToUpper(reg.ReplaceAllString("QOVERY_"+m["category"].(string)+"_"+m["name"].(string)+"_"+k, "_")) +
-						"=" + fmt.Sprintf("%v", v)
-					environmentVariables = append(environmentVariables, env)
-				}
-			}
-		}
-
-		if ck == "environment_variables" {
-			for _, db := range cv.([]interface{}) {
-				m := db.(map[string]interface{})
-				environmentVariables = append(environmentVariables, m["key"].(string)+"="+fmt.Sprintf("%v", m["value"]))
-			}
+	for _, ev := range evs {
+		if ev.Key != "QOVERY_JSON_B64" && ev.KeyValue != "" {
+			environmentVariables = append(environmentVariables, ev.KeyValue)
 		}
 	}
+
+	j, _ := json.Marshal(configurationMap)
+	configurationMapB64 := base64.StdEncoding.EncodeToString(j)
+	environmentVariables = append(environmentVariables, fmt.Sprintf("QOVERY_JSON_B64=%s", configurationMapB64))
 
 	config := &container.Config{Image: image.ID, Env: environmentVariables}
 
