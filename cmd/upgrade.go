@@ -43,6 +43,8 @@ var upgradeCmd = &cobra.Command{
 		binaryWriteAccess := unix.Access(currentBinaryFilename, unix.W_OK)
 		if binaryWriteAccess != nil {
 			fmt.Printf("Upgrade cancelled: no write permission on the Qovery CLI binary file: %s", currentBinaryFilename)
+			cleanArchives(cleanList)
+			os.Exit(1)
 		}
 		cleanArchives(cleanList)
 
