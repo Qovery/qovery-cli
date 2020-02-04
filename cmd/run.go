@@ -55,12 +55,32 @@ var runCmd = &cobra.Command{
 		if applications["results"] != nil {
 			results := applications["results"].([]interface{})
 			for _, application := range results {
-				a := application.(map[string]interface{})
-				if a["name"] == qYML.Application.Name {
+				applicationConfigurationMap := application.(map[string]interface{})
+				if applicationConfigurationMap["name"] == qYML.Application.Name {
 
 					ReloadEnvironment(ConfigurationDirectoryRoot)
-					image := buildContainer(dockerClient, qYML.Application.DockerfilePath())
-					runContainer(dockerClient, image, projectName, branchName, qYML.Application.Name, a)
+
+					var environmentVariables []string
+					buildArgs := make(map[string]*string)
+
+					evs := ListEnvironmentVariables(projectName, branchName, qYML.Application.Name)
+
+					for i := range evs {
+						ev := evs[i]
+						if ev.Key != "QOVERY_JSON_B64" && ev.KeyValue != "" {
+							environmentVariables = append(environmentVariables, ev.KeyValue)
+							buildArgs[ev.Key] = &ev.Value
+						}
+					}
+
+					j, _ := json.Marshal(applicationConfigurationMap)
+					configurationMapB64 := base64.StdEncoding.EncodeToString(j)
+
+					environmentVariables = append(environmentVariables, fmt.Sprintf("QOVERY_JSON_B64=%s", configurationMapB64))
+					buildArgs["QOVERY_JSON_B64"] = &configurationMapB64
+
+					image := buildContainer(dockerClient, qYML.Application.DockerfilePath(), buildArgs)
+					runContainer(dockerClient, image, environmentVariables)
 
 					break
 				}
@@ -77,7 +97,7 @@ func init() {
 	RootCmd.AddCommand(runCmd)
 }
 
-func buildContainer(client *client.Client, dockerfilePath string) *types.ImageSummary {
+func buildContainer(client *client.Client, dockerfilePath string, buildArgs map[string]*string) *types.ImageSummary {
 	tar := archiver.Tar{MkdirAll: true}
 
 	buildTarPath := filepath.FromSlash(fmt.Sprintf("%s/build.tar", os.TempDir()))
@@ -94,7 +114,11 @@ func buildContainer(client *client.Client, dockerfilePath string) *types.ImageSu
 		panic(err)
 	}
 
-	r, err := client.ImageBuild(context.Background(), f, types.ImageBuildOptions{Dockerfile: dockerfilePath})
+	r, err := client.ImageBuild(context.Background(), f, types.ImageBuildOptions{
+		Dockerfile: dockerfilePath,
+		BuildArgs:  buildArgs,
+	})
+
 	defer r.Body.Close()
 
 	if err != nil {
@@ -115,22 +139,7 @@ func buildContainer(client *client.Client, dockerfilePath string) *types.ImageSu
 	return &image
 }
 
-func runContainer(client *client.Client, image *types.ImageSummary, projectName string, branchName string,
-	applicationName string, configurationMap map[string]interface{}) {
-
-	var environmentVariables []string
-	evs := ListEnvironmentVariables(projectName, branchName, applicationName)
-
-	for _, ev := range evs {
-		if ev.Key != "QOVERY_JSON_B64" && ev.KeyValue != "" {
-			environmentVariables = append(environmentVariables, ev.KeyValue)
-		}
-	}
-
-	j, _ := json.Marshal(configurationMap)
-	configurationMapB64 := base64.StdEncoding.EncodeToString(j)
-	environmentVariables = append(environmentVariables, fmt.Sprintf("QOVERY_JSON_B64=%s", configurationMapB64))
-
+func runContainer(client *client.Client, image *types.ImageSummary, environmentVariables []string) {
 	config := &container.Config{Image: image.ID, Env: environmentVariables}
 
 	hostConfig := &container.HostConfig{}
