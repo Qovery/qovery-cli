@@ -18,15 +18,14 @@ var applicationEnvListCmd = &cobra.Command{
 			qoveryYML := util.CurrentQoveryYML()
 			BranchName = util.CurrentBranchName()
 			ProjectName = qoveryYML.Application.Project
-			ApplicationName = qoveryYML.Application.Name
 
-			if BranchName == "" || ProjectName == "" || ApplicationName == "" {
+			if BranchName == "" || ProjectName == "" {
 				fmt.Println("The current directory is not a Qovery project (-h for help)")
 				os.Exit(1)
 			}
 		}
 
-		ShowEnvironmentVariablesByApplicationName(ProjectName, BranchName, ApplicationName)
+		ShowEnvironmentVariablesByApplicationName(ProjectName, BranchName)
 	},
 }
 

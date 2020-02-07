@@ -63,7 +63,7 @@ var runCmd = &cobra.Command{
 					var environmentVariables []string
 					buildArgs := make(map[string]*string)
 
-					evs := ListEnvironmentVariables(projectName, branchName, qYML.Application.Name)
+					evs := ListEnvironmentVariables(projectName, branchName)
 
 					for i := range evs {
 						ev := evs[i]
