@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"qovery.go/util"
 )
 
 type Projects struct {
@@ -20,9 +21,31 @@ type Project struct {
 }
 
 func GetProjectByName(name string) Project {
+	var projects []Project
+
 	for _, p := range ListProjects().Results {
 		if p.Name == name {
-			return p
+			projects = append(projects, p)
+		}
+	}
+
+	if len(projects) == 0 {
+		return Project{}
+	} else if len(projects) == 1 {
+		return projects[0]
+	}
+
+	remoteURLs := util.ListRemoteURLs()
+
+	// take the right project from matching local and distant remote URL
+	for _, p := range projects {
+		// TODO improve
+		for _, r := range ListRepositories(p.Id).Results {
+			for _, url := range remoteURLs {
+				if r.URL == url {
+					return p
+				}
+			}
 		}
 	}
 
