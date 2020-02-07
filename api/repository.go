@@ -19,6 +19,16 @@ type Repository struct {
 	URL        string `json:"url"`
 }
 
+func GetRepositoryByRemoteURL(projectId string, url string) Repository {
+	for _, v := range ListRepositories(projectId).Results {
+		if v.URL == url {
+			return v
+		}
+	}
+
+	return Repository{}
+}
+
 func GetRepositoryByName(projectId string, name string) Repository {
 	for _, v := range ListRepositories(projectId).Results {
 		if v.Name == name {
