@@ -60,6 +60,10 @@ func ListRemoteURLs() []string {
 	var urls []string
 	for _, v := range c.Remotes {
 		for _, url := range v.URLs {
+			if strings.HasPrefix(url, "git@github.com") {
+				url = "https://github.com/" + strings.Split(url, ":")[1]
+			} // TODO same for gitlab and bitbucket
+
 			urls = append(urls, url)
 		}
 	}
