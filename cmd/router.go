@@ -12,6 +12,6 @@ var routerCmd = &cobra.Command{
 	qovery router`,
 }
 
-func init() {
+/*func init() {
 	RootCmd.AddCommand(routerCmd)
-}
+}*/

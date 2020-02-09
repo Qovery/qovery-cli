@@ -31,13 +31,13 @@ var devCmd = &cobra.Command{
 	},
 }
 
-func init() {
+/*func init() {
 	devCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	devCmd.PersistentFlags().StringVarP(&BranchName, "environment", "e", "", "Your environment name")
 	devCmd.PersistentFlags().StringVarP(&ConfigurationDirectoryRoot, "configuration-directory-root", "c", ".", "Your configuration directory root path")
 
 	RootCmd.AddCommand(devCmd)
-}
+}*/
 
 func watchForBranchCheckout() {
 	watcher, err := fsnotify.NewWatcher()

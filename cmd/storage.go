@@ -12,6 +12,7 @@ var storageCmd = &cobra.Command{
 	qovery storage`,
 }
 
-func init() {
+/*func init() {
 	RootCmd.AddCommand(storageCmd)
 }
+*/
