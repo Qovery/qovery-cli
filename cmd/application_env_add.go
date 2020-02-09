@@ -19,9 +19,8 @@ var applicationEnvAddCmd = &cobra.Command{
 			qoveryYML := util.CurrentQoveryYML()
 			BranchName = util.CurrentBranchName()
 			ProjectName = qoveryYML.Application.Project
-			ApplicationName = qoveryYML.Application.Name
 
-			if BranchName == "" || ProjectName == "" || ApplicationName == "" {
+			if BranchName == "" || ProjectName == "" {
 				fmt.Println("The current directory is not a Qovery project (-h for help)")
 				os.Exit(1)
 			}
@@ -33,7 +32,7 @@ var applicationEnvAddCmd = &cobra.Command{
 		}
 
 		projectId := api.GetProjectByName(ProjectName).Id
-		repositoryId := api.GetRepositoryByName(projectId, ApplicationName).Id
+		repositoryId := api.GetRepositoryByCurrentRemoteURL(projectId).Id
 		environment := api.GetEnvironmentByBranchId(projectId, repositoryId, BranchName)
 		api.CreateApplicationEnvironmentVariable(api.EnvironmentVariable{Key: args[0], Value: args[1]}, projectId, repositoryId,
 			environment.Id, environment.Application.Id)
@@ -45,7 +44,7 @@ var applicationEnvAddCmd = &cobra.Command{
 func init() {
 	applicationEnvAddCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	applicationEnvAddCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
-	applicationEnvAddCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
+	// TODO select application
 
 	applicationEnvCmd.AddCommand(applicationEnvAddCmd)
 }

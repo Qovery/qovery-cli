@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"qovery.go/util"
 )
 
 type Repositories struct {
@@ -17,6 +18,17 @@ type Repository struct {
 	UpdatedAt  string `json:"updated_at"`
 	Name       string `json:"name"`
 	URL        string `json:"url"`
+}
+
+func GetRepositoryByCurrentRemoteURL(projectId string) Repository {
+	for _, url := range util.ListRemoteURLs() {
+		r := GetRepositoryByRemoteURL(projectId, url)
+		if r.Id != "" {
+			return r
+		}
+	}
+
+	return Repository{}
 }
 
 func GetRepositoryByRemoteURL(projectId string, url string) Repository {

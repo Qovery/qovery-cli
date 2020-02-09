@@ -32,7 +32,7 @@ var applicationEnvListCmd = &cobra.Command{
 func init() {
 	applicationEnvListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	applicationEnvListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
-	applicationEnvListCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
+	// TODO select application
 
 	applicationEnvCmd.AddCommand(applicationEnvListCmd)
 }

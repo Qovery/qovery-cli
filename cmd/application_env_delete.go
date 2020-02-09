@@ -19,9 +19,8 @@ var applicationEnvDeleteCmd = &cobra.Command{
 			qoveryYML := util.CurrentQoveryYML()
 			BranchName = util.CurrentBranchName()
 			ProjectName = qoveryYML.Application.Project
-			ApplicationName = qoveryYML.Application.Name
 
-			if BranchName == "" || ProjectName == "" || ApplicationName == "" {
+			if BranchName == "" || ProjectName == "" {
 				fmt.Println("The current directory is not a Qovery project (-h for help)")
 				os.Exit(1)
 			}
@@ -33,7 +32,7 @@ var applicationEnvDeleteCmd = &cobra.Command{
 		}
 
 		projectId := api.GetProjectByName(ProjectName).Id
-		repositoryId := api.GetRepositoryByName(projectId, ApplicationName).Id
+		repositoryId := api.GetRepositoryByCurrentRemoteURL(projectId).Id
 		environment := api.GetEnvironmentByBranchId(projectId, repositoryId, BranchName)
 		ev := api.ListApplicationEnvironmentVariables(projectId, repositoryId,
 			environment.Id, environment.Application.Id).GetEnvironmentVariableByKey(args[0])
@@ -47,7 +46,7 @@ var applicationEnvDeleteCmd = &cobra.Command{
 func init() {
 	applicationEnvDeleteCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	applicationEnvDeleteCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
-	applicationEnvDeleteCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
+	// TODO select application
 
 	applicationEnvCmd.AddCommand(applicationEnvDeleteCmd)
 }
