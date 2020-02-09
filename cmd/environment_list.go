@@ -7,7 +7,6 @@ import (
 	"os"
 	"qovery.go/api"
 	"qovery.go/util"
-	"strconv"
 	"strings"
 )
 

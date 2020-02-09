@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/ryanuber/columnize"
 	"qovery.go/api"
-	"qovery.go/util"
 	"strconv"
 )
 
@@ -50,17 +49,7 @@ func ShowEnvironmentVariablesByApplicationName(projectName string, branchName st
 
 func ListEnvironmentVariables(projectName string, branchName string) []api.EnvironmentVariable {
 	projectId := api.GetProjectByName(projectName).Id
-
-	var repositoryId string
-
-	for _, url := range util.ListRemoteURLs() {
-		r := api.GetRepositoryByRemoteURL(projectId, url)
-		if r.Id != "" {
-			repositoryId = r.Id
-			break
-		}
-	}
-
+	repositoryId := api.GetRepositoryByCurrentRemoteURL(projectId).Id
 	environment := api.GetEnvironmentByBranchId(projectId, repositoryId, branchName)
 
 	var evs []api.EnvironmentVariable

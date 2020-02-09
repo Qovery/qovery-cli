@@ -6,12 +6,15 @@ import (
 )
 
 //flags used by more than 1 command
+
 var (
 	DebugFlag                  bool
 	WatchFlag                  bool
-	Name                       string
+	FollowFlag bool
+	ApplicationName                       string
 	ProjectName                string
 	BranchName                 string
+	Tail int
 	ConfigurationDirectoryRoot string
 )
 
@@ -19,7 +22,7 @@ func hasFlagChanged(cmd *cobra.Command) bool {
 	flagChanged := false
 
 	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
-		if flag.Changed && flag.Name != "watch" {
+		if flag.Changed && flag.Name != "watch" && flag.Name != "follow" && flag.Name != "tail" {
 			flagChanged = true
 		}
 	})
