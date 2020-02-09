@@ -12,6 +12,6 @@ var brokerCmd = &cobra.Command{
 	qovery broker`,
 }
 
-func init() {
+/*func init() {
 	RootCmd.AddCommand(brokerCmd)
-}
+}*/

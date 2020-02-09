@@ -28,11 +28,11 @@ var checkoutCmd = &cobra.Command{
 	},
 }
 
-func init() {
+/*func init() {
 	checkoutCmd.PersistentFlags().StringVarP(&ConfigurationDirectoryRoot, "configuration-directory-root", "c", ".", "Your configuration directory root path")
 
 	RootCmd.AddCommand(checkoutCmd)
-}
+}*/
 
 func LoadAndSaveLocalConfiguration(configurationDirectoryRoot string) {
 	api.DeleteLocalConfiguration(configurationDirectoryRoot)

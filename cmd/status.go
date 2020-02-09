@@ -62,10 +62,10 @@ var statusCmd = &cobra.Command{
 		ShowApplicationList(ProjectName, BranchName)
 		fmt.Println("\nDatabases")
 		ShowDatabaseList(ProjectName, BranchName)
-		fmt.Println("\nBrokers")
+		/*fmt.Println("\nBrokers")
 		ShowBrokerList(ProjectName, BranchName)
 		fmt.Println("\nStorage")
-		ShowStorageList(ProjectName, BranchName)
+		ShowStorageList(ProjectName, BranchName)*/
 	},
 }
 
