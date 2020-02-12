@@ -29,23 +29,6 @@ var checkoutCmd = &cobra.Command{
 	},
 }
 
-func getApplicationConfigByName(projectId string, branchName string, appName string) map[string]interface{} {
-	return filterApplicationsByName(api.ListApplicationsRaw(projectId, branchName), appName)
-}
-
-func filterApplicationsByName(applications map[string]interface{}, appName string) map[string]interface{} {
-	if val, ok := applications["results"]; ok {
-		results := val.([]interface{})
-		for _, application := range results {
-			a := application.(map[string]interface{})
-			if name, found := a["name"]; found && name == appName {
-				return a
-			}
-		}
-	}
-	return nil
-}
-
 /*func init() {
 	checkoutCmd.PersistentFlags().StringVarP(&ConfigurationDirectoryRoot, "configuration-directory-root", "c", ".", "Your configuration directory root path")
 
