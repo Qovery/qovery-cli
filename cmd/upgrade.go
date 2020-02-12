@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"qovery.go/util"
@@ -23,16 +24,17 @@ var upgradeCmd = &cobra.Command{
 	qovery upgrade`,
 	Run: func(cmd *cobra.Command, args []string) {
 		currentBinaryFilename, _ := osext.Executable()
+		currentBinaryFilenameNew := "." + currentBinaryFilename + ".new"
 		filename := "qovery"
 		archivePath := "/tmp/"
 		archiveName := filename + ".tgz"
 		archivePathName := archivePath + archiveName
-		uncompressPath := "/tmp/" + filename  + "/"
+		uncompressPath := "/tmp/" + filename + "/"
 		uncompressQoveryBinaryPath := uncompressPath + filename
 		cleanList := []string{uncompressPath, archivePathName}
 
 		available, message, desiredVersion := util.CheckAvailableNewVersion()
-		if ! available {
+		if !available {
 			fmt.Print(message)
 			os.Exit(0)
 		}
@@ -76,8 +78,25 @@ var upgradeCmd = &cobra.Command{
 
 		err = os.Rename(uncompressQoveryBinaryPath, currentBinaryFilename)
 		if err != nil {
-			fmt.Printf("Wasn't able to replace the Qovery binary: %s", err)
-			os.Exit(1)
+			// Fallback to to copy if TMP is not located on the same disk
+
+			src, err := ioutil.ReadFile(uncompressQoveryBinaryPath)
+			if err != nil {
+				fmt.Printf("Error while reading new Qovery CLI binary file: %s", err)
+				os.Exit(1)
+			}
+			err = ioutil.WriteFile(currentBinaryFilenameNew, src, 0755)
+			if err != nil {
+				fmt.Printf("Wasn't able to replace the Qovery binary: %s", err)
+				os.Exit(1)
+			}
+
+			err = os.Rename(currentBinaryFilenameNew, currentBinaryFilename)
+			if err != nil {
+				fmt.Printf("Error while renaming new Qovery CLI binary file: %s", err)
+				os.Exit(1)
+			}
+
 		}
 		cleanArchives(cleanList)
 		fmt.Printf("\nQovery CLI has successfuly been upgraded to version %s\n", desiredVersion)
