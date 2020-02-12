@@ -13,6 +13,7 @@ import (
 	"github.com/mholt/archiver/v3"
 	"github.com/spf13/cobra"
 	"io"
+	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -73,7 +74,10 @@ var runCmd = &cobra.Command{
 						}
 					}
 
-					j, _ := json.Marshal(applicationConfigurationMap)
+					j, err := json.Marshal(applicationConfigurationMap)
+					if err != nil {
+						log.Fatalf("fail to read config map: %s", err.Error())
+					}
 					configurationMapB64 := base64.StdEncoding.EncodeToString(j)
 
 					environmentVariables = append(environmentVariables, fmt.Sprintf("QOVERY_JSON_B64=%s", configurationMapB64))
@@ -139,15 +143,8 @@ func buildContainer(client *client.Client, dockerfilePath string, buildArgs map[
 	return &image
 }
 
-func runContainer(client *client.Client, image *types.ImageSummary, branchName string, configurationMap map[string]interface{}) {
-	j, _ := json.Marshal(configurationMap)
-	configurationMapB64 := base64.StdEncoding.EncodeToString(j)
-
-	config := &container.Config{Image: image.ID, Env: []string{
-		fmt.Sprintf("QOVERY_JSON_B64=%s", configurationMapB64),
-		"QOVERY_IS_PRODUCTION=false",
-		fmt.Sprintf("QOVERY_BRANCH_NAME=%s", branchName),
-	}}
+func runContainer(client *client.Client, image *types.ImageSummary, environmentVariables []string) {
+	config := &container.Config{Image: image.ID, Env: environmentVariables}
 
 	hostConfig := &container.HostConfig{}
 

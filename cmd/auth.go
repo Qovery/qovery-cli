@@ -79,9 +79,7 @@ var authCmd = &cobra.Command{
 			}()
 		})
 
-		if err := srv.ListenAndServe(); err != nil {
-			log.Fatalf("fail to start local server on port")
-		}
+		srv.ListenAndServe()
 	},
 }
 

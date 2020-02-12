@@ -88,3 +88,4 @@ fabric.properties
 
 dist/
 *.iml
+bin
