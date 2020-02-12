@@ -57,6 +57,7 @@ func ShowDatabaseList(projectName string, branchName string) {
 			applicationName = a.Application.Name
 		}
 		output = append(output, strings.Join([]string{
+      a.Name,
 			a.Status.CodeMessage,
 			a.Type,
 			a.Version,

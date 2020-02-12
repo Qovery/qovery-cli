@@ -56,7 +56,8 @@ func ShowBrokerList(projectName string, branchName string) {
 		if a.Application != nil {
 			applicationName = a.Application.Name
 		}
-		output = append(output, strings.Join([]string{a.Name,
+		output = append(output, strings.Join([]string{
+      a.Name,
 			a.Status.CodeMessage,
 			a.Type,
 			a.Version,

@@ -53,6 +53,7 @@ func ShowApplicationList(projectName string, branchName string) {
 	for _, a := range applications.Results {
 		output = append(output, strings.Join([]string{
 			a.Name,
+      a.Status.CodeMessage,
 			a.ConnectionURI,
 			intPointerValue(a.TotalDatabases),
 			intPointerValue(a.TotalBrokers),

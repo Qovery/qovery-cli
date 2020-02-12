@@ -73,7 +73,6 @@ var runCmd = &cobra.Command{
 							buildArgs[ev.Key] = &ev.Value
 						}
 					}
-
 					j, err := json.Marshal(applicationConfigurationMap)
 					if err != nil {
 						log.Fatalf("fail to read config map: %s", err.Error())
