@@ -13,6 +13,7 @@ import (
 	"github.com/mholt/archiver/v3"
 	"github.com/spf13/cobra"
 	"io"
+	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -72,8 +73,10 @@ var runCmd = &cobra.Command{
 							buildArgs[ev.Key] = &ev.Value
 						}
 					}
-
-					j, _ := json.Marshal(applicationConfigurationMap)
+					j, err := json.Marshal(applicationConfigurationMap)
+					if err != nil {
+						log.Fatalf("fail to read config map: %s", err.Error())
+					}
 					configurationMapB64 := base64.StdEncoding.EncodeToString(j)
 
 					environmentVariables = append(environmentVariables, fmt.Sprintf("QOVERY_JSON_B64=%s", configurationMapB64))
@@ -206,5 +209,22 @@ func writeToLog(reader io.ReadCloser) error {
 		fmt.Print(m["stream"])
 	}
 
+	return nil
+}
+
+func getApplicationConfigByName(projectId string, branchName string, appName string) map[string]interface{} {
+	return filterApplicationsByName(api.ListApplicationsRaw(projectId, branchName), appName)
+}
+
+func filterApplicationsByName(applications map[string]interface{}, appName string) map[string]interface{} {
+	if val, ok := applications["results"]; ok {
+		results := val.([]interface{})
+		for _, application := range results {
+			a := application.(map[string]interface{})
+			if name, found := a["name"]; found && name == appName {
+				return a
+			}
+		}
+	}
 	return nil
 }

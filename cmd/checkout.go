@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"log"
 	"os"
 	"qovery.go/api"
 	"qovery.go/util"
@@ -53,15 +54,9 @@ func LoadAndSaveLocalConfiguration(configurationDirectoryRoot string) {
 		os.Exit(1)
 	}
 
-	applications := api.ListApplicationsRaw(project.Id, branchName)
-	if val, ok := applications["results"]; ok {
-		results := val.([]interface{})
-		for _, application := range results {
-			a := application.(map[string]interface{})
-			if a["name"] == appName {
-				api.SaveLocalConfiguration(configurationDirectoryRoot, a)
-				break
-			}
-		}
+	if configMap := filterApplicationsByName(api.ListApplicationsRaw(project.Id, branchName), appName); configMap != nil {
+		api.SaveLocalConfiguration(configurationDirectoryRoot, configMap)
+	} else {
+		log.Printf("application '%s' not found", appName)
 	}
 }

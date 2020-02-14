@@ -6,15 +6,17 @@ import (
 )
 
 //flags used by more than 1 command
-var DebugFlag bool
-var WatchFlag bool
-var FollowFlag bool
-var Name string
-var ApplicationName string
-var ProjectName string
-var BranchName string
-var Tail int
-var ConfigurationDirectoryRoot string
+var (
+	DebugFlag                  bool
+	WatchFlag                  bool
+	FollowFlag                 bool
+	Name                       string
+	ApplicationName            string
+	ProjectName                string
+	BranchName                 string
+	Tail                       int
+	ConfigurationDirectoryRoot string
+)
 
 func hasFlagChanged(cmd *cobra.Command) bool {
 	flagChanged := false

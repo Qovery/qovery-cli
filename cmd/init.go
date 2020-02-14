@@ -10,6 +10,7 @@ import (
 	"qovery.go/api"
 	"qovery.go/util"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -151,7 +152,10 @@ func init() {
 }
 
 func addLinesToGitIgnore() {
-	f, _ := os.OpenFile(".gitignore", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(".gitignore", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("fail to create/upsert file .gitignore: %s", err.Error())
+	}
 
 	defer f.Close()
 	_, _ = f.WriteString("\n.qovery\nlocal_configuration.json\n")
@@ -305,4 +309,11 @@ func CurrentDirectoryName() string {
 	s := strings.Split(currentDirectoryPath, string(os.PathSeparator))
 
 	return s[len(s)-1]
+}
+
+func intPointerValue(i *int) string {
+	if i == nil {
+		return "0"
+	}
+	return strconv.Itoa(*i)
 }
