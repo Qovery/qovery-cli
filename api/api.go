@@ -21,8 +21,8 @@ func CheckHTTPResponse(resp *http.Response) {
 	}
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		fmt.Println("Your authentication token has expired. Please re-authenticate yourself with 'qovery auth'")
-		os.Exit(1)
+		fmt.Printf("Your authentication token has expired. Running Qovery authentication...\n")
+		QoveryAuthentication()
 	} else if resp.StatusCode == http.StatusForbidden {
 		fmt.Println("Your account must be approved by an administrator to get access to this resource. Please contact support@qovery.com or through intercom on qovery.com")
 		os.Exit(1)
