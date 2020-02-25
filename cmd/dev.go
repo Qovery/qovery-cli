@@ -83,7 +83,5 @@ func watchForBranchCheckout() {
 
 func ReloadEnvironment(configurationDirectoryRoot string) {
 	branchName := util.CurrentBranchName()
-	log.Printf("reload %s environment: IN PROGRESS\n", branchName)
-	LoadAndSaveLocalConfiguration(configurationDirectoryRoot)
 	log.Printf("reload %s environment: DONE\n", branchName)
 }

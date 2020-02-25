@@ -3,9 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"log"
 	"os"
-	"qovery.go/api"
 	"qovery.go/util"
 )
 
@@ -24,8 +22,6 @@ var checkoutCmd = &cobra.Command{
 		branch := args[0]
 		// checkout branch
 		util.Checkout(branch)
-
-		LoadAndSaveLocalConfiguration(ConfigurationDirectoryRoot)
 	},
 }
 
@@ -34,29 +30,3 @@ var checkoutCmd = &cobra.Command{
 
 	RootCmd.AddCommand(checkoutCmd)
 }*/
-
-func LoadAndSaveLocalConfiguration(configurationDirectoryRoot string) {
-	api.DeleteLocalConfiguration(configurationDirectoryRoot)
-
-	qConf := util.CurrentQoveryYML()
-	branchName := util.CurrentBranchName()
-	projectName := qConf.Application.Project
-	appName := qConf.Application.Name
-
-	if branchName == "" || projectName == "" {
-		fmt.Println("The current directory is not a Qovery project. Please consider using 'qovery init'")
-		os.Exit(1)
-	}
-
-	project := api.GetProjectByName(projectName)
-	if project.Id == "" {
-		fmt.Println("The project does not exist. Are you well authenticated with the right user? Do 'qovery auth' to be sure")
-		os.Exit(1)
-	}
-
-	if configMap := filterApplicationsByName(api.ListApplicationsRaw(project.Id, branchName), appName); configMap != nil {
-		api.SaveLocalConfiguration(configurationDirectoryRoot, configMap)
-	} else {
-		log.Printf("application '%s' not found", appName)
-	}
-}

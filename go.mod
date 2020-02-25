@@ -4,16 +4,13 @@ go 1.13
 
 require (
 	github.com/Microsoft/go-winio v0.4.14 // indirect
-	github.com/coreos/go-etcd v2.0.0+incompatible // indirect
-	github.com/cpuguy83/go-md2man v1.0.10 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v1.13.1
 	github.com/docker/go-connections v0.4.0
 	github.com/docker/go-units v0.4.0 // indirect
-	github.com/fatih/color v1.9.0
+	github.com/frankban/quicktest v1.7.3 // indirect
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/golang/gddo v0.0.0-20200219175727-df439dd5819e // indirect
-	github.com/google/go-cmp v0.3.2-0.20191028172631-481baca67f93 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0
 	github.com/klauspost/compress v1.10.1 // indirect
 	github.com/mholt/archiver/v3 v3.3.0
@@ -27,7 +24,6 @@ require (
 	github.com/spf13/cobra v0.0.6
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.4.0
-	github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8 // indirect
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	golang.org/x/sys v0.0.0-20191026070338-33540a1f6037
 	gopkg.in/src-d/go-git.v4 v4.13.1

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -35,26 +34,4 @@ func SetAccountId(id string) {
 	_ = os.MkdirAll(qoveryDirectoryPath(), 0755)
 	filePath := filepath.FromSlash(qoveryDirectoryPath() + "/account")
 	_ = ioutil.WriteFile(filePath, []byte(id), 0755)
-}
-
-func SaveLocalConfiguration(root string, data map[string]interface{}) {
-	j, _ := json.Marshal(data)
-
-	if root == "" {
-		_ = os.MkdirAll(".qovery", 0755)
-		_ = ioutil.WriteFile(filepath.FromSlash(".qovery/local_configuration.json"), j, 0755)
-		return
-	}
-
-	_ = os.MkdirAll(filepath.FromSlash(fmt.Sprintf("%s/.qovery", root)), 0755)
-	_ = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/.qovery/local_configuration.json", root)), j, 0755)
-}
-
-func DeleteLocalConfiguration(root string) {
-	if root == "" {
-		_ = os.Remove(filepath.FromSlash(".qovery/local_configuration.json"))
-		return
-	}
-
-	_ = os.Remove(filepath.FromSlash(fmt.Sprintf("%s/.qovery/local_configuration.json", root)))
 }
