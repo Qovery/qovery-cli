@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-	"github.com/ryanuber/columnize"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
+	"os"
 	"qovery.go/api"
 )
 
@@ -15,22 +15,21 @@ var projectListCmd = &cobra.Command{
 	qovery project list`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		output := []string{
-			"name | region",
-		}
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"name", "region"})
+		table.SetAlignment(tablewriter.ALIGN_LEFT)
 
 		projects := api.ListProjects()
 
 		if len(projects.Results) == 0 {
-			fmt.Println(columnize.SimpleFormat(output))
-			return
+			table.Append([]string{"", ""})
+		} else {
+			for _, p := range projects.Results {
+				table.Append([]string{p.Name, p.CloudProviderRegion.FullName})
+			}
 		}
 
-		for _, p := range projects.Results {
-			output = append(output, p.Name+" | "+p.CloudProviderRegion.FullName)
-		}
-
-		fmt.Println(columnize.SimpleFormat(output))
+		table.Render()
 	},
 }
 

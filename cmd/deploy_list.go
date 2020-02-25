@@ -2,9 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/ryanuber/columnize"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
-	"github.com/xeonx/timeago"
 	"os"
 	"qovery.go/api"
 	"qovery.go/util"
@@ -42,13 +41,15 @@ func init() {
 }
 
 func ShowDeploymentList(projectName string, branchName string, applicationName string) {
-	output := []string{
-		"branch | date | commit id | deployed",
-	}
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"branch", "commit date", "commit id", "commit author", "deployed"})
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
 
 	environments := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName).Environments
 	if len(environments) == 0 {
-		fmt.Println(columnize.SimpleFormat(output))
+		table.Append([]string{"", "", "", "", ""})
+		table.Render()
 		return
 	}
 
@@ -60,20 +61,17 @@ func ShowDeploymentList(projectName string, branchName string, applicationName s
 	}
 
 	if environment.Id == "" {
-		fmt.Println(columnize.SimpleFormat(output))
+		table.Append([]string{"", "", "", ""})
+		table.Render()
 		return
 	}
 
 	for _, commit := range util.ListCommits(10) {
-		config := timeago.English
-		config.Max = 30 * timeago.Day
-
 		if environment.CommitId == commit.ID().String() {
-			output = append(output, branchName+" | "+config.Format(commit.Committer.When)+" | "+commit.ID().String()+" | "+"✓")
+			table.Append([]string{branchName, commit.Author.When.String(), commit.ID().String(), commit.Author.Name, "✓"})
 		} else {
-			output = append(output, branchName+" | "+config.Format(commit.Committer.When)+" | "+commit.ID().String()+" | "+"𐄂")
+			table.Append([]string{branchName, commit.Author.When.String(), commit.ID().String(), commit.Author.Name, ""})
 		}
 	}
-
-	fmt.Println(columnize.SimpleFormat(output))
+	table.Render()
 }

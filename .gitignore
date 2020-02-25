@@ -89,3 +89,4 @@ fabric.properties
 dist/
 *.iml
 bin
+qovery

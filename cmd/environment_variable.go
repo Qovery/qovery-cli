@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/ryanuber/columnize"
+	"github.com/olekukonko/tablewriter"
+	"os"
 	"qovery.go/api"
 	"strconv"
 )
@@ -66,17 +67,15 @@ func ListEnvironmentVariables(projectName string, branchName string) []api.Envir
 }
 
 func ShowEnvironmentVariables(environmentVariables []api.EnvironmentVariable) {
-	output := []string{"scope | key | value"}
-
-	if environmentVariables == nil || len(environmentVariables) == 0 {
-		fmt.Println(columnize.SimpleFormat(output))
-		return
-	}
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"scope", "key", "value"})
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAutoMergeCells(true)
+	table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
 
 	for _, ev := range environmentVariables {
-		output = append(output, ev.Scope+"|"+ev.Key+"|"+ev.Value)
+		table.Append([]string{ev.Scope, ev.Key, ev.Value})
 	}
 
-	fmt.Println(columnize.SimpleFormat(output))
-
+	table.Render()
 }

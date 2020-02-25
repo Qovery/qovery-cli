@@ -2,12 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/ryanuber/columnize"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
 	"qovery.go/util"
-	"strings"
 )
 
 var applicationListCmd = &cobra.Command{
@@ -39,27 +38,27 @@ func init() {
 }
 
 func ShowApplicationList(projectName string, branchName string) {
-	output := []string{
-		"name | status | endpoint | databases | brokers | storage",
-	}
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"applications name", "status", "endpoints", "databases", "brokers", "storage"})
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 
 	applications := api.ListApplications(api.GetProjectByName(projectName).Id, branchName)
-
 	if applications.Results == nil || len(applications.Results) == 0 {
-		fmt.Println(columnize.SimpleFormat(output))
-		return
+		table.Append([]string{"", "", "", "", "", ""})
+	} else {
+		for _, a := range applications.Results {
+			table.Append([]string{
+				a.Name,
+				a.Status.CodeMessage,
+				a.ConnectionURI,
+				intPointerValue(a.TotalDatabases),
+				intPointerValue(a.TotalBrokers),
+				intPointerValue(a.TotalStorage),
+			})
+		}
 	}
 
-	for _, a := range applications.Results {
-		output = append(output, strings.Join([]string{
-			a.Name,
-      a.Status.CodeMessage,
-			a.ConnectionURI,
-			intPointerValue(a.TotalDatabases),
-			intPointerValue(a.TotalBrokers),
-			intPointerValue(a.TotalStorage),
-		}, " | "))
-	}
-
-	fmt.Println(columnize.SimpleFormat(output))
+	table.Render()
+	fmt.Printf("\n")
 }

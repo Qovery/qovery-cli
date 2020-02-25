@@ -56,17 +56,19 @@ var statusCmd = &cobra.Command{
 			fmt.Printf("-- status output --\n\n")
 		}
 
-		fmt.Println("Environment")
+		PrintTitleStatus("ENVIRONMENT STATUS")
 		ShowEnvironmentStatus(ProjectName, BranchName)
-		fmt.Println("\nApplications")
+		PrintTitleStatus("APPLICATIONS STATUS")
 		ShowApplicationList(ProjectName, BranchName)
-		fmt.Println("\nDatabases")
+		PrintTitleStatus("DATABASES STATUS")
 		ShowDatabaseList(ProjectName, BranchName)
-		/*fmt.Println("\nBrokers")
-		ShowBrokerList(ProjectName, BranchName)
-		fmt.Println("\nStorage")
-		ShowStorageList(ProjectName, BranchName)*/
+		//ShowBrokerList(ProjectName, BranchName)
+		//ShowStorageList(ProjectName, BranchName)
 	},
+}
+
+func PrintTitleStatus(name string) {
+	fmt.Printf("\n" + strings.Repeat("#", 50) + " " + name + " " + strings.Repeat("#", 50) + "\n\n")
 }
 
 func init() {

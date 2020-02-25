@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/ryanuber/columnize"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
@@ -40,24 +40,26 @@ func init() {
 }
 
 func ShowEnvironmentStatus(projectName string, branchName string) {
-	output := []string{
-		"branch | status | endpoints | applications | databases | brokers | storage",
-	}
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"branches name", "status", "endpoints", "applications", "databases", "brokers", "storage"})
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 
 	a := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName)
 	if a.BranchId == "" {
-		fmt.Println(columnize.SimpleFormat(output))
-		return
+		table.Append([]string{"", "", "", "", "", "", ""})
+	} else {
+		table.Append([]string{
+			a.BranchId,
+			a.Status.CodeMessage,
+			strings.Join(a.ConnectionURIs, ", "),
+			intPointerValue(a.TotalApplications),
+			intPointerValue(a.TotalDatabases),
+			intPointerValue(a.TotalBrokers),
+			intPointerValue(a.TotalStorage),
+		})
 	}
-	output = append(output, strings.Join([]string{
-		a.BranchId,
-		a.Status.CodeMessage,
-		strings.Join(a.ConnectionURIs, ", "),
-		intPointerValue(a.TotalApplications),
-		intPointerValue(a.TotalDatabases),
-		intPointerValue(a.TotalBrokers),
-		intPointerValue(a.TotalStorage),
-	}, " | "))
 
-	fmt.Println(columnize.SimpleFormat(output))
+	table.Render()
+	fmt.Printf("\n")
 }

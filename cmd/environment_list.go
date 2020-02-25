@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/ryanuber/columnize"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
@@ -26,31 +26,30 @@ var environmentListCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}
-
 		aggEnvs := api.ListBranches(api.GetProjectByName(ProjectName).Id)
 
-		output := []string{
-			"branch | status | endpoints | applications | databases | brokers | storage",
-		}
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"branches", "status", "endpoints", "applications", "databases", "brokers", "storage"})
+		table.SetAlignment(tablewriter.ALIGN_LEFT)
+		table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
 
 		if aggEnvs.Results == nil || len(aggEnvs.Results) == 0 {
-			fmt.Println(columnize.SimpleFormat(output))
-			return
+			table.Append([]string{"", "", "", "", "", "", ""})
+		} else {
+			for _, a := range aggEnvs.Results {
+				//output = append(output,
+				table.Append([]string{
+						a.BranchId,
+						a.Status.CodeMessage,
+						strings.Join(a.ConnectionURIs, ", "),
+						intPointerValue(a.TotalApplications),
+						intPointerValue(a.TotalDatabases),
+						intPointerValue(a.TotalBrokers),
+						intPointerValue(a.TotalStorage),
+				})
+			}
 		}
-		for _, a := range aggEnvs.Results {
-			output = append(output,
-				strings.Join([]string{
-          a.BranchId,
-					a.Status.CodeMessage,
-					strings.Join(a.ConnectionURIs, ", "),
-					intPointerValue(a.TotalApplications),
-					intPointerValue(a.TotalDatabases),
-					intPointerValue(a.TotalBrokers),
-					intPointerValue(a.TotalStorage),
-				}, " | "))
-		}
-
-		fmt.Println(columnize.SimpleFormat(output))
+		table.Render()
 	},
 }
 

@@ -2,12 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/ryanuber/columnize"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
 	"qovery.go/util"
-	"strings"
 )
 
 var databaseListCmd = &cobra.Command{
@@ -39,35 +38,34 @@ func init() {
 }
 
 func ShowDatabaseList(projectName string, branchName string) {
-	output := []string{
-		"name | status | type | version | endpoint | port | username | password | application",
-	}
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"databases name", "status", "types", "versions", "endpoints", "ports", "username", "passwords", "applications"})
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 
 	services := api.ListDatabases(api.GetProjectByName(projectName).Id, branchName)
-
 	if services.Results == nil || len(services.Results) == 0 {
-		fmt.Println(columnize.SimpleFormat(output))
-		return
-	}
+		table.Append([]string{"", "", "", "", "", "", "", "", ""})
+	} else {
+		for _, a := range services.Results {
+			applicationName := "none"
+			if a.Application != nil {
+				applicationName = a.Application.Name
+			}
 
-	for _, a := range services.Results {
-		applicationName := "none"
-
-		if a.Application != nil {
-			applicationName = a.Application.Name
+			table.Append([]string{
+				a.Name,
+				a.Status.CodeMessage,
+				a.Type,
+				a.Version,
+				a.FQDN,
+				intPointerValue(a.Port),
+				a.Username,
+				a.Password,
+				applicationName,
+			})
 		}
-		output = append(output, strings.Join([]string{
-      a.Name,
-			a.Status.CodeMessage,
-			a.Type,
-			a.Version,
-			a.FQDN,
-			intPointerValue(a.Port),
-			a.Username,
-			a.Password,
-			applicationName,
-		}, " | "))
 	}
-
-	fmt.Println(columnize.SimpleFormat(output))
+	table.Render()
+	fmt.Printf("\n")
 }
