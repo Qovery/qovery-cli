@@ -32,8 +32,13 @@ var runCmd = &cobra.Command{
 		branchName := util.CurrentBranchName()
 		projectName := qYML.Application.Project
 
-		if branchName == "" || projectName == "" {
+		if projectName == "" {
 			fmt.Println("The current directory is not a Qovery project. Please consider using 'qovery init'")
+			os.Exit(1)
+		}
+
+		if branchName == "" {
+			fmt.Println("Unable to locate the current branch, please ensure you're not on a detached commit.")
 			os.Exit(1)
 		}
 
