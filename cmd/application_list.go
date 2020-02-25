@@ -41,8 +41,13 @@ func ShowApplicationList(projectName string, branchName string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"applications name", "status", "endpoints", "databases", "brokers", "storage"})
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
-
+	table.SetHeaderColor(
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor})
 	applications := api.ListApplications(api.GetProjectByName(projectName).Id, branchName)
 	if applications.Results == nil || len(applications.Results) == 0 {
 		table.Append([]string{"", "", "", "", "", ""})

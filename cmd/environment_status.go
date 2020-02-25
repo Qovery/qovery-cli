@@ -43,7 +43,14 @@ func ShowEnvironmentStatus(projectName string, branchName string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"branches name", "status", "endpoints", "applications", "databases", "brokers", "storage"})
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+	table.SetHeaderColor(
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor})
 
 	a := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName)
 	if a.BranchId == "" {

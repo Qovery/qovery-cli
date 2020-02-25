@@ -41,7 +41,16 @@ func ShowDatabaseList(projectName string, branchName string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"databases name", "status", "types", "versions", "endpoints", "ports", "username", "passwords", "applications"})
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+	table.SetHeaderColor(
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor})
 
 	services := api.ListDatabases(api.GetProjectByName(projectName).Id, branchName)
 	if services.Results == nil || len(services.Results) == 0 {

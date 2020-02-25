@@ -18,6 +18,9 @@ var projectListCmd = &cobra.Command{
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"name", "region"})
 		table.SetAlignment(tablewriter.ALIGN_LEFT)
+		table.SetHeaderColor(
+			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor})
 
 		projects := api.ListProjects()
 

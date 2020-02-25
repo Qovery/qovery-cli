@@ -31,7 +31,14 @@ var environmentListCmd = &cobra.Command{
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"branches", "status", "endpoints", "applications", "databases", "brokers", "storage"})
 		table.SetAlignment(tablewriter.ALIGN_LEFT)
-		table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
+		table.SetHeaderColor(
+			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor})
 
 		if aggEnvs.Results == nil || len(aggEnvs.Results) == 0 {
 			table.Append([]string{"", "", "", "", "", "", ""})

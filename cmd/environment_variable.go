@@ -71,7 +71,10 @@ func ShowEnvironmentVariables(environmentVariables []api.EnvironmentVariable) {
 	table.SetHeader([]string{"scope", "key", "value"})
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	table.SetAutoMergeCells(true)
-	table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
+	table.SetHeaderColor(
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
+		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor})
 
 	for _, ev := range environmentVariables {
 		table.Append([]string{ev.Scope, ev.Key, ev.Value})
