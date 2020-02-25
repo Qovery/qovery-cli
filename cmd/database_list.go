@@ -41,6 +41,7 @@ func ShowDatabaseList(projectName string, branchName string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"databases name", "status", "types", "versions", "endpoints", "ports", "username", "passwords", "applications"})
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
 	table.SetHeaderColor(
 		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
 		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},

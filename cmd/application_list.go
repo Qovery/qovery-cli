@@ -41,6 +41,7 @@ func ShowApplicationList(projectName string, branchName string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"applications name", "status", "endpoints", "databases", "brokers", "storage"})
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
 	table.SetHeaderColor(
 		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
 		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},

@@ -70,6 +70,7 @@ func ShowEnvironmentVariables(environmentVariables []api.EnvironmentVariable) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"scope", "key", "value"})
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
 	table.SetAutoMergeCells(true)
 	table.SetHeaderColor(
 		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
