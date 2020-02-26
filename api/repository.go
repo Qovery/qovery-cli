@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"regexp"
+	"strings"
+
 	"qovery.go/util"
 )
 
@@ -31,7 +34,21 @@ func GetRepositoryByCurrentRemoteURL(projectId string) Repository {
 	return Repository{}
 }
 
+func cleanRepositoryURL(url string) string {
+	if !strings.HasSuffix(url, ".git") {
+		url = url + ".git"
+	}
+
+	re := regexp.MustCompile("https:\\/\\/(.*@)")
+	match := re.FindStringSubmatch(url)
+	if len(match) == 2 {
+		url = strings.Replace(url, match[1], "", 1)
+	}
+	return url
+}
+
 func GetRepositoryByRemoteURL(projectId string, url string) Repository {
+	url = cleanRepositoryURL(url)
 	for _, v := range ListRepositories(projectId).Results {
 		if v.URL == url {
 			return v
