@@ -77,7 +77,8 @@ func ListCommits(nLast int) []*object.Commit {
 		return []*object.Commit{}
 	}
 
-	c, err := repo.CommitObjects()
+	options := git.LogOptions{}
+	c, err := repo.Log(&options)
 	if err != nil {
 		return []*object.Commit{}
 	}
