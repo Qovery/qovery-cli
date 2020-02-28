@@ -17,14 +17,13 @@ var deployCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
 			BranchName = util.CurrentBranchName()
-			qoveryYML := util.CurrentQoveryYML()
+			qoveryYML, err := util.CurrentQoveryYML()
+			if err != nil {
+				util.PrintError("No qovery configuration file found")
+				os.Exit(1)
+			}
 			ProjectName = qoveryYML.Application.Project
 			ApplicationName = qoveryYML.Application.Name
-
-			if BranchName == "" || ProjectName == "" || ApplicationName == "" {
-				fmt.Println("The current directory is not a Qovery project (-h for help)")
-				os.Exit(0)
-			}
 		}
 
 		if len(args) != 1 {

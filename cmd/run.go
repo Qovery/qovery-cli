@@ -28,31 +28,25 @@ var runCmd = &cobra.Command{
 
 	qovery run`,
 	Run: func(cmd *cobra.Command, args []string) {
-		qYML := util.CurrentQoveryYML()
+		qoveryYML, err := util.CurrentQoveryYML()
+		if err != nil {
+			util.PrintError("No qovery configuration file found")
+			os.Exit(1)
+		}
 		branchName := util.CurrentBranchName()
-		projectName := qYML.Application.Project
-
-		if projectName == "" {
-			fmt.Println("The current directory is not a Qovery project. Please consider using 'qovery init'")
-			os.Exit(1)
-		}
-
-		if branchName == "" {
-			fmt.Println("Unable to locate the current branch, please ensure you're not on a detached commit.")
-			os.Exit(1)
-		}
+		projectName := qoveryYML.Application.Project
 
 		dockerClient, _ := client.NewEnvClient()
-		_, err := dockerClient.ImageList(context.Background(), types.ImageListOptions{})
+		_, err = dockerClient.ImageList(context.Background(), types.ImageListOptions{})
 
 		if err != nil {
-			fmt.Println("Is Docker installed and running?")
+			util.PrintError("Ensure Docker is installed and running on your system")
 			os.Exit(1)
 		}
 
 		project := api.GetProjectByName(projectName)
 		if project.Id == "" {
-			fmt.Println("The project does not exist. Are you well authenticated with the right user? Do 'qovery auth' to be sure")
+			util.PrintError("The project does not exist. Are you well authenticated with the right user? Do 'qovery auth' to be sure")
 			os.Exit(1)
 		}
 
@@ -62,7 +56,7 @@ var runCmd = &cobra.Command{
 			results := applications["results"].([]interface{})
 			for _, application := range results {
 				applicationConfigurationMap := application.(map[string]interface{})
-				if applicationConfigurationMap["name"] == qYML.Application.Name {
+				if applicationConfigurationMap["name"] == qoveryYML.Application.Name {
 
 					ReloadEnvironment(ConfigurationDirectoryRoot)
 
@@ -87,7 +81,7 @@ var runCmd = &cobra.Command{
 					environmentVariables = append(environmentVariables, fmt.Sprintf("QOVERY_JSON_B64=%s", configurationMapB64))
 					buildArgs["QOVERY_JSON_B64"] = &configurationMapB64
 
-					image := buildContainer(dockerClient, qYML.Application.DockerfilePath(), buildArgs)
+					image := buildContainer(dockerClient, qoveryYML.Application.DockerfilePath(), buildArgs)
 					runContainer(dockerClient, image, environmentVariables)
 
 					break

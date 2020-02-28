@@ -16,12 +16,12 @@ var projectEnvDeleteCmd = &cobra.Command{
 	qovery project env delete`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			ProjectName = util.CurrentQoveryYML().Application.Project
-
-			if ProjectName == "" {
-				fmt.Println("The current directory is not a Qovery project (-h for help)")
+			qoveryYML, err := util.CurrentQoveryYML()
+			if err != nil {
+				util.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
+			ProjectName = qoveryYML.Application.Project
 		}
 
 		if len(args) != 1 {
