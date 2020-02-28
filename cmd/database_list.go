@@ -18,12 +18,12 @@ var databaseListCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
 			BranchName = util.CurrentBranchName()
-			ProjectName = util.CurrentQoveryYML().Application.Project
-
-			if BranchName == "" || ProjectName == "" {
-				fmt.Println("The current directory is not a Qovery project (-h for help)")
-				os.Exit(0)
+			qoveryYML, err := util.CurrentQoveryYML()
+			if err != nil {
+				util.PrintError("No qovery configuration file found")
+				os.Exit(1)
 			}
+			ProjectName = qoveryYML.Application.Project
 		}
 
 		ShowDatabaseList(ProjectName, BranchName)

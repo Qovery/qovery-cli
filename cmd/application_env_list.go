@@ -15,7 +15,11 @@ var applicationEnvListCmd = &cobra.Command{
 	qovery application env list`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			qoveryYML := util.CurrentQoveryYML()
+			qoveryYML, err := util.CurrentQoveryYML()
+			if err != nil {
+				util.PrintError("No qovery configuration file found")
+				os.Exit(1)
+			}
 			BranchName = util.CurrentBranchName()
 			ProjectName = qoveryYML.Application.Project
 

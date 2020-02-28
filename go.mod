@@ -8,6 +8,7 @@ require (
 	github.com/docker/docker v1.13.1
 	github.com/docker/go-connections v0.4.0
 	github.com/docker/go-units v0.4.0 // indirect
+	github.com/fatih/color v1.9.0
 	github.com/frankban/quicktest v1.7.3 // indirect
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/golang/gddo v0.0.0-20200219175727-df439dd5819e // indirect
