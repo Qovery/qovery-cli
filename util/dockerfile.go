@@ -11,12 +11,12 @@ func CurrentDockerfileContent() string {
 }
 
 func ExposePortsFromCurrentDockerfile() []string {
-	s := strings.Split(CurrentDockerfileContent(), "\n")
+	dockerfileContent := strings.Split(CurrentDockerfileContent(), "\n")
 
 	var ports []string
 
-	for _, v := range s {
-		if strings.Contains(strings.ToLower(v), "expose") {
+	for _, v := range dockerfileContent {
+		if strings.HasPrefix(v, "EXPOSE") {
 			ports = append(ports, strings.Split(v, " ")[1])
 		}
 	}
