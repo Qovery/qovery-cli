@@ -7,7 +7,7 @@ import (
 
 func PrintError(content string) {
 	red := color.New(color.FgRed).SprintFunc()
-	fmt.Printf("%s: %s\n", red("ERROR"), content)
+	fmt.Printf("%s:   %s\n", red("ERROR"), content)
 }
 
 func printSolution(content string) {
