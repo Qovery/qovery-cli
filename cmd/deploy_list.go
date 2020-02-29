@@ -41,14 +41,17 @@ func init() {
 func ShowDeploymentList(projectName string, branchName string, applicationName string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"branch", "commit date", "commit id", "commit author", "deployed"})
+	table.SetAutoWrapText(false)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
-	table.SetHeaderColor(
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor})
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeaderLine(false)
+	table.SetBorder(false)
+	table.SetTablePadding("\t")
+	table.SetNoWhiteSpace(true)
 
 	environments := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName).Environments
 	if len(environments) == 0 {

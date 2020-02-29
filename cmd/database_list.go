@@ -40,18 +40,17 @@ func init() {
 func ShowDatabaseList(projectName string, branchName string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"databases name", "status", "types", "versions", "endpoints", "ports", "username", "passwords", "applications"})
+	table.SetAutoWrapText(false)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
-	table.SetHeaderColor(
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor})
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeaderLine(false)
+	table.SetBorder(false)
+	table.SetTablePadding("\t")
+	table.SetNoWhiteSpace(true)
 
 	services := api.ListDatabases(api.GetProjectByName(projectName).Id, branchName)
 	if services.Results == nil || len(services.Results) == 0 {
