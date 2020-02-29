@@ -69,13 +69,17 @@ func ListEnvironmentVariables(projectName string, branchName string) []api.Envir
 func ShowEnvironmentVariables(environmentVariables []api.EnvironmentVariable) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"scope", "key", "value"})
+	table.SetAutoWrapText(false)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
-	table.SetAutoMergeCells(true)
-	table.SetHeaderColor(
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor})
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeaderLine(false)
+	table.SetBorder(false)
+	table.SetTablePadding(" ")
+	table.SetNoWhiteSpace(true)
 
 	for _, ev := range environmentVariables {
 		table.Append([]string{ev.Scope, ev.Key, ev.Value})

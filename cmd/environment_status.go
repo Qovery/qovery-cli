@@ -42,16 +42,17 @@ func init() {
 func ShowEnvironmentStatus(projectName string, branchName string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"branches name", "status", "endpoints", "applications", "databases", "brokers", "storage"})
+	table.SetAutoWrapText(false)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
-	table.SetHeaderColor(
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-		tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor})
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeaderLine(false)
+	table.SetBorder(false)
+	table.SetTablePadding("\t")
+	table.SetNoWhiteSpace(true)
 
 	a := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName)
 	if a.BranchId == "" {

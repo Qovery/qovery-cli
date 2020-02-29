@@ -29,16 +29,17 @@ var environmentListCmd = &cobra.Command{
 
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"branches", "status", "endpoints", "applications", "databases", "brokers", "storage"})
+		table.SetAutoWrapText(false)
+		table.SetAutoFormatHeaders(true)
+		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 		table.SetAlignment(tablewriter.ALIGN_LEFT)
-		table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
-		table.SetHeaderColor(
-			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor})
+		table.SetCenterSeparator("")
+		table.SetColumnSeparator("")
+		table.SetRowSeparator("")
+		table.SetHeaderLine(false)
+		table.SetBorder(false)
+		table.SetTablePadding("\t")
+		table.SetNoWhiteSpace(true)
 
 		if aggEnvs.Results == nil || len(aggEnvs.Results) == 0 {
 			table.Append([]string{"", "", "", "", "", "", ""})

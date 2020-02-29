@@ -18,9 +18,10 @@ type CloudProvider struct {
 }
 
 type CloudProviderRegion struct {
-	ObjectType string `json:"object_type"`
-	Id         string `json:"id"`
-	FullName   string `json:"full_name"`
+	ObjectType  string `json:"object_type"`
+	Id          string `json:"id"`
+	FullName    string `json:"full_name"`
+	Description string `json:"description"`
 }
 
 func ListCloudProviders() CloudProviders {

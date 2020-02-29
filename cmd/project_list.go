@@ -17,11 +17,17 @@ var projectListCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"name", "region"})
+		table.SetAutoWrapText(false)
+		table.SetAutoFormatHeaders(true)
+		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 		table.SetAlignment(tablewriter.ALIGN_LEFT)
-		table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
-		table.SetHeaderColor(
-			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor},
-			tablewriter.Colors{tablewriter.BgMagentaColor, tablewriter.FgWhiteColor})
+		table.SetCenterSeparator("")
+		table.SetColumnSeparator("")
+		table.SetRowSeparator("")
+		table.SetHeaderLine(false)
+		table.SetBorder(false)
+		table.SetTablePadding("\t")
+		table.SetNoWhiteSpace(true)
 
 		projects := api.ListProjects()
 

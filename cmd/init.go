@@ -211,18 +211,28 @@ func AskForProject() string {
 func AskForCloudRegion() string {
 	clouds := api.ListCloudProviders().Results
 
+	keyByDescription := make(map[string]string)
 	var names []string
+
 	for _, c := range clouds {
 		for _, r := range c.Regions {
-			names = append(names, fmt.Sprintf("%s/%s", c.Name, r.FullName))
+			key := fmt.Sprintf("%s/%s", c.Name, r.FullName)
+			name := fmt.Sprintf("%s - %s (%s)", c.Name, r.Description, key)
+			names = append(names, name)
+			keyByDescription[name] = key
 		}
 	}
 
 	sort.Strings(names)
 
-	choice := util.AskForSelect(names, "Choose the region where you want to host your project and applications", "")
+	defaultValue := ""
+	if len(names) > 0 {
+		defaultValue = names[0]
+	}
 
-	return choice
+	nameChoice := util.AskForSelect(names, "Choose the region where you want to host your project and applications", defaultValue)
+
+	return keyByDescription[nameChoice]
 }
 
 func AddDatabaseWizard() *util.QoveryYMLDatabase {
