@@ -33,7 +33,7 @@ var environmentStatusCmd = &cobra.Command{
 
 func init() {
 	environmentStatusCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
-	environmentStatusCmd.PersistentFlags().StringVarP(&BranchName, "environment", "e", "", "Your environment name")
+	environmentStatusCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 
 	environmentCmd.AddCommand(environmentStatusCmd)
 }
@@ -48,7 +48,7 @@ func ShowEnvironmentStatus(projectName string, branchName string) {
 	} else {
 		table.Append([]string{
 			a.BranchId,
-			a.Status.CodeMessage,
+			a.Status.GetColoredCodeMessage(),
 			strings.Join(a.ConnectionURIs, ", "),
 			intPointerValue(a.TotalApplications),
 			intPointerValue(a.TotalDatabases),

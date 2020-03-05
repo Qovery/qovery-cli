@@ -25,20 +25,21 @@ var databaseListCmd = &cobra.Command{
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		ShowDatabaseList(ProjectName, BranchName)
+		ShowDatabaseList(ProjectName, BranchName, ShowCredentials)
 	},
 }
 
 func init() {
 	databaseListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	databaseListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
+	databaseListCmd.PersistentFlags().BoolVarP(&ShowCredentials, "credentials", "c", false, "Show credentials")
 
 	databaseCmd.AddCommand(databaseListCmd)
 }
 
-func ShowDatabaseList(projectName string, branchName string) {
+func ShowDatabaseList(projectName string, branchName string, showCredentials bool) {
 	table := GetTable()
-	table.SetHeader([]string{"database name", "status", "type", "version", "endpoints", "port", "username", "password", "applications"})
+	table.SetHeader([]string{"database name", "status", "type", "version", "endpoint", "port", "username", "password", "applications"})
 
 	services := api.ListDatabases(api.GetProjectByName(projectName).Id, branchName)
 	if services.Results == nil || len(services.Results) == 0 {
@@ -50,15 +51,27 @@ func ShowDatabaseList(projectName string, branchName string) {
 				applicationName = a.Application.Name
 			}
 
+			endpoint := "<hidden>"
+			port := "<hidden>"
+			username := "<hidden>"
+			password := "<hidden>"
+
+			if showCredentials {
+				endpoint = a.FQDN
+				port = intPointerValue(a.Port)
+				username = a.Username
+				password = a.Password
+			}
+
 			table.Append([]string{
 				a.Name,
-				a.Status.CodeMessage,
+				a.Status.GetColoredCodeMessage(),
 				a.Type,
 				a.Version,
-				a.FQDN,
-				intPointerValue(a.Port),
-				a.Username,
-				a.Password,
+				endpoint,
+				port,
+				username,
+				password,
 				applicationName,
 			})
 		}

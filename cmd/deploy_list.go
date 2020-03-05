@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
@@ -63,7 +64,7 @@ func ShowDeploymentList(projectName string, branchName string, applicationName s
 
 	for _, commit := range util.ListCommits(10) {
 		if environment.CommitId == commit.ID().String() {
-			table.Append([]string{branchName, commit.Author.When.String(), commit.ID().String(), commit.Author.Name, "✓"})
+			table.Append([]string{branchName, commit.Author.When.String(), commit.ID().String(), commit.Author.Name, color.GreenString("✓")})
 		} else {
 			table.Append([]string{branchName, commit.Author.When.String(), commit.ID().String(), commit.Author.Name, ""})
 		}

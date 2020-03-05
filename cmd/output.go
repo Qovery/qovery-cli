@@ -10,6 +10,7 @@ func GetTable() *tablewriter.Table {
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	table.SetBorder(false)
+	table.SetAutoWrapText(false)
 	/*table.SetAutoWrapText(false)
 	table.SetAutoFormatHeaders(true)
 	table.SetCenterSeparator("")

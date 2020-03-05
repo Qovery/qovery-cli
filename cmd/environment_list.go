@@ -36,7 +36,7 @@ var environmentListCmd = &cobra.Command{
 				//output = append(output,
 				table.Append([]string{
 					a.BranchId,
-					a.Status.CodeMessage,
+					a.Status.GetColoredCodeMessage(),
 					strings.Join(a.ConnectionURIs, ", "),
 					intPointerValue(a.TotalApplications),
 					intPointerValue(a.TotalDatabases),

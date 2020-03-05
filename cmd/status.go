@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/schollz/progressbar/v2"
 	"github.com/spf13/cobra"
 	"os"
@@ -46,19 +47,25 @@ var statusCmd = &cobra.Command{
 			}
 
 			a := api.GetBranchByName(projectId, BranchName)
+
 			if a.Status.State == "LIVE" {
-				fmt.Printf("\n\nYour environment is ready!\n\n")
+				fmt.Print("\n\n")
+				fmt.Printf(color.GreenString("Your environment is ready!"))
+				fmt.Print("\n\n")
+				fmt.Printf(color.GreenString("-- status output --"))
 			} else {
-				fmt.Printf("\n\nSomething goes wrong:\n")
-				fmt.Printf("%s\n\n", a.Status.Output)
+				fmt.Print("\n\n")
+				fmt.Printf(color.RedString("Something goes wrong:"))
+				fmt.Printf("\n%s\n\n", a.Status.Output)
+				fmt.Printf(color.RedString("-- status output --"))
 			}
 
-			fmt.Printf("-- status output --\n\n")
+			fmt.Print("\n\n")
 		}
 
 		ShowEnvironmentStatus(ProjectName, BranchName)
 		ShowApplicationList(ProjectName, BranchName)
-		ShowDatabaseList(ProjectName, BranchName)
+		ShowDatabaseList(ProjectName, BranchName, ShowCredentials)
 		//ShowBrokerList(ProjectName, BranchName)
 		//ShowStorageList(ProjectName, BranchName)
 	},
@@ -66,7 +73,8 @@ var statusCmd = &cobra.Command{
 
 func init() {
 	statusCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
-	statusCmd.PersistentFlags().StringVarP(&BranchName, "environment", "e", "", "Your environment name")
+	statusCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
+	statusCmd.PersistentFlags().BoolVarP(&ShowCredentials, "credentials", "c", false, "Show credentials")
 	statusCmd.PersistentFlags().BoolVar(&WatchFlag, "watch", false, "Watch the progression until the environment is up and running")
 
 	RootCmd.AddCommand(statusCmd)
