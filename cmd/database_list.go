@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
@@ -38,19 +37,8 @@ func init() {
 }
 
 func ShowDatabaseList(projectName string, branchName string) {
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"databases name", "status", "types", "versions", "endpoints", "ports", "username", "passwords", "applications"})
-	table.SetAutoWrapText(false)
-	table.SetAutoFormatHeaders(true)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetHeaderLine(false)
-	table.SetBorder(false)
-	table.SetTablePadding("\t")
-	table.SetNoWhiteSpace(true)
+	table := GetTable()
+	table.SetHeader([]string{"database name", "status", "type", "version", "endpoints", "port", "username", "password", "applications"})
 
 	services := api.ListDatabases(api.GetProjectByName(projectName).Id, branchName)
 	if services.Results == nil || len(services.Results) == 0 {

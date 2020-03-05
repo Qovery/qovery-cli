@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
@@ -38,19 +37,8 @@ func init() {
 }
 
 func ShowApplicationList(projectName string, branchName string) {
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"applications name", "status", "endpoints", "databases", "brokers", "storage"})
-	table.SetAutoWrapText(false)
-	table.SetAutoFormatHeaders(true)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetHeaderLine(false)
-	table.SetBorder(false)
-	table.SetTablePadding("\t")
-	table.SetNoWhiteSpace(true)
+	table := GetTable()
+	table.SetHeader([]string{"application name", "status", "endpoints", "databases", "brokers", "storage"})
 
 	applications := api.ListApplications(api.GetProjectByName(projectName).Id, branchName)
 	if applications.Results == nil || len(applications.Results) == 0 {

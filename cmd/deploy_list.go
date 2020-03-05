@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
@@ -39,19 +38,8 @@ func init() {
 }
 
 func ShowDeploymentList(projectName string, branchName string, applicationName string) {
-	table := tablewriter.NewWriter(os.Stdout)
+	table := GetTable()
 	table.SetHeader([]string{"branch", "commit date", "commit id", "commit author", "deployed"})
-	table.SetAutoWrapText(false)
-	table.SetAutoFormatHeaders(true)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetHeaderLine(false)
-	table.SetBorder(false)
-	table.SetTablePadding("\t")
-	table.SetNoWhiteSpace(true)
 
 	environments := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName).Environments
 	if len(environments) == 0 {

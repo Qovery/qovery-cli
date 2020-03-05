@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
@@ -27,19 +26,8 @@ var environmentListCmd = &cobra.Command{
 		}
 		aggEnvs := api.ListBranches(api.GetProjectByName(ProjectName).Id)
 
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"branches", "status", "endpoints", "applications", "databases", "brokers", "storage"})
-		table.SetAutoWrapText(false)
-		table.SetAutoFormatHeaders(true)
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetAlignment(tablewriter.ALIGN_LEFT)
-		table.SetCenterSeparator("")
-		table.SetColumnSeparator("")
-		table.SetRowSeparator("")
-		table.SetHeaderLine(false)
-		table.SetBorder(false)
-		table.SetTablePadding("\t")
-		table.SetNoWhiteSpace(true)
+		table := GetTable()
+		table.SetHeader([]string{"branch", "status", "endpoints", "application", "databases", "brokers", "storage"})
 
 		if aggEnvs.Results == nil || len(aggEnvs.Results) == 0 {
 			table.Append([]string{"", "", "", "", "", "", ""})
@@ -47,13 +35,13 @@ var environmentListCmd = &cobra.Command{
 			for _, a := range aggEnvs.Results {
 				//output = append(output,
 				table.Append([]string{
-						a.BranchId,
-						a.Status.CodeMessage,
-						strings.Join(a.ConnectionURIs, ", "),
-						intPointerValue(a.TotalApplications),
-						intPointerValue(a.TotalDatabases),
-						intPointerValue(a.TotalBrokers),
-						intPointerValue(a.TotalStorage),
+					a.BranchId,
+					a.Status.CodeMessage,
+					strings.Join(a.ConnectionURIs, ", "),
+					intPointerValue(a.TotalApplications),
+					intPointerValue(a.TotalDatabases),
+					intPointerValue(a.TotalBrokers),
+					intPointerValue(a.TotalStorage),
 				})
 			}
 		}

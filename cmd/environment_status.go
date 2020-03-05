@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
@@ -40,19 +39,8 @@ func init() {
 }
 
 func ShowEnvironmentStatus(projectName string, branchName string) {
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"branches name", "status", "endpoints", "applications", "databases", "brokers", "storage"})
-	table.SetAutoWrapText(false)
-	table.SetAutoFormatHeaders(true)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetHeaderLine(false)
-	table.SetBorder(false)
-	table.SetTablePadding("\t")
-	table.SetNoWhiteSpace(true)
+	table := GetTable()
+	table.SetHeader([]string{"branch name", "status", "endpoints", "applications", "databases", "brokers", "storage"})
 
 	a := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName)
 	if a.BranchId == "" {
