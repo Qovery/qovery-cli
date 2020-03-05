@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
@@ -38,8 +39,7 @@ var deployCmd = &cobra.Command{
 
 		api.Deploy(projectId, BranchName, applicationId, commitId)
 
-		fmt.Printf("deployment in progress...\n")
-		fmt.Println("Hint: type \"qovery status --watch\" to track the progression of this deployment")
+		ShowDeploymentMessage()
 	},
 }
 
@@ -49,4 +49,9 @@ func init() {
 	deployCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 
 	RootCmd.AddCommand(deployCmd)
+}
+
+func ShowDeploymentMessage() {
+	fmt.Println(color.YellowString("deployment in progress..."))
+	fmt.Println("Hint: type \"qovery status --watch\" to track the progression of this deployment")
 }

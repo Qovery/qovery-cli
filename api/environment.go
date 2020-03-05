@@ -107,3 +107,19 @@ func ListBranches(projectId string) AggregatedEnvironments {
 
 	return r
 }
+
+func DeleteBranch(projectId string, branchName string) {
+	if projectId == "" || branchName == "" {
+		return
+	}
+
+	CheckAuthenticationOrQuitWithMessage()
+
+	req, _ := http.NewRequest(http.MethodDelete, RootURL+"/project/"+projectId+"/branch/"+branchName, nil)
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
+
+	client := http.Client{}
+	resp, _ := client.Do(req)
+
+	CheckHTTPResponse(resp)
+}

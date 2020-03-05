@@ -62,6 +62,7 @@ func ShowDeploymentList(projectName string, branchName string, applicationName s
 		return
 	}
 
+	// TODO param for n last commits
 	for _, commit := range util.ListCommits(10) {
 		if environment.CommitId == commit.ID().String() {
 			table.Append([]string{branchName, commit.Author.When.String(), commit.ID().String(), commit.Author.Name, color.GreenString("✓")})

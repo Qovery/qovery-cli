@@ -1,14 +1,17 @@
 package cmd
 
 import (
+	"fmt"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
+	"qovery.go/api"
 	"qovery.go/util"
 )
 
 var environmentDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Environment delete",
+	Short: "Delete the current environment",
 	Long: `DELETE turn off an environment and erase all the data. For example:
 
 	qovery environment delete`,
@@ -23,6 +26,17 @@ var environmentDeleteCmd = &cobra.Command{
 			}
 			ProjectName = qoveryYML.Application.Project
 		}
+
+		isConfirmed := util.AskForConfirmation(false, fmt.Sprintf("Would you really want to delete the %s environment "+
+			"and erase the data from this environment?", BranchName), "n")
+
+		if !isConfirmed {
+			return
+		}
+
+		api.DeleteBranch(api.GetProjectByName(ProjectName).Id, BranchName)
+		fmt.Println(color.YellowString("deletion in progress..."))
+		fmt.Println("Hint: type \"qovery status --watch\" to track the progression of the deletion")
 	},
 }
 

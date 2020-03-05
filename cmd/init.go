@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -129,8 +130,9 @@ var initCmd = &cobra.Command{
 
 		fmt.Println("✓ Your Qovery configuration file has been successfully created (.qovery.yml)")
 
-		fmt.Println("\n!!!IMPORTANT!!!")
-		fmt.Println("Qovery needs to get access to your git repository")
+		fmt.Println()
+		fmt.Println(color.YellowString("!!! IMPORTANT !!!"))
+		fmt.Println(color.YellowString("Qovery needs to get access to your git repository"))
 		fmt.Println("https://github.com/apps/qovery/installations/new")
 
 		openLink := util.AskForConfirmation(false, "Would you like to open the link above?", "n")
@@ -138,7 +140,7 @@ var initCmd = &cobra.Command{
 			_ = browser.OpenURL("https://github.com/apps/qovery/installations/new")
 		}
 
-		fmt.Println("\n!!!IMPORTANT!!!")
+		fmt.Println(color.YellowString("!!! IMPORTANT !!!"))
 		fmt.Println("1/ Commit and push the \".qovery.yml\" file to get your app deployed")
 		fmt.Println("➤ Run: git add .qovery.yml && git commit -m \"add .qovery.yml\" && git push -u origin master")
 		fmt.Println("\n2/ Check the status of your deployment")
