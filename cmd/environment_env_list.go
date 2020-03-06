@@ -23,13 +23,14 @@ var environmentEnvListCmd = &cobra.Command{
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		ShowEnvironmentVariablesByBranchName(ProjectName, BranchName)
+		ShowEnvironmentVariablesByBranchName(ProjectName, BranchName, ShowCredentials)
 	},
 }
 
 func init() {
 	environmentEnvListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	environmentEnvListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
+	environmentEnvListCmd.PersistentFlags().BoolVarP(&ShowCredentials, "credentials", "c", false, "Show credentials")
 
 	environmentEnvCmd.AddCommand(environmentEnvListCmd)
 }

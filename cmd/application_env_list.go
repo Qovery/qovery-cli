@@ -29,13 +29,14 @@ var applicationEnvListCmd = &cobra.Command{
 			}
 		}
 
-		ShowEnvironmentVariablesByApplicationName(ProjectName, BranchName)
+		ShowEnvironmentVariablesByApplicationName(ProjectName, BranchName, ShowCredentials)
 	},
 }
 
 func init() {
 	applicationEnvListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	applicationEnvListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
+	applicationEnvListCmd.PersistentFlags().BoolVarP(&ShowCredentials, "credentials", "c", false, "Show credentials")
 	// TODO select application
 
 	applicationEnvCmd.AddCommand(applicationEnvListCmd)

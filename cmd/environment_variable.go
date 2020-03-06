@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"qovery.go/api"
 	"strconv"
+	"strings"
 )
 
-func ShowEnvironmentVariablesByProjectName(projectName string) {
+func ShowEnvironmentVariablesByProjectName(projectName string, showCredentials bool) {
 	projectId := api.GetProjectByName(projectName).Id
 	evs := api.ListProjectEnvironmentVariables(projectId)
-	ShowEnvironmentVariables(evs.Results)
+	ShowEnvironmentVariables(evs.Results, showCredentials)
 }
 
 func getStaticBuiltInEnvironmentVariables(branchName string) []api.EnvironmentVariable {
@@ -26,7 +27,7 @@ func getStaticBuiltInEnvironmentVariables(branchName string) []api.EnvironmentVa
 	}
 }
 
-func ShowEnvironmentVariablesByBranchName(projectName string, branchName string) {
+func ShowEnvironmentVariablesByBranchName(projectName string, branchName string, showCredentials bool) {
 	projectId := api.GetProjectByName(projectName).Id
 
 	var evs []api.EnvironmentVariable
@@ -39,11 +40,11 @@ func ShowEnvironmentVariablesByBranchName(projectName string, branchName string)
 		evs = append(evs, ev)
 	}
 
-	ShowEnvironmentVariables(evs)
+	ShowEnvironmentVariables(evs, showCredentials)
 }
 
-func ShowEnvironmentVariablesByApplicationName(projectName string, branchName string) {
-	ShowEnvironmentVariables(ListEnvironmentVariables(projectName, branchName))
+func ShowEnvironmentVariablesByApplicationName(projectName string, branchName string, showCredentials bool) {
+	ShowEnvironmentVariables(ListEnvironmentVariables(projectName, branchName), showCredentials)
 }
 
 func ListEnvironmentVariables(projectName string, branchName string) []api.EnvironmentVariable {
@@ -64,12 +65,19 @@ func ListEnvironmentVariables(projectName string, branchName string) []api.Envir
 	return evs
 }
 
-func ShowEnvironmentVariables(environmentVariables []api.EnvironmentVariable) {
+func ShowEnvironmentVariables(environmentVariables []api.EnvironmentVariable, showCredentials bool) {
 	table := GetTable()
 	table.SetHeader([]string{"scope", "key", "value"})
 
 	for _, ev := range environmentVariables {
-		table.Append([]string{ev.Scope, ev.Key, ev.Value})
+		lowerCaseKey := strings.ToLower(ev.Key)
+		if !showCredentials && (strings.Contains(lowerCaseKey, "username") || strings.Contains(lowerCaseKey, "password") ||
+			strings.Contains(lowerCaseKey, "fqdn") || strings.Contains(lowerCaseKey, "host") || strings.Contains(lowerCaseKey, "port") ||
+			strings.Contains(lowerCaseKey, "uri")) {
+			table.Append([]string{ev.Scope, ev.Key, "<hidden>"})
+		} else {
+			table.Append([]string{ev.Scope, ev.Key, ev.Value})
+		}
 	}
 
 	table.Render()
