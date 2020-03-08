@@ -240,7 +240,7 @@ func AskForCloudRegion() string {
 func AddDatabaseWizard() *util.QoveryYMLDatabase {
 
 	//choices := []string{"PostgreSQL", "MongoDB", "MySQL", "Redis", "Memcached", "Elasticsearch"}
-	choices := []string{"PostgreSQL", "MySQL"}
+	choices := []string{"PostgreSQL", "MySQL", "MongoDB"}
 
 	choice := util.AskForSelect(choices, "Choose the database you want to add", "")
 	if choice == "" {
