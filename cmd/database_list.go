@@ -38,7 +38,7 @@ func init() {
 }
 
 func ShowDatabaseList(projectName string, branchName string, showCredentials bool) {
-	table := GetTable()
+	table := util.GetTable()
 	table.SetHeader([]string{"database name", "status", "type", "version", "endpoint", "port", "username", "password", "applications"})
 
 	services := api.ListDatabases(api.GetProjectByName(projectName).Id, branchName)

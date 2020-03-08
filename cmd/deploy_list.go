@@ -39,7 +39,7 @@ func init() {
 }
 
 func ShowDeploymentList(projectName string, branchName string, applicationName string) {
-	table := GetTable()
+	table := util.GetTable()
 	table.SetHeader([]string{"branch", "commit date", "commit id", "commit author", "deployed"})
 
 	environments := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName).Environments

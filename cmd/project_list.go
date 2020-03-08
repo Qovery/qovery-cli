@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"qovery.go/api"
+	"qovery.go/util"
 )
 
 var projectListCmd = &cobra.Command{
@@ -13,7 +14,7 @@ var projectListCmd = &cobra.Command{
 	qovery project list`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		table := GetTable()
+		table := util.GetTable()
 		table.SetHeader([]string{"name", "region"})
 
 		projects := api.ListProjects()

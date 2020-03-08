@@ -37,7 +37,7 @@ func init() {
 }
 
 func ShowApplicationList(projectName string, branchName string) {
-	table := GetTable()
+	table := util.GetTable()
 	table.SetHeader([]string{"application name", "status", "endpoint", "databases", "brokers", "storage"})
 
 	applications := api.ListApplications(api.GetProjectByName(projectName).Id, branchName)

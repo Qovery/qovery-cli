@@ -39,7 +39,7 @@ func init() {
 }
 
 func ShowEnvironmentStatus(projectName string, branchName string) {
-	table := GetTable()
+	table := util.GetTable()
 	table.SetHeader([]string{"branch name", "status", "endpoints", "applications", "databases", "brokers", "storage"})
 
 	a := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName)

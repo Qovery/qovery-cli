@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"qovery.go/api"
+	"qovery.go/util"
 	"strconv"
 	"strings"
 )
@@ -66,7 +67,7 @@ func ListEnvironmentVariables(projectName string, branchName string) []api.Envir
 }
 
 func ShowEnvironmentVariables(environmentVariables []api.EnvironmentVariable, showCredentials bool) {
-	table := GetTable()
+	table := util.GetTable()
 	table.SetHeader([]string{"scope", "key", "value"})
 
 	for _, ev := range environmentVariables {

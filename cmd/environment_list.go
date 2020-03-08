@@ -26,7 +26,7 @@ var environmentListCmd = &cobra.Command{
 		}
 		aggEnvs := api.ListBranches(api.GetProjectByName(ProjectName).Id)
 
-		table := GetTable()
+		table := util.GetTable()
 		table.SetHeader([]string{"branch", "status", "endpoints", "application", "databases", "brokers", "storage"})
 
 		if aggEnvs.Results == nil || len(aggEnvs.Results) == 0 {
