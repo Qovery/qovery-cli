@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 )
 
@@ -106,6 +107,34 @@ func AskForConfirmation(noPrompt bool, message string, defaultValue string) bool
 	} else {
 		fmt.Println("Please type yes or no and then press enter:")
 		return AskForConfirmation(noPrompt, message, defaultValue)
+	}
+}
+
+func AskForStringConfirmation(noPrompt bool, message string, requiredAnswer string) bool {
+	var response string
+
+	if noPrompt {
+		return true
+	}
+
+	if message == "" {
+		fmt.Printf("Internal CLI error, required answer can't be empty")
+		os.Exit(1)
+	}
+
+	fmt.Print("\n➤ " + message + ": ")
+
+	_, err := fmt.Scanln(&response)
+
+	if err != nil {
+		return AskForStringConfirmation(noPrompt, message, requiredAnswer)
+	}
+
+	if response == requiredAnswer {
+		return true
+	} else {
+		fmt.Printf("\nPlease exactly enter '%s' to confirm or Ctrl+c to cancel\n", requiredAnswer)
+		return AskForStringConfirmation(noPrompt, message, requiredAnswer)
 	}
 }
 

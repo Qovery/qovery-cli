@@ -27,9 +27,10 @@ var environmentDeleteCmd = &cobra.Command{
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		isConfirmed := util.AskForConfirmation(false, fmt.Sprintf("Would you really want to delete the %s environment "+
-			"and erase the data from this environment?", BranchName), "n")
-
+		isConfirmed := util.AskForStringConfirmation(
+			false,
+			fmt.Sprintf("Type '%s' to delete this environment and erase its associated data", BranchName),
+			BranchName)
 		if !isConfirmed {
 			return
 		}
