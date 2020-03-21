@@ -8,6 +8,7 @@ import (
 
 var logCmd = &cobra.Command{
 	Use:   "log",
+	Aliases: []string{"logs"},
 	Short: "Show application logs",
 	Long: `LOG show all application logs within a project and environment. For example:
 
