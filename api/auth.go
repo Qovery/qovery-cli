@@ -71,5 +71,5 @@ func QoveryAuthentication() {
 		}()
 	})
 
-	srv.ListenAndServe()
+	_ = srv.ListenAndServe()
 }
