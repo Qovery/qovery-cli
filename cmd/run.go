@@ -40,7 +40,7 @@ var runCmd = &cobra.Command{
 		_, err = dockerClient.ImageList(context.Background(), types.ImageListOptions{})
 
 		if err != nil {
-			util.PrintError("Ensure Docker is installed and running on your system")
+			util.PrintError("Run Docker or install it on your system")
 			os.Exit(1)
 		}
 

@@ -12,9 +12,14 @@ func PrintError(content string) {
 	fmt.Printf("%s:   %s\n", red("ERROR"), content)
 }
 
-func printSolution(content string) {
+func PrintSolution(content string) {
 	green := color.New(color.FgGreen).SprintFunc()
 	fmt.Printf("%s: %s\n", green("SOLUTION"), content)
+}
+
+func PrintHint(content string) {
+	green := color.New(color.FgGreen).SprintFunc()
+	fmt.Printf("%s: %s\n", green("HINT"), content)
 }
 
 func GetTable() *tablewriter.Table {

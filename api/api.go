@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -14,22 +15,20 @@ func CheckAuthenticationOrQuitWithMessage() {
 	}
 }
 
-func CheckHTTPResponse(resp *http.Response) {
+func CheckHTTPResponse(resp *http.Response) error {
 	if resp == nil {
-		fmt.Println("Qovery is in maintenance. Try again later or contact #support on https://discord.qovery.com")
-		os.Exit(1)
+		return errors.New("Qovery is in maintenance. Try again later or contact #support on https://discord.qovery.com")
 	}
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		fmt.Println("Your authentication token has expired. Please re-authenticate yourself with 'qovery auth'")
-		os.Exit(1)
+		return errors.New("Your authentication token has expired. Please re-authenticate yourself with 'qovery auth'")
 	} else if resp.StatusCode == http.StatusForbidden {
-		fmt.Println("Your account must be approved by an administrator to get access to this resource. " +
+		return errors.New("Your account must be approved by an administrator to get access to this resource. " +
 			"Please join #support on https://discord.qovery.com")
-		os.Exit(1)
 	} else if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		fmt.Println("Something goes wrong while requesting the Qovery API. Please try again later or " +
+		return errors.New("Something goes wrong while requesting the Qovery API. Please try again later or " +
 			"contact the #support on https://discord.qovery.com")
-		os.Exit(1)
 	}
+
+	return nil
 }

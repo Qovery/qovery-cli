@@ -2,8 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -36,7 +38,11 @@ func ListApplicationLogs(lastLines int, projectId string, repositoryId string, e
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	if err != nil {
 		return logs
@@ -68,7 +74,11 @@ func ListApplicationTailLogs(lastLogId string, projectId string, repositoryId st
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	if err != nil {
 		return logs

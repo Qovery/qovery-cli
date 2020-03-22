@@ -29,9 +29,10 @@ var statusCmd = &cobra.Command{
 			ProjectName = qoveryYML.Application.Project
 		}
 
+		projectId := api.GetProjectByName(ProjectName).Id
+
 		if WatchFlag {
 			bar := progressbar.NewOptions(100, progressbar.OptionSetPredictTime(true))
-			projectId := api.GetProjectByName(ProjectName).Id
 
 			for {
 				a := api.GetBranchByName(projectId, BranchName)
@@ -43,21 +44,15 @@ var statusCmd = &cobra.Command{
 				}
 
 				time.Sleep(1 * time.Second)
-
 			}
 
-			a := api.GetBranchByName(projectId, BranchName)
+			aggregatedEnvironment := api.GetBranchByName(projectId, BranchName)
 
-			if a.Status.State == "LIVE" {
+			if aggregatedEnvironment.Status.State == "LIVE" {
 				fmt.Print("\n\n")
 				fmt.Printf(color.GreenString("Your environment is ready!"))
 				fmt.Print("\n\n")
 				fmt.Printf(color.GreenString("-- status output --"))
-			} else {
-				fmt.Print("\n\n")
-				fmt.Printf(color.RedString("Something goes wrong:"))
-				fmt.Printf("\n%s\n\n", a.Status.Output)
-				fmt.Printf(color.RedString("-- status output --"))
 			}
 
 			fmt.Print("\n\n")
@@ -68,7 +63,28 @@ var statusCmd = &cobra.Command{
 		ShowDatabaseList(ProjectName, BranchName, ShowCredentials)
 		//ShowBrokerList(ProjectName, BranchName)
 		//ShowStorageList(ProjectName, BranchName)
+
+		aggregatedEnvironment := api.GetBranchByName(projectId, BranchName)
+		if !strings.Contains(aggregatedEnvironment.Status.State, "_ERROR") {
+			// no error
+			return
+		}
+
+		fmt.Printf(color.RedString("Something goes wrong:"))
+		showOutputErrorMessage(aggregatedEnvironment.Status.Output)
+
+		if aggregatedEnvironment.Status.State == "BUILDING_ERROR" {
+			util.PrintHint("Ensure your Dockerfile is correct. Run and test your container locally with 'qovery run'")
+		}
 	},
+}
+
+func showOutputErrorMessage(message string) {
+	fmt.Printf("\n\n")
+	fmt.Println("---------- Start of error message ----------")
+	fmt.Printf("%s\n", message)
+	fmt.Println("----------- End of error message -----------")
+	fmt.Println()
 }
 
 func init() {

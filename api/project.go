@@ -2,8 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"qovery.go/util"
 )
 
@@ -61,7 +63,11 @@ func ListProjects() Projects {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	p := Projects{}
 

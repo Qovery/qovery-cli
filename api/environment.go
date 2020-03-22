@@ -2,8 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 )
 
 type AggregatedEnvironments struct {
@@ -57,7 +59,11 @@ func ListEnvironments(projectId string, repositoryId string) Environments {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	if err != nil {
 		return r
@@ -95,7 +101,11 @@ func ListBranches(projectId string) AggregatedEnvironments {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	if err != nil {
 		return r
@@ -121,5 +131,9 @@ func DeleteBranch(projectId string, branchName string) {
 	client := http.Client{}
 	resp, _ := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err := CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }

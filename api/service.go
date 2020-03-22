@@ -2,8 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 )
 
 type Services struct {
@@ -38,7 +40,11 @@ func ListServices(projectId string, branchName string, resourcePath string) Serv
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	if err != nil {
 		return services
@@ -72,7 +78,11 @@ func ListServicesRaw(projectId string, branchName string, resourcePath string) m
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	itf := map[string]interface{}{}
 

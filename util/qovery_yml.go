@@ -89,14 +89,14 @@ func validateConfig(qoveryYML QoveryYML) bool {
 
 	if CurrentBranchName() == "" {
 		PrintError("Unable to find the current branch name")
-		printSolution("Please 'git checkout' to a valid branch name")
+		PrintSolution("Please 'git checkout' to a valid branch name")
 		counter++
 	}
 
 	if qoveryYML.Application.PubliclyAccessible == true {
 		if len(ExposePortsFromCurrentDockerfile()) == 0 {
 			PrintError("You requested your application to be publicly accessible, but no exposed ports are defined")
-			printSolution("Update your Dockerfile and add an 'EXPOSE' line with your application port " +
+			PrintSolution("Update your Dockerfile and add an 'EXPOSE' line with your application port " +
 				"(https://docs.docker.com/engine/reference/builder/#expose)")
 			counter++
 		}
@@ -104,15 +104,14 @@ func validateConfig(qoveryYML QoveryYML) bool {
 
 	if qoveryYML.Application.Project == "" {
 		PrintError("No project name defined")
-		printSolution("Add in your .qovery.yml file, the 'project' name inside 'application' section")
+		PrintSolution("Add in your .qovery.yml file, the 'project' name inside 'application' section")
 		counter++
 	}
 	if qoveryYML.Application.Name == "" {
 		PrintError("No application name defined")
-		printSolution("Add in your .qovery.yml file, the 'name' name inside 'application' section")
+		PrintSolution("Add in your .qovery.yml file, the 'name' name inside 'application' section")
 		counter++
 	}
-
 
 	if counter > 0 {
 		fmt.Printf("\nTotal errors found: %d", counter)

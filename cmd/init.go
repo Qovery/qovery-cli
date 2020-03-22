@@ -126,8 +126,6 @@ var initCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
-		addLinesToGitIgnore()
-
 		fmt.Println("✓ Your Qovery configuration file has been successfully created (.qovery.yml)")
 
 		fmt.Println()
@@ -151,16 +149,6 @@ var initCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(initCmd)
-}
-
-func addLinesToGitIgnore() {
-	f, err := os.OpenFile(".gitignore", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatalf("fail to create/upsert file .gitignore: %s", err.Error())
-	}
-
-	defer f.Close()
-	_, _ = f.WriteString("\n.qovery\nlocal_configuration.json\n")
 }
 
 func askForAddDatabase(firstTime bool) bool {

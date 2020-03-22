@@ -1,7 +1,9 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 )
 
 func Deploy(projectId string, branchName string, applicationId string, commitId string) {
@@ -17,7 +19,11 @@ func Deploy(projectId string, branchName string, applicationId string, commitId 
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	if err != nil {
 		return

@@ -3,8 +3,10 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 )
 
 type EnvironmentVariables struct {
@@ -45,7 +47,11 @@ func ListProjectEnvironmentVariables(projectId string) EnvironmentVariables {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	if err != nil {
 		return evs
@@ -78,7 +84,11 @@ func CreateProjectEnvironmentVariable(environmentVariable EnvironmentVariable, p
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	if err != nil {
 		return ev
@@ -105,7 +115,11 @@ func DeleteProjectEnvironmentVariable(environmentVariableId string, projectId st
 	client := http.Client{}
 	resp, _ := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err := CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func ListEnvironmentEnvironmentVariables(projectId string, branchName string) EnvironmentVariables {
@@ -124,7 +138,11 @@ func ListEnvironmentEnvironmentVariables(projectId string, branchName string) En
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	if err != nil {
 		return evs
@@ -157,7 +175,11 @@ func CreateEnvironmentEnvironmentVariable(environmentVariable EnvironmentVariabl
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	if err != nil {
 		return ev
@@ -184,7 +206,11 @@ func DeleteEnvironmentEnvironmentVariable(environmentVariableId string, projectI
 	client := http.Client{}
 	resp, _ := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err := CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func ListApplicationEnvironmentVariables(projectId string, repositoryId string, environmentId string, applicationId string) EnvironmentVariables {
@@ -204,7 +230,11 @@ func ListApplicationEnvironmentVariables(projectId string, repositoryId string, 
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	if err != nil {
 		return evs
@@ -240,7 +270,11 @@ func CreateApplicationEnvironmentVariable(environmentVariable EnvironmentVariabl
 	client := http.Client{}
 	resp, err := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	if err != nil {
 		return ev
@@ -270,5 +304,9 @@ func DeleteApplicationEnvironmentVariable(environmentVariableId string, projectI
 	client := http.Client{}
 	resp, _ := client.Do(req)
 
-	CheckHTTPResponse(resp)
+	err := CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
