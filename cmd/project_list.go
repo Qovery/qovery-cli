@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"qovery.go/api"
 	"qovery.go/util"
@@ -23,7 +24,7 @@ var projectListCmd = &cobra.Command{
 			table.Append([]string{"", ""})
 		} else {
 			for _, p := range projects.Results {
-				table.Append([]string{p.Name, p.CloudProviderRegion.FullName})
+				table.Append([]string{p.Name, fmt.Sprintf("%s (%s)", p.CloudProviderRegion.FullName, p.CloudProviderRegion.Description)})
 			}
 		}
 
