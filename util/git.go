@@ -5,12 +5,32 @@ import (
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 )
 
+func getGitRepository(path string) (*git.Repository, error) {
+	repo, err := git.PlainOpen(path)
+	if err != nil {
+		if path == "" {
+			return nil, err
+		}
+
+		return getGitRepository(GetAbsoluteParentPath(path))
+	}
+
+	return repo, nil
+}
+
 func CurrentBranchName() string {
-	repo, err := git.PlainOpen(".")
+	pwd, _ := os.Getwd()
+	return CurrentBranchNameFromPath(filepath.Join(pwd, "."))
+}
+
+func CurrentBranchNameFromPath(path string) string {
+	repo, err := getGitRepository(path)
 	if err != nil {
 		return ""
 	}
@@ -31,7 +51,12 @@ func CurrentBranchName() string {
 }
 
 func Checkout(branch string) {
-	repo, err := git.PlainOpen(".")
+	pwd, _ := os.Getwd()
+	CheckoutFromPath(branch, filepath.Join(pwd, "."))
+}
+
+func CheckoutFromPath(branch string, path string) {
+	repo, err := getGitRepository(path)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -47,7 +72,12 @@ func Checkout(branch string) {
 }
 
 func ListRemoteURLs() []string {
-	repo, err := git.PlainOpen(".")
+	pwd, _ := os.Getwd()
+	return ListRemoteURLsFromPath(filepath.Join(pwd, "."))
+}
+
+func ListRemoteURLsFromPath(path string) []string {
+	repo, err := getGitRepository(path)
 	if err != nil {
 		return []string{}
 	}
@@ -72,7 +102,12 @@ func ListRemoteURLs() []string {
 }
 
 func ListCommits(nLast int) []*object.Commit {
-	repo, err := git.PlainOpen(".")
+	pwd, _ := os.Getwd()
+	return ListCommitsFromPath(nLast, filepath.Join(pwd, "."))
+}
+
+func ListCommitsFromPath(nLast int, path string) []*object.Commit {
+	repo, err := getGitRepository(path)
 	if err != nil {
 		return []*object.Commit{}
 	}

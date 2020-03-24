@@ -5,6 +5,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 type QoveryYML struct {
@@ -62,13 +63,23 @@ type QoveryYMLStorage struct {
 }
 
 func CurrentQoveryYML() (QoveryYML, error) {
+	path, _ := os.Getwd()
+	return CurrentQoveryYMLFromPath(path)
+}
+
+func CurrentQoveryYMLFromPath(path string) (QoveryYML, error) {
 	q := QoveryYML{}
 
-	if _, err := os.Stat(".qovery.yml"); os.IsNotExist(err) {
-		return q, err
+	absolutePath := filepath.Join(path, ".qovery.yml")
+	if _, err := os.Stat(absolutePath); os.IsNotExist(err) {
+		if path == "" {
+			return q, err
+		}
+
+		return CurrentQoveryYMLFromPath(GetAbsoluteParentPath(path))
 	}
 
-	f, err := ioutil.ReadFile(".qovery.yml")
+	f, err := ioutil.ReadFile(absolutePath)
 
 	if err != nil {
 		return q, err

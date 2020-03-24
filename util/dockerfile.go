@@ -2,11 +2,27 @@ package util
 
 import (
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
 func CurrentDockerfileContent() string {
-	contentBytes, _ := ioutil.ReadFile("Dockerfile")
+	path, _ := os.Getwd()
+	return CurrentDockerfileContentFromPath(path)
+}
+
+func CurrentDockerfileContentFromPath(path string) string {
+	absolutePath := filepath.Join(path, "Dockerfile")
+	if _, err := os.Stat(absolutePath); os.IsNotExist(err) {
+		if path == "" {
+			return ""
+		}
+
+		return CurrentDockerfileContentFromPath(GetAbsoluteParentPath(path))
+	}
+
+	contentBytes, _ := ioutil.ReadFile(absolutePath)
 	return string(contentBytes)
 }
 
