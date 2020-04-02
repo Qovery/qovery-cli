@@ -55,6 +55,7 @@ func GetProjectByName(name string) Project {
 }
 
 func ListProjects() Projects {
+	p := Projects{}
 	CheckAuthenticationOrQuitWithMessage()
 
 	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project", nil)
@@ -63,16 +64,14 @@ func ListProjects() Projects {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return p
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	p := Projects{}
-
-	if err != nil {
-		return p
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)

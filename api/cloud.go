@@ -27,6 +27,8 @@ type CloudProviderRegion struct {
 }
 
 func ListCloudProviders() CloudProviders {
+	c := CloudProviders{}
+
 	CheckAuthenticationOrQuitWithMessage()
 
 	req, _ := http.NewRequest(http.MethodGet, RootURL+"/cloud", nil)
@@ -35,16 +37,14 @@ func ListCloudProviders() CloudProviders {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return c
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	c := CloudProviders{}
-
-	if err != nil {
-		return c
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)

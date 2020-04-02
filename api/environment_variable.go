@@ -84,14 +84,14 @@ func CreateProjectEnvironmentVariable(environmentVariable EnvironmentVariable, p
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return ev
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	if err != nil {
-		return ev
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -138,14 +138,14 @@ func ListEnvironmentEnvironmentVariables(projectId string, branchName string) En
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return evs
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	if err != nil {
-		return evs
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -175,14 +175,14 @@ func CreateEnvironmentEnvironmentVariable(environmentVariable EnvironmentVariabl
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return ev
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	if err != nil {
-		return ev
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -230,14 +230,14 @@ func ListApplicationEnvironmentVariables(projectId string, repositoryId string, 
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return evs
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	if err != nil {
-		return evs
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -270,14 +270,14 @@ func CreateApplicationEnvironmentVariable(environmentVariable EnvironmentVariabl
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return ev
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	if err != nil {
-		return ev
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)

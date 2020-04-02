@@ -14,22 +14,22 @@ type User struct {
 }
 
 func GetAccount() User {
+	u := User{}
+
 	req, _ := http.NewRequest(http.MethodGet, RootURL+"/account", nil)
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return u
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	u := User{}
-
-	if err != nil {
-		return u
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)

@@ -40,14 +40,14 @@ func ListServices(projectId string, branchName string, resourcePath string) Serv
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return services
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	if err != nil {
-		return services
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -78,6 +78,10 @@ func ListServicesRaw(projectId string, branchName string, resourcePath string) m
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return itf
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
@@ -85,10 +89,6 @@ func ListServicesRaw(projectId string, branchName string, resourcePath string) m
 	}
 
 	itf := map[string]interface{}{}
-
-	if err != nil {
-		return itf
-	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
 

@@ -85,14 +85,14 @@ func ListRepositories(projectId string) Repositories {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return r
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	if err != nil {
-		return r
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)

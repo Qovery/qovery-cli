@@ -38,14 +38,14 @@ func ListApplicationLogs(lastLines int, projectId string, repositoryId string, e
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return logs
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	if err != nil {
-		return logs
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -74,14 +74,14 @@ func ListApplicationTailLogs(lastLogId string, projectId string, repositoryId st
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return logs
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	if err != nil {
-		return logs
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)

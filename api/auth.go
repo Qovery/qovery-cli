@@ -24,7 +24,7 @@ var (
 	oAuthUrlParamValueRedirect  = "http://localhost:" + strconv.Itoa(httpAuthPort) + "/authorization"
 )
 
-func QoveryAuthentication() {
+func DoRequestUserToAuthenticate() {
 	available, message, _ := util.CheckAvailableNewVersion()
 	if available {
 		fmt.Println(message)
