@@ -43,11 +43,11 @@ func ShowDeploymentList(projectName string, branchName string, applicationName s
 	table.SetHeader([]string{"branch", "commit date", "commit id", "commit author", "deployed"})
 
 	project := api.GetProjectByName(projectName)
-	environment := api.GetEnvironmentByName(api.GetProjectByName(projectName).Id, branchName)
+	environment := api.GetEnvironmentByName(project.Id, branchName)
 	application := api.GetApplicationByName(project.Id, environment.Id, applicationName)
 
 	if environment.Id == "" {
-		table.Append([]string{"", "", "", ""})
+		table.Append([]string{"", "", "", "", ""})
 		table.Render()
 		return
 	}
