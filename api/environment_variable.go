@@ -47,14 +47,14 @@ func ListProjectEnvironmentVariables(projectId string) EnvironmentVariables {
 	client := http.Client{}
 	resp, err := client.Do(req)
 
+	if err != nil {
+		return evs
+	}
+
 	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	if err != nil {
-		return evs
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
