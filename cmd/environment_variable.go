@@ -37,21 +37,22 @@ func ShowEnvironmentVariablesByBranchName(projectName string, branchName string,
 		evs = append(evs, ev)
 	}
 
-	for _, ev := range api.ListEnvironmentEnvironmentVariables(projectId, branchName).Results {
+	environmentId := api.GetEnvironmentByName(projectId, branchName).Id
+	for _, ev := range api.ListEnvironmentEnvironmentVariables(projectId, environmentId).Results {
 		evs = append(evs, ev)
 	}
 
 	ShowEnvironmentVariables(evs, showCredentials)
 }
 
-func ShowEnvironmentVariablesByApplicationName(projectName string, branchName string, showCredentials bool) {
-	ShowEnvironmentVariables(ListEnvironmentVariables(projectName, branchName), showCredentials)
+func ShowEnvironmentVariablesByApplicationName(projectName string, branchName string, applicationName string, showCredentials bool) {
+	ShowEnvironmentVariables(ListEnvironmentVariables(projectName, branchName, applicationName), showCredentials)
 }
 
-func ListEnvironmentVariables(projectName string, branchName string) []api.EnvironmentVariable {
+func ListEnvironmentVariables(projectName string, branchName string, applicationName string) []api.EnvironmentVariable {
 	projectId := api.GetProjectByName(projectName).Id
-	repositoryId := api.GetRepositoryByCurrentRemoteURL(projectId).Id
-	environment := api.GetEnvironmentByBranchId(projectId, repositoryId, branchName)
+	environment := api.GetEnvironmentByName(projectId, branchName)
+	application := api.GetApplicationByName(projectId, environment.Id, applicationName)
 
 	var evs []api.EnvironmentVariable
 
@@ -59,7 +60,7 @@ func ListEnvironmentVariables(projectName string, branchName string) []api.Envir
 		evs = append(evs, ev)
 	}
 
-	for _, ev := range api.ListApplicationEnvironmentVariables(projectId, repositoryId, environment.Id, environment.Application.Id).Results {
+	for _, ev := range api.ListApplicationEnvironmentVariables(projectId, environment.Id, application.Id).Results {
 		evs = append(evs, ev)
 	}
 

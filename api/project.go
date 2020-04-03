@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"qovery.go/util"
 )
 
 type Projects struct {
@@ -14,12 +13,11 @@ type Projects struct {
 }
 
 type Project struct {
-	ObjectType          string              `json:"object_type"`
-	Id                  string              `json:"id"`
-	CreatedAt           string              `json:"created_at"`
-	UpdatedAt           string              `json:"updated_at"`
-	Name                string              `json:"name"`
-	CloudProviderRegion CloudProviderRegion `json:"cloud_provider_region"`
+	ObjectType string `json:"object_type"`
+	Id         string `json:"id"`
+	CreatedAt  string `json:"created_at"`
+	UpdatedAt  string `json:"updated_at"`
+	Name       string `json:"name"`
 }
 
 func GetProjectByName(name string) Project {
@@ -37,10 +35,10 @@ func GetProjectByName(name string) Project {
 		return projects[0]
 	}
 
-	remoteURLs := util.ListRemoteURLs()
+	//remoteURLs := util.ListRemoteURLs()
 
 	// take the right project from matching local and distant remote URL
-	for _, p := range projects {
+	/*for _, p := range projects {
 		// TODO improve
 		for _, r := range ListRepositories(p.Id).Results {
 			for _, url := range remoteURLs {
@@ -49,9 +47,10 @@ func GetProjectByName(name string) Project {
 				}
 			}
 		}
-	}
+	}*/
 
-	return Project{}
+	//return Project{}
+	return projects[0] // TODO temp
 }
 
 func ListProjects() Projects {

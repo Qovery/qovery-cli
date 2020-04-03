@@ -35,7 +35,7 @@ var statusCmd = &cobra.Command{
 			bar := progressbar.NewOptions(100, progressbar.OptionSetPredictTime(true))
 
 			for {
-				a := api.GetBranchByName(projectId, BranchName)
+				a := api.GetEnvironmentByName(projectId, BranchName)
 				_ = bar.Set(a.Status.ProgressionInPercent)
 				bar.Describe(a.Status.CodeMessage)
 
@@ -46,7 +46,7 @@ var statusCmd = &cobra.Command{
 				time.Sleep(1 * time.Second)
 			}
 
-			aggregatedEnvironment := api.GetBranchByName(projectId, BranchName)
+			aggregatedEnvironment := api.GetEnvironmentByName(projectId, BranchName)
 
 			if aggregatedEnvironment.Status.State == "LIVE" {
 				fmt.Print("\n\n")
@@ -64,7 +64,7 @@ var statusCmd = &cobra.Command{
 		//ShowBrokerList(ProjectName, BranchName)
 		//ShowStorageList(ProjectName, BranchName)
 
-		aggregatedEnvironment := api.GetBranchByName(projectId, BranchName)
+		aggregatedEnvironment := api.GetEnvironmentByName(projectId, BranchName)
 		if !strings.Contains(aggregatedEnvironment.Status.State, "_ERROR") {
 			// no error
 			return

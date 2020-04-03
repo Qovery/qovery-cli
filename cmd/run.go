@@ -34,6 +34,7 @@ var runCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		branchName := util.CurrentBranchName()
+		ApplicationName = qoveryYML.Application.Name
 		projectName := qoveryYML.Application.Project
 
 		dockerClient, _ := client.NewEnvClient()
@@ -63,7 +64,7 @@ var runCmd = &cobra.Command{
 					var environmentVariables []string
 					buildArgs := make(map[string]*string)
 
-					evs := ListEnvironmentVariables(projectName, branchName)
+					evs := ListEnvironmentVariables(projectName, branchName, ApplicationName)
 
 					for i := range evs {
 						ev := evs[i]

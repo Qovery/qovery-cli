@@ -122,16 +122,16 @@ func DeleteProjectEnvironmentVariable(environmentVariableId string, projectId st
 	}
 }
 
-func ListEnvironmentEnvironmentVariables(projectId string, branchName string) EnvironmentVariables {
+func ListEnvironmentEnvironmentVariables(projectId string, environmentId string) EnvironmentVariables {
 	evs := EnvironmentVariables{}
 
-	if projectId == "" || branchName == "" {
+	if projectId == "" || environmentId == "" {
 		return evs
 	}
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/branch/"+branchName+"/env", nil)
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/environment/"+environmentId+"/env", nil)
 
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
@@ -155,10 +155,10 @@ func ListEnvironmentEnvironmentVariables(projectId string, branchName string) En
 	return evs
 }
 
-func CreateEnvironmentEnvironmentVariable(environmentVariable EnvironmentVariable, projectId string, branchName string) EnvironmentVariable {
+func CreateEnvironmentEnvironmentVariable(environmentVariable EnvironmentVariable, projectId string, environmentId string) EnvironmentVariable {
 	ev := EnvironmentVariable{}
 
-	if projectId == "" || branchName == "" {
+	if projectId == "" || environmentId == "" {
 		return ev
 	}
 
@@ -167,7 +167,7 @@ func CreateEnvironmentEnvironmentVariable(environmentVariable EnvironmentVariabl
 	b := new(bytes.Buffer)
 	_ = json.NewEncoder(b).Encode(environmentVariable)
 
-	req, _ := http.NewRequest(http.MethodPost, RootURL+"/project/"+projectId+"/branch/"+branchName+"/env", b)
+	req, _ := http.NewRequest(http.MethodPost, RootURL+"/project/"+projectId+"/environment/"+environmentId+"/env", b)
 
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 	req.Header.Set("Content-Type", "application/json")
@@ -192,14 +192,14 @@ func CreateEnvironmentEnvironmentVariable(environmentVariable EnvironmentVariabl
 	return ev
 }
 
-func DeleteEnvironmentEnvironmentVariable(environmentVariableId string, projectId string, branchName string) {
-	if environmentVariableId == "" || projectId == "" || branchName == "" {
+func DeleteEnvironmentEnvironmentVariable(environmentVariableId string, projectId string, environmentId string) {
+	if environmentVariableId == "" || projectId == "" || environmentId == "" {
 		return
 	}
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodDelete, RootURL+"/project/"+projectId+"/branch/"+branchName+"/env/"+environmentVariableId, nil)
+	req, _ := http.NewRequest(http.MethodDelete, RootURL+"/project/"+projectId+"/environment/"+environmentId+"/env/"+environmentVariableId, nil)
 
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
@@ -213,16 +213,16 @@ func DeleteEnvironmentEnvironmentVariable(environmentVariableId string, projectI
 	}
 }
 
-func ListApplicationEnvironmentVariables(projectId string, repositoryId string, environmentId string, applicationId string) EnvironmentVariables {
+func ListApplicationEnvironmentVariables(projectId string, environmentId string, applicationId string) EnvironmentVariables {
 	evs := EnvironmentVariables{}
 
-	if projectId == "" || repositoryId == "" || environmentId == "" || applicationId == "" {
+	if projectId == "" || environmentId == "" || applicationId == "" {
 		return evs
 	}
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	url := RootURL + "/project/" + projectId + "/repository/" + repositoryId + "/environment/" + environmentId + "/application/" + applicationId + "/env"
+	url := RootURL + "/project/" + projectId + "/environment/" + environmentId + "/application/" + applicationId + "/env"
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
 
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
@@ -247,12 +247,12 @@ func ListApplicationEnvironmentVariables(projectId string, repositoryId string, 
 	return evs
 }
 
-func CreateApplicationEnvironmentVariable(environmentVariable EnvironmentVariable, projectId string, repositoryId string,
-	environmentId string, applicationId string) EnvironmentVariable {
+func CreateApplicationEnvironmentVariable(environmentVariable EnvironmentVariable, projectId string, environmentId string,
+	applicationId string) EnvironmentVariable {
 
 	ev := EnvironmentVariable{}
 
-	if projectId == "" || repositoryId == "" || environmentId == "" || applicationId == "" {
+	if projectId == "" || environmentId == "" || applicationId == "" {
 		return ev
 	}
 
@@ -261,7 +261,7 @@ func CreateApplicationEnvironmentVariable(environmentVariable EnvironmentVariabl
 	b := new(bytes.Buffer)
 	_ = json.NewEncoder(b).Encode(environmentVariable)
 
-	req, _ := http.NewRequest(http.MethodPost, RootURL+"/project/"+projectId+"/repository/"+repositoryId+"/environment/"+
+	req, _ := http.NewRequest(http.MethodPost, RootURL+"/project/"+projectId+"/environment/"+
 		environmentId+"/application/"+applicationId+"/env", b)
 
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
@@ -287,16 +287,16 @@ func CreateApplicationEnvironmentVariable(environmentVariable EnvironmentVariabl
 	return ev
 }
 
-func DeleteApplicationEnvironmentVariable(environmentVariableId string, projectId string, repositoryId string,
+func DeleteApplicationEnvironmentVariable(environmentVariableId string, projectId string,
 	environmentId string, applicationId string) {
 
-	if projectId == "" || repositoryId == "" || environmentId == "" || applicationId == "" {
+	if projectId == "" || environmentId == "" || applicationId == "" {
 		return
 	}
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodDelete, RootURL+"/project/"+projectId+"/repository/"+repositoryId+"/environment/"+
+	req, _ := http.NewRequest(http.MethodDelete, RootURL+"/project/"+projectId+"/environment/"+
 		environmentId+"/application/"+applicationId+"/env/"+environmentVariableId, nil)
 
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())

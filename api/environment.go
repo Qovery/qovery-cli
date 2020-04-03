@@ -8,35 +8,66 @@ import (
 	"os"
 )
 
-type AggregatedEnvironments struct {
-	Results []AggregatedEnvironment `json:"results"`
-}
-
 type Environments struct {
 	Results []Environment `json:"results"`
 }
 
-type AggregatedEnvironment struct {
-	BranchId          string        `json:"branch_id"`
-	Status            Status        `json:"status"`
-	ConnectionURIs    []string      `json:"connection_uris"`
-	TotalApplications *int          `json:"total_applications"`
-	TotalDatabases    *int          `json:"total_databases"`
-	TotalBrokers      *int          `json:"total_brokers"`
-	TotalStorage      *int          `json:"total_storage"`
-	Environments      []Environment `json:"environments"`
-}
-
 type Environment struct {
-	Id          string      `json:"id"`
-	BranchId    string      `json:"branch_id"`
-	CommitId    string      `json:"commit_id"`
-	Application Application `json:"application"`
+	Id                  string              `json:"id"`
+	Name                string              `json:"name"`
+	Status              Status              `json:"status"`
+	TotalApplications   *int                `json:"total_applications"`
+	TotalServices       *int                `json:"total_services"`
+	TotalDatabases      *int                `json:"total_databases"`
+	TotalBrokers        *int                `json:"total_brokers"`
+	CloudProviderRegion CloudProviderRegion `json:"cloud_provider_region"`
+	Applications        []Application       `json:"applications"`
+	Databases           []Service           `json:"databases"`
+	Routers             []Router            `json:"routers"`
 }
 
-func GetEnvironmentByBranchId(projectId string, repositoryId string, branchId string) Environment {
-	for _, v := range ListEnvironments(projectId, repositoryId).Results {
-		if v.BranchId == branchId {
+func (e *Environment) GetApplicationNames() []string {
+	var names []string
+
+	for _, x := range e.Applications {
+		names = append(names, x.Name)
+	}
+
+	return names
+}
+
+func (e *Environment) GetDatabaseNames() []string {
+	var names []string
+
+	for _, x := range e.Databases {
+		names = append(names, x.Name)
+	}
+
+	return names
+}
+
+func (e *Environment) GetApplication(name string) Application {
+	for _, a := range e.Applications {
+		if a.Name == name {
+			return a
+		}
+	}
+
+	return Application{}
+}
+
+func (e *Environment) GetConnectionURIs() []string {
+	var uris []string
+	for _, r := range e.Routers {
+		uris = append(uris, r.ConnectionURI)
+	}
+
+	return uris
+}
+
+func GetEnvironmentByName(projectId string, name string) Environment {
+	for _, v := range ListEnvironments(projectId).Results {
+		if v.Name == name {
 			return v
 		}
 	}
@@ -44,50 +75,8 @@ func GetEnvironmentByBranchId(projectId string, repositoryId string, branchId st
 	return Environment{}
 }
 
-func ListEnvironments(projectId string, repositoryId string) Environments {
+func ListEnvironments(projectId string) Environments {
 	r := Environments{}
-
-	if projectId == "" || repositoryId == "" {
-		return r
-	}
-
-	CheckAuthenticationOrQuitWithMessage()
-
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/repository/"+repositoryId+"/environment", nil)
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	if err != nil {
-		return r
-	}
-
-	err = CheckHTTPResponse(resp)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &r)
-
-	return r
-}
-
-func GetBranchByName(projectId string, name string) AggregatedEnvironment {
-	for _, v := range ListBranches(projectId).Results {
-		if v.BranchId == name {
-			return v
-		}
-	}
-
-	return AggregatedEnvironment{}
-}
-
-func ListBranches(projectId string) AggregatedEnvironments {
-	r := AggregatedEnvironments{}
 
 	if projectId == "" {
 		return r
@@ -95,7 +84,7 @@ func ListBranches(projectId string) AggregatedEnvironments {
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/branch", nil)
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/environment", nil)
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}
@@ -118,20 +107,24 @@ func ListBranches(projectId string) AggregatedEnvironments {
 	return r
 }
 
-func DeleteBranch(projectId string, branchName string) {
-	if projectId == "" || branchName == "" {
+func DeleteEnvironment(projectId string, environmentId string) {
+	if projectId == "" || environmentId == "" {
 		return
 	}
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodDelete, RootURL+"/project/"+projectId+"/branch/"+branchName, nil)
+	req, _ := http.NewRequest(http.MethodDelete, RootURL+"/project/"+projectId+"/environment/"+environmentId+"/deploy", nil)
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}
-	resp, _ := client.Do(req)
+	resp, err := client.Do(req)
 
-	err := CheckHTTPResponse(resp)
+	if err != nil {
+		return
+	}
+
+	err = CheckHTTPResponse(resp)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

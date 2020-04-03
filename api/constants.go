@@ -3,5 +3,5 @@ package api
 const (
 	headerAuthorization = "Authorization"
 	headerValueBearer   = "Bearer "
-	DefaultRootUrl      = "https://api.qovery.com/api/v1"
+	DefaultRootUrl      = "http://localhost:8080/api/v1"
 )

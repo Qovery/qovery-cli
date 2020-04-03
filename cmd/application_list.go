@@ -6,6 +6,7 @@ import (
 	"os"
 	"qovery.go/api"
 	"qovery.go/util"
+	"strings"
 )
 
 var applicationListCmd = &cobra.Command{
@@ -38,20 +39,26 @@ func init() {
 
 func ShowApplicationList(projectName string, branchName string) {
 	table := util.GetTable()
-	table.SetHeader([]string{"application name", "status", "endpoint", "databases", "brokers", "storage"})
+	table.SetHeader([]string{"application name", "status", "endpoint", "databases"})
 
-	applications := api.ListApplications(api.GetProjectByName(projectName).Id, branchName)
+	projectId := api.GetProjectByName(projectName).Id
+	environment := api.GetEnvironmentByName(projectId, branchName)
+
+	applications := api.ListApplications(projectId, environment.Id)
 	if applications.Results == nil || len(applications.Results) == 0 {
-		table.Append([]string{"", "", "", "", "", ""})
+		table.Append([]string{"", "", "", "", ""})
 	} else {
 		for _, a := range applications.Results {
+			databaseName := "none"
+			if a.Databases != nil {
+				databaseName = strings.Join(a.GetDatabaseNames(), ", ")
+			}
+
 			table.Append([]string{
 				a.Name,
 				a.Status.GetColoredCodeMessage(),
 				a.ConnectionURI,
-				intPointerValue(a.TotalDatabases),
-				intPointerValue(a.TotalBrokers),
-				intPointerValue(a.TotalStorage),
+				databaseName,
 			})
 		}
 	}

@@ -31,7 +31,9 @@ var environmentEnvAddCmd = &cobra.Command{
 		}
 
 		p := api.GetProjectByName(ProjectName)
-		api.CreateEnvironmentEnvironmentVariable(api.EnvironmentVariable{Key: args[0], Value: args[1]}, p.Id, BranchName)
+		e := api.GetEnvironmentByName(p.Id, BranchName)
+
+		api.CreateEnvironmentEnvironmentVariable(api.EnvironmentVariable{Key: args[0], Value: args[1]}, p.Id, e.Id)
 		fmt.Println("ok")
 	},
 }

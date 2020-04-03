@@ -21,6 +21,7 @@ var applicationEnvListCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			BranchName = util.CurrentBranchName()
+			ApplicationName = qoveryYML.Application.Name
 			ProjectName = qoveryYML.Application.Project
 
 			if BranchName == "" || ProjectName == "" {
@@ -29,13 +30,14 @@ var applicationEnvListCmd = &cobra.Command{
 			}
 		}
 
-		ShowEnvironmentVariablesByApplicationName(ProjectName, BranchName, ShowCredentials)
+		ShowEnvironmentVariablesByApplicationName(ProjectName, BranchName, ApplicationName, ShowCredentials)
 	},
 }
 
 func init() {
 	applicationEnvListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	applicationEnvListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
+	applicationEnvListCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
 	applicationEnvListCmd.PersistentFlags().BoolVarP(&ShowCredentials, "credentials", "c", false, "Show credentials")
 	// TODO select application
 

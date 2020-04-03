@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
@@ -24,24 +25,33 @@ var environmentListCmd = &cobra.Command{
 			}
 			ProjectName = qoveryYML.Application.Project
 		}
-		aggEnvs := api.ListBranches(api.GetProjectByName(ProjectName).Id)
+		environments := api.ListEnvironments(api.GetProjectByName(ProjectName).Id)
 
 		table := util.GetTable()
-		table.SetHeader([]string{"branch", "status", "endpoints", "application", "databases", "brokers", "storage"})
+		table.SetHeader([]string{"branch", "status", "endpoints", "region", "applications", "databases"})
 
-		if aggEnvs.Results == nil || len(aggEnvs.Results) == 0 {
-			table.Append([]string{"", "", "", "", "", "", ""})
+		if environments.Results == nil || len(environments.Results) == 0 {
+			table.Append([]string{"", "", "", "", "", ""})
 		} else {
-			for _, a := range aggEnvs.Results {
+			for _, a := range environments.Results {
+				databaseName := "none"
+				if a.Databases != nil {
+					databaseName = strings.Join(a.GetDatabaseNames(), ", ")
+				}
+
+				applicationName := "none"
+				if a.Applications != nil {
+					applicationName = strings.Join(a.GetApplicationNames(), ", ")
+				}
+
 				//output = append(output,
 				table.Append([]string{
-					a.BranchId,
+					a.Name,
 					a.Status.GetColoredCodeMessage(),
-					strings.Join(a.ConnectionURIs, ", "),
-					intPointerValue(a.TotalApplications),
-					intPointerValue(a.TotalDatabases),
-					intPointerValue(a.TotalBrokers),
-					intPointerValue(a.TotalStorage),
+					strings.Join(a.GetConnectionURIs(), ", "),
+					fmt.Sprintf("%s (%s)", a.CloudProviderRegion.FullName, a.CloudProviderRegion.Description),
+					applicationName,
+					databaseName,
 				})
 			}
 		}

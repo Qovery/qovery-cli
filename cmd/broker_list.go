@@ -43,7 +43,10 @@ func ShowBrokerList(projectName string, branchName string) {
 		"name | status | type | version | endpoint | port | username | password | application",
 	}
 
-	services := api.ListBrokers(api.GetProjectByName(projectName).Id, branchName)
+	projectId := api.GetProjectByName(projectName).Id
+	environment := api.GetEnvironmentByName(projectId, branchName)
+
+	services := api.ListBrokers(projectId, environment.Id)
 
 	if services.Results == nil || len(services.Results) == 0 {
 		fmt.Println(columnize.SimpleFormat(output))
@@ -53,11 +56,12 @@ func ShowBrokerList(projectName string, branchName string) {
 	for _, a := range services.Results {
 		applicationName := "none"
 
-		if a.Application != nil {
-			applicationName = a.Application.Name
+		if a.Applications != nil {
+			applicationName = strings.Join(a.GetApplicationNames(), ", ")
 		}
+
 		output = append(output, strings.Join([]string{
-      a.Name,
+			a.Name,
 			a.Status.CodeMessage,
 			a.Type,
 			a.Version,

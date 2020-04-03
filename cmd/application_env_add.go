@@ -22,6 +22,7 @@ var applicationEnvAddCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			BranchName = util.CurrentBranchName()
+			ApplicationName = qoveryYML.Application.Name
 			ProjectName = qoveryYML.Application.Project
 		}
 
@@ -31,10 +32,10 @@ var applicationEnvAddCmd = &cobra.Command{
 		}
 
 		projectId := api.GetProjectByName(ProjectName).Id
-		repositoryId := api.GetRepositoryByCurrentRemoteURL(projectId).Id
-		environment := api.GetEnvironmentByBranchId(projectId, repositoryId, BranchName)
-		api.CreateApplicationEnvironmentVariable(api.EnvironmentVariable{Key: args[0], Value: args[1]}, projectId, repositoryId,
-			environment.Id, environment.Application.Id)
+		environment := api.GetEnvironmentByName(projectId, BranchName)
+		application := api.GetApplicationByName(projectId, environment.Id, ApplicationName)
+		api.CreateApplicationEnvironmentVariable(api.EnvironmentVariable{Key: args[0], Value: args[1]}, projectId,
+			environment.Id, application.Id)
 
 		fmt.Println("ok")
 	},
@@ -43,6 +44,7 @@ var applicationEnvAddCmd = &cobra.Command{
 func init() {
 	applicationEnvAddCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	applicationEnvAddCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
+	applicationEnvAddCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
 	// TODO select application
 
 	applicationEnvCmd.AddCommand(applicationEnvAddCmd)

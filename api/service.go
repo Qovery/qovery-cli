@@ -13,28 +13,38 @@ type Services struct {
 }
 
 type Service struct {
-	Id          string       `json:"id"`
-	Name        string       `json:"name"`
-	Type        string       `json:"type"`
-	Version     string       `json:"version"`
-	Status      Status       `json:"status"`
-	FQDN        string       `json:"fqdn"`
-	Port        *int         `json:"port"`
-	Username    string       `json:"username"`
-	Password    string       `json:"password"`
-	Application *Application `json:"application"`
+	Id           string        `json:"id"`
+	Name         string        `json:"name"`
+	Type         string        `json:"type"`
+	Version      string        `json:"version"`
+	Status       Status        `json:"status"`
+	FQDN         string        `json:"fqdn"`
+	Port         *int          `json:"port"`
+	Username     string        `json:"username"`
+	Password     string        `json:"password"`
+	Applications []Application `json:"applications"`
 }
 
-func ListServices(projectId string, branchName string, resourcePath string) Services {
+func (s *Service) GetApplicationNames() []string {
+	var names []string
+
+	for _, a := range s.Applications {
+		names = append(names, a.Name)
+	}
+
+	return names
+}
+
+func ListServices(projectId string, environmentId string, resourcePath string) Services {
 	services := Services{}
 
-	if projectId == "" || branchName == "" || resourcePath == "" {
+	if projectId == "" || environmentId == "" || resourcePath == "" {
 		return services
 	}
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/branch/"+branchName+"/"+resourcePath, nil)
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/environment/"+environmentId+"/"+resourcePath, nil)
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}
@@ -57,22 +67,20 @@ func ListServices(projectId string, branchName string, resourcePath string) Serv
 	return services
 }
 
-func ListDatabases(projectId string, branchName string) Services {
-	return ListServices(projectId, branchName, "database")
+func ListDatabases(projectId string, environmentId string) Services {
+	return ListServices(projectId, environmentId, "database")
 }
 
-func ListBrokers(projectId string, branchName string) Services {
-	return ListServices(projectId, branchName, "broker")
+func ListBrokers(projectId string, environmentId string) Services {
+	return ListServices(projectId, environmentId, "broker")
 }
 
-func ListStorage(projectId string, branchName string) Services {
-	return ListServices(projectId, branchName, "storage")
-}
+func ListServicesRaw(projectId string, environmentId string, resourcePath string) map[string]interface{} {
+	itf := map[string]interface{}{}
 
-func ListServicesRaw(projectId string, branchName string, resourcePath string) map[string]interface{} {
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/branch/"+branchName+"/"+resourcePath, nil)
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/environment/"+environmentId+"/"+resourcePath, nil)
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}
@@ -88,8 +96,6 @@ func ListServicesRaw(projectId string, branchName string, resourcePath string) m
 		os.Exit(1)
 	}
 
-	itf := map[string]interface{}{}
-
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	_ = json.Unmarshal(body, &itf)
@@ -97,18 +103,14 @@ func ListServicesRaw(projectId string, branchName string, resourcePath string) m
 	return itf
 }
 
-func ListDatabasesRaw(projectId string, branchName string) map[string]interface{} {
-	return ListServicesRaw(projectId, branchName, "database")
+func ListDatabasesRaw(projectId string, environmentId string) map[string]interface{} {
+	return ListServicesRaw(projectId, environmentId, "database")
 }
 
-func ListBrokersRaw(projectId string, branchName string) map[string]interface{} {
-	return ListServicesRaw(projectId, branchName, "broker")
+func ListBrokersRaw(projectId string, environmentId string) map[string]interface{} {
+	return ListServicesRaw(projectId, environmentId, "broker")
 }
 
-func ListStorageRaw(projectId string, branchName string) map[string]interface{} {
-	return ListServicesRaw(projectId, branchName, "storage")
-}
-
-func ListApplicationsRaw(projectId string, branchName string) map[string]interface{} {
-	return ListServicesRaw(projectId, branchName, "application")
+func ListApplicationsRaw(projectId string, environmentId string) map[string]interface{} {
+	return ListServicesRaw(projectId, environmentId, "application")
 }

@@ -31,8 +31,9 @@ var environmentEnvDeleteCmd = &cobra.Command{
 		}
 
 		p := api.GetProjectByName(ProjectName)
-		ev := api.ListEnvironmentEnvironmentVariables(p.Id, BranchName).GetEnvironmentVariableByKey(args[0])
-		api.DeleteEnvironmentEnvironmentVariable(ev.Id, p.Id, BranchName)
+		e := api.GetEnvironmentByName(p.Id, BranchName)
+		ev := api.ListEnvironmentEnvironmentVariables(p.Id, e.Id).GetEnvironmentVariableByKey(args[0])
+		api.DeleteEnvironmentEnvironmentVariable(ev.Id, p.Id, e.Id)
 		fmt.Println("ok")
 	},
 }

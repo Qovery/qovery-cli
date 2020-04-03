@@ -1,17 +1,5 @@
 package api
 
-import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"regexp"
-	"strings"
-
-	"qovery.go/util"
-)
-
 type Repositories struct {
 	Results []Repository `json:"results"`
 }
@@ -23,81 +11,6 @@ type Repository struct {
 	UpdatedAt  string `json:"updated_at"`
 	Name       string `json:"name"`
 	URL        string `json:"url"`
-}
-
-func GetRepositoryByCurrentRemoteURL(projectId string) Repository {
-	for _, url := range util.ListRemoteURLs() {
-		r := GetRepositoryByRemoteURL(projectId, url)
-		if r.Id != "" {
-			return r
-		}
-	}
-
-	return Repository{}
-}
-
-func cleanRepositoryURL(url string) string {
-	if !strings.HasSuffix(url, ".git") {
-		url = url + ".git"
-	}
-
-	re := regexp.MustCompile("https:\\/\\/(.*@)")
-	match := re.FindStringSubmatch(url)
-	if len(match) == 2 {
-		url = strings.Replace(url, match[1], "", 1)
-	}
-	return url
-}
-
-func GetRepositoryByRemoteURL(projectId string, url string) Repository {
-	url = cleanRepositoryURL(url)
-	for _, v := range ListRepositories(projectId).Results {
-		if v.URL == url {
-			return v
-		}
-	}
-
-	return Repository{}
-}
-
-func GetRepositoryByName(projectId string, name string) Repository {
-	for _, v := range ListRepositories(projectId).Results {
-		if v.Name == name {
-			return v
-		}
-	}
-
-	return Repository{}
-}
-
-func ListRepositories(projectId string) Repositories {
-	r := Repositories{}
-
-	if projectId == "" {
-		return r
-	}
-
-	CheckAuthenticationOrQuitWithMessage()
-
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+"/repository", nil)
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	if err != nil {
-		return r
-	}
-
-	err = CheckHTTPResponse(resp)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &r)
-
-	return r
+	BranchId   string `json:"branch_id"`
+	CommitId   string `json:"commit_id"`
 }

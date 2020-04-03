@@ -22,6 +22,7 @@ var applicationEnvDeleteCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			BranchName = util.CurrentBranchName()
+			ApplicationName = qoveryYML.Application.Name
 			ProjectName = qoveryYML.Application.Project
 		}
 
@@ -31,12 +32,11 @@ var applicationEnvDeleteCmd = &cobra.Command{
 		}
 
 		projectId := api.GetProjectByName(ProjectName).Id
-		repositoryId := api.GetRepositoryByCurrentRemoteURL(projectId).Id
-		environment := api.GetEnvironmentByBranchId(projectId, repositoryId, BranchName)
-		ev := api.ListApplicationEnvironmentVariables(projectId, repositoryId,
-			environment.Id, environment.Application.Id).GetEnvironmentVariableByKey(args[0])
+		environment := api.GetEnvironmentByName(projectId, BranchName)
+		application := api.GetApplicationByName(projectId, environment.Id, ApplicationName)
 
-		api.DeleteApplicationEnvironmentVariable(ev.Id, projectId, repositoryId, environment.Id, environment.Application.Id)
+		ev := api.ListApplicationEnvironmentVariables(projectId, environment.Id, application.Id).GetEnvironmentVariableByKey(args[0])
+		api.DeleteApplicationEnvironmentVariable(ev.Id, projectId, environment.Id, application.Id)
 
 		fmt.Println("ok")
 	},
@@ -45,6 +45,7 @@ var applicationEnvDeleteCmd = &cobra.Command{
 func init() {
 	applicationEnvDeleteCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	applicationEnvDeleteCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
+	applicationEnvDeleteCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
 	// TODO select application
 
 	applicationEnvCmd.AddCommand(applicationEnvDeleteCmd)

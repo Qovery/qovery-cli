@@ -23,16 +23,18 @@ var applicationLogCmd = &cobra.Command{
 				util.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
+			ApplicationName = qoveryYML.Application.Name
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		ShowApplicationLog(ProjectName, BranchName, Tail, FollowFlag)
+		ShowApplicationLog(ProjectName, BranchName, ApplicationName, Tail, FollowFlag)
 	},
 }
 
 func init() {
 	applicationLogCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	applicationLogCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
+	applicationLogCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
 	// TODO select application
 	applicationLogCmd.PersistentFlags().IntVar(&Tail, "tail", 100, "Specify if the logs should be streamed")
 	applicationLogCmd.PersistentFlags().BoolVarP(&FollowFlag, "follow", "f", false, "Specify if the logs should be streamed")
@@ -40,13 +42,13 @@ func init() {
 	applicationCmd.AddCommand(applicationLogCmd)
 }
 
-func ShowApplicationLog(projectName string, branchName string, lastLines int, follow bool) {
+func ShowApplicationLog(projectName string, branchName string, applicationName string, lastLines int, follow bool) {
 	projectId := api.GetProjectByName(projectName).Id
-	repositoryId := api.GetRepositoryByCurrentRemoteURL(projectId).Id
-	environment := api.GetEnvironmentByBranchId(projectId, repositoryId, branchName)
+	environment := api.GetEnvironmentByName(projectId, branchName)
+	application := api.GetApplicationByName(projectId, environment.Id, applicationName)
 
 	if !follow {
-		logs := api.ListApplicationLogs(lastLines, projectId, repositoryId, environment.Id, environment.Application.Id).Results
+		logs := api.ListApplicationLogs(lastLines, projectId, environment.Id, application.Id).Results
 
 		for _, log := range logs {
 			fmt.Print(log.Message)
@@ -57,7 +59,7 @@ func ShowApplicationLog(projectName string, branchName string, lastLines int, fo
 
 	var logs []api.Log
 	for {
-		logs = api.ListApplicationLogs(lastLines, projectId, repositoryId, environment.Id, environment.Application.Id).Results
+		logs = api.ListApplicationLogs(lastLines, projectId, environment.Id, application.Id).Results
 		if len(logs) > 0 {
 			break
 		}
@@ -70,7 +72,7 @@ func ShowApplicationLog(projectName string, branchName string, lastLines int, fo
 	lastLog := logs[len(logs)-1]
 	for {
 		time.Sleep(time.Duration(1) * time.Second)
-		logs = api.ListApplicationTailLogs(lastLog.Id, projectId, repositoryId, environment.Id, environment.Application.Id).Results
+		logs = api.ListApplicationTailLogs(lastLog.Id, projectId, environment.Id, application.Id).Results
 		if len(logs) > 0 {
 			for _, log := range logs {
 				fmt.Print(log.Message)

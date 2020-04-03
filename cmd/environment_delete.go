@@ -35,7 +35,10 @@ var environmentDeleteCmd = &cobra.Command{
 			return
 		}
 
-		api.DeleteBranch(api.GetProjectByName(ProjectName).Id, BranchName)
+		projectId := api.GetProjectByName(ProjectName).Id
+
+		api.DeleteEnvironment(projectId, api.GetEnvironmentByName(projectId, BranchName).Id)
+
 		fmt.Println(color.YellowString("deletion in progress..."))
 		fmt.Println("Hint: type \"qovery status --watch\" to track the progression of the deletion")
 	},

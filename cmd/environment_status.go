@@ -40,20 +40,18 @@ func init() {
 
 func ShowEnvironmentStatus(projectName string, branchName string) {
 	table := util.GetTable()
-	table.SetHeader([]string{"branch name", "status", "endpoints", "applications", "databases", "brokers", "storage"})
+	table.SetHeader([]string{"branch name", "status", "endpoints", "applications", "databases"})
 
-	a := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName)
-	if a.BranchId == "" {
-		table.Append([]string{"", "", "", "", "", "", ""})
+	a := api.GetEnvironmentByName(api.GetProjectByName(projectName).Id, branchName)
+	if a.Name == "" {
+		table.Append([]string{"", "", "", "", "", ""})
 	} else {
 		table.Append([]string{
-			a.BranchId,
+			a.Name,
 			a.Status.GetColoredCodeMessage(),
-			strings.Join(a.ConnectionURIs, ", "),
+			strings.Join(a.GetConnectionURIs(), ", "),
 			intPointerValue(a.TotalApplications),
 			intPointerValue(a.TotalDatabases),
-			intPointerValue(a.TotalBrokers),
-			intPointerValue(a.TotalStorage),
 		})
 	}
 

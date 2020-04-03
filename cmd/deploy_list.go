@@ -31,9 +31,9 @@ var deployListCmd = &cobra.Command{
 }
 
 func init() {
-	deployListCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
 	deployListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	deployListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
+	deployListCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
 
 	deployCmd.AddCommand(deployListCmd)
 }
@@ -42,19 +42,9 @@ func ShowDeploymentList(projectName string, branchName string, applicationName s
 	table := util.GetTable()
 	table.SetHeader([]string{"branch", "commit date", "commit id", "commit author", "deployed"})
 
-	environments := api.GetBranchByName(api.GetProjectByName(projectName).Id, branchName).Environments
-	if len(environments) == 0 {
-		table.Append([]string{"", "", "", "", ""})
-		table.Render()
-		return
-	}
-
-	var environment api.Environment
-	for _, e := range environments {
-		if e.Application.Name == applicationName {
-			environment = e
-		}
-	}
+	project := api.GetProjectByName(projectName)
+	environment := api.GetEnvironmentByName(api.GetProjectByName(projectName).Id, branchName)
+	application := api.GetApplicationByName(project.Id, environment.Id, applicationName)
 
 	if environment.Id == "" {
 		table.Append([]string{"", "", "", ""})
@@ -64,7 +54,7 @@ func ShowDeploymentList(projectName string, branchName string, applicationName s
 
 	// TODO param for n last commits
 	for _, commit := range util.ListCommits(10) {
-		if environment.CommitId == commit.ID().String() {
+		if application.Repository.CommitId == commit.ID().String() {
 			table.Append([]string{branchName, commit.Author.When.String(), commit.ID().String(), commit.Author.Name, color.GreenString("✓")})
 		} else {
 			table.Append([]string{branchName, commit.Author.When.String(), commit.ID().String(), commit.Author.Name, ""})

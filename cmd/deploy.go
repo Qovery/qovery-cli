@@ -35,7 +35,8 @@ var deployCmd = &cobra.Command{
 		commitId := args[0]
 
 		projectId := api.GetProjectByName(ProjectName).Id
-		applicationId := api.GetApplicationByName(projectId, BranchName, ApplicationName).Id
+		environmentId := api.GetEnvironmentByName(projectId, BranchName).Id
+		applicationId := api.GetApplicationByName(ProjectName, environmentId, ApplicationName).Id
 
 		api.Deploy(projectId, BranchName, applicationId, commitId)
 
@@ -44,9 +45,9 @@ var deployCmd = &cobra.Command{
 }
 
 func init() {
-	deployCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
 	deployCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	deployCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
+	deployCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
 
 	RootCmd.AddCommand(deployCmd)
 }

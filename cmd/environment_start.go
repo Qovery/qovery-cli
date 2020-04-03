@@ -27,18 +27,10 @@ var environmentStartCmd = &cobra.Command{
 		}
 
 		projectId := api.GetProjectByName(ProjectName).Id
-		applicationId := api.GetApplicationByName(projectId, BranchName, ApplicationName).Id
+		application := api.GetApplicationByName(projectId, BranchName, ApplicationName)
+		environment := api.GetEnvironmentByName(projectId, BranchName)
 
-		environments := api.GetBranchByName(projectId, BranchName).Environments
-
-		var environment api.Environment
-		for _, e := range environments {
-			if e.Application.Name == ApplicationName {
-				environment = e
-			}
-		}
-
-		api.Deploy(projectId, BranchName, applicationId, environment.CommitId)
+		api.Deploy(projectId, environment.Id, application.Id, application.Repository.CommitId)
 		ShowDeploymentMessage()
 	},
 }
@@ -46,6 +38,7 @@ var environmentStartCmd = &cobra.Command{
 func init() {
 	environmentStartCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	environmentStartCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
+	environmentStartCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
 
 	environmentCmd.AddCommand(environmentStartCmd)
 }
