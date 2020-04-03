@@ -46,12 +46,22 @@ func ShowEnvironmentStatus(projectName string, branchName string) {
 	if a.Name == "" {
 		table.Append([]string{"", "", "", "", "", ""})
 	} else {
+		applicationName := "none"
+		if a.Applications != nil {
+			applicationName = strings.Join(a.GetApplicationNames(), ", ")
+		}
+
+		databaseName := "none"
+		if a.Databases != nil {
+			databaseName = strings.Join(a.GetDatabaseNames(), ", ")
+		}
+
 		table.Append([]string{
 			a.Name,
 			a.Status.GetColoredCodeMessage(),
 			strings.Join(a.GetConnectionURIs(), ", "),
-			intPointerValue(a.TotalApplications),
-			intPointerValue(a.TotalDatabases),
+			applicationName,
+			databaseName,
 		})
 	}
 
