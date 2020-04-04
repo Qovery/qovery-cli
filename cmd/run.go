@@ -51,7 +51,8 @@ var runCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		applications := api.ListApplicationsRaw(project.Id, branchName)
+		environment := api.GetEnvironmentByName(project.Id, branchName)
+		applications := api.ListApplicationsRaw(project.Id, environment.Id)
 
 		if applications["results"] != nil {
 			results := applications["results"].([]interface{})
