@@ -24,7 +24,7 @@ var deployCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
-			ApplicationName = qoveryYML.Application.Name
+			ApplicationName = qoveryYML.Application.GetSanitizeName()
 		}
 
 		if len(args) != 1 {

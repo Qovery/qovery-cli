@@ -23,7 +23,7 @@ var deployListCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
-			ApplicationName = qoveryYML.Application.Name
+			ApplicationName = qoveryYML.Application.GetSanitizeName()
 		}
 
 		ShowDeploymentList(ProjectName, BranchName, ApplicationName)

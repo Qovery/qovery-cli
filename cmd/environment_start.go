@@ -23,7 +23,7 @@ var environmentStartCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
-			ApplicationName = qoveryYML.Application.Name
+			ApplicationName = qoveryYML.Application.GetSanitizeName()
 		}
 
 		projectId := api.GetProjectByName(ProjectName).Id

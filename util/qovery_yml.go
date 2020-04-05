@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type QoveryYML struct {
@@ -22,6 +23,10 @@ type QoveryYMLApplication struct {
 	CloudRegion        string `yaml:"cloud_region,omitempty"`
 	PubliclyAccessible bool   `yaml:"publicly_accessible,omitempty"`
 	Dockerfile         string `yaml:"dockerfile,omitempty"`
+}
+
+func (q *QoveryYMLApplication) GetSanitizeName() string {
+	return strings.ToLower(q.Name)
 }
 
 func (q *QoveryYMLApplication) DockerfilePath() string {
@@ -118,7 +123,7 @@ func validateConfig(qoveryYML QoveryYML) bool {
 		PrintSolution("Add in your .qovery.yml file, the 'project' name inside 'application' section")
 		counter++
 	}
-	if qoveryYML.Application.Name == "" {
+	if qoveryYML.Application.GetSanitizeName() == "" {
 		PrintError("No application name defined")
 		PrintSolution("Add in your .qovery.yml file, the 'name' name inside 'application' section")
 		counter++

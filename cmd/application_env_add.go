@@ -22,7 +22,7 @@ var applicationEnvAddCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			BranchName = util.CurrentBranchName()
-			ApplicationName = qoveryYML.Application.Name
+			ApplicationName = qoveryYML.Application.GetSanitizeName()
 			ProjectName = qoveryYML.Application.Project
 		}
 

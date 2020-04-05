@@ -23,7 +23,7 @@ var applicationLogCmd = &cobra.Command{
 				util.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
-			ApplicationName = qoveryYML.Application.Name
+			ApplicationName = qoveryYML.Application.GetSanitizeName()
 			ProjectName = qoveryYML.Application.Project
 		}
 

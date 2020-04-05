@@ -34,7 +34,7 @@ var runCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		branchName := util.CurrentBranchName()
-		ApplicationName = qoveryYML.Application.Name
+		ApplicationName = qoveryYML.Application.GetSanitizeName()
 		projectName := qoveryYML.Application.Project
 
 		dockerClient, _ := client.NewEnvClient()
@@ -58,7 +58,7 @@ var runCmd = &cobra.Command{
 			results := applications["results"].([]interface{})
 			for _, application := range results {
 				applicationConfigurationMap := application.(map[string]interface{})
-				if applicationConfigurationMap["name"] == qoveryYML.Application.Name {
+				if applicationConfigurationMap["name"] == qoveryYML.Application.GetSanitizeName() {
 
 					ReloadEnvironment(ConfigurationDirectoryRoot)
 
