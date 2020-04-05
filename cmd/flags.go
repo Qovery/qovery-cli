@@ -23,7 +23,8 @@ func hasFlagChanged(cmd *cobra.Command) bool {
 	flagChanged := false
 
 	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
-		if flag.Changed && flag.Name != "watch" && flag.Name != "follow" && flag.Name != "tail" && flag.Name != "credentials" {
+		if flag.Changed && flag.Name != "watch" && flag.Name != "follow" && flag.Name != "tail" &&
+			flag.Name != "credentials" && flag.Name != "debug" {
 			flagChanged = true
 		}
 	})
