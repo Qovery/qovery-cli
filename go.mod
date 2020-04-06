@@ -14,6 +14,7 @@ require (
 	github.com/golang/gddo v0.0.0-20200219175727-df439dd5819e // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0
 	github.com/klauspost/compress v1.10.1 // indirect
+	github.com/klauspost/pgzip v1.2.3 // indirect
 	github.com/mholt/archiver/v3 v3.3.0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
