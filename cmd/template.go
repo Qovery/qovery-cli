@@ -5,7 +5,6 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
-	"qovery.go/api"
 	"qovery.go/util"
 	"strings"
 )
@@ -35,8 +34,8 @@ will create a basic .qovery.yml config and a valid Dockerfile`,
 		var applicationName = util.AskForInput(false, "Enter application name")
 		var templateName = strings.ToLower(args[0])
 
-		dockerfileTemplate := api.GetDockerfileTemplate(templateName)
-		qoveryConfigTemplate := api.GetQoveryConfigTemplate(templateName)
+		dockerfileTemplate := util.GetDockerfileTemplate(templateName)
+		qoveryConfigTemplate := util.GetQoveryConfigTemplate(templateName)
 
 		dockerfile := prepareDockerfile(dockerfileTemplate)
 		qoveryConfig := prepareQoveryConfig(qoveryConfigTemplate, projectName, applicationName)
@@ -56,11 +55,11 @@ func assureNotExists(fileName string) {
 	}
 }
 
-func prepareQoveryConfig(template api.Template, projectName string, appName string) string {
+func prepareQoveryConfig(template util.Template, projectName string, appName string) string {
 	return replaceAppName(replaceProjectName(template.Content, projectName), appName)
 }
 
-func prepareDockerfile(template api.Template) string {
+func prepareDockerfile(template util.Template) string {
 	return template.Content
 }
 
