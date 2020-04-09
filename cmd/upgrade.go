@@ -9,9 +9,9 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"qovery.go/util"
 	"runtime"
 )
@@ -24,7 +24,6 @@ var upgradeCmd = &cobra.Command{
 	qovery upgrade`,
 	Run: func(cmd *cobra.Command, args []string) {
 		currentBinaryFilename, _ := osext.Executable()
-		currentBinaryFilenameNew := "." + currentBinaryFilename + ".new"
 		filename := "qovery"
 		archivePath := "/tmp/"
 		archiveName := filename + ".tgz"
@@ -48,7 +47,6 @@ var upgradeCmd = &cobra.Command{
 			cleanArchives(cleanList)
 			os.Exit(1)
 		}
-		cleanArchives(cleanList)
 
 		resp, err := http.Get(url)
 		if err != nil {
@@ -70,36 +68,21 @@ var upgradeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		if _, err := os.Stat(uncompressPath); !os.IsNotExist(err) {
+			os.RemoveAll(uncompressPath)
+		}
+
 		err = archiver.Unarchive(archivePathName, uncompressPath)
 		if err != nil {
 			fmt.Printf("Error while uncompressing the archive: %s", err)
 			os.Exit(1)
 		}
 
-		err = os.Rename(uncompressQoveryBinaryPath, currentBinaryFilename)
-		if err != nil {
-			// Fallback to to copy if TMP is not located on the same disk
-
-			src, err := ioutil.ReadFile(uncompressQoveryBinaryPath)
-			if err != nil {
-				fmt.Printf("Error while reading new Qovery CLI binary file: %s", err)
-				os.Exit(1)
-			}
-			err = ioutil.WriteFile(currentBinaryFilenameNew, src, 0755)
-			if err != nil {
-				fmt.Printf("Wasn't able to replace the Qovery binary: %s", err)
-				os.Exit(1)
-			}
-
-			err = os.Rename(currentBinaryFilenameNew, currentBinaryFilename)
-			if err != nil {
-				fmt.Printf("Error while renaming new Qovery CLI binary file: %s", err)
-				os.Exit(1)
-			}
-
-		}
-		cleanArchives(cleanList)
-		fmt.Printf("\nQovery CLI has successfuly been upgraded to version %s\n", desiredVersion)
+		// Fork to avoid override issue on a a running program
+		fmt.Printf("\nUpgrading Qovery CLI to version %s\n", desiredVersion)
+		command := exec.Command("/bin/sh", "-c", "sleep 1 ; mv " + uncompressQoveryBinaryPath + " " +
+			currentBinaryFilename)
+		command.Start()
 	},
 }
 
