@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
@@ -34,7 +35,7 @@ var environmentEnvDeleteCmd = &cobra.Command{
 		e := api.GetEnvironmentByName(p.Id, BranchName)
 		ev := api.ListEnvironmentEnvironmentVariables(p.Id, e.Id).GetEnvironmentVariableByKey(args[0])
 		api.DeleteEnvironmentEnvironmentVariable(ev.Id, p.Id, e.Id)
-		fmt.Println("ok")
+		fmt.Println(color.GreenString("ok"))
 	},
 }
 

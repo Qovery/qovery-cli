@@ -23,121 +23,176 @@ var initCmd = &cobra.Command{
 
 	qovery init`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		if _, err := os.Stat(".qovery.yml"); err == nil {
-			fmt.Println("You already have a .qovery.yml file")
-			os.Exit(0)
-		}
-
-		if util.CurrentBranchName() == "" {
-			fmt.Println("The current directory is not a git repository. Consider using Qovery within a git project")
-			os.Exit(1)
-		}
-
-		p := util.QoveryYML{}
-
-		// check the user is auth; if not then exit
-		if api.GetAccount().Id == "" {
-			fmt.Println("You are not authenticated. Authenticate yourself with 'qovery auth' before using 'qovery init'!")
-			os.Exit(1)
-		}
-
-		fmt.Print(util.AsciiName)
-
-		fmt.Println("Reply to the following questions to initialize Qovery for this application")
-		fmt.Println("For more info: " + color.New(color.Bold).Sprint("https://docs.qovery.com"))
-
-		fmt.Println(AskForTemplate())
-
-		p.Application.Name = CurrentDirectoryName()
-
-		for {
-			p.Application.Project = AskForProject()
-			p.Application.CloudRegion = AskForCloudRegion()
-
-			if p.Application.Project != "" && p.Application.CloudRegion != "" {
-				break
-			}
-
-			// Should not happened
-			fmt.Println("Form is incomplete... Try again")
-		}
-
-		p.Application.PubliclyAccessible = true //util.AskForConfirmation(false, "Would you like to make your application publicly accessible?", "y") TODO
-
-		if p.Application.PubliclyAccessible {
-			p.Routers = []util.QoveryYMLRouter{
-				{
-					Name: "main",
-					Routes: []util.QoveryYMLRoute{
-						{
-							ApplicationName: p.Application.Name,
-							Paths:           []string{"/*"},
-						},
-					},
-				},
-			}
-			// TODO
-			// p.Routers.DNS = util.AskForInput(true, "Do you want to set a custom domain (ex: api.foo.com)?")
-		}
-
-		count := 1
-		for {
-			if askForAddDatabase(count) {
-				db := AddDatabaseWizard()
-				if db != nil {
-					p.Databases = append(p.Databases, *db)
-				}
-			} else {
-				break
-			}
-
-			count++
-		}
-
-		yaml, err := yaml.Marshal(&p)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		f, err := os.Create(".qovery.yml")
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		_, err = f.Write(yaml)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		fmt.Println(color.GreenString("✓") + " Your Qovery configuration file has been successfully created (.qovery.yml)")
-
-		fmt.Println(color.New(color.FgYellow, color.Bold).Sprint("\n!!! IMPORTANT !!!"))
-		fmt.Println(color.YellowString("Qovery needs to get access to your git repository"))
-		fmt.Println("https://github.com/apps/qovery/installations/new")
-
-		prompt := promptui.Select{
-			Label: "Would you like to open the link above?",
-			Size:  2,
-			Items: []string{"No", "Yes"},
-		}
-
-		openLink, _, _ := prompt.Run()
-		if openLink == 1 {
-			_ = browser.OpenURL("https://github.com/apps/qovery/installations/new")
-		}
-
-		fmt.Println(color.New(color.FgYellow, color.Bold).Sprint("\n!!! IMPORTANT !!!"))
-		fmt.Println("1/ Commit and push the \".qovery.yml\" file to get your app deployed")
-		fmt.Println("➤ Run: git add .qovery.yml && git commit -m \"add .qovery.yml\" && git push -u origin master")
-		fmt.Println("2/ Check the status of your deployment")
-		fmt.Println("➤ Run: qovery status")
-		fmt.Println("\nEnjoy! 👋")
+		runInit()
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(initCmd)
+}
+
+func runInit() {
+	if _, err := os.Stat(".qovery.yml"); err == nil {
+		fmt.Println("You already have a .qovery.yml file")
+
+		prompt := promptui.Select{
+			Label: color.YellowString("Do you want to overwrite it?"),
+			Size:  2,
+			Items: []string{"No", "Yes"},
+		}
+
+		choice, _, _ := prompt.Run()
+		if choice == 0 {
+			os.Exit(0)
+		}
+	}
+
+	if util.CurrentBranchName() == "" {
+		fmt.Println("The current directory is not a git repository. Consider using Qovery within a git project")
+		os.Exit(1)
+	}
+
+	p := util.QoveryYML{}
+
+	// check the user is auth; if not then exit
+	if api.GetAccount().Id == "" {
+		fmt.Println("You are not authenticated. Authenticate yourself with 'qovery auth' before using 'qovery init'!")
+		os.Exit(1)
+	}
+
+	fmt.Print(util.AsciiName)
+
+	fmt.Println("Reply to the following questions to initialize Qovery for this application")
+	fmt.Println("For more info: " + color.New(color.Bold).Sprint("https://docs.qovery.com"))
+
+	template := askForTemplate()
+
+	p.Application.Name = currentDirectoryName()
+
+	count := 0
+	for {
+		p.Application.Project = askForProject()
+		p.Application.CloudRegion = askForCloudRegion()
+
+		if p.Application.Project != "" && p.Application.CloudRegion != "" {
+			break
+		}
+
+		// Should not happened
+		fmt.Println("Form is incomplete... Try again")
+		count++
+
+		if count >= 2 {
+			os.Exit(0)
+		}
+	}
+
+	if template.Name == "" {
+		p.Application.PubliclyAccessible = true // TODO change this
+	}
+
+	if p.Application.PubliclyAccessible && template.Name == "" {
+		p.Routers = []util.QoveryYMLRouter{
+			{
+				Name: "main",
+				Routes: []util.QoveryYMLRoute{
+					{
+						ApplicationName: p.Application.Name,
+						Paths:           []string{"/*"},
+					},
+				},
+			},
+		}
+	} else if template.Name != "" {
+		p.Routers = template.QoveryYML.Routers
+	}
+
+	for routerIdx, router := range p.Routers {
+		for routeIdx := range router.Routes {
+			// change route application nam
+			p.Routers[routerIdx].Routes[routeIdx].ApplicationName = p.Application.Name
+		}
+	}
+
+	// TODO
+	// p.Routers.DNS = util.AskForInput(true, "Do you want to set a custom domain (ex: api.foo.com)?")
+
+	if len(template.QoveryYML.Databases) > 0 {
+		// add databases from template
+		p.Databases = template.QoveryYML.Databases
+	}
+
+	for {
+		if askForAddDatabase(len(p.Databases)) {
+			db := addDatabaseWizard()
+			if db != nil {
+				p.Databases = append(p.Databases, *db)
+			}
+		} else {
+			break
+		}
+	}
+
+	yamlContent, err := yaml.Marshal(&p)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// create .qovery.yml
+	f, err := os.Create(".qovery.yml")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	_, err = f.Write(yamlContent)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if template.DockerfileContent != "" {
+		// create Dockerfile
+		f, err := os.Create("Dockerfile")
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		_, err = f.Write([]byte(template.DockerfileContent))
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+
+	fmt.Println(color.GreenString("✓") + " Your Qovery configuration file has been successfully created (.qovery.yml)")
+
+	fmt.Println(color.New(color.FgYellow, color.Bold).Sprint("\n!!! IMPORTANT !!!"))
+	fmt.Println(color.YellowString("Qovery needs to get access to your git repository"))
+	fmt.Println("https://github.com/apps/qovery/installations/new")
+
+	prompt := promptui.Select{
+		Label: "Would you like to open the link above?",
+		Size:  2,
+		Items: []string{"No", "Yes"},
+	}
+
+	openLink, _, _ := prompt.Run()
+	if openLink == 1 {
+		_ = browser.OpenURL("https://github.com/apps/qovery/installations/new")
+	}
+
+	fmt.Println(color.New(color.FgYellow, color.Bold).Sprint("\n!!! IMPORTANT !!!"))
+	fmt.Println(color.New(color.Bold).Sprint("1/ Commit and push the \".qovery.yml\" file to get your app deployed"))
+	fmt.Println("➤ Run: git add .qovery.yml Dockerfile && git commit -m \"add .qovery.yml\" && git push -u origin master")
+	fmt.Println(color.New(color.Bold).Sprint("2/ Check the status of your deployment"))
+	fmt.Println("➤ Run: qovery status")
+
+	if len(template.Commands) > 0 {
+		fmt.Println(color.New(color.Bold).Sprint("3/ Execute the following commands"))
+		for _, command := range template.Commands {
+			fmt.Println(fmt.Sprintf("➤ Run: %s", command))
+		}
+	}
+
+	fmt.Println("\nEnjoy! 👋")
 }
 
 func askForAddDatabase(count int) bool {
@@ -161,31 +216,38 @@ func askForAddDatabase(count int) bool {
 	return true
 }
 
-func AskForTemplate() string {
+func askForTemplate() util.Template {
 	prompt := promptui.Select{
 		Label: "Do you want to use a Dockerfile template? (NodeJS, Java, PHP, Python...)",
 		Size:  2,
 		Items: []string{"Yes", "No"},
 	}
 
-	_, result, _ := prompt.Run()
-
-	templateName := ""
-	if result == "Yes" {
-		prompt = promptui.Select{
-			Label: "Choose the template you want",
-			Size:  50,
-			Items: []string{"Node", "Java", "Python", "Hasura"},
-		}
-
-		_, result, _ := prompt.Run()
-		templateName = result
+	x, _, _ := prompt.Run()
+	if x == 1 {
+		return util.Template{}
 	}
 
-	return templateName
+	templates := util.ListAvailableTemplates()
+
+	var templateNames []string
+	for _, template := range templates {
+		templateNames = append(templateNames, template.ToString())
+	}
+
+	prompt = promptui.Select{
+		Label: "Choose the template you want",
+		Size:  50,
+		Items: templateNames,
+	}
+
+	choice, _, _ := prompt.Run()
+	templateName := templates[choice].Name
+
+	return util.GetTemplate(templateName)
 }
 
-func AskForProject() string {
+func askForProject() string {
 	// select project from existing ones or ask to create a new one; then take the ID
 	projects := api.ListProjects().Results
 
@@ -236,7 +298,7 @@ func AskForProject() string {
 	return projectName
 }
 
-func AskForCloudRegion() string {
+func askForCloudRegion() string {
 	clouds := api.ListCloudProviders().Results
 
 	keyByDescription := make(map[string]string)
@@ -264,7 +326,7 @@ func AskForCloudRegion() string {
 	return keyByDescription[nameChoice]
 }
 
-func AddDatabaseWizard() *util.QoveryYMLDatabase {
+func addDatabaseWizard() *util.QoveryYMLDatabase {
 
 	choices := []string{"PostgreSQL", "MongoDB", "MySQL"}
 
@@ -304,7 +366,7 @@ func AddDatabaseWizard() *util.QoveryYMLDatabase {
 	return &util.QoveryYMLDatabase{Name: name, Type: strings.ToLower(choice), Version: versionChoice}
 }
 
-func CurrentDirectoryName() string {
+func currentDirectoryName() string {
 	currentDirectoryPath, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)

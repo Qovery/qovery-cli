@@ -75,7 +75,7 @@ func ShowEnvironmentVariables(environmentVariables []api.EnvironmentVariable, sh
 		lowerCaseKey := strings.ToLower(ev.Key)
 		if !showCredentials && (strings.Contains(lowerCaseKey, "username") || strings.Contains(lowerCaseKey, "password") ||
 			strings.Contains(lowerCaseKey, "fqdn") || strings.Contains(lowerCaseKey, "host") || strings.Contains(lowerCaseKey, "port") ||
-			strings.Contains(lowerCaseKey, "uri")) {
+			strings.Contains(lowerCaseKey, "uri") || strings.Contains(lowerCaseKey, "key")) {
 			table.Append([]string{ev.Scope, ev.Key, "<hidden>"})
 		} else {
 			table.Append([]string{ev.Scope, ev.Key, ev.Value})

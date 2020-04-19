@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/api"
@@ -34,7 +35,7 @@ var environmentEnvAddCmd = &cobra.Command{
 		e := api.GetEnvironmentByName(p.Id, BranchName)
 
 		api.CreateEnvironmentEnvironmentVariable(api.EnvironmentVariable{Key: args[0], Value: args[1]}, p.Id, e.Id)
-		fmt.Println("ok")
+		fmt.Println(color.GreenString("ok"))
 	},
 }
 
