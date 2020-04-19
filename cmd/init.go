@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/manifoldco/promptui"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -33,8 +34,6 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// TODO check Dockerfile
-
 		p := util.QoveryYML{}
 
 		// check the user is auth; if not then exit
@@ -43,12 +42,27 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println("Reply to the following questions to initialize Qovery for this application")
-		fmt.Println("For more info: https://docs.qovery.com")
+		fmt.Print(util.AsciiName)
 
-		p.Application.Project = AskForProject()
+		fmt.Println("Reply to the following questions to initialize Qovery for this application")
+		fmt.Println("For more info: " + color.New(color.Bold).Sprint("https://docs.qovery.com"))
+
+		fmt.Println(AskForTemplate())
+
 		p.Application.Name = CurrentDirectoryName()
-		p.Application.CloudRegion = AskForCloudRegion()
+
+		for {
+			p.Application.Project = AskForProject()
+			p.Application.CloudRegion = AskForCloudRegion()
+
+			if p.Application.Project != "" && p.Application.CloudRegion != "" {
+				break
+			}
+
+			// Should not happened
+			fmt.Println("Form is incomplete... Try again")
+		}
+
 		p.Application.PubliclyAccessible = true //util.AskForConfirmation(false, "Would you like to make your application publicly accessible?", "y") TODO
 
 		if p.Application.PubliclyAccessible {
@@ -68,15 +82,8 @@ var initCmd = &cobra.Command{
 		}
 
 		count := 1
-		for count < 20 {
-			addDatabase := false
-			if count == 1 {
-				addDatabase = askForAddDatabase(true)
-			} else {
-				addDatabase = askForAddDatabase(false)
-			}
-
-			if addDatabase {
+		for {
+			if askForAddDatabase(count) {
 				db := AddDatabaseWizard()
 				if db != nil {
 					p.Databases = append(p.Databases, *db)
@@ -87,29 +94,6 @@ var initCmd = &cobra.Command{
 
 			count++
 		}
-
-		/** TODO
-		count = 1
-		for count < 20 {
-			addBroker := false
-			if count == 1 {
-				addBroker = askForAddBroker(true)
-			} else {
-				addBroker = askForAddBroker(false)
-			}
-
-			if addBroker {
-				b := AddBrokerWizard()
-				if b != nil {
-					p.Brokers = append(p.Brokers, *b)
-				}
-			} else {
-				break
-			}
-
-			count++
-		}
-		*/
 
 		yaml, err := yaml.Marshal(&p)
 		if err != nil {
@@ -126,22 +110,27 @@ var initCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
-		fmt.Println("✓ Your Qovery configuration file has been successfully created (.qovery.yml)")
+		fmt.Println(color.GreenString("✓") + " Your Qovery configuration file has been successfully created (.qovery.yml)")
 
-		fmt.Println()
-		fmt.Println(color.YellowString("!!! IMPORTANT !!!"))
+		fmt.Println(color.New(color.FgYellow, color.Bold).Sprint("\n!!! IMPORTANT !!!"))
 		fmt.Println(color.YellowString("Qovery needs to get access to your git repository"))
 		fmt.Println("https://github.com/apps/qovery/installations/new")
 
-		openLink := util.AskForConfirmation(false, "Would you like to open the link above?", "n")
-		if openLink {
+		prompt := promptui.Select{
+			Label: "Would you like to open the link above?",
+			Size:  2,
+			Items: []string{"No", "Yes"},
+		}
+
+		openLink, _, _ := prompt.Run()
+		if openLink == 1 {
 			_ = browser.OpenURL("https://github.com/apps/qovery/installations/new")
 		}
 
-		fmt.Println(color.YellowString("!!! IMPORTANT !!!"))
+		fmt.Println(color.New(color.FgYellow, color.Bold).Sprint("\n!!! IMPORTANT !!!"))
 		fmt.Println("1/ Commit and push the \".qovery.yml\" file to get your app deployed")
 		fmt.Println("➤ Run: git add .qovery.yml && git commit -m \"add .qovery.yml\" && git push -u origin master")
-		fmt.Println("\n2/ Check the status of your deployment")
+		fmt.Println("2/ Check the status of your deployment")
 		fmt.Println("➤ Run: qovery status")
 		fmt.Println("\nEnjoy! 👋")
 	},
@@ -151,12 +140,49 @@ func init() {
 	RootCmd.AddCommand(initCmd)
 }
 
-func askForAddDatabase(firstTime bool) bool {
-	if firstTime {
-		return util.AskForConfirmation(false, "Do you need a database? (PostgreSQL, MySQL, MongoDB, ...)", "n")
-	} else {
-		return util.AskForConfirmation(false, "Do you want to add another database?", "n")
+func askForAddDatabase(count int) bool {
+	question := "Do you need a database? (PostgreSQL, MongoDB, MySQL, ...)"
+	if count > 1 {
+		question = "Do you want to add another database?"
 	}
+
+	prompt := promptui.Select{
+		Label: question,
+		Size:  2,
+		Items: []string{"No", "Yes"},
+	}
+
+	result, _, _ := prompt.Run()
+
+	if result == 0 {
+		return false
+	}
+
+	return true
+}
+
+func AskForTemplate() string {
+	prompt := promptui.Select{
+		Label: "Do you want to use a Dockerfile template? (NodeJS, Java, PHP, Python...)",
+		Size:  2,
+		Items: []string{"Yes", "No"},
+	}
+
+	_, result, _ := prompt.Run()
+
+	templateName := ""
+	if result == "Yes" {
+		prompt = promptui.Select{
+			Label: "Choose the template you want",
+			Size:  50,
+			Items: []string{"Node", "Java", "Python", "Hasura"},
+		}
+
+		_, result, _ := prompt.Run()
+		templateName = result
+	}
+
+	return templateName
 }
 
 func AskForProject() string {
@@ -170,32 +196,44 @@ func AskForProject() string {
 
 	sort.Strings(projectNames)
 
-	choice := "create a new project"
+	projectTypeChoice := 1
 	if len(projectNames) > 0 {
-		choice = util.AskForSelect([]string{"create a new project", "select an existing project"}, "What do you want?", "create a new project")
+		prompt := promptui.Select{
+			Label: "I want to add this application to...",
+			Size:  2,
+			Items: []string{
+				"An existing project",
+				"A new project",
+			},
+		}
+
+		projectTypeChoice, _, _ = prompt.Run()
 	}
 
-	if choice == "create a new project" {
-		var name string
+	var projectName string
+	if projectTypeChoice == 1 {
 		for {
-			name = util.AskForInput(false, "Enter the project name")
-			if api.GetProjectByName(name).Id == "" {
+			prompt := promptui.Prompt{Label: "Enter the project name"}
+
+			projectName, _ = prompt.Run()
+			if api.GetProjectByName(projectName).Id == "" {
 				break
 			}
 
-			fmt.Printf("This project name (%s) already exists, please choose another one\n", name)
+			fmt.Printf("This project name (%s) already exists, please choose another one\n", projectName)
 		}
-
-		return name
 	} else {
 		// select an existing project
-		choice = util.AskForSelect(projectNames, "Choose the project you want", "")
-		if choice == "" {
-			return AskForProject()
+		prompt := promptui.Select{
+			Label: "Choose the project you want",
+			Size:  len(projectNames),
+			Items: projectNames,
 		}
+
+		_, projectName, _ = prompt.Run()
 	}
 
-	return choice
+	return projectName
 }
 
 func AskForCloudRegion() string {
@@ -207,7 +245,7 @@ func AskForCloudRegion() string {
 	for _, c := range clouds {
 		for _, r := range c.Regions {
 			key := fmt.Sprintf("%s/%s", c.Name, r.FullName)
-			name := fmt.Sprintf("%s - %s (%s)", c.Name, r.Description, key)
+			name := fmt.Sprintf("%s | %s (%s)", strings.ToUpper(c.Name), r.Description, key)
 			names = append(names, name)
 			keyByDescription[name] = key
 		}
@@ -215,25 +253,28 @@ func AskForCloudRegion() string {
 
 	sort.Strings(names)
 
-	defaultValue := ""
-	if len(names) > 0 {
-		defaultValue = names[0]
+	prompt := promptui.Select{
+		Label: "Choose the region where you want to host your project and applications",
+		Size:  len(names),
+		Items: names,
 	}
 
-	nameChoice := util.AskForSelect(names, "Choose the region where you want to host your project and applications", defaultValue)
+	_, nameChoice, _ := prompt.Run()
 
 	return keyByDescription[nameChoice]
 }
 
 func AddDatabaseWizard() *util.QoveryYMLDatabase {
 
-	//choices := []string{"PostgreSQL", "MongoDB", "MySQL", "Redis", "Memcached", "Elasticsearch"}
-	choices := []string{"PostgreSQL", "MySQL", "MongoDB"}
+	choices := []string{"PostgreSQL", "MongoDB", "MySQL"}
 
-	choice := util.AskForSelect(choices, "Choose the database you want to add", "")
-	if choice == "" {
-		return nil
+	prompt := promptui.Select{
+		Label: "Choose the database you need",
+		Size:  len(choices),
+		Items: choices,
 	}
+
+	_, choice, _ := prompt.Run()
 
 	var versionChoices []string
 	switch choice {
@@ -243,17 +284,17 @@ func AddDatabaseWizard() *util.QoveryYMLDatabase {
 		versionChoices = []string{"latest", "3.6"}
 	case "MySQL":
 		versionChoices = []string{"latest", "8.0", "5.7", "5.6", "5.5"}
-	case "Redis":
-		versionChoices = []string{"latest", "5.0", "4.0", "3.2", "2.8", "2.6"}
-	case "Memcached":
-		versionChoices = []string{"latest", "1.5", "1.4"}
-	case "Elasticsearch":
-		versionChoices = []string{"latest", "7.1", "6.8", "5.6", "2.3", "1.5"}
 	default:
 		versionChoices = []string{}
 	}
 
-	versionChoice := util.AskForSelect(versionChoices, fmt.Sprintf("Choose the %s version you want", choice), "latest")
+	prompt = promptui.Select{
+		Label: fmt.Sprintf("Choose the %s version you want", color.New(color.Bold).Sprint(choice)),
+		Size:  len(versionChoices),
+		Items: versionChoices,
+	}
+
+	_, versionChoice, _ := prompt.Run()
 	if versionChoice == "latest" {
 		versionChoice = versionChoices[1]
 	}
@@ -261,43 +302,6 @@ func AddDatabaseWizard() *util.QoveryYMLDatabase {
 	name := fmt.Sprintf("my-%s-%d", strings.ToLower(choice), util.RandomInt())
 
 	return &util.QoveryYMLDatabase{Name: name, Type: strings.ToLower(choice), Version: versionChoice}
-}
-
-func askForAddBroker(firstTime bool) bool {
-	if firstTime {
-		return util.AskForConfirmation(false, "Do you need a broker? (RabbitMQ, Kafka, ...)", "n")
-	} else {
-		return util.AskForConfirmation(false, "Do you want to add another broker?", "n")
-	}
-}
-
-func AddBrokerWizard() *util.QoveryYMLBroker {
-
-	choices := []string{"RabbitMQ", "Kafka"}
-
-	choice := util.AskForSelect(choices, "Choose the broker you want to add", "")
-	if choice == "" {
-		return nil
-	}
-
-	var versionChoices []string
-	switch choice {
-	case "RabbitMQ":
-		versionChoices = []string{"latest", "3.8", "3.7", "3.6"}
-	case "Kafka":
-		versionChoices = []string{"latest", "2.3", "2.2", "2.1"}
-	default:
-		versionChoices = []string{}
-	}
-
-	versionChoice := util.AskForSelect(versionChoices, fmt.Sprintf("Choose the %s version you want", choice), "latest")
-	if versionChoice == "latest" {
-		versionChoice = versionChoices[1]
-	}
-
-	name := fmt.Sprintf("my-%s-%d", strings.ToLower(choice), util.RandomInt())
-
-	return &util.QoveryYMLBroker{Name: name, Type: strings.ToLower(choice), Version: versionChoice}
 }
 
 func CurrentDirectoryName() string {

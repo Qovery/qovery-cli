@@ -14,6 +14,6 @@ func RandomString(n int) string {
 
 func RandomInt() int {
 	max := 9999999
-	min := 1000000
+	min := 1000
 	return rand.Intn(max-min) + min
 }

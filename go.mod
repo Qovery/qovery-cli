@@ -15,12 +15,12 @@ require (
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0
 	github.com/klauspost/compress v1.10.1 // indirect
 	github.com/klauspost/pgzip v1.2.3 // indirect
+	github.com/manifoldco/promptui v0.7.0
 	github.com/mholt/archiver/v3 v3.3.0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/pierrec/lz4 v2.4.1+incompatible // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
-	github.com/ryanuber/columnize v2.1.0+incompatible
 	github.com/schollz/progressbar/v2 v2.15.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.6
