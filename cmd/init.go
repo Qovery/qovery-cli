@@ -47,11 +47,6 @@ func runInit() {
 		}
 	}
 
-	if util.CurrentBranchName() == "" {
-		fmt.Println("The current directory is not a git repository. Consider using Qovery within a git project")
-		os.Exit(1)
-	}
-
 	p := util.QoveryYML{}
 
 	// check the user is auth; if not then exit
