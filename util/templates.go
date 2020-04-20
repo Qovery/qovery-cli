@@ -1,10 +1,11 @@
 package util
 
 import (
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 type TemplateSummary struct {
@@ -17,10 +18,11 @@ func (t *TemplateSummary) ToString() string {
 }
 
 type Template struct {
-	Name              string
-	QoveryYML         QoveryYML
-	DockerfileContent string
-	Commands          []string
+	Name                string
+	QoveryYML           QoveryYML
+	DockerfileContent   string
+	DockerignoreContent string
+	Commands            []string
 }
 
 const rootTemplateURL = "https://raw.githubusercontent.com/Qovery/qovery-templates/master/"
@@ -28,16 +30,18 @@ const rootTemplateURL = "https://raw.githubusercontent.com/Qovery/qovery-templat
 func GetTemplate(templateName string) Template {
 	qoveryYMLContent := getQoveryYMLContent(templateName)
 	dockerfileContent := getDockerfileContent(templateName)
+	dockerignoreContent := getDockerignoreContent(templateName)
 	commands := getCommandsConfigTemplate(templateName)
 
 	qoveryYML := QoveryYML{}
 	_ = yaml.Unmarshal(qoveryYMLContent, &qoveryYML)
 
 	return Template{
-		Name:              templateName,
-		QoveryYML:         qoveryYML,
-		DockerfileContent: dockerfileContent,
-		Commands:          commands,
+		Name:                templateName,
+		QoveryYML:           qoveryYML,
+		DockerfileContent:   dockerfileContent,
+		DockerignoreContent: dockerignoreContent,
+		Commands:            commands,
 	}
 }
 
@@ -47,6 +51,10 @@ func getQoveryYMLContent(templateName string) []byte {
 
 func getDockerfileContent(templateName string) string {
 	return string(getTemplateContent(templateName, "Dockerfile"))
+}
+
+func getDockerignoreContent(templateName string) string {
+	return string(getTemplateContent(templateName, ".dockerignore"))
 }
 
 func getCommandsConfigTemplate(templateName string) []string {
@@ -94,7 +102,7 @@ func ListAvailableTemplates() []TemplateSummary {
 func getTemplateContent(projectName string, fileName string) []byte {
 	resp, err := http.Get(rootTemplateURL + projectName + "/" + fileName)
 
-	if err != nil {
+	if err != nil || resp.StatusCode == 404 {
 		return []byte{}
 	}
 
