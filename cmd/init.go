@@ -117,7 +117,7 @@ func runInit() {
 				Routes: []util.QoveryYMLRoute{
 					{
 						ApplicationName: p.Application.Name,
-						Paths:           []string{"/*"},
+						Paths:           []string{"/"},
 					},
 				},
 			},
