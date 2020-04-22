@@ -2,32 +2,36 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"sort"
+	"strconv"
+	"strings"
+
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
-	"log"
-	"os"
 	"qovery.go/api"
 	"qovery.go/util"
-	"sort"
-	"strconv"
-	"strings"
 )
 
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Do project initialization to use Qovery",
 	Long: `INIT do project initialization to use Qovery within the current directory. For example:
-
+	
 	qovery init`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runInit()
 	},
 }
 
+var templateFlag string
+
 func init() {
+	initCmd.Flags().StringVarP(&templateFlag, "template", "t", "", "project template")
 	RootCmd.AddCommand(initCmd)
 }
 
@@ -57,10 +61,30 @@ func runInit() {
 
 	fmt.Print(util.AsciiName)
 
+	if templateFlag != "" {
+		projectTemplate := util.GetTemplate(templateFlag)
+		p.Application.Name = currentDirectoryName()
+		p.Application.Project = askForProject()
+		p.Application.CloudRegion = askForCloudRegion()
+		p.Routers = projectTemplate.QoveryYML.Routers
+		p.Databases = projectTemplate.QoveryYML.Databases
+		for routerIdx, router := range p.Routers {
+			for routeIdx := range router.Routes {
+				// change route application name
+				p.Routers[routerIdx].Routes[routeIdx].ApplicationName = p.Application.Name
+			}
+		}
+
+		writeFiles(projectTemplate, p)
+		printFinalMessage(projectTemplate)
+
+		os.Exit(0)
+	}
+
 	fmt.Println("Reply to the following questions to initialize Qovery for this application")
 	fmt.Println("For more info: " + color.New(color.Bold).Sprint("https://docs.qovery.com"))
 
-	template := askForTemplate()
+	projectTemplate := askForTemplate()
 
 	p.Application.Name = currentDirectoryName()
 
@@ -82,11 +106,11 @@ func runInit() {
 		}
 	}
 
-	if template.Name == "" {
+	if projectTemplate.Name == "" {
 		p.Application.PubliclyAccessible = true // TODO change this
 	}
 
-	if p.Application.PubliclyAccessible && template.Name == "" {
+	if p.Application.PubliclyAccessible && projectTemplate.Name == "" {
 		p.Routers = []util.QoveryYMLRouter{
 			{
 				Name: "main",
@@ -98,8 +122,8 @@ func runInit() {
 				},
 			},
 		}
-	} else if template.Name != "" {
-		p.Routers = template.QoveryYML.Routers
+	} else if projectTemplate.Name != "" {
+		p.Routers = projectTemplate.QoveryYML.Routers
 	}
 
 	for routerIdx, router := range p.Routers {
@@ -112,9 +136,9 @@ func runInit() {
 	// TODO
 	// p.Routers.DNS = util.AskForInput(true, "Do you want to set a custom domain (ex: api.foo.com)?")
 
-	if len(template.QoveryYML.Databases) > 0 {
+	if len(projectTemplate.QoveryYML.Databases) > 0 {
 		// add databases from template
-		p.Databases = template.QoveryYML.Databases
+		p.Databases = projectTemplate.QoveryYML.Databases
 	}
 
 	for {
@@ -128,37 +152,9 @@ func runInit() {
 		}
 	}
 
-	yamlContent, err := yaml.Marshal(&p)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// create .qovery.yml
-	f, err := os.Create(".qovery.yml")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	_, err = f.Write(yamlContent)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	if template.DockerfileContent != "" {
-		// create Dockerfile
-		f, err := os.Create("Dockerfile")
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		_, err = f.Write([]byte(template.DockerfileContent))
-		if err != nil {
-			log.Fatalln(err)
-		}
-	}
+	writeFiles(projectTemplate, p)
 
 	fmt.Println(color.GreenString("✓") + " Your Qovery configuration file has been successfully created (.qovery.yml)")
-
 	fmt.Println(color.New(color.FgYellow, color.Bold).Sprint("\n!!! IMPORTANT !!!"))
 	fmt.Println(color.YellowString("Qovery needs to get access to your git repository"))
 	fmt.Println("https://github.com/apps/qovery/installations/new")
@@ -174,20 +170,7 @@ func runInit() {
 		_ = browser.OpenURL("https://github.com/apps/qovery/installations/new")
 	}
 
-	fmt.Println(color.New(color.FgYellow, color.Bold).Sprint("\n!!! IMPORTANT !!!"))
-	fmt.Println(color.New(color.Bold).Sprint("1/ Commit and push the \".qovery.yml\" file to get your app deployed"))
-	fmt.Println("➤ Run: git add .qovery.yml Dockerfile && git commit -m \"add .qovery.yml\" && git push -u origin master")
-	fmt.Println(color.New(color.Bold).Sprint("2/ Check the status of your deployment"))
-	fmt.Println("➤ Run: qovery status")
-
-	if len(template.Commands) > 0 {
-		fmt.Println(color.New(color.Bold).Sprint("3/ Execute the following commands"))
-		for _, command := range template.Commands {
-			fmt.Println(fmt.Sprintf("➤ Run: %s", command))
-		}
-	}
-
-	fmt.Println("\nEnjoy! 👋")
+	printFinalMessage(projectTemplate)
 }
 
 func askForAddDatabase(count int) bool {
@@ -377,4 +360,65 @@ func intPointerValue(i *int) string {
 		return "0"
 	}
 	return strconv.Itoa(*i)
+}
+
+func writeFiles(template util.Template, p util.QoveryYML) {
+	yamlContent, err := yaml.Marshal(&p)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// create .qovery.yml
+	f, err := os.Create(".qovery.yml")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	_, err = f.Write(yamlContent)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if template.DockerfileContent != "" {
+		// create Dockerfile
+		f, err := os.Create("Dockerfile")
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		_, err = f.Write([]byte(template.DockerfileContent))
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+
+	if template.DockerignoreContent != "" {
+		// create .dockerignore
+		f, err := os.Create(".dockerignore")
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		_, err = f.Write([]byte(template.DockerignoreContent))
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+}
+
+func printFinalMessage(template util.Template) {
+	fmt.Println(color.New(color.FgYellow, color.Bold).Sprint("\n!!! IMPORTANT !!!"))
+	fmt.Println(color.New(color.Bold).Sprint("1/ Commit and push the \".qovery.yml\" file to get your app deployed"))
+	fmt.Println("➤ Run: git add .qovery.yml Dockerfile && git commit -m \"add .qovery.yml\" && git push -u origin master")
+	fmt.Println(color.New(color.Bold).Sprint("2/ Check the status of your deployment"))
+	fmt.Println("➤ Run: qovery status")
+
+	if len(template.Commands) > 0 {
+		fmt.Println(color.New(color.Bold).Sprint("3/ Execute the following commands"))
+		for _, command := range template.Commands {
+			fmt.Println(fmt.Sprintf("➤ Run: %s", command))
+		}
+	}
+
+	fmt.Println("\nEnjoy! 👋")
 }
