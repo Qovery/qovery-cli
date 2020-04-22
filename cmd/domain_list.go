@@ -38,7 +38,7 @@ func init() {
 
 func ShowDomainList(projectName string, branchName string) {
 	table := util.GetTable()
-	table.SetHeader([]string{"branch", "router name", "status", "domain", "validation domain"})
+	table.SetHeader([]string{"branch", "domain", "status", "validation domain", "router name"})
 
 	projectId := api.GetProjectByName(projectName).Id
 	environment := api.GetEnvironmentByName(projectId, branchName)
@@ -52,19 +52,19 @@ func ShowDomainList(projectName string, branchName string) {
 			for _, cd := range r.CustomDomains {
 				table.Append([]string{
 					branchName,
-					r.Name,
-					cd.Status.GetColoredCodeMessage(),
 					cd.Domain,
+					cd.Status.GetColoredCodeMessage(),
 					cd.GetValidationDomain(),
+					r.Name,
 				})
 			}
 
 			table.Append([]string{
 				branchName,
-				r.Name,
-				color.GreenString("live"),
 				r.ConnectionURI,
+				color.GreenString("live"),
 				"none",
+				r.Name,
 			})
 		}
 	}
