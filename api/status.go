@@ -13,6 +13,14 @@ type Status struct {
 	ProgressionInPercent int    `json:"progression_in_percent"`
 }
 
+func (s *Status) GetState() string {
+	if s.State == "" {
+		return "unknown"
+	}
+
+	return s.State
+}
+
 func (s *Status) IsError() bool {
 	if strings.HasSuffix(s.State, "_ERROR") {
 		return true
@@ -22,6 +30,10 @@ func (s *Status) IsError() bool {
 }
 
 func (s *Status) GetColoredCodeMessage() string {
+	if s.CodeMessage == "" {
+		return color.RedString("unknown")
+	}
+
 	if s.IsError() {
 		return color.RedString(s.CodeMessage)
 	}

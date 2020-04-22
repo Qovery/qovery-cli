@@ -33,7 +33,6 @@ var applicationListCmd = &cobra.Command{
 func init() {
 	applicationListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	applicationListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
-
 	applicationCmd.AddCommand(applicationListCmd)
 }
 
