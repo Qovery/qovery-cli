@@ -39,14 +39,14 @@ func init() {
 
 func ShowApplicationList(projectName string, branchName string) {
 	table := util.GetTable()
-	table.SetHeader([]string{"application name", "status", "endpoint", "databases"})
+	table.SetHeader([]string{"application name", "status", "databases"})
 
 	projectId := api.GetProjectByName(projectName).Id
 	environment := api.GetEnvironmentByName(projectId, branchName)
 
 	applications := api.ListApplications(projectId, environment.Id)
 	if applications.Results == nil || len(applications.Results) == 0 {
-		table.Append([]string{"", "", "", "", ""})
+		table.Append([]string{"", "", ""})
 	} else {
 		for _, a := range applications.Results {
 			databaseName := "none"
@@ -57,7 +57,6 @@ func ShowApplicationList(projectName string, branchName string) {
 			table.Append([]string{
 				a.Name,
 				a.Status.GetColoredCodeMessage(),
-				a.ConnectionURI,
 				databaseName,
 			})
 		}

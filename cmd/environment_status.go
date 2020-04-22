@@ -59,7 +59,7 @@ func ShowEnvironmentStatus(projectName string, branchName string) {
 		table.Append([]string{
 			a.Name,
 			a.Status.GetColoredCodeMessage(),
-			strings.Join(a.GetConnectionURIs(), ", "),
+			strings.Join(a.GetConnectionURIs(), "\n"),
 			applicationName,
 			databaseName,
 		})

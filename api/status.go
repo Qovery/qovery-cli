@@ -7,14 +7,22 @@ import (
 
 type Status struct {
 	State                string `json:"state"`
-	Code                 string `json:"code"`
+	Code                 int    `json:"code"`
 	CodeMessage          string `json:"code_message"`
 	Output               string `json:"output"`
 	ProgressionInPercent int    `json:"progression_in_percent"`
 }
 
+func (s *Status) IsError() bool {
+	if strings.HasSuffix(s.State, "_ERROR") {
+		return true
+	}
+
+	return false
+}
+
 func (s *Status) GetColoredCodeMessage() string {
-	if strings.HasSuffix(s.Code, "_ERROR") {
+	if s.IsError() {
 		return color.RedString(s.CodeMessage)
 	}
 
