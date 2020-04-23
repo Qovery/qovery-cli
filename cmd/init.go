@@ -139,6 +139,17 @@ func runInit() {
 	if len(projectTemplate.QoveryYML.Databases) > 0 {
 		// add databases from template
 		p.Databases = projectTemplate.QoveryYML.Databases
+
+		databaseWord := "database"
+		if len(p.Databases) > 1 {
+			databaseWord = "databases"
+		}
+
+		fmt.Println(color.GreenString("%s has configured %d %s", projectTemplate.Name, len(p.Databases), databaseWord))
+		for _, db := range p.Databases {
+			fmt.Println(color.GreenString("✓") + fmt.Sprintf(" database: %s version: %s", db.Type, db.Version))
+		}
+
 	}
 
 	for {
@@ -146,6 +157,7 @@ func runInit() {
 			db := addDatabaseWizard()
 			if db != nil {
 				p.Databases = append(p.Databases, *db)
+				fmt.Println(color.GreenString("✓") + fmt.Sprintf(" database: %s version: %s", db.Type, db.Version))
 			}
 		} else {
 			break
@@ -175,7 +187,7 @@ func runInit() {
 
 func askForAddDatabase(count int) bool {
 	question := "Do you need a database? (PostgreSQL, MongoDB, MySQL, ...)"
-	if count > 1 {
+	if count >= 1 {
 		question = "Do you want to add another database?"
 	}
 
