@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -62,8 +64,10 @@ func runInit() {
 	fmt.Print(util.AsciiName)
 
 	if templateFlag != "" {
+		util.DownloadSource(templateFlag)
+		filepath.Walk(templateFlag, replaceAppName)
 		projectTemplate := util.GetTemplate(templateFlag)
-		p.Application.Name = currentDirectoryName()
+		p.Application.Name = templateFlag
 		p.Application.Project = askForProject()
 		p.Application.CloudRegion = askForCloudRegion()
 		p.Routers = projectTemplate.QoveryYML.Routers
@@ -381,7 +385,8 @@ func writeFiles(template util.Template, p util.QoveryYML) {
 	}
 
 	// create .qovery.yml
-	f, err := os.Create(".qovery.yml")
+	os.Remove(templateFlag + string(os.PathSeparator) + ".qovery.yml")
+	f, err := os.Create(templateFlag + string(os.PathSeparator) + ".qovery.yml")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -393,25 +398,13 @@ func writeFiles(template util.Template, p util.QoveryYML) {
 
 	if template.DockerfileContent != "" {
 		// create Dockerfile
-		f, err := os.Create("Dockerfile")
+		os.Remove(templateFlag + string(os.PathSeparator) + "Dockerfile")
+		f, err := os.Create(templateFlag + string(os.PathSeparator) + "Dockerfile")
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 		_, err = f.Write([]byte(template.DockerfileContent))
-		if err != nil {
-			log.Fatalln(err)
-		}
-	}
-
-	if template.DockerignoreContent != "" {
-		// create .dockerignore
-		f, err := os.Create(".dockerignore")
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		_, err = f.Write([]byte(template.DockerignoreContent))
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -433,4 +426,29 @@ func printFinalMessage(template util.Template) {
 	}
 
 	fmt.Println("\nEnjoy! 👋")
+}
+
+func replaceAppName(path string, fi os.FileInfo, err error) error {
+	if err != nil {
+		return err
+	}
+
+	if !!fi.IsDir() {
+		return nil //
+	}
+
+	read, err := ioutil.ReadFile(path)
+
+	if err != nil {
+		panic(err)
+	}
+
+	newContents := strings.Replace(string(read), "${APP_NAME}", templateFlag, -1)
+
+	err = ioutil.WriteFile(path, []byte(newContents), 0)
+	if err != nil {
+		panic(err)
+	}
+
+	return nil
 }
