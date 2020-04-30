@@ -443,11 +443,7 @@ func replaceAppName(path string, fi os.FileInfo, err error) error {
 		panic(err)
 	}
 
-	fmt.Println(path)
-
 	newContents := strings.Replace(string(read), "${APP_NAME}", templateFlag, -1)
-
-	fmt.Println(newContents)
 
 	err = ioutil.WriteFile(path, []byte(newContents), 0)
 	if err != nil {
