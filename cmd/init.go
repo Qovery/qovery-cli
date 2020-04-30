@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -63,8 +65,9 @@ func runInit() {
 
 	if templateFlag != "" {
 		util.DownloadSource(templateFlag)
+		filepath.Walk(templateFlag, replaceAppName)
 		projectTemplate := util.GetTemplate(templateFlag)
-		p.Application.Name = currentDirectoryName()
+		p.Application.Name = templateFlag
 		p.Application.Project = askForProject()
 		p.Application.CloudRegion = askForCloudRegion()
 		p.Routers = projectTemplate.QoveryYML.Routers
@@ -423,4 +426,33 @@ func printFinalMessage(template util.Template) {
 	}
 
 	fmt.Println("\nEnjoy! 👋")
+}
+
+func replaceAppName(path string, fi os.FileInfo, err error) error {
+	if err != nil {
+		return err
+	}
+
+	if !!fi.IsDir() {
+		return nil //
+	}
+
+	read, err := ioutil.ReadFile(path)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(path)
+
+	newContents := strings.Replace(string(read), "${APP_NAME}", templateFlag, -1)
+
+	fmt.Println(newContents)
+
+	err = ioutil.WriteFile(path, []byte(newContents), 0)
+	if err != nil {
+		panic(err)
+	}
+
+	return nil
 }
