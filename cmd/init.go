@@ -62,6 +62,7 @@ func runInit() {
 	fmt.Print(util.AsciiName)
 
 	if templateFlag != "" {
+		util.DownloadSource(templateFlag)
 		projectTemplate := util.GetTemplate(templateFlag)
 		p.Application.Name = currentDirectoryName()
 		p.Application.Project = askForProject()
@@ -381,6 +382,7 @@ func writeFiles(template util.Template, p util.QoveryYML) {
 	}
 
 	// create .qovery.yml
+	os.Remove(templateFlag+string(os.PathSeparator)+".qovery.yml")
 	f, err := os.Create(".qovery.yml")
 	if err != nil {
 		log.Fatalln(err)
@@ -393,6 +395,7 @@ func writeFiles(template util.Template, p util.QoveryYML) {
 
 	if template.DockerfileContent != "" {
 		// create Dockerfile
+		os.Remove(templateFlag+string(os.PathSeparator)+"Dockerfile")
 		f, err := os.Create("Dockerfile")
 		if err != nil {
 			log.Fatalln(err)

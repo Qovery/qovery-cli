@@ -3,8 +3,9 @@ package util
 import (
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
-
+	"github.com/hashicorp/go-getter"
 	"gopkg.in/yaml.v2"
 )
 
@@ -42,6 +43,17 @@ func GetTemplate(templateName string) Template {
 		DockerfileContent:   dockerfileContent,
 		DockerignoreContent: dockerignoreContent,
 		Commands:            commands,
+	}
+}
+
+func DownloadSource(templateName string) {
+	wd, err := os.Getwd()
+	if err != nil {
+		print("Error getting current directory path")
+	}
+	err = getter.Get(wd+string(os.PathSeparator)+templateName, "github.com/Qovery/qovery-templates//"+templateName)
+	if err != nil {
+		print("Error downloading template source")
 	}
 }
 
