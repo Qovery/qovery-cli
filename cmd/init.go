@@ -382,8 +382,8 @@ func writeFiles(template util.Template, p util.QoveryYML) {
 	}
 
 	// create .qovery.yml
-	os.Remove(templateFlag+string(os.PathSeparator)+".qovery.yml")
-	f, err := os.Create(".qovery.yml")
+	os.Remove(templateFlag + string(os.PathSeparator) + ".qovery.yml")
+	f, err := os.Create(templateFlag + string(os.PathSeparator) + ".qovery.yml")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -395,26 +395,13 @@ func writeFiles(template util.Template, p util.QoveryYML) {
 
 	if template.DockerfileContent != "" {
 		// create Dockerfile
-		os.Remove(templateFlag+string(os.PathSeparator)+"Dockerfile")
-		f, err := os.Create("Dockerfile")
+		os.Remove(templateFlag + string(os.PathSeparator) + "Dockerfile")
+		f, err := os.Create(templateFlag + string(os.PathSeparator) + "Dockerfile")
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 		_, err = f.Write([]byte(template.DockerfileContent))
-		if err != nil {
-			log.Fatalln(err)
-		}
-	}
-
-	if template.DockerignoreContent != "" {
-		// create .dockerignore
-		f, err := os.Create(".dockerignore")
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		_, err = f.Write([]byte(template.DockerignoreContent))
 		if err != nil {
 			log.Fatalln(err)
 		}
