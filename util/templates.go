@@ -1,12 +1,12 @@
 package util
 
 import (
+	"github.com/hashicorp/go-getter"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
-	"github.com/hashicorp/go-getter"
-	"gopkg.in/yaml.v2"
 )
 
 type TemplateSummary struct {
@@ -50,10 +50,12 @@ func DownloadSource(templateName string) {
 	wd, err := os.Getwd()
 	if err != nil {
 		print("Error getting current directory path")
+		os.Exit(1)
 	}
 	err = getter.Get(wd+string(os.PathSeparator)+templateName, "github.com/Qovery/qovery-templates//"+templateName)
 	if err != nil {
 		print("Error downloading template source")
+		os.Exit(1)
 	}
 }
 
