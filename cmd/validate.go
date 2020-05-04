@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
@@ -20,19 +21,25 @@ var validateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		for _, url := range util.ListRemoteURLs() {
-			gas := api.GitCheck(url)
+		showRemoteRepositoryAccess()
 
-			if gas.HasAccess {
-				println(color.GreenString("Access to " + gas.GitURL + " : OK"))
-
-			} else {
-				println(color.RedString("Access to " + gas.GitURL + " : KO"))
-			}
-		}
-
-		println("Your configuration is valid")
+		println("\nYour configuration is valid")
 	},
+}
+
+func showRemoteRepositoryAccess() {
+	for _, url := range util.ListRemoteURLs() {
+		println(fmt.Sprintf("Check repository access to %s", url))
+		gas := api.GitCheck(url)
+
+		if gas.HasAccess {
+			println(color.GreenString("OK"))
+
+		} else {
+			util.PrintError("Qovery can't access your repository.")
+			util.PrintHint("Give access to Qovery to deploy your application. https://docs.qovery.com/docs/using-qovery/interface/cli")
+		}
+	}
 }
 
 func init() {

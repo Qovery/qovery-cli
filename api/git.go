@@ -24,7 +24,7 @@ func GitCheck(gitURL string) GitAccessStatus {
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodGet, RootURL+"/git/access/check?url"+gitURL, nil)
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/git/access/check?url="+gitURL, nil)
 
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 

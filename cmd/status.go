@@ -58,11 +58,23 @@ var statusCmd = &cobra.Command{
 			fmt.Print("\n\n")
 		}
 
-		ShowEnvironmentStatus(ProjectName, BranchName)
+		envExists := ShowEnvironmentStatus(ProjectName, BranchName)
+		// if an environment exists, then show the rest
 		ShowApplicationList(ProjectName, BranchName)
 		ShowDatabaseList(ProjectName, BranchName, ShowCredentials)
 		//ShowBrokerList(ProjectName, BranchName)
 		//ShowStorageList(ProjectName, BranchName)
+
+		if !envExists {
+			// there is no environment, does the user forget to give access rights to Qovery ? Let's check
+			for _, url := range util.ListRemoteURLs() {
+				gas := api.GitCheck(url)
+				if !gas.HasAccess {
+					util.PrintError("Qovery can't access your repository " + url)
+					util.PrintHint("Give access to Qovery to deploy your application. https://docs.qovery.com/docs/using-qovery/interface/cli")
+				}
+			}
+		}
 
 		aggregatedEnvironment := api.GetEnvironmentByName(projectId, BranchName)
 		if !strings.Contains(aggregatedEnvironment.Status.State, "_ERROR") {
