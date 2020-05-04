@@ -67,12 +67,18 @@ var statusCmd = &cobra.Command{
 
 		if !envExists {
 			// there is no environment, does the user forget to give access rights to Qovery ? Let's check
+			err := false
 			for _, url := range util.ListRemoteURLs() {
 				gas := api.GitCheck(url)
 				if !gas.HasAccess {
+					err = true
 					util.PrintError("Qovery can't access your repository " + url)
 					util.PrintHint("Give access to Qovery to deploy your application. https://docs.qovery.com/docs/using-qovery/interface/cli")
 				}
+			}
+
+			if !err {
+				util.PrintHint("Push your code to deploy your application")
 			}
 		}
 
