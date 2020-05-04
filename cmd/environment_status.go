@@ -38,11 +38,13 @@ func init() {
 	environmentCmd.AddCommand(environmentStatusCmd)
 }
 
-func ShowEnvironmentStatus(projectName string, branchName string) {
+func ShowEnvironmentStatus(projectName string, branchName string) bool {
 	table := util.GetTable()
 	table.SetHeader([]string{"branch name", "status", "endpoints", "applications", "databases"})
 
+	result := false
 	a := api.GetEnvironmentByName(api.GetProjectByName(projectName).Id, branchName)
+
 	if a.Name == "" {
 		table.Append([]string{"", "", "", "", "", ""})
 	} else {
@@ -63,8 +65,12 @@ func ShowEnvironmentStatus(projectName string, branchName string) {
 			applicationName,
 			databaseName,
 		})
+
+		result = true
 	}
 
 	table.Render()
 	fmt.Printf("\n")
+
+	return result
 }

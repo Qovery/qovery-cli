@@ -1,24 +1,45 @@
 package cmd
 
 import (
+	"fmt"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
+	"qovery.go/api"
 	"qovery.go/util"
 )
 
 var validateCmd = &cobra.Command{
-	Use:   "validate",
+	Use:     "validate",
 	Aliases: []string{"valid"},
-	Short: "Validate the current config is valid",
-	Long: `Validate the Dockerfile and Qovery configuration file`,
+	Short:   "Validate the current config is valid",
+	Long:    `Validate the Dockerfile and Qovery configuration file`,
 	Run: func(cmd *cobra.Command, args []string) {
 		_, err := util.CurrentQoveryYML()
 		if err != nil {
 			util.PrintError("No qovery configuration file found")
 			os.Exit(1)
 		}
-		println("Your configuration is valid")
+
+		showRemoteRepositoryAccess()
+
+		println("\nYour configuration is valid")
 	},
+}
+
+func showRemoteRepositoryAccess() {
+	for _, url := range util.ListRemoteURLs() {
+		println(fmt.Sprintf("Check repository access to %s", url))
+		gas := api.GitCheck(url)
+
+		if gas.HasAccess {
+			println(color.GreenString("OK"))
+
+		} else {
+			util.PrintError("Qovery can't access your repository.")
+			util.PrintHint("Give access to Qovery to deploy your application. https://docs.qovery.com/docs/using-qovery/interface/cli")
+		}
+	}
 }
 
 func init() {

@@ -30,14 +30,5 @@ func GetTable() *tablewriter.Table {
 	table.SetAutoWrapText(false)
 	table.SetHeaderLine(false)
 	table.SetColumnSeparator("|")
-	/*table.SetAutoWrapText(false)
-	table.SetAutoFormatHeaders(true)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("|")
-	table.SetRowSeparator("")
-	table.SetHeaderLine(false)
-	table.SetBorder(false)
-	table.SetTablePadding("\t")
-	table.SetNoWhiteSpace(true)*/
 	return table
 }
