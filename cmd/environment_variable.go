@@ -21,7 +21,6 @@ func getStaticBuiltInEnvironmentVariables(branchName string) []api.EnvironmentVa
 	}
 
 	return []api.EnvironmentVariable{
-		{Scope: "BUILT_IN", Key: "QOVERY_JSON_B64", Value: "<base64>", KeyValue: "QOVERY_JSON_B64=<base64>"},
 		{Scope: "BUILT_IN", Key: "QOVERY_BRANCH_NAME", Value: branchName, KeyValue: fmt.Sprintf("QOVERY_BRANCH_NAME=%s", branchName)},
 		{Scope: "BUILT_IN", Key: "QOVERY_IS_PRODUCTION", Value: strconv.FormatBool(isProduction),
 			KeyValue: fmt.Sprintf("QOVERY_IS_PRODUCTION=%s", strconv.FormatBool(isProduction))},

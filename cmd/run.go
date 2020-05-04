@@ -3,7 +3,6 @@ package cmd
 import (
 	"bufio"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/docker/docker/api/types"
@@ -13,7 +12,6 @@ import (
 	"github.com/mholt/archiver/v3"
 	"github.com/spf13/cobra"
 	"io"
-	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -55,12 +53,12 @@ var runCmd = &cobra.Command{
 		applications := api.ListApplicationsRaw(project.Id, environment.Id)
 
 		if applications["results"] != nil {
+			fmt.Println("Run in progress...")
+
 			results := applications["results"].([]interface{})
 			for _, application := range results {
 				applicationConfigurationMap := application.(map[string]interface{})
 				if applicationConfigurationMap["name"] == qoveryYML.Application.GetSanitizeName() {
-
-					ReloadEnvironment(ConfigurationDirectoryRoot)
 
 					var environmentVariables []string
 					buildArgs := make(map[string]*string)
@@ -69,19 +67,11 @@ var runCmd = &cobra.Command{
 
 					for i := range evs {
 						ev := evs[i]
-						if ev.Key != "QOVERY_JSON_B64" && ev.KeyValue != "" {
+						if ev.KeyValue != "" {
 							environmentVariables = append(environmentVariables, ev.KeyValue)
 							buildArgs[ev.Key] = &ev.Value
 						}
 					}
-					j, err := json.Marshal(applicationConfigurationMap)
-					if err != nil {
-						log.Fatalf("fail to read config map: %s", err.Error())
-					}
-					configurationMapB64 := base64.StdEncoding.EncodeToString(j)
-
-					environmentVariables = append(environmentVariables, fmt.Sprintf("QOVERY_JSON_B64=%s", configurationMapB64))
-					buildArgs["QOVERY_JSON_B64"] = &configurationMapB64
 
 					image := buildContainer(dockerClient, qoveryYML.Application.DockerfilePath(), buildArgs)
 					runContainer(dockerClient, image, environmentVariables)
