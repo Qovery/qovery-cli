@@ -73,6 +73,16 @@ var runCmd = &cobra.Command{
 						}
 					}
 
+					envs := make(map[string]string)
+					for _, ev := range evs {
+						envs[ev.Key] = ev.Value
+					}
+
+					for k, v := range util.GetDotEnvs(envs) {
+						environmentVariables = append(environmentVariables, k+"="+v)
+						buildArgs[k] = &v
+					}
+
 					image := buildContainer(dockerClient, qoveryYML.Application.DockerfilePath(), buildArgs)
 					runContainer(dockerClient, image, environmentVariables)
 

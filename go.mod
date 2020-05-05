@@ -10,9 +10,9 @@ require (
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/fatih/color v1.9.0
 	github.com/frankban/quicktest v1.7.3 // indirect
-	github.com/fsnotify/fsnotify v1.4.7
 	github.com/golang/gddo v0.0.0-20200219175727-df439dd5819e // indirect
 	github.com/hashicorp/go-getter v1.4.1
+	github.com/joho/godotenv v1.3.0
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0
 	github.com/klauspost/compress v1.10.1 // indirect
 	github.com/klauspost/pgzip v1.2.3 // indirect
