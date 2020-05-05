@@ -58,10 +58,15 @@ func ShowEnvironmentStatus(projectName string, branchName string) bool {
 			databaseName = strings.Join(a.GetDatabaseNames(), ", ")
 		}
 
+		endpoints := strings.Join(a.GetConnectionURIs(), "\n")
+		if endpoints == "" {
+			endpoints = "none"
+		}
+
 		table.Append([]string{
 			a.Name,
 			a.Status.GetColoredCodeMessage(),
-			strings.Join(a.GetConnectionURIs(), "\n"),
+			endpoints,
 			applicationName,
 			databaseName,
 		})
