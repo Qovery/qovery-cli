@@ -335,7 +335,7 @@ func addDatabaseWizard() *util.QoveryYMLDatabase {
 	var versionChoices []string
 	switch choice {
 	case "PostgreSQL":
-		versionChoices = []string{"latest", "11.5", "11.4", "11.2", "11.1", "10.10", "9.6"}
+		versionChoices = []string{"latest", "11.7", "11.6", "11.5", "10.10", "9.6"}
 	case "MongoDB":
 		versionChoices = []string{"latest", "3.6"}
 	case "MySQL":
