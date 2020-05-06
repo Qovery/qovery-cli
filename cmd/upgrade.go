@@ -8,13 +8,14 @@ import (
 	"github.com/mholt/archiver/v3"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
-	"io"
 	"net/http"
 	"os"
 	"os/exec"
-	"qovery.go/util"
+	"qovery.go/io"
 	"runtime"
 )
+
+import iio "io"
 
 var upgradeCmd = &cobra.Command{
 	Use:   "upgrade",
@@ -32,7 +33,7 @@ var upgradeCmd = &cobra.Command{
 		uncompressQoveryBinaryPath := uncompressPath + filename
 		cleanList := []string{uncompressPath, archivePathName}
 
-		available, message, desiredVersion := util.CheckAvailableNewVersion()
+		available, message, desiredVersion := io.CheckAvailableNewVersion()
 		if !available {
 			fmt.Print(message)
 			os.Exit(0)
@@ -62,7 +63,7 @@ var upgradeCmd = &cobra.Command{
 		}
 		defer out.Close()
 
-		_, err = io.Copy(out, resp.Body)
+		_, err = iio.Copy(out, resp.Body)
 		if err != nil {
 			fmt.Printf("Error while adding content to Qovery CLI binary file: %s", err)
 			os.Exit(1)
@@ -80,7 +81,7 @@ var upgradeCmd = &cobra.Command{
 
 		// Fork to avoid override issue on a a running program
 		fmt.Printf("\nUpgrading Qovery CLI to version %s\n", desiredVersion)
-		command := exec.Command("/bin/sh", "-c", "sleep 1 ; mv " + uncompressQoveryBinaryPath + " " +
+		command := exec.Command("/bin/sh", "-c", "sleep 1 ; mv "+uncompressQoveryBinaryPath+" "+
 			currentBinaryFilename)
 		command.Start()
 	},

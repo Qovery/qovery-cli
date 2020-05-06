@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 	"strings"
 )
 
@@ -18,16 +17,16 @@ var environmentListCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			qoveryYML, err := util.CurrentQoveryYML()
+			qoveryYML, err := io.CurrentQoveryYML()
 			if err != nil {
-				util.PrintError("No qovery configuration file found")
+				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
 		}
-		environments := api.ListEnvironments(api.GetProjectByName(ProjectName).Id)
+		environments := io.ListEnvironments(io.GetProjectByName(ProjectName).Id)
 
-		table := util.GetTable()
+		table := io.GetTable()
 		table.SetHeader([]string{"branch", "status", "endpoints", "region", "applications", "databases"})
 
 		if environments.Results == nil || len(environments.Results) == 0 {

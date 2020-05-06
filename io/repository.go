@@ -1,4 +1,4 @@
-package api
+package io
 
 type Repositories struct {
 	Results []Repository `json:"results"`

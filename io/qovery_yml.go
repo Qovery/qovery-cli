@@ -1,4 +1,4 @@
-package util
+package io
 
 import (
 	"fmt"
@@ -92,7 +92,7 @@ func CurrentQoveryYMLFromPath(path string) (QoveryYML, error) {
 
 	_ = yaml.Unmarshal(f, &q)
 
-	configIsValid := validateConfig(q)
+	configIsValid := validateConfig(string(f), CurrentDockerfileContent())
 	if configIsValid == false {
 		os.Exit(1)
 	}
@@ -100,38 +100,23 @@ func CurrentQoveryYMLFromPath(path string) (QoveryYML, error) {
 	return q, nil
 }
 
-func validateConfig(qoveryYML QoveryYML) bool {
-	counter := 0
+func validateConfig(qoveryYMLContent string, dockerfileContent string) bool {
+	response := DoCheckConfiguration(ConfigurationCheckRequest{
+		QoveryYMLContent:  qoveryYMLContent,
+		DockerfileContent: dockerfileContent,
+	})
 
-	if CurrentBranchName() == "" {
-		PrintError("Unable to find the current branch name")
-		PrintSolution("Please 'git checkout' to a valid branch name")
-		counter++
-	}
-
-	if qoveryYML.Application.PubliclyAccessible == true {
-		if len(ExposePortsFromCurrentDockerfile()) == 0 {
-			PrintError("You requested your application to be publicly accessible, but no exposed ports are defined")
-			PrintSolution("Update your Dockerfile and add an 'EXPOSE' line with your application port " +
-				"(https://docs.docker.com/engine/reference/builder/#expose)")
-			counter++
-		}
+	if response.Valid {
+		return true
 	}
 
-	if qoveryYML.Application.Project == "" {
-		PrintError("No project name defined")
-		PrintSolution("Add in your .qovery.yml file, the 'project' name inside 'application' section")
-		counter++
-	}
-	if qoveryYML.Application.GetSanitizeName() == "" {
-		PrintError("No application name defined")
-		PrintSolution("Add in your .qovery.yml file, the 'name' name inside 'application' section")
-		counter++
+	for _, err := range response.Errors {
+		PrintError(err.Reason)
+		PrintSolution(err.Hint)
+		println()
 	}
 
-	if counter > 0 {
-		fmt.Printf("\nTotal errors found: %d", counter)
-		return false
-	}
-	return true
+	fmt.Printf("Total errors found: %d", len(response.Errors))
+
+	return false
 }

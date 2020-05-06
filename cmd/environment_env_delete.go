@@ -5,8 +5,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 )
 
 var environmentEnvDeleteCmd = &cobra.Command{
@@ -17,10 +16,10 @@ var environmentEnvDeleteCmd = &cobra.Command{
 	qovery environment env delete`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			BranchName = util.CurrentBranchName()
-			qoveryYML, err := util.CurrentQoveryYML()
+			BranchName = io.CurrentBranchName()
+			qoveryYML, err := io.CurrentQoveryYML()
 			if err != nil {
-				util.PrintError("No qovery configuration file found")
+				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
@@ -31,10 +30,10 @@ var environmentEnvDeleteCmd = &cobra.Command{
 			return
 		}
 
-		p := api.GetProjectByName(ProjectName)
-		e := api.GetEnvironmentByName(p.Id, BranchName)
-		ev := api.ListEnvironmentEnvironmentVariables(p.Id, e.Id).GetEnvironmentVariableByKey(args[0])
-		api.DeleteEnvironmentEnvironmentVariable(ev.Id, p.Id, e.Id)
+		p := io.GetProjectByName(ProjectName)
+		e := io.GetEnvironmentByName(p.Id, BranchName)
+		ev := io.ListEnvironmentEnvironmentVariables(p.Id, e.Id).GetEnvironmentVariableByKey(args[0])
+		io.DeleteEnvironmentEnvironmentVariable(ev.Id, p.Id, e.Id)
 		fmt.Println(color.GreenString("ok"))
 	},
 }

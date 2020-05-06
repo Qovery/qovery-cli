@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 	"strings"
 )
 
@@ -18,10 +17,10 @@ var environmentStatusCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			BranchName = util.CurrentBranchName()
-			qoveryYML, err := util.CurrentQoveryYML()
+			BranchName = io.CurrentBranchName()
+			qoveryYML, err := io.CurrentQoveryYML()
 			if err != nil {
-				util.PrintError("No qovery configuration file found")
+				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
@@ -39,11 +38,11 @@ func init() {
 }
 
 func ShowEnvironmentStatus(projectName string, branchName string) bool {
-	table := util.GetTable()
+	table := io.GetTable()
 	table.SetHeader([]string{"branch name", "status", "endpoints", "applications", "databases"})
 
 	result := false
-	a := api.GetEnvironmentByName(api.GetProjectByName(projectName).Id, branchName)
+	a := io.GetEnvironmentByName(io.GetProjectByName(projectName).Id, branchName)
 
 	if a.Name == "" {
 		table.Append([]string{"", "", "", "", "", ""})

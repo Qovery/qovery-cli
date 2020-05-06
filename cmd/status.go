@@ -6,8 +6,7 @@ import (
 	"github.com/schollz/progressbar/v2"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 	"strings"
 	"time"
 )
@@ -20,22 +19,22 @@ var statusCmd = &cobra.Command{
 	qovery status`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			BranchName = util.CurrentBranchName()
-			qoveryYML, err := util.CurrentQoveryYML()
+			BranchName = io.CurrentBranchName()
+			qoveryYML, err := io.CurrentQoveryYML()
 			if err != nil {
-				util.PrintError("No qovery configuration file found")
+				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		projectId := api.GetProjectByName(ProjectName).Id
+		projectId := io.GetProjectByName(ProjectName).Id
 
 		if WatchFlag {
 			bar := progressbar.NewOptions(100, progressbar.OptionSetPredictTime(true))
 
 			for {
-				a := api.GetEnvironmentByName(projectId, BranchName)
+				a := io.GetEnvironmentByName(projectId, BranchName)
 				_ = bar.Set(a.Status.ProgressionInPercent)
 				bar.Describe(a.Status.CodeMessage)
 
@@ -46,7 +45,7 @@ var statusCmd = &cobra.Command{
 				time.Sleep(1 * time.Second)
 			}
 
-			aggregatedEnvironment := api.GetEnvironmentByName(projectId, BranchName)
+			aggregatedEnvironment := io.GetEnvironmentByName(projectId, BranchName)
 
 			if aggregatedEnvironment.Status.State == "LIVE" {
 				fmt.Print("\n\n")
@@ -68,21 +67,21 @@ var statusCmd = &cobra.Command{
 		if !envExists {
 			// there is no environment, does the user forget to give access rights to Qovery ? Let's check
 			err := false
-			for _, url := range util.ListRemoteURLs() {
-				gas := api.GitCheck(url)
+			for _, url := range io.ListRemoteURLs() {
+				gas := io.GitCheck(url)
 				if !gas.HasAccess {
 					err = true
-					util.PrintError("Qovery can't access your repository " + url)
-					util.PrintHint("Give access to Qovery to deploy your application. https://docs.qovery.com/docs/using-qovery/interface/cli")
+					io.PrintError("Qovery can't access your repository " + url)
+					io.PrintHint("Give access to Qovery to deploy your application. https://docs.qovery.com/docs/using-qovery/interface/cli")
 				}
 			}
 
 			if !err {
-				util.PrintHint("Push your code to deploy your application")
+				io.PrintHint("Push your code to deploy your application")
 			}
 		}
 
-		aggregatedEnvironment := api.GetEnvironmentByName(projectId, BranchName)
+		aggregatedEnvironment := io.GetEnvironmentByName(projectId, BranchName)
 		if !strings.Contains(aggregatedEnvironment.Status.State, "_ERROR") {
 			// no error
 			return
@@ -92,7 +91,7 @@ var statusCmd = &cobra.Command{
 		showOutputErrorMessage(aggregatedEnvironment.Status.Output)
 
 		if aggregatedEnvironment.Status.State == "BUILDING_ERROR" {
-			util.PrintHint("Ensure your Dockerfile is correct. Run and test your container locally with 'qovery run'")
+			io.PrintHint("Ensure your Dockerfile is correct. Run and test your container locally with 'qovery run'")
 		}
 	},
 }

@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"qovery.go/util"
+	"qovery.go/io"
 )
 
 var versionCmd = &cobra.Command{
@@ -13,7 +13,7 @@ var versionCmd = &cobra.Command{
 
 	qovery version`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf(util.GetCurrentVersion())
+		fmt.Printf(io.GetCurrentVersion())
 	},
 }
 

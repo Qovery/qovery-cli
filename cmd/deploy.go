@@ -5,8 +5,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 )
 
 var deployCmd = &cobra.Command{
@@ -17,10 +16,10 @@ var deployCmd = &cobra.Command{
 	qovery deploy`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			BranchName = util.CurrentBranchName()
-			qoveryYML, err := util.CurrentQoveryYML()
+			BranchName = io.CurrentBranchName()
+			qoveryYML, err := io.CurrentQoveryYML()
 			if err != nil {
-				util.PrintError("No qovery configuration file found")
+				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
@@ -34,11 +33,11 @@ var deployCmd = &cobra.Command{
 
 		commitId := args[0]
 
-		projectId := api.GetProjectByName(ProjectName).Id
-		environmentId := api.GetEnvironmentByName(projectId, BranchName).Id
-		applicationId := api.GetApplicationByName(ProjectName, environmentId, ApplicationName).Id
+		projectId := io.GetProjectByName(ProjectName).Id
+		environmentId := io.GetEnvironmentByName(projectId, BranchName).Id
+		applicationId := io.GetApplicationByName(ProjectName, environmentId, ApplicationName).Id
 
-		api.Deploy(projectId, environmentId, applicationId, commitId)
+		io.Deploy(projectId, environmentId, applicationId, commitId)
 
 		ShowDeploymentMessage()
 	},

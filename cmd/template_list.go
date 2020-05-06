@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"qovery.go/util"
+	"qovery.go/io"
 )
 
 var templateListCmd = &cobra.Command{
@@ -13,10 +13,10 @@ var templateListCmd = &cobra.Command{
 	qovery template list`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		table := util.GetTable()
+		table := io.GetTable()
 		table.SetHeader([]string{"name", "description"})
 
-		templates := util.ListAvailableTemplates()
+		templates := io.ListAvailableTemplates()
 
 		if len(templates) == 0 {
 			table.Append([]string{"", ""})

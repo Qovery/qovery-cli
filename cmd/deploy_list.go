@@ -4,8 +4,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 )
 
 var deployListCmd = &cobra.Command{
@@ -16,10 +15,10 @@ var deployListCmd = &cobra.Command{
 	qovery deploy list`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			BranchName = util.CurrentBranchName()
-			qoveryYML, err := util.CurrentQoveryYML()
+			BranchName = io.CurrentBranchName()
+			qoveryYML, err := io.CurrentQoveryYML()
 			if err != nil {
-				util.PrintError("No qovery configuration file found")
+				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
@@ -39,12 +38,12 @@ func init() {
 }
 
 func ShowDeploymentList(projectName string, branchName string, applicationName string) {
-	table := util.GetTable()
+	table := io.GetTable()
 	table.SetHeader([]string{"branch", "commit date", "commit id", "commit author", "deployed"})
 
-	project := api.GetProjectByName(projectName)
-	environment := api.GetEnvironmentByName(project.Id, branchName)
-	application := api.GetApplicationByName(project.Id, environment.Id, applicationName)
+	project := io.GetProjectByName(projectName)
+	environment := io.GetEnvironmentByName(project.Id, branchName)
+	application := io.GetApplicationByName(project.Id, environment.Id, applicationName)
 
 	if environment.Id == "" {
 		table.Append([]string{"", "", "", "", ""})
@@ -53,7 +52,7 @@ func ShowDeploymentList(projectName string, branchName string, applicationName s
 	}
 
 	// TODO param for n last commits
-	for _, commit := range util.ListCommits(10) {
+	for _, commit := range io.ListCommits(10) {
 		if application.Repository.CommitId == commit.ID().String() {
 			table.Append([]string{branchName, commit.Author.When.String(), commit.ID().String(), commit.Author.Name, color.GreenString("✓")})
 		} else {

@@ -1,4 +1,10 @@
-package util
+package io
+
+const (
+	headerAuthorization = "Authorization"
+	headerValueBearer   = "Bearer "
+	DefaultRootUrl      = "https://api.qovery.com/api/v1"
+)
 
 const AsciiName = `
  .d88888b.  .d88888b. 888     88888888888888888888b.Y88b   d88P

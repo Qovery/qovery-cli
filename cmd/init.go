@@ -15,8 +15,7 @@ import (
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 )
 
 var initCmd = &cobra.Command{
@@ -53,20 +52,20 @@ func runInit() {
 		}
 	}
 
-	p := util.QoveryYML{}
+	p := io.QoveryYML{}
 
 	// check the user is auth; if not then exit
-	if api.GetAccount().Id == "" {
+	if io.GetAccount().Id == "" {
 		fmt.Println("You are not authenticated. Authenticate yourself with 'qovery auth' before using 'qovery init'!")
 		os.Exit(1)
 	}
 
-	fmt.Print(util.AsciiName)
+	fmt.Print(io.AsciiName)
 
 	if templateFlag != "" {
-		util.DownloadSource(templateFlag)
+		io.DownloadSource(templateFlag)
 		filepath.Walk(templateFlag, replaceAppName)
-		projectTemplate := util.GetTemplate(templateFlag)
+		projectTemplate := io.GetTemplate(templateFlag)
 		p.Application.Name = templateFlag
 		p.Application.Project = askForProject()
 		p.Application.CloudRegion = askForCloudRegion()
@@ -115,10 +114,10 @@ func runInit() {
 	}
 
 	if p.Application.PubliclyAccessible && projectTemplate.Name == "" {
-		p.Routers = []util.QoveryYMLRouter{
+		p.Routers = []io.QoveryYMLRouter{
 			{
 				Name: "main",
-				Routes: []util.QoveryYMLRoute{
+				Routes: []io.QoveryYMLRoute{
 					{
 						ApplicationName: p.Application.Name,
 						Paths:           []string{"/"},
@@ -138,7 +137,7 @@ func runInit() {
 	}
 
 	// TODO
-	// p.Routers.DNS = util.AskForInput(true, "Do you want to set a custom domain (ex: api.foo.com)?")
+	// p.Routers.DNS = io.AskForInput(true, "Do you want to set a custom domain (ex: api.foo.com)?")
 
 	if len(projectTemplate.QoveryYML.Databases) > 0 {
 		// add databases from template
@@ -210,7 +209,7 @@ func askForAddDatabase(count int) bool {
 	return true
 }
 
-func askForTemplate() util.Template {
+func askForTemplate() io.Template {
 	prompt := promptui.Select{
 		Label: "Do you want to use a Dockerfile template? (NodeJS, Java, PHP, Python...)",
 		Size:  2,
@@ -219,10 +218,10 @@ func askForTemplate() util.Template {
 
 	x, _, _ := prompt.Run()
 	if x == 1 {
-		return util.Template{}
+		return io.Template{}
 	}
 
-	templates := util.ListAvailableTemplates()
+	templates := io.ListAvailableTemplates()
 
 	var templateNames []string
 	for _, template := range templates {
@@ -238,12 +237,12 @@ func askForTemplate() util.Template {
 	choice, _, _ := prompt.Run()
 	templateName := templates[choice].Name
 
-	return util.GetTemplate(templateName)
+	return io.GetTemplate(templateName)
 }
 
 func askForProject() string {
 	// select project from existing ones or ask to create a new one; then take the ID
-	projects := api.ListProjects().Results
+	projects := io.ListProjects().Results
 
 	var projectNames []string
 	for _, v := range projects {
@@ -272,7 +271,7 @@ func askForProject() string {
 			prompt := promptui.Prompt{Label: "Enter the project name"}
 
 			projectName, _ = prompt.Run()
-			if api.GetProjectByName(projectName).Id == "" {
+			if io.GetProjectByName(projectName).Id == "" {
 				break
 			}
 
@@ -293,7 +292,7 @@ func askForProject() string {
 }
 
 func askForCloudRegion() string {
-	clouds := api.ListCloudProviders().Results
+	clouds := io.ListCloudProviders().Results
 
 	keyByDescription := make(map[string]string)
 	var names []string
@@ -320,7 +319,7 @@ func askForCloudRegion() string {
 	return keyByDescription[nameChoice]
 }
 
-func addDatabaseWizard() *util.QoveryYMLDatabase {
+func addDatabaseWizard() *io.QoveryYMLDatabase {
 
 	choices := []string{"PostgreSQL", "MongoDB", "MySQL"}
 
@@ -355,9 +354,9 @@ func addDatabaseWizard() *util.QoveryYMLDatabase {
 		versionChoice = versionChoices[1]
 	}
 
-	name := fmt.Sprintf("my-%s-%d", strings.ToLower(choice), util.RandomInt())
+	name := fmt.Sprintf("my-%s-%d", strings.ToLower(choice), io.RandomInt())
 
-	return &util.QoveryYMLDatabase{Name: name, Type: strings.ToLower(choice), Version: versionChoice}
+	return &io.QoveryYMLDatabase{Name: name, Type: strings.ToLower(choice), Version: versionChoice}
 }
 
 func currentDirectoryName() string {
@@ -378,7 +377,7 @@ func intPointerValue(i *int) string {
 	return strconv.Itoa(*i)
 }
 
-func writeFiles(template util.Template, p util.QoveryYML) {
+func writeFiles(template io.Template, p io.QoveryYML) {
 	yamlContent, err := yaml.Marshal(&p)
 	if err != nil {
 		log.Fatalln(err)
@@ -411,7 +410,7 @@ func writeFiles(template util.Template, p util.QoveryYML) {
 	}
 }
 
-func printFinalMessage(template util.Template) {
+func printFinalMessage(template io.Template) {
 	fmt.Println(color.New(color.FgYellow, color.Bold).Sprint("\n!!! IMPORTANT !!!"))
 	fmt.Println(color.New(color.Bold).Sprint("1/ Commit and push the \".qovery.yml\" file to get your app deployed"))
 	fmt.Println("➤ Run: git add .qovery.yml Dockerfile && git commit -m \"add .qovery.yml\" && git push -u origin master")

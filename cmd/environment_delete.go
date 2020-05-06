@@ -5,8 +5,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 )
 
 var environmentDeleteCmd = &cobra.Command{
@@ -18,16 +17,16 @@ var environmentDeleteCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			BranchName = util.CurrentBranchName()
-			qoveryYML, err := util.CurrentQoveryYML()
+			BranchName = io.CurrentBranchName()
+			qoveryYML, err := io.CurrentQoveryYML()
 			if err != nil {
-				util.PrintError("No qovery configuration file found")
+				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		isConfirmed := util.AskForStringConfirmation(
+		isConfirmed := io.AskForStringConfirmation(
 			false,
 			fmt.Sprintf("Type '%s' to delete this environment and erase its associated data", BranchName),
 			BranchName)
@@ -35,9 +34,9 @@ var environmentDeleteCmd = &cobra.Command{
 			return
 		}
 
-		projectId := api.GetProjectByName(ProjectName).Id
+		projectId := io.GetProjectByName(ProjectName).Id
 
-		api.DeleteEnvironment(projectId, api.GetEnvironmentByName(projectId, BranchName).Id)
+		io.DeleteEnvironment(projectId, io.GetEnvironmentByName(projectId, BranchName).Id)
 
 		fmt.Println(color.YellowString("deletion in progress..."))
 		fmt.Println("Hint: type \"qovery status --watch\" to track the progression of the deletion")

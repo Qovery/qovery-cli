@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 	"strings"
 )
 
@@ -17,10 +16,10 @@ var databaseListCmd = &cobra.Command{
 	qovery database list`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			BranchName = util.CurrentBranchName()
-			qoveryYML, err := util.CurrentQoveryYML()
+			BranchName = io.CurrentBranchName()
+			qoveryYML, err := io.CurrentQoveryYML()
 			if err != nil {
-				util.PrintError("No qovery configuration file found")
+				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
@@ -39,13 +38,13 @@ func init() {
 }
 
 func ShowDatabaseList(projectName string, branchName string, showCredentials bool) {
-	table := util.GetTable()
+	table := io.GetTable()
 	table.SetHeader([]string{"database name", "status", "type", "version", "endpoint", "port", "username", "password", "applications"})
 
-	projectId := api.GetProjectByName(projectName).Id
-	environment := api.GetEnvironmentByName(projectId, branchName)
+	projectId := io.GetProjectByName(projectName).Id
+	environment := io.GetEnvironmentByName(projectId, branchName)
 
-	services := api.ListDatabases(projectId, environment.Id)
+	services := io.ListDatabases(projectId, environment.Id)
 	if services.Results == nil || len(services.Results) == 0 {
 		table.Append([]string{"", "", "", "", "", "", "", "", ""})
 	} else {

@@ -2,25 +2,24 @@ package cmd
 
 import (
 	"fmt"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 	"strconv"
 	"strings"
 )
 
 func ShowEnvironmentVariablesByProjectName(projectName string, showCredentials bool) {
-	projectId := api.GetProjectByName(projectName).Id
-	evs := api.ListProjectEnvironmentVariables(projectId)
+	projectId := io.GetProjectByName(projectName).Id
+	evs := io.ListProjectEnvironmentVariables(projectId)
 	ShowEnvironmentVariables(evs.Results, showCredentials)
 }
 
-func getStaticBuiltInEnvironmentVariables(branchName string) []api.EnvironmentVariable {
+func getStaticBuiltInEnvironmentVariables(branchName string) []io.EnvironmentVariable {
 	isProduction := false
 	if branchName == "master" {
 		isProduction = true
 	}
 
-	return []api.EnvironmentVariable{
+	return []io.EnvironmentVariable{
 		{Scope: "BUILT_IN", Key: "QOVERY_BRANCH_NAME", Value: branchName, KeyValue: fmt.Sprintf("QOVERY_BRANCH_NAME=%s", branchName)},
 		{Scope: "BUILT_IN", Key: "QOVERY_IS_PRODUCTION", Value: strconv.FormatBool(isProduction),
 			KeyValue: fmt.Sprintf("QOVERY_IS_PRODUCTION=%s", strconv.FormatBool(isProduction))},
@@ -28,16 +27,16 @@ func getStaticBuiltInEnvironmentVariables(branchName string) []api.EnvironmentVa
 }
 
 func ShowEnvironmentVariablesByBranchName(projectName string, branchName string, showCredentials bool) {
-	projectId := api.GetProjectByName(projectName).Id
+	projectId := io.GetProjectByName(projectName).Id
 
-	var evs []api.EnvironmentVariable
+	var evs []io.EnvironmentVariable
 
 	for _, ev := range getStaticBuiltInEnvironmentVariables(branchName) {
 		evs = append(evs, ev)
 	}
 
-	environmentId := api.GetEnvironmentByName(projectId, branchName).Id
-	for _, ev := range api.ListEnvironmentEnvironmentVariables(projectId, environmentId).Results {
+	environmentId := io.GetEnvironmentByName(projectId, branchName).Id
+	for _, ev := range io.ListEnvironmentEnvironmentVariables(projectId, environmentId).Results {
 		evs = append(evs, ev)
 	}
 
@@ -48,26 +47,26 @@ func ShowEnvironmentVariablesByApplicationName(projectName string, branchName st
 	ShowEnvironmentVariables(ListEnvironmentVariables(projectName, branchName, applicationName), showCredentials)
 }
 
-func ListEnvironmentVariables(projectName string, branchName string, applicationName string) []api.EnvironmentVariable {
-	projectId := api.GetProjectByName(projectName).Id
-	environment := api.GetEnvironmentByName(projectId, branchName)
-	application := api.GetApplicationByName(projectId, environment.Id, applicationName)
+func ListEnvironmentVariables(projectName string, branchName string, applicationName string) []io.EnvironmentVariable {
+	projectId := io.GetProjectByName(projectName).Id
+	environment := io.GetEnvironmentByName(projectId, branchName)
+	application := io.GetApplicationByName(projectId, environment.Id, applicationName)
 
-	var evs []api.EnvironmentVariable
+	var evs []io.EnvironmentVariable
 
 	for _, ev := range getStaticBuiltInEnvironmentVariables(branchName) {
 		evs = append(evs, ev)
 	}
 
-	for _, ev := range api.ListApplicationEnvironmentVariables(projectId, environment.Id, application.Id).Results {
+	for _, ev := range io.ListApplicationEnvironmentVariables(projectId, environment.Id, application.Id).Results {
 		evs = append(evs, ev)
 	}
 
 	return evs
 }
 
-func ShowEnvironmentVariables(environmentVariables []api.EnvironmentVariable, showCredentials bool) {
-	table := util.GetTable()
+func ShowEnvironmentVariables(environmentVariables []io.EnvironmentVariable, showCredentials bool) {
+	table := io.GetTable()
 	table.SetHeader([]string{"scope", "key", "value"})
 
 	for _, ev := range environmentVariables {

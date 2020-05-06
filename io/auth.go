@@ -1,4 +1,4 @@
-package api
+package io
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"qovery.go/util"
 	"strconv"
 	"time"
 )
@@ -25,7 +24,7 @@ var (
 )
 
 func DoRequestUserToAuthenticate() {
-	available, message, _ := util.CheckAvailableNewVersion()
+	available, message, _ := CheckAvailableNewVersion()
 	if available {
 		fmt.Println(message)
 	}

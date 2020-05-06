@@ -5,8 +5,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 )
 
 var projectEnvAddCmd = &cobra.Command{
@@ -17,9 +16,9 @@ var projectEnvAddCmd = &cobra.Command{
 	qovery project env add`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			qoveryYML, err := util.CurrentQoveryYML()
+			qoveryYML, err := io.CurrentQoveryYML()
 			if err != nil {
-				util.PrintError("No qovery configuration file found")
+				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
@@ -30,8 +29,8 @@ var projectEnvAddCmd = &cobra.Command{
 			return
 		}
 
-		p := api.GetProjectByName(ProjectName)
-		api.CreateProjectEnvironmentVariable(api.EnvironmentVariable{Key: args[0], Value: args[1]}, p.Id)
+		p := io.GetProjectByName(ProjectName)
+		io.CreateProjectEnvironmentVariable(io.EnvironmentVariable{Key: args[0], Value: args[1]}, p.Id)
 
 		fmt.Println(color.GreenString("ok"))
 	},

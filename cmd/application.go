@@ -5,9 +5,9 @@ import (
 )
 
 var applicationCmd = &cobra.Command{
-	Use:   "application",
+	Use:     "application",
 	Aliases: []string{"app"},
-	Short: "Perform application actions",
+	Short:   "Perform application actions",
 	Long: `APPLICATION performs application actions on project environment. For example:
 
 	qovery application`,

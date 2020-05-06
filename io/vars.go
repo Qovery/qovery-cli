@@ -1,3 +1,3 @@
-package api
+package io
 
 var RootURL = DefaultRootUrl

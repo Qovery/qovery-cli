@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 	"time"
 )
 
@@ -17,10 +16,10 @@ var applicationLogCmd = &cobra.Command{
 	qovery application log`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			BranchName = util.CurrentBranchName()
-			qoveryYML, err := util.CurrentQoveryYML()
+			BranchName = io.CurrentBranchName()
+			qoveryYML, err := io.CurrentQoveryYML()
 			if err != nil {
-				util.PrintError("No qovery configuration file found")
+				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
 			ApplicationName = qoveryYML.Application.GetSanitizeName()
@@ -43,12 +42,12 @@ func init() {
 }
 
 func ShowApplicationLog(projectName string, branchName string, applicationName string, lastLines int, follow bool) {
-	projectId := api.GetProjectByName(projectName).Id
-	environment := api.GetEnvironmentByName(projectId, branchName)
-	application := api.GetApplicationByName(projectId, environment.Id, applicationName)
+	projectId := io.GetProjectByName(projectName).Id
+	environment := io.GetEnvironmentByName(projectId, branchName)
+	application := io.GetApplicationByName(projectId, environment.Id, applicationName)
 
 	if !follow {
-		logs := api.ListApplicationLogs(lastLines, projectId, environment.Id, application.Id).Results
+		logs := io.ListApplicationLogs(lastLines, projectId, environment.Id, application.Id).Results
 
 		for _, log := range logs {
 			fmt.Print(log.Message)
@@ -57,9 +56,9 @@ func ShowApplicationLog(projectName string, branchName string, applicationName s
 		return
 	}
 
-	var logs []api.Log
+	var logs []io.Log
 	for {
-		logs = api.ListApplicationLogs(lastLines, projectId, environment.Id, application.Id).Results
+		logs = io.ListApplicationLogs(lastLines, projectId, environment.Id, application.Id).Results
 		if len(logs) > 0 {
 			break
 		}
@@ -72,7 +71,7 @@ func ShowApplicationLog(projectName string, branchName string, applicationName s
 	lastLog := logs[len(logs)-1]
 	for {
 		time.Sleep(time.Duration(1) * time.Second)
-		logs = api.ListApplicationTailLogs(lastLog.Id, projectId, environment.Id, application.Id).Results
+		logs = io.ListApplicationTailLogs(lastLog.Id, projectId, environment.Id, application.Id).Results
 		if len(logs) > 0 {
 			for _, log := range logs {
 				fmt.Print(log.Message)

@@ -5,9 +5,9 @@ import (
 )
 
 var databaseCmd = &cobra.Command{
-	Use:   "database",
+	Use:     "database",
 	Aliases: []string{"db"},
-	Short: "Perform database actions",
+	Short:   "Perform database actions",
 	Long: `DATABASE performs route actions on project environment. For example:
 
 	qovery database`,

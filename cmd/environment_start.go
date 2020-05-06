@@ -3,8 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"os"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 )
 
 var environmentStartCmd = &cobra.Command{
@@ -16,21 +15,21 @@ var environmentStartCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			BranchName = util.CurrentBranchName()
-			qoveryYML, err := util.CurrentQoveryYML()
+			BranchName = io.CurrentBranchName()
+			qoveryYML, err := io.CurrentQoveryYML()
 			if err != nil {
-				util.PrintError("No qovery configuration file found")
+				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
 			ApplicationName = qoveryYML.Application.GetSanitizeName()
 		}
 
-		projectId := api.GetProjectByName(ProjectName).Id
-		application := api.GetApplicationByName(projectId, BranchName, ApplicationName)
-		environment := api.GetEnvironmentByName(projectId, BranchName)
+		projectId := io.GetProjectByName(ProjectName).Id
+		application := io.GetApplicationByName(projectId, BranchName, ApplicationName)
+		environment := io.GetEnvironmentByName(projectId, BranchName)
 
-		api.Deploy(projectId, environment.Id, application.Id, application.Repository.CommitId)
+		io.Deploy(projectId, environment.Id, application.Id, application.Repository.CommitId)
 		ShowDeploymentMessage()
 	},
 }

@@ -5,9 +5,9 @@ import (
 )
 
 var environmentCmd = &cobra.Command{
-	Use:   "environment",
+	Use:     "environment",
 	Aliases: []string{"env"},
-	Short: "Perform environment actions",
+	Short:   "Perform environment actions",
 	Long: `ENVIRONMENT performs actions on project environment. For example:
 
 	qovery environment`,

@@ -5,8 +5,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 )
 
 var domainListCmd = &cobra.Command{
@@ -17,10 +16,10 @@ var domainListCmd = &cobra.Command{
 	qovery domain list`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			BranchName = util.CurrentBranchName()
-			qoveryYML, err := util.CurrentQoveryYML()
+			BranchName = io.CurrentBranchName()
+			qoveryYML, err := io.CurrentQoveryYML()
 			if err != nil {
-				util.PrintError("No qovery configuration file found")
+				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
 			ProjectName = qoveryYML.Application.Project
@@ -37,13 +36,13 @@ func init() {
 }
 
 func ShowDomainList(projectName string, branchName string) {
-	table := util.GetTable()
+	table := io.GetTable()
 	table.SetHeader([]string{"branch", "domain", "status", "validation domain", "router name"})
 
-	projectId := api.GetProjectByName(projectName).Id
-	environment := api.GetEnvironmentByName(projectId, branchName)
+	projectId := io.GetProjectByName(projectName).Id
+	environment := io.GetEnvironmentByName(projectId, branchName)
 
-	routers := api.ListRouters(projectId, environment.Id)
+	routers := io.ListRouters(projectId, environment.Id)
 	if routers.Results == nil || len(routers.Results) == 0 {
 		table.Append([]string{"", "", ""})
 	} else {

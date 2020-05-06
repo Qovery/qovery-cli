@@ -11,13 +11,13 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/mholt/archiver/v3"
 	"github.com/spf13/cobra"
-	"io"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 )
+
+import iio "io"
 
 var runCmd = &cobra.Command{
 	Use:   "run",
@@ -26,12 +26,12 @@ var runCmd = &cobra.Command{
 
 	qovery run`,
 	Run: func(cmd *cobra.Command, args []string) {
-		qoveryYML, err := util.CurrentQoveryYML()
+		qoveryYML, err := io.CurrentQoveryYML()
 		if err != nil {
-			util.PrintError("No qovery configuration file found")
+			io.PrintError("No qovery configuration file found")
 			os.Exit(1)
 		}
-		branchName := util.CurrentBranchName()
+		branchName := io.CurrentBranchName()
 		ApplicationName = qoveryYML.Application.GetSanitizeName()
 		projectName := qoveryYML.Application.Project
 
@@ -39,18 +39,18 @@ var runCmd = &cobra.Command{
 		_, err = dockerClient.ImageList(context.Background(), types.ImageListOptions{})
 
 		if err != nil {
-			util.PrintError("Run Docker or install it on your system")
+			io.PrintError("Run Docker or install it on your system")
 			os.Exit(1)
 		}
 
-		project := api.GetProjectByName(projectName)
+		project := io.GetProjectByName(projectName)
 		if project.Id == "" {
-			util.PrintError("The project does not exist. Are you well authenticated with the right user? Do 'qovery auth' to be sure")
+			io.PrintError("The project does not exist. Are you well authenticated with the right user? Do 'qovery auth' to be sure")
 			os.Exit(1)
 		}
 
-		environment := api.GetEnvironmentByName(project.Id, branchName)
-		applications := api.ListApplicationsRaw(project.Id, environment.Id)
+		environment := io.GetEnvironmentByName(project.Id, branchName)
+		applications := io.ListApplicationsRaw(project.Id, environment.Id)
 
 		if applications["results"] != nil {
 			fmt.Println("Run in progress...")
@@ -78,7 +78,7 @@ var runCmd = &cobra.Command{
 						envs[ev.Key] = ev.Value
 					}
 
-					for k, v := range util.GetDotEnvs(envs) {
+					for k, v := range io.GetDotEnvs(envs) {
 						environmentVariables = append(environmentVariables, k+"="+v)
 						buildArgs[k] = &v
 					}
@@ -148,7 +148,7 @@ func runContainer(client *client.Client, image *types.ImageSummary, environmentV
 
 	hostConfig := &container.HostConfig{}
 
-	exposePorts := util.ExposePortsFromCurrentDockerfile()
+	exposePorts := io.ExposePortsFromCurrentDockerfile()
 
 	// TODO add all ports and not only the last one exposed
 	for _, exposePort := range exposePorts {
@@ -177,7 +177,7 @@ func runContainer(client *client.Client, image *types.ImageSummary, environmentV
 			panic(err)
 		}
 
-		_, _ = io.Copy(os.Stdout, out)
+		_, _ = iio.Copy(os.Stdout, out)
 	}()
 
 	ch := make(chan os.Signal, 1)
@@ -192,13 +192,13 @@ func runContainer(client *client.Client, image *types.ImageSummary, environmentV
 	_, _ = client.ContainerWait(context.Background(), c.ID)
 }
 
-func writeToLog(reader io.ReadCloser) error {
+func writeToLog(reader iio.ReadCloser) error {
 	defer reader.Close()
 	rd := bufio.NewReader(reader)
 
 	for {
 		n, _, err := rd.ReadLine()
-		if err != nil && err == io.EOF {
+		if err != nil && err == iio.EOF {
 			break
 		} else if err != nil {
 			return err
@@ -214,7 +214,7 @@ func writeToLog(reader io.ReadCloser) error {
 }
 
 func getApplicationConfigByName(projectId string, branchName string, appName string) map[string]interface{} {
-	return filterApplicationsByName(api.ListApplicationsRaw(projectId, branchName), appName)
+	return filterApplicationsByName(io.ListApplicationsRaw(projectId, branchName), appName)
 }
 
 func filterApplicationsByName(applications map[string]interface{}, appName string) map[string]interface{} {

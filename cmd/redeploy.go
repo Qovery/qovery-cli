@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery.go/api"
-	"qovery.go/util"
+	"qovery.go/io"
 )
 
 var redeployCmd = &cobra.Command{
@@ -14,27 +13,27 @@ var redeployCmd = &cobra.Command{
 	Long:  `REDEPLOY allows you to (re)deploy your application with the last deployed commit`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		qoveryYML, err := util.CurrentQoveryYML()
+		qoveryYML, err := io.CurrentQoveryYML()
 		if err != nil {
-			util.PrintError("No qovery configuration file found")
+			io.PrintError("No qovery configuration file found")
 			os.Exit(1)
 		}
 
-		var branchName = util.CurrentBranchName()
+		var branchName = io.CurrentBranchName()
 		var projectName = qoveryYML.Application.Project
 		var applicationName = qoveryYML.Application.GetSanitizeName()
 
-		project := api.GetProjectByName(projectName)
-		environment := api.GetEnvironmentByName(project.Id, branchName)
-		application := api.GetApplicationByName(project.Id, environment.Id, applicationName)
+		project := io.GetProjectByName(projectName)
+		environment := io.GetEnvironmentByName(project.Id, branchName)
+		application := io.GetApplicationByName(project.Id, environment.Id, applicationName)
 
 		// TODO how many commits to check?
-		for _, commit := range util.ListCommits(10) {
+		for _, commit := range io.ListCommits(10) {
 			if application.Repository.CommitId == commit.ID().String() {
-				projectId := api.GetProjectByName(projectName).Id
-				environmentId := api.GetEnvironmentByName(projectId, branchName).Id
-				applicationId := api.GetApplicationByName(projectName, environmentId, applicationName).Id
-				api.Deploy(projectId, environmentId, applicationId, commit.Hash.String())
+				projectId := io.GetProjectByName(projectName).Id
+				environmentId := io.GetEnvironmentByName(projectId, branchName).Id
+				applicationId := io.GetApplicationByName(projectName, environmentId, applicationName).Id
+				io.Deploy(projectId, environmentId, applicationId, commit.Hash.String())
 				fmt.Println("Redeployed application with commit " + commit.Hash.String())
 				return
 			}

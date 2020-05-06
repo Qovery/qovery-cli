@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"qovery.go/api"
+	"qovery.go/io"
 )
 
 var authCmd = &cobra.Command{
@@ -12,7 +12,7 @@ var authCmd = &cobra.Command{
 
 	qovery auth`,
 	Run: func(cmd *cobra.Command, args []string) {
-		api.DoRequestUserToAuthenticate()
+		io.DoRequestUserToAuthenticate()
 	},
 }
 
