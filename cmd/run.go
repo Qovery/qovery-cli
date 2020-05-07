@@ -123,12 +123,12 @@ func buildContainer(client *client.Client, dockerfilePath string, buildArgs map[
 		BuildArgs:  buildArgs,
 	})
 
-	defer r.Body.Close()
-
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	defer r.Body.Close()
 
 	_ = writeToLog(r.Body)
 
