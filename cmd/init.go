@@ -2,20 +2,19 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
-	"path/filepath"
-	"sort"
-	"strconv"
-	"strings"
-
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
 	"qovery.go/io"
+	"sort"
+	"strconv"
+	"strings"
 )
 
 var initCmd = &cobra.Command{
@@ -63,12 +62,6 @@ func runInit() {
 	fmt.Print(io.AsciiName)
 
 	if templateFlag != "" {
-		io.DownloadSource(templateFlag)
-		err := filepath.Walk(templateFlag, replaceAppName)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
 		projectTemplate := io.GetTemplate(templateFlag)
 		p.Application.Name = templateFlag
 		p.Application.Project = askForProject()
@@ -82,9 +75,21 @@ func runInit() {
 			}
 		}
 
+		io.DownloadSource(templateFlag)
+		err := filepath.Walk(templateFlag, replaceAppName)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		writeFiles(projectTemplate, p)
-		printFinalMessage(projectTemplate)
+		err = io.InitializeEmptyGitRepository(templateFlag)
+		if err != nil {
+			fmt.Println("Could not initialize an empty Git repository in " + templateFlag + " folder")
+			os.Exit(1)
+		}
 
+		askForGithubPermissions()
+		printFinalMessage(projectTemplate)
 		os.Exit(0)
 	} else {
 		templateFlag = "."
@@ -177,6 +182,12 @@ func runInit() {
 
 	fmt.Println(color.GreenString("✓") + " Your Qovery configuration file has been successfully created (.qovery.yml)")
 	fmt.Println(color.New(color.FgYellow, color.Bold).Sprint("\n!!! IMPORTANT !!!"))
+	askForGithubPermissions()
+
+	printFinalMessage(projectTemplate)
+}
+
+func askForGithubPermissions() {
 	fmt.Println(color.YellowString("Qovery needs to get access to your git repository"))
 	fmt.Println("https://github.com/apps/qovery/installations/new")
 
@@ -190,8 +201,6 @@ func runInit() {
 	if openLink == 1 {
 		_ = browser.OpenURL("https://github.com/apps/qovery/installations/new")
 	}
-
-	printFinalMessage(projectTemplate)
 }
 
 func askForAddDatabase(count int) bool {
