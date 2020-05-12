@@ -448,8 +448,8 @@ func replaceAppName(path string, fi os.FileInfo, err error) error {
 		return err
 	}
 
-	if !fi.IsDir() {
-		return nil //
+	if fi.IsDir() {
+		return nil
 	}
 
 	read, err := ioutil.ReadFile(path)
