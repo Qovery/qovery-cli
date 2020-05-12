@@ -82,6 +82,8 @@ func runInit() {
 		printFinalMessage(projectTemplate)
 
 		os.Exit(0)
+	} else {
+		templateFlag = "."
 	}
 
 	fmt.Println("Reply to the following questions to initialize Qovery for this application")
