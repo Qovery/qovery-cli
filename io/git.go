@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 )
 
 type GitAccessStatus struct {
@@ -182,4 +183,32 @@ func ListCommitsFromPath(nLast int, path string) []*object.Commit {
 	}
 
 	return finalCommits
+}
+
+func InitializeEmptyGitRepository(folder string) error {
+	repository, e := git.PlainInit(folder, false)
+	if e != nil {
+		return e
+	}
+	worktree, e := repository.Worktree()
+	if e != nil {
+		return e
+	}
+	_, e = worktree.Add(".")
+	if e != nil {
+		return e
+	}
+	_, e = worktree.Commit("Initial commit from Qovery", &git.CommitOptions{
+		All: true,
+		Author: &object.Signature{
+			Name:  "Qovery CLI",
+			Email: "hello@qovery.com",
+			When:  time.Now(),
+		},
+	})
+	if e != nil {
+		return e
+	}
+
+	return nil
 }
