@@ -89,7 +89,7 @@ func runInit() {
 		}
 
 		askForGithubPermissions()
-		printFinalMessage(projectTemplate)
+		printFinalMessageForTemplatedProject(projectTemplate)
 		os.Exit(0)
 	} else {
 		templateFlag = "."
@@ -435,6 +435,22 @@ func printFinalMessage(template io.Template) {
 
 	if len(template.Commands) > 0 {
 		fmt.Println(color.New(color.Bold).Sprint("3/ Execute the following commands"))
+		for _, command := range template.Commands {
+			fmt.Println(fmt.Sprintf("➤ Run: %s", command))
+		}
+	}
+
+	fmt.Println("\nEnjoy! 👋")
+}
+
+func printFinalMessageForTemplatedProject(template io.Template) {
+	fmt.Println(color.New(color.FgYellow, color.Bold).Sprint("\n!!! IMPORTANT !!!"))
+	fmt.Println(color.New(color.Bold).Sprint("1/ Navigate to your new application: cd " + templateFlag))
+	fmt.Println(color.New(color.Bold).Sprint("2/ Push the code to a new repository on Github"))
+	fmt.Println(color.New(color.Bold).Sprint("3/ Run: `qovery status` to see the status of app deployment"))
+
+	if len(template.Commands) > 0 {
+		fmt.Println(color.New(color.Bold).Sprint("4/ Execute the following commands"))
 		for _, command := range template.Commands {
 			fmt.Println(fmt.Sprintf("➤ Run: %s", command))
 		}
