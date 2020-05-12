@@ -64,7 +64,11 @@ func runInit() {
 
 	if templateFlag != "" {
 		io.DownloadSource(templateFlag)
-		filepath.Walk(templateFlag, replaceAppName)
+		err := filepath.Walk(templateFlag, replaceAppName)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		projectTemplate := io.GetTemplate(templateFlag)
 		p.Application.Name = templateFlag
 		p.Application.Project = askForProject()
@@ -204,11 +208,12 @@ func askForAddDatabase(count int) bool {
 
 	result, _, _ := prompt.Run()
 
+	report := true
 	if result == 0 {
-		return false
+		report = false
 	}
 
-	return true
+	return report
 }
 
 func askForTemplate() io.Template {
@@ -434,7 +439,7 @@ func replaceAppName(path string, fi os.FileInfo, err error) error {
 		return err
 	}
 
-	if !!fi.IsDir() {
+	if !fi.IsDir() {
 		return nil //
 	}
 

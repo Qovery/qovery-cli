@@ -22,11 +22,7 @@ func (s *Status) GetState() string {
 }
 
 func (s *Status) IsError() bool {
-	if strings.HasSuffix(s.State, "_ERROR") {
-		return true
-	}
-
-	return false
+	return strings.HasSuffix(s.State, "_ERROR")
 }
 
 func (s *Status) GetColoredCodeMessage() string {

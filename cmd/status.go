@@ -49,9 +49,9 @@ var statusCmd = &cobra.Command{
 
 			if aggregatedEnvironment.Status.State == "LIVE" {
 				fmt.Print("\n\n")
-				fmt.Printf(color.GreenString("Your environment is ready!"))
+				fmt.Printf("%s", color.GreenString("Your environment is ready!"))
 				fmt.Print("\n\n")
-				fmt.Printf(color.GreenString("-- status output --"))
+				fmt.Printf("%s", color.GreenString("-- status output --"))
 			}
 
 			fmt.Print("\n\n")
@@ -87,7 +87,7 @@ var statusCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Printf(color.RedString("Something goes wrong:"))
+		fmt.Printf("%s", color.RedString("Something goes wrong:"))
 		showOutputErrorMessage(aggregatedEnvironment.Status.Output)
 
 		if aggregatedEnvironment.Status.State == "BUILDING_ERROR" {

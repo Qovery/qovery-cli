@@ -93,7 +93,7 @@ func CurrentQoveryYMLFromPath(path string) (QoveryYML, error) {
 	_ = yaml.Unmarshal(f, &q)
 
 	configIsValid := validateConfig(string(f), CurrentDockerfileContent())
-	if configIsValid == false {
+	if !configIsValid {
 		os.Exit(1)
 	}
 

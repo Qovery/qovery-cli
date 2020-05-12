@@ -83,7 +83,11 @@ var upgradeCmd = &cobra.Command{
 		fmt.Printf("\nUpgrading Qovery CLI to version %s\n", desiredVersion)
 		command := exec.Command("/bin/sh", "-c", "sleep 1 ; mv "+uncompressQoveryBinaryPath+" "+
 			currentBinaryFilename)
-		command.Start()
+		err = command.Start()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	},
 }
 

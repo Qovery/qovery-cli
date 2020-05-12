@@ -31,14 +31,9 @@ func ShowEnvironmentVariablesByBranchName(projectName string, branchName string,
 
 	var evs []io.EnvironmentVariable
 
-	for _, ev := range getStaticBuiltInEnvironmentVariables(branchName) {
-		evs = append(evs, ev)
-	}
-
+	evs = append(evs, getStaticBuiltInEnvironmentVariables(branchName)...)
 	environmentId := io.GetEnvironmentByName(projectId, branchName).Id
-	for _, ev := range io.ListEnvironmentEnvironmentVariables(projectId, environmentId).Results {
-		evs = append(evs, ev)
-	}
+	evs = append(evs, io.ListEnvironmentEnvironmentVariables(projectId, environmentId).Results...)
 
 	ShowEnvironmentVariables(evs, showCredentials)
 }
@@ -54,13 +49,8 @@ func ListEnvironmentVariables(projectName string, branchName string, application
 
 	var evs []io.EnvironmentVariable
 
-	for _, ev := range getStaticBuiltInEnvironmentVariables(branchName) {
-		evs = append(evs, ev)
-	}
-
-	for _, ev := range io.ListApplicationEnvironmentVariables(projectId, environment.Id, application.Id).Results {
-		evs = append(evs, ev)
-	}
+	evs = append(evs, getStaticBuiltInEnvironmentVariables(branchName)...)
+	evs = append(evs, io.ListApplicationEnvironmentVariables(projectId, environment.Id, application.Id).Results...)
 
 	return evs
 }

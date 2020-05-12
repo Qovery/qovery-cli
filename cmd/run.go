@@ -213,9 +213,9 @@ func writeToLog(reader iio.ReadCloser) error {
 	return nil
 }
 
-func getApplicationConfigByName(projectId string, branchName string, appName string) map[string]interface{} {
-	return filterApplicationsByName(io.ListApplicationsRaw(projectId, branchName), appName)
-}
+//func getApplicationConfigByName(projectId string, branchName string, appName string) map[string]interface{} {
+//	return filterApplicationsByName(io.ListApplicationsRaw(projectId, branchName), appName)
+//}
 
 func filterApplicationsByName(applications map[string]interface{}, appName string) map[string]interface{} {
 	if val, ok := applications["results"]; ok {
