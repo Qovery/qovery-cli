@@ -53,7 +53,7 @@ func ShowDomainList(projectName string, branchName string) {
 					branchName,
 					cd.Domain,
 					cd.Status.GetColoredCodeMessage(),
-					cd.GetValidationDomain(),
+					cd.GetTargetDomain(),
 					r.Name,
 				})
 			}
