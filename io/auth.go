@@ -44,8 +44,11 @@ func DoRequestUserToAuthenticate() {
 	}
 
 	verifier := createCodeVerifier()
-	challenge := createCodeChallengeS256(verifier)
-
+	challenge, err := createCodeChallengeS256(verifier)
+	if err != nil {
+		fmt.Println("Can not create authorization code challenge. Please contact the #support at 'https://discord.qovery.com'.")
+		os.Exit(1)
+	}
 	// TODO link to web auth
 	_ = browser.OpenURL(fmt.Sprintf(oAuthQoveryUrl, url.QueryEscape(oAuthUrlParamValueScopes), oAuthUrlParamValueClient, url.QueryEscape(oAuthUrlParamValueResponseType),
 		url.QueryEscape(oAuthUrlParamValueAudience), url.QueryEscape(oAuthUrlParamValueRedirect), challenge))
@@ -83,7 +86,11 @@ func DoRequestUserToAuthenticate() {
 		} else {
 			defer res.Body.Close()
 			tokens := TokensResponse{}
-			json.NewDecoder(res.Body).Decode(&tokens)
+			err := json.NewDecoder(res.Body).Decode(&tokens)
+			if err != nil {
+				println("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. ")
+				os.Exit(1)
+			}
 			SetAuthorizationToken(tokens.AccessToken)
 			SetRefreshToken(tokens.RefreshToken)
 			accountId := GetAccount().Id
@@ -137,17 +144,20 @@ func RefreshAccessToken() error {
 func createCodeVerifier() string {
 	length := 64
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	b := make([]byte, length, length)
+	b := make([]byte, length)
 	for i := 0; i < length; i++ {
 		b[i] = byte(r.Intn(255))
 	}
 	return encode(b)
 }
 
-func createCodeChallengeS256(verifier string) string {
+func createCodeChallengeS256(verifier string) (string, error) {
 	h := sha256.New()
-	h.Write([]byte(verifier))
-	return encode(h.Sum(nil))
+	_, err := h.Write([]byte(verifier))
+	if err != nil {
+		return "", err
+	}
+	return encode(h.Sum(nil)), nil
 }
 
 func encode(msg []byte) string {
