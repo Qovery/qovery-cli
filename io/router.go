@@ -20,9 +20,9 @@ type Router struct {
 }
 
 type CustomDomain struct {
-	Domain           string `json:"domain"`
-	ValidationDomain string `json:"validation_domain"`
-	Status           Status `json:"status"`
+	Domain       string `json:"domain"`
+	TargetDomain string `json:"target_domain"`
+	Status       Status `json:"status"`
 }
 
 func (c *CustomDomain) GetDomain() string {
@@ -33,12 +33,12 @@ func (c *CustomDomain) GetDomain() string {
 	return c.Domain
 }
 
-func (c *CustomDomain) GetValidationDomain() string {
-	if c.ValidationDomain == "" {
+func (c *CustomDomain) GetTargetDomain() string {
+	if c.TargetDomain == "" {
 		return color.RedString("unknown")
 	}
 
-	return c.ValidationDomain
+	return c.TargetDomain
 }
 
 func ListRouters(projectId string, environmentId string) Routers {

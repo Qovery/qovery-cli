@@ -24,6 +24,18 @@ func SetAuthorizationToken(token string) {
 	_ = ioutil.WriteFile(filePath, []byte(token), 0755)
 }
 
+func GetRefreshToken() string {
+	filePath := filepath.FromSlash(qoveryDirectoryPath() + "/refresh_token")
+	fileBytes, _ := ioutil.ReadFile(filePath)
+	return string(fileBytes)
+}
+
+func SetRefreshToken(token string) {
+	_ = os.MkdirAll(qoveryDirectoryPath(), 0755)
+	filePath := filepath.FromSlash(qoveryDirectoryPath() + "/refresh_token")
+	_ = ioutil.WriteFile(filePath, []byte(token), 0755)
+}
+
 func GetAccountId() string {
 	filePath := filepath.FromSlash(qoveryDirectoryPath() + "/account")
 	fileBytes, _ := ioutil.ReadFile(filePath)
