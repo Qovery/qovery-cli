@@ -10,8 +10,16 @@ import (
 
 func CheckAuthenticationOrQuitWithMessage() {
 	if strings.TrimSpace(GetAuthorizationToken()) == "" || strings.TrimSpace(GetAccountId()) == "" {
-		fmt.Println("Are you authenticated? Consider doing 'qovery auth' to authenticate yourself")
-		os.Exit(1)
+		if strings.TrimSpace(GetRefreshToken()) != "" {
+			err := RefreshAccessToken()
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+		} else {
+			fmt.Println("Are you authenticated? Consider doing 'qovery auth' to authenticate yourself")
+			os.Exit(1)
+		}
 	}
 }
 
@@ -21,7 +29,11 @@ func CheckHTTPResponse(resp *http.Response) error {
 	}
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		return errors.New("Your authentication token has expired. Please re-authenticate yourself with 'qovery auth'")
+		err := RefreshAccessToken()
+		if err != nil {
+			return errors.New("Your authentication has expired. Please re-authenticate yourself with 'qovery auth'")
+		}
+		return errors.New("Your authentication token has expired. Refreshed session. Please, re-run the command. ")
 	} else if resp.StatusCode == http.StatusForbidden {
 		return errors.New("Your account must be approved by an administrator to get access to this resource. " +
 			"Please join #support on https://discord.qovery.com")
