@@ -43,8 +43,8 @@ func DoRequestUserToAuthenticate() {
 		fmt.Println(message)
 	}
 
-	verifier := CreateCodeVerifier()
-	challenge := CreateCodeChallengeS256(verifier)
+	verifier := createCodeVerifier()
+	challenge := createCodeChallengeS256(verifier)
 
 	// TODO link to web auth
 	_ = browser.OpenURL(fmt.Sprintf(oAuthQoveryUrl, url.QueryEscape(oAuthUrlParamValueScopes), oAuthUrlParamValueClient, url.QueryEscape(oAuthUrlParamValueResponseType),
@@ -134,7 +134,7 @@ func RefreshAccessToken() error {
 	return nil
 }
 
-func CreateCodeVerifier() string {
+func createCodeVerifier() string {
 	length := 64
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	b := make([]byte, length, length)
@@ -144,7 +144,7 @@ func CreateCodeVerifier() string {
 	return encode(b)
 }
 
-func CreateCodeChallengeS256(verifier string) string {
+func createCodeChallengeS256(verifier string) string {
 	h := sha256.New()
 	h.Write([]byte(verifier))
 	return encode(h.Sum(nil))
