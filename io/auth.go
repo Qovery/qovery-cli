@@ -91,8 +91,10 @@ func DoRequestUserToAuthenticate() {
 				println("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. ")
 				os.Exit(1)
 			}
+			expiredAt := time.Now().Local().Add(time.Second * time.Duration(30000))
 			SetAuthorizationToken(tokens.AccessToken)
 			SetRefreshToken(tokens.RefreshToken)
+			SetAuthorizationTokenExpiration(expiredAt)
 			accountId := GetAccount().Id
 			if accountId != "" {
 				SetAccountId(accountId)
@@ -130,7 +132,9 @@ func RefreshAccessToken() error {
 		if err != nil {
 			return errors.New("Error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ")
 		}
+		expiredAt := time.Now().Local().Add(time.Second * time.Duration(30000))
 		SetAuthorizationToken(tokens.AccessToken)
+		SetAuthorizationTokenExpiration(expiredAt)
 		accountId := GetAccount().Id
 		if accountId != "" {
 			SetAccountId(accountId)
@@ -139,6 +143,15 @@ func RefreshAccessToken() error {
 		}
 	}
 	return nil
+}
+
+func RefreshExpiredTokenSilently() {
+	refreshToken := strings.TrimSpace(GetRefreshToken())
+	expiration, err := GetAuthorizationTokenExpiration()
+
+	if err == nil && expiration.Before(time.Now()) && refreshToken != "" {
+		_ = RefreshAccessToken()
+	}
 }
 
 func createCodeVerifier() string {

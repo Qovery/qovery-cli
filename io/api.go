@@ -6,20 +6,34 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 func CheckAuthenticationOrQuitWithMessage() {
-	if strings.TrimSpace(GetAuthorizationToken()) == "" || strings.TrimSpace(GetAccountId()) == "" {
-		if strings.TrimSpace(GetRefreshToken()) != "" {
-			err := RefreshAccessToken()
-			if err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
+	authorizationToken := strings.TrimSpace(GetAuthorizationToken())
+	refreshToken := strings.TrimSpace(GetRefreshToken())
+	accountId := strings.TrimSpace(GetAccountId())
+	expiration, err := GetAuthorizationTokenExpiration()
+
+	if err == nil && expiration.Before(time.Now()) && refreshToken != "" {
+		refreshTokenOrQuitWithMessage()
+	}
+
+	if authorizationToken == "" || accountId == "" {
+		if refreshToken != "" {
+			refreshTokenOrQuitWithMessage()
 		} else {
 			fmt.Println("Are you authenticated? Consider doing 'qovery auth' to authenticate yourself")
 			os.Exit(1)
 		}
+	}
+}
+
+func refreshTokenOrQuitWithMessage() {
+	err := RefreshAccessToken()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
 	}
 }
 

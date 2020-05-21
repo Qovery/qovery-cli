@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
+	"qovery.go/io"
 )
 
 // RootCmd represents the base command when called without any subcommands
@@ -32,7 +33,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	log.Debug("init called")
-
+	io.RefreshExpiredTokenSilently()
 	RootCmd.PersistentFlags().BoolVar(&DebugFlag, "debug", false, "Enable debugging when true.")
 }
 
