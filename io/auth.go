@@ -150,10 +150,7 @@ func RefreshExpiredTokenSilently() {
 	expiration, err := GetAuthorizationTokenExpiration()
 
 	if err == nil && expiration.Before(time.Now()) && refreshToken != "" {
-		err := RefreshAccessToken()
-		if err != nil {
-			// we don't care
-		}
+		_ = RefreshAccessToken()
 	}
 }
 
