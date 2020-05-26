@@ -23,7 +23,7 @@ func Deploy(projectId string, environmentId string, applicationId string, commit
 		return
 	}
 
-	if resp.StatusCode == http.StatusBadRequest {
+	if resp != nil && resp.StatusCode == http.StatusBadRequest {
 		fmt.Println("Could not deploy application with commit " + commitId)
 		fmt.Println("Are you sure you entered a valid commit sha?")
 		os.Exit(1)
