@@ -24,12 +24,13 @@ const (
 )
 
 var (
-	oAuthUrlParamValueClient       = "MJ2SJpu12PxIzgmc5z5Y7N8m5MnaF7Y0"
-	oAuthUrlParamValueAudience     = "https://core.qovery.com"
-	oAuthUrlParamValueResponseType = "code"
-	oAuthUrlParamValueScopes       = "offline_access openid profile email"
-	oAuthUrlParamValueRedirect     = "http://localhost:" + strconv.Itoa(httpAuthPort) + "/authorization"
-	oAuthTokenEndpoint             = "https://auth.qovery.com/oauth/token"
+	oAuthUrlParamValueClient         = "MJ2SJpu12PxIzgmc5z5Y7N8m5MnaF7Y0"
+	oAuthUrlParamValueHeadlessClient = "f9drkTNpxsEw2VU2PVDrxhyT3vVuFT0Y"
+	oAuthUrlParamValueAudience       = "https://core.qovery.com"
+	oAuthUrlParamValueResponseType   = "code"
+	oAuthUrlParamValueScopes         = "offline_access openid profile email"
+	oAuthUrlParamValueRedirect       = "http://localhost:" + strconv.Itoa(httpAuthPort) + "/authorization"
+	oAuthTokenEndpoint               = "https://auth.qovery.com/oauth/token"
 )
 
 type TokensResponse struct {
@@ -37,10 +38,14 @@ type TokensResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func DoRequestUserToAuthenticate() {
+func DoRequestUserToAuthenticate(headless bool) {
 	available, message, _ := CheckAvailableNewVersion()
 	if available {
 		fmt.Println(message)
+	}
+
+	if headless == true {
+		runHeadlessFlow()
 	}
 
 	verifier := createCodeVerifier()
@@ -91,7 +96,7 @@ func DoRequestUserToAuthenticate() {
 				println("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. ")
 				os.Exit(1)
 			}
-			expiredAt := time.Now().Local().Add(time.Second * time.Duration(30000))
+			expiredAt := tokenExpiration()
 			SetAuthorizationToken(tokens.AccessToken)
 			SetRefreshToken(tokens.RefreshToken)
 			SetAuthorizationTokenExpiration(expiredAt)
@@ -179,4 +184,117 @@ func encode(msg []byte) string {
 	encoded = strings.Replace(encoded, "/", "_", -1)
 	encoded = strings.Replace(encoded, "=", "", -1)
 	return encoded
+}
+
+func runHeadlessFlow() {
+	parameters := deviceFlowParameters()
+	requestDeviceActivationWith(parameters)
+	start := time.Now()
+
+	fmt.Println("Waiting for code confirmation...")
+
+	for time.Since(start).Seconds() < float64(parameters.ExpiresIn) {
+		time.Sleep(time.Second * time.Duration(parameters.Interval))
+		tokens, err := getTokensWith(parameters)
+
+		if err == nil {
+			expiredAt := tokenExpiration()
+			SetRefreshToken(tokens.RefreshToken)
+			SetAuthorizationToken(tokens.AccessToken)
+			SetAuthorizationTokenExpiration(expiredAt)
+			println("Authentication successful!")
+			os.Exit(0)
+		}
+	}
+
+	fmt.Println("Code has expired!")
+	os.Exit(1)
+}
+
+func tokenExpiration() time.Time {
+	return time.Now().Local().Add(time.Second * time.Duration(30000))
+}
+
+func deviceFlowParameters() DeviceFlowParameters {
+	endpoint := "https://auth.qovery.com/oauth/device/code"
+	payload := strings.NewReader(fmt.Sprintf("client_id=%s&scope=%s&audience=%s&redirect_uri=%s", url.QueryEscape(oAuthUrlParamValueHeadlessClient), url.QueryEscape(oAuthUrlParamValueScopes), url.QueryEscape(oAuthUrlParamValueAudience), url.QueryEscape(oAuthUrlParamValueRedirect)))
+	req, err := http.NewRequest("POST", endpoint, payload)
+
+	if err != nil {
+		printContactSupportMessage("Error forming device code request.")
+		os.Exit(1)
+	}
+
+	req.Header.Add("content-type", "application/x-www-form-urlencoded")
+	res, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		printContactSupportMessage("Error getting device code.")
+		os.Exit(1)
+	}
+
+	if res.StatusCode == 200 {
+		defer res.Body.Close()
+
+		parameters := DeviceFlowParameters{}
+		err = json.NewDecoder(res.Body).Decode(&parameters)
+
+		if err != nil {
+			printContactSupportMessage("Error parsing device code response.")
+			os.Exit(1)
+		}
+
+		return parameters
+	} else {
+		printContactSupportMessage("Error getting device code.")
+		os.Exit(1)
+		return DeviceFlowParameters{}
+	}
+}
+
+func printContactSupportMessage(msg string) {
+	fmt.Println(msg)
+	fmt.Println("Please contact the #support at 'https://discord.qovery.com'.")
+}
+
+func requestDeviceActivationWith(params DeviceFlowParameters) {
+	fmt.Println("Please, open browser @ " + params.VerificationUri + " using any device and enter " + params.UserCode + " code.")
+}
+
+func getTokensWith(params DeviceFlowParameters) (TokensResponse, error) {
+	endpoint := "https://auth.qovery.com/oauth/token"
+	payload := strings.NewReader("grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Adevice_code&device_code=" + params.DeviceCode + "&client_id=" + oAuthUrlParamValueHeadlessClient)
+	req, err := http.NewRequest("POST", endpoint, payload)
+
+	if err != nil {
+		printContactSupportMessage("Error forming get access token request.")
+		os.Exit(1)
+	}
+
+	req.Header.Add("content-type", "application/x-www-form-urlencoded")
+	res, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		printContactSupportMessage("Error pooling access token.")
+		os.Exit(1)
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode == 200 {
+		tokens := TokensResponse{}
+		err = json.NewDecoder(res.Body).Decode(&tokens)
+		return tokens, err
+	} else {
+		return TokensResponse{}, errors.New("Could not fetch tokens")
+	}
+}
+
+type DeviceFlowParameters struct {
+	DeviceCode              string `json:"device_code"`
+	UserCode                string `json:"user_code"`
+	VerificationUri         string `json:"verification_uri"`
+	VerificationUriComplete string `json:"verification_uri_complete"`
+	ExpiresIn               int64  `json:"expires_in"`
+	Interval                int64  `json:"interval"`
 }
