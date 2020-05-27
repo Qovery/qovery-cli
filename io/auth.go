@@ -44,7 +44,7 @@ func DoRequestUserToAuthenticate(headless bool) {
 		fmt.Println(message)
 	}
 
-	if headless == true {
+	if headless {
 		runHeadlessFlow()
 	}
 
