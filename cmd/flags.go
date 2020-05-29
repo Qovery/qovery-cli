@@ -15,6 +15,7 @@ var (
 	ProjectName                string
 	BranchName                 string
 	ShowCredentials            bool
+	OutputEnvironmentVariables bool
 	Tail                       int
 	ConfigurationDirectoryRoot string
 )
@@ -24,7 +25,7 @@ func hasFlagChanged(cmd *cobra.Command) bool {
 
 	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
 		if flag.Changed && flag.Name != "watch" && flag.Name != "follow" && flag.Name != "tail" &&
-			flag.Name != "credentials" && flag.Name != "debug" {
+			flag.Name != "credentials" && flag.Name != "debug" && flag.Name != "dotenv" {
 			flagChanged = true
 		}
 	})
