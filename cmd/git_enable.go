@@ -8,15 +8,15 @@ import (
 	"strings"
 )
 
-var gitlabEnableCmd = &cobra.Command{
+var gitEnableCmd = &cobra.Command{
 	Use:   "enable",
-	Short: "Enables Gitlab - Qovery webhooks in given project",
-	Long: `Enables Gitlab - Qovery webhooks in given project e.g.
-qovery gitlab enable https://gitlab.com/pjeziorowski/publicproject
-makes Gitlab send notifications about events in https://gitlab.com/pjeziorowski/publicproject project`,
+	Short: "Enables git - Qovery webhooks in given project",
+	Long: `Enables git - Qovery webhooks in given project e.g.
+qovery git enable https://gitlab.com/pjeziorowski/publicproject
+enables sending notifications about events in https://gitlab.com/pjeziorowski/publicproject project`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			println("Usage: qovery gitlab enable <REPO_URL>")
+			println("Usage: qovery git enable <REPO_URL>")
 			os.Exit(1)
 		}
 		group, projectName := sanitize(args[0])
@@ -30,8 +30,8 @@ func sanitize(repoUrl string) (group string, projectName string) {
 	split := strings.Split(repoWithoutPrefixAndSuffix, "/")
 
 	if len(split) != 2 {
-		println("Usage: qovery gitlab enable <REPO_URL>")
-		println("where <REPO_URL> is URL to your Gitlab project e.g.")
+		println("Usage: qovery git enable <REPO_URL>")
+		println("where <REPO_URL> is URL to your git project e.g.")
 		println("https://gitlab.com/pjeziorowski/publicproject")
 		os.Exit(1)
 	}
@@ -40,7 +40,7 @@ func sanitize(repoUrl string) (group string, projectName string) {
 }
 
 func init() {
-	gitlabCmd.AddCommand(gitlabEnableCmd)
+	gitCmd.AddCommand(gitEnableCmd)
 }
 
 func enableWebhooks(group string, projectName string) {
