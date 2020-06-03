@@ -202,8 +202,15 @@ func runHeadlessFlow() {
 			SetRefreshToken(tokens.RefreshToken)
 			SetAuthorizationToken(tokens.AccessToken)
 			SetAuthorizationTokenExpiration(expiredAt)
-			println("Authentication successful!")
-			os.Exit(0)
+			accountId := GetAccount().Id
+			if accountId != "" {
+				SetAccountId(accountId)
+				fmt.Println("Authentication successful!")
+				os.Exit(0)
+			} else {
+				printContactSupportMessage("Could not create account identifier")
+				os.Exit(1)
+			}
 		}
 	}
 
