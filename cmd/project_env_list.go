@@ -22,13 +22,14 @@ var projectEnvListCmd = &cobra.Command{
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		ShowEnvironmentVariablesByProjectName(ProjectName, ShowCredentials)
+		ShowEnvironmentVariablesByProjectName(ProjectName, ShowCredentials, OutputEnvironmentVariables)
 	},
 }
 
 func init() {
 	projectEnvListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	projectEnvListCmd.PersistentFlags().BoolVarP(&ShowCredentials, "credentials", "c", false, "Show credentials")
+	projectEnvListCmd.PersistentFlags().BoolVar(&OutputEnvironmentVariables, "dotenv", false, "Output environment variables KEY=VALUE")
 
 	projectEnvCmd.AddCommand(projectEnvListCmd)
 }

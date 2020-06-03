@@ -7,10 +7,16 @@ import (
 	"strings"
 )
 
-func ShowEnvironmentVariablesByProjectName(projectName string, showCredentials bool) {
+func ShowEnvironmentVariablesByProjectName(projectName string, showCredentials bool, outputEnvironmentVariables bool) {
 	projectId := io.GetProjectByName(projectName).Id
 	evs := io.ListProjectEnvironmentVariables(projectId)
-	ShowEnvironmentVariables(evs.Results, showCredentials)
+
+	if outputEnvironmentVariables {
+		ShowEnvironmentVariables(evs.Results, showCredentials)
+		return
+	}
+
+	ShowEnvironmentVariablesWithTableFormat(evs.Results, showCredentials)
 }
 
 func getStaticBuiltInEnvironmentVariables(branchName string) []io.EnvironmentVariable {
@@ -26,7 +32,7 @@ func getStaticBuiltInEnvironmentVariables(branchName string) []io.EnvironmentVar
 	}
 }
 
-func ShowEnvironmentVariablesByBranchName(projectName string, branchName string, showCredentials bool) {
+func ShowEnvironmentVariablesByBranchName(projectName string, branchName string, showCredentials bool, outputEnvironmentVariables bool) {
 	projectId := io.GetProjectByName(projectName).Id
 
 	var evs []io.EnvironmentVariable
@@ -35,11 +41,23 @@ func ShowEnvironmentVariablesByBranchName(projectName string, branchName string,
 	environmentId := io.GetEnvironmentByName(projectId, branchName).Id
 	evs = append(evs, io.ListEnvironmentEnvironmentVariables(projectId, environmentId).Results...)
 
-	ShowEnvironmentVariables(evs, showCredentials)
+	if outputEnvironmentVariables {
+		ShowEnvironmentVariables(evs, showCredentials)
+		return
+	}
+
+	ShowEnvironmentVariablesWithTableFormat(evs, showCredentials)
 }
 
-func ShowEnvironmentVariablesByApplicationName(projectName string, branchName string, applicationName string, showCredentials bool) {
-	ShowEnvironmentVariables(ListEnvironmentVariables(projectName, branchName, applicationName), showCredentials)
+func ShowEnvironmentVariablesByApplicationName(projectName string, branchName string, applicationName string, showCredentials bool, outputEnvironmentVariables bool) {
+	evs := ListEnvironmentVariables(projectName, branchName, applicationName)
+
+	if outputEnvironmentVariables {
+		ShowEnvironmentVariables(evs, showCredentials)
+		return
+	}
+
+	ShowEnvironmentVariablesWithTableFormat(evs, showCredentials)
 }
 
 func ListEnvironmentVariables(projectName string, branchName string, applicationName string) []io.EnvironmentVariable {
@@ -55,15 +73,12 @@ func ListEnvironmentVariables(projectName string, branchName string, application
 	return evs
 }
 
-func ShowEnvironmentVariables(environmentVariables []io.EnvironmentVariable, showCredentials bool) {
+func ShowEnvironmentVariablesWithTableFormat(environmentVariables []io.EnvironmentVariable, showCredentials bool) {
 	table := io.GetTable()
 	table.SetHeader([]string{"scope", "key", "value"})
 
 	for _, ev := range environmentVariables {
-		lowerCaseKey := strings.ToLower(ev.Key)
-		if !showCredentials && (strings.Contains(lowerCaseKey, "username") || strings.Contains(lowerCaseKey, "password") ||
-			strings.Contains(lowerCaseKey, "fqdn") || strings.Contains(lowerCaseKey, "host") || strings.Contains(lowerCaseKey, "port") ||
-			strings.Contains(lowerCaseKey, "uri") || strings.Contains(lowerCaseKey, "key")) {
+		if !showCredentials && isSensitive(ev.Key) {
 			table.Append([]string{ev.Scope, ev.Key, "<hidden>"})
 		} else {
 			table.Append([]string{ev.Scope, ev.Key, ev.Value})
@@ -71,4 +86,19 @@ func ShowEnvironmentVariables(environmentVariables []io.EnvironmentVariable, sho
 	}
 
 	table.Render()
+}
+
+func ShowEnvironmentVariables(environmentVariables []io.EnvironmentVariable, showCredentials bool) {
+	for _, ev := range environmentVariables {
+		if (!showCredentials && !isSensitive(ev.Key)) || showCredentials {
+			fmt.Println(ev.KeyValue)
+		}
+	}
+}
+
+func isSensitive(key string) bool {
+	lowerCaseKey := strings.ToLower(key)
+	return strings.Contains(lowerCaseKey, "username") || strings.Contains(lowerCaseKey, "password") ||
+		strings.Contains(lowerCaseKey, "fqdn") || strings.Contains(lowerCaseKey, "host") || strings.Contains(lowerCaseKey, "port") ||
+		strings.Contains(lowerCaseKey, "uri") || strings.Contains(lowerCaseKey, "key")
 }
