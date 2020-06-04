@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"gopkg.in/src-d/go-git.v4"
 	"net/http"
 	"os"
 	"qovery.go/io"
@@ -10,33 +11,47 @@ import (
 
 var gitEnableCmd = &cobra.Command{
 	Use:   "enable",
-	Short: "Enables git - Qovery webhooks in given project",
+	Short: "Enables git - Qovery webhooks in given git project",
 	Long: `Enables git - Qovery webhooks in given project e.g.
-qovery git enable https://gitlab.com/pjeziorowski/publicproject
-enables sending notifications about events in https://gitlab.com/pjeziorowski/publicproject project`,
+qovery git enable
+enables sending notifications about events in remote git repository (determined by your current working directory)`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			println("Usage: qovery git enable <REPO_URL>")
-			os.Exit(1)
-		}
-		group, projectName := sanitize(args[0])
+		repo, _ := git.PlainOpen(".git")
+		cfg, _ := repo.Config()
+		url := cfg.Raw.Section("remote").Subsection("origin").Option("url")
+		group, projectName := sanitize(url)
 		enableWebhooks(group, projectName)
 	},
 }
 
 func sanitize(repoUrl string) (group string, projectName string) {
-	repoWithoutPrefix := strings.ReplaceAll(repoUrl, "https://gitlab.com/", "")
-	repoWithoutPrefixAndSuffix := strings.ReplaceAll(repoWithoutPrefix, ".git", "")
-	split := strings.Split(repoWithoutPrefixAndSuffix, "/")
-
-	if len(split) != 2 {
-		println("Usage: qovery git enable <REPO_URL>")
-		println("where <REPO_URL> is URL to your git project e.g.")
-		println("https://gitlab.com/pjeziorowski/publicproject")
+	if !strings.Contains(repoUrl, "@gitlab.com/") {
+		println("This command is currently supported for Gitlab projects only. ")
 		os.Exit(1)
 	}
 
-	return split[0], split[1]
+	prefixAndSuffix := strings.Split(repoUrl, "@gitlab.com/")
+
+	if len(prefixAndSuffix) != 2 {
+		printErrorAndQuit()
+	}
+
+	suffix := prefixAndSuffix[1]
+	split := strings.Split(suffix, "/")
+
+	if len(prefixAndSuffix) != 2 {
+		printErrorAndQuit()
+	}
+
+	return split[0], strings.ReplaceAll(split[1], ".git", "")
+}
+
+func printErrorAndQuit() {
+	println("Could not determine remote git repository URL.\n")
+	println("Try running:")
+	println("git config --get remote.origin.url\n")
+	println("to make sure your local git repository is connected to a remote or contact #support on our Discord - https://discord.qovery.com")
+	os.Exit(1)
 }
 
 func init() {
