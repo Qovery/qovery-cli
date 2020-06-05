@@ -25,25 +25,36 @@ enables sending notifications about events in remote git repository (determined 
 }
 
 func sanitize(repoUrl string) (group string, projectName string) {
-	if !strings.Contains(repoUrl, "@gitlab.com/") {
+	if strings.Contains(repoUrl, "@gitlab.com/") {
+		prefixAndSuffix := strings.Split(repoUrl, "@gitlab.com/")
+
+		if len(prefixAndSuffix) != 2 {
+			printErrorAndQuit()
+		}
+
+		suffix := prefixAndSuffix[1]
+		split := strings.Split(suffix, "/")
+
+		if len(prefixAndSuffix) != 2 {
+			printErrorAndQuit()
+		}
+
+		return split[0], strings.ReplaceAll(split[1], ".git", "")
+	} else if strings.Contains(repoUrl, "git@gitlab.com:") {
+		suffix := strings.ReplaceAll(repoUrl, "git@gitlab.com:", "")
+
+		split := strings.Split(suffix, "/")
+
+		if len(split) != 2 {
+			printErrorAndQuit()
+		}
+
+		return split[0], strings.ReplaceAll(split[1], ".git", "")
+	} else {
 		println("This command is currently supported for Gitlab projects only. ")
 		os.Exit(1)
+		return "", ""
 	}
-
-	prefixAndSuffix := strings.Split(repoUrl, "@gitlab.com/")
-
-	if len(prefixAndSuffix) != 2 {
-		printErrorAndQuit()
-	}
-
-	suffix := prefixAndSuffix[1]
-	split := strings.Split(suffix, "/")
-
-	if len(prefixAndSuffix) != 2 {
-		printErrorAndQuit()
-	}
-
-	return split[0], strings.ReplaceAll(split[1], ".git", "")
 }
 
 func printErrorAndQuit() {
