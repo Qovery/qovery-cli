@@ -91,7 +91,7 @@ func CurrentBranchNameFromPath(path string) string {
 	}
 
 	sBranchName := strings.Split(branchName, "/")
-	return sBranchName[2]
+	return strings.Join(sBranchName[2:], "/")
 }
 
 func Checkout(branch string) {
@@ -136,7 +136,11 @@ func ListRemoteURLsFromPath(path string) []string {
 		for _, url := range v.URLs {
 			if strings.HasPrefix(url, "git@github.com") {
 				url = "https://github.com/" + strings.Split(url, ":")[1]
-			} // TODO same for gitlab and bitbucket
+			} else if strings.HasPrefix(url, "git@gitlab.com") {
+				url = "https://gitlab.com/" + strings.Split(url, ":")[1]
+			} else if strings.HasPrefix(url, "git@bitbucket.com") {
+				url = "https://bitbucket.com/" + strings.Split(url, ":")[1]
+			}
 
 			urls = append(urls, url)
 		}
