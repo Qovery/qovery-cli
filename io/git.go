@@ -169,7 +169,9 @@ func ListCommitsFromPath(nLast int, path string) []*object.Commit {
 	var commits []*object.Commit
 
 	_ = c.ForEach(func(commit *object.Commit) error {
-		commits = append(commits, commit)
+		if isPushedToRemote(repo, commit) {
+			commits = append(commits, commit)
+		}
 		return nil
 	})
 
@@ -187,6 +189,28 @@ func ListCommitsFromPath(nLast int, path string) []*object.Commit {
 	}
 
 	return finalCommits
+}
+
+func isPushedToRemote(repo *git.Repository, commit *object.Commit) bool {
+	revision := "origin/" + CurrentBranchName()
+
+	revHash, err := repo.ResolveRevision(plumbing.Revision(revision))
+	CheckIfError(err)
+
+	revCommit, err := repo.CommitObject(*revHash)
+	CheckIfError(err)
+
+	isPushed, err := commit.IsAncestor(revCommit)
+	CheckIfError(err)
+
+	return isPushed
+}
+
+func CheckIfError(err error) {
+	if err != nil {
+		println(err)
+		os.Exit(1)
+	}
 }
 
 func InitializeEmptyGitRepository(folder string) error {
