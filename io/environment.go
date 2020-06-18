@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type Environments struct {
@@ -73,7 +74,7 @@ func (e *Environment) GetConnectionURIs() []string {
 
 func GetEnvironmentByName(projectId string, name string) Environment {
 	for _, v := range ListEnvironments(projectId).Results {
-		if v.Name == name {
+		if v.Name == strings.ReplaceAll(name, "origin/", "") {
 			return v
 		}
 	}
