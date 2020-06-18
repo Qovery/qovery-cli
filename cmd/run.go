@@ -118,6 +118,11 @@ func buildContainer(client *client.Client, dockerfilePath string, buildArgs map[
 		ChownOpts:       &idtools.Identity{UID: 0, GID: 0},
 	})
 
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	r, err := client.ImageBuild(context.Background(), buildCtx, types.ImageBuildOptions{
 		Dockerfile: dockerfilePath,
 		BuildArgs:  buildArgs,
