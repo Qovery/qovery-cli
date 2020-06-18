@@ -7,9 +7,12 @@ import (
 	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/builder/dockerignore"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/archive"
+	"github.com/docker/docker/pkg/fileutils"
+	"github.com/docker/docker/pkg/idtools"
 	"github.com/docker/go-connections/nat"
-	"github.com/mholt/archiver/v3"
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
@@ -102,23 +105,20 @@ func init() {
 }
 
 func buildContainer(client *client.Client, dockerfilePath string, buildArgs map[string]*string) *types.ImageSummary {
-	tar := archiver.Tar{MkdirAll: true}
-
-	buildTarPath := filepath.FromSlash(fmt.Sprintf("%s/build.tar", os.TempDir()))
-
-	_ = os.Remove(buildTarPath)
-	err := tar.Archive([]string{"."}, buildTarPath)
+	currentDir, _ := os.Getwd()
+	excludes, err := ReadDockerignore(currentDir)
 
 	if err != nil {
-		panic(err)
+		println("Could not load .dockerignore content")
 	}
 
-	f, err := os.Open(buildTarPath)
-	if err != nil {
-		panic(err)
-	}
+	excludes = TrimBuildFilesFromExcludes(excludes, "Dockerfile")
+	buildCtx, err := archive.TarWithOptions(currentDir, &archive.TarOptions{
+		ExcludePatterns: excludes,
+		ChownOpts:       &idtools.Identity{UID: 0, GID: 0},
+	})
 
-	r, err := client.ImageBuild(context.Background(), f, types.ImageBuildOptions{
+	r, err := client.ImageBuild(context.Background(), buildCtx, types.ImageBuildOptions{
 		Dockerfile: dockerfilePath,
 		BuildArgs:  buildArgs,
 	})
@@ -189,7 +189,14 @@ func runContainer(client *client.Client, image *types.ImageSummary, environmentV
 		}
 	}()
 
-	_, _ = client.ContainerWait(context.Background(), c.ID)
+	statusCh, errCh := client.ContainerWait(context.Background(), c.ID, container.WaitConditionNextExit)
+	select {
+	case err := <-errCh:
+		if err != nil {
+			panic(err)
+		}
+	case <-statusCh:
+	}
 }
 
 func writeToLog(reader iio.ReadCloser) error {
@@ -228,4 +235,32 @@ func filterApplicationsByName(applications map[string]interface{}, appName strin
 		}
 	}
 	return nil
+}
+
+func ReadDockerignore(contextDir string) ([]string, error) {
+	var excludes []string
+
+	f, err := os.Open(filepath.Join(contextDir, ".dockerignore"))
+	switch {
+	case os.IsNotExist(err):
+		return excludes, nil
+	case err != nil:
+		return nil, err
+	}
+	defer f.Close()
+
+	return dockerignore.ReadAll(f)
+}
+
+// TrimBuildFilesFromExcludes removes the named Dockerfile and .dockerignore from
+// the list of excluded files. The daemon will remove them from the final context
+// but they must be in available in the context when passed to the API.
+func TrimBuildFilesFromExcludes(excludes []string, dockerfile string) []string {
+	if keep, _ := fileutils.Matches(".dockerignore", excludes); keep {
+		excludes = append(excludes, "!.dockerignore")
+	}
+	if keep, _ := fileutils.Matches(dockerfile, excludes); keep {
+		excludes = append(excludes, "!"+dockerfile)
+	}
+	return excludes
 }

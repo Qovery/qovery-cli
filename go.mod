@@ -4,6 +4,8 @@ go 1.13
 
 require (
 	github.com/Microsoft/go-winio v0.4.14 // indirect
+	github.com/containerd/containerd v1.3.4 // indirect
+	github.com/containerd/continuity v0.0.0-20200413184840-d3ef23f19fbb // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v1.13.1
 	github.com/docker/go-connections v0.4.0
@@ -20,6 +22,8 @@ require (
 	github.com/mholt/archiver/v3 v3.3.0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
+	github.com/opencontainers/image-spec v1.0.1 // indirect
+	github.com/opencontainers/runc v0.1.1 // indirect
 	github.com/pierrec/lz4 v2.4.1+incompatible // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/schollz/progressbar/v2 v2.15.0
@@ -33,3 +37,5 @@ require (
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.2.8
 )
+
+replace github.com/docker/docker => github.com/docker/engine v0.0.0-20200531234253-77e06fda0c94
