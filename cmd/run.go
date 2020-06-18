@@ -38,7 +38,7 @@ var runCmd = &cobra.Command{
 		ApplicationName = qoveryYML.Application.GetSanitizeName()
 		projectName := qoveryYML.Application.Project
 
-		dockerClient, _ := client.NewEnvClient()
+		dockerClient, _ := client.NewClientWithOpts()
 		_, err = dockerClient.ImageList(context.Background(), types.ImageListOptions{})
 
 		if err != nil {
