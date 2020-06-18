@@ -29,7 +29,6 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	golang.org/x/sys v0.0.0-20191026070338-33540a1f6037
-	gopkg.in/src-d/go-billy.v4 v4.3.2
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.2.8
 )
