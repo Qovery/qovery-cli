@@ -168,12 +168,15 @@ func ListCommitsFromPath(nLast int, path string) []*object.Commit {
 
 	var commits []*object.Commit
 
-	_ = c.ForEach(func(commit *object.Commit) error {
-		if isPushedToRemote(repo, commit) {
-			commits = append(commits, commit)
+	for i := 0; i < 100; i++ {
+		next, err := c.Next()
+		CheckIfError(err)
+		if next != nil {
+			if isPushedToRemote(repo, next) {
+				commits = append(commits, next)
+			}
 		}
-		return nil
-	})
+	}
 
 	sort.Slice(commits, func(i, j int) bool {
 		return commits[i].Committer.When.Unix() > commits[j].Committer.When.Unix()
@@ -192,7 +195,13 @@ func ListCommitsFromPath(nLast int, path string) []*object.Commit {
 }
 
 func isPushedToRemote(repo *git.Repository, commit *object.Commit) bool {
-	revision := "origin/" + CurrentBranchName()
+	var revision string
+	branchName := CurrentBranchName()
+	if strings.Contains(branchName, "origin/") {
+		revision = branchName
+	} else {
+		revision = "origin/" + branchName
+	}
 
 	revHash, err := repo.ResolveRevision(plumbing.Revision(revision))
 	CheckIfError(err)
