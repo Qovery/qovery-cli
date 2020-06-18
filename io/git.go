@@ -170,8 +170,7 @@ func ListCommitsFromPath(nLast int, path string) []*object.Commit {
 
 	for i := 0; i < 100; i++ {
 		next, err := c.Next()
-		CheckIfError(err)
-		if next != nil {
+		if err != nil && next != nil {
 			if isPushedToRemote(repo, next) {
 				commits = append(commits, next)
 			}
