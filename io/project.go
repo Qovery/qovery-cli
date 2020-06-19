@@ -1,6 +1,7 @@
 package io
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -78,4 +79,34 @@ func ListProjects() Projects {
 	_ = json.Unmarshal(body, &p)
 
 	return p
+}
+
+func RenameProject(project Project, newName string) Project {
+	CheckAuthenticationOrQuitWithMessage()
+
+	renamed := Project{Name: newName}
+	body, err := json.Marshal(renamed)
+	CheckIfError(err)
+
+	req, err := http.NewRequest(http.MethodPut, RootURL+"/project/"+project.Id, bytes.NewBuffer(body))
+	CheckIfError(err)
+
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
+	req.Header.Set("Content-Type", "application/json")
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return Project{}
+	}
+
+	err = CheckHTTPResponse(resp)
+	CheckIfError(err)
+
+	responseProject := Project{}
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	CheckIfError(err)
+
+	_ = json.Unmarshal(responseBody, &responseProject)
+
+	return responseProject
 }
