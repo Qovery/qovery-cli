@@ -6,17 +6,12 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/Microsoft/hcsshim v0.8.6 // indirect
-	github.com/containerd/cgroups v0.0.0-20190919134610-bf292b21730f // indirect
-	github.com/containerd/console v0.0.0-20180822173158-c12b1e7919c1 // indirect
 	github.com/containerd/containerd v1.3.4 // indirect
 	github.com/containerd/continuity v0.0.0-20200413184840-d3ef23f19fbb // indirect
-	github.com/containerd/fifo v0.0.0-20190226154929-a9fb20d87448 // indirect
-	github.com/containerd/go-runc v0.0.0-20180907222934-5a6d9f37cfa3 // indirect
-	github.com/containerd/ttrpc v0.0.0-20190828154514-0e0f228740de // indirect
-	github.com/containerd/typeurl v0.0.0-20180627222232-a93fcdb778cd // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v1.13.1
 	github.com/docker/go-connections v0.4.0
+	github.com/docker/go-units v0.4.0 // indirect
 	github.com/fatih/color v1.8.0
 	github.com/frankban/quicktest v1.7.3 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
@@ -43,7 +38,6 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.4.0
 	github.com/ulikunitz/xz v0.5.7 // indirect
-	github.com/urfave/cli v0.0.0-20171014202726-7bc6a0acffa5 // indirect
 	golang.org/x/net v0.0.0-20191004110552-13f9640d40b9 // indirect
 	golang.org/x/sys v0.0.0-20190830141801-acfa387b8d69
 	google.golang.org/grpc v1.23.1 // indirect

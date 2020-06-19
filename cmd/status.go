@@ -19,7 +19,7 @@ var statusCmd = &cobra.Command{
 	qovery status`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !hasFlagChanged(cmd) {
-			BranchName = io.CurrentBranchName()
+			BranchName = strings.ReplaceAll(io.CurrentBranchName(), "origin/", "")
 			qoveryYML, err := io.CurrentQoveryYML()
 			if err != nil {
 				io.PrintError("No qovery configuration file found")
