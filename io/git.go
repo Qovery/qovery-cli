@@ -91,7 +91,7 @@ func CurrentBranchNameFromPath(path string) string {
 	}
 
 	sBranchName := strings.Split(branchName, "/")
-	return strings.Join(sBranchName[2:], "/")
+	return strings.ReplaceAll(strings.Join(sBranchName[2:], "/"), "origin/", "")
 }
 
 func Checkout(branch string) {
@@ -170,7 +170,7 @@ func ListCommitsFromPath(nLast int, path string) []*object.Commit {
 
 	for i := 0; i < 100; i++ {
 		next, err := c.Next()
-		if err != nil && next != nil {
+		if err == nil && next != nil {
 			if isPushedToRemote(repo, next) {
 				commits = append(commits, next)
 			}
