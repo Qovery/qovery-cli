@@ -86,12 +86,23 @@ func CurrentBranchNameFromPath(path string) string {
 
 	branchName := r.Name().String()
 
+	return SanitizeBranchName(branchName)
+}
+
+func SanitizeBranchName(branchName string) string {
 	if branchName == "HEAD" {
 		return ""
 	}
 
-	sBranchName := strings.Split(branchName, "/")
-	return strings.ReplaceAll(strings.Join(sBranchName[2:], "/"), "origin/", "")
+	withoutRefs := removeFirst("refs/", branchName)
+	withoutHeads := removeFirst("heads/", withoutRefs)
+	withoutAllPrefix := removeFirst("origin/", withoutHeads)
+
+	return withoutAllPrefix
+}
+
+func removeFirst(prefix string, from string) string {
+	return strings.Replace(from, prefix, "", 1)
 }
 
 func Checkout(branch string) {

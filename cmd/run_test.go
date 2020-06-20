@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
+	"qovery.go/io"
 	"testing"
 )
 
@@ -16,6 +17,21 @@ func TestFilterApplicationByName(t *testing.T) {
 	result := filterApplicationsByName(apps, "MYAPPNAME")
 	assert.NotNil(t, result, "it should not be nil")
 	assert.Equal(t, "MYAPPNAME", result["name"])
+}
+
+func TestGetCorrectBranchName1(t *testing.T) {
+	result := io.SanitizeBranchName("heads/origin/feature/sprint87-card-rejected-top-bar")
+	assert.Equal(t, "feature/sprint87-card-rejected-top-bar", result)
+}
+
+func TestGetCorrectBranchName2(t *testing.T) {
+	result := io.SanitizeBranchName("feature/sprint87-card-rejected-top-bar")
+	assert.Equal(t, "feature/sprint87-card-rejected-top-bar", result)
+}
+
+func TestGetCorrectBranchName3(t *testing.T) {
+	result := io.SanitizeBranchName("master")
+	assert.Equal(t, "master", result)
 }
 
 const (
