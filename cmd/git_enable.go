@@ -50,6 +50,16 @@ func sanitize(repoUrl string) (group string, projectName string) {
 		}
 
 		return split[0], strings.ReplaceAll(split[1], ".git", "")
+	} else if strings.Contains(repoUrl, "https://gitlab.com/") {
+		suffix := strings.ReplaceAll(repoUrl, "https://gitlab.com/", "")
+
+		split := strings.Split(suffix, "/")
+
+		if len(split) != 2 {
+			printErrorAndQuit()
+		}
+
+		return split[0], strings.ReplaceAll(split[1], ".git", "")
 	} else {
 		println("This command is currently supported for Gitlab projects only. ")
 		os.Exit(1)
