@@ -32,7 +32,7 @@ var redeployCmd = &cobra.Command{
 			if application.Repository.CommitId == commit.ID().String() {
 				projectId := io.GetProjectByName(projectName).Id
 				environmentId := io.GetEnvironmentByName(projectId, branchName).Id
-				applicationId := io.GetApplicationByName(projectName, environmentId, applicationName).Id
+				applicationId := io.GetApplicationByName(projectId, environmentId, applicationName).Id
 				io.Deploy(projectId, environmentId, applicationId, commit.Hash.String())
 				fmt.Println("Redeployed application with commit " + commit.Hash.String())
 				return

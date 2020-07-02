@@ -35,7 +35,7 @@ var deployCmd = &cobra.Command{
 
 		projectId := io.GetProjectByName(ProjectName).Id
 		environmentId := io.GetEnvironmentByName(projectId, BranchName).Id
-		applicationId := io.GetApplicationByName(ProjectName, environmentId, ApplicationName).Id
+		applicationId := io.GetApplicationByName(projectId, environmentId, ApplicationName).Id
 
 		io.Deploy(projectId, environmentId, applicationId, commitId)
 
