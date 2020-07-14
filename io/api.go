@@ -49,8 +49,8 @@ func CheckHTTPResponse(resp *http.Response) error {
 		}
 		return errors.New("Your authentication token has expired. Refreshed session. Please, re-run the command. ")
 	} else if resp.StatusCode == http.StatusForbidden {
-		return errors.New("Your account must be approved by an administrator to get access to this resource. " +
-			"Please join #support on https://discord.qovery.com")
+		return errors.New("You are not authorized to access this resource. " +
+			"Please join #support on https://discord.qovery.com to get more information. ")
 	} else if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return errors.New("Something goes wrong while requesting the Qovery API. Please try again later or " +
 			"contact the #support on https://discord.qovery.com")
