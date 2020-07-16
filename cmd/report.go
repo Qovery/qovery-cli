@@ -24,7 +24,7 @@ var report = &cobra.Command{
 		report := CreateReport()
 		jsonPayload, _ := json.Marshal(&report)
 		client := &http.Client{}
-		req, _ := http.NewRequest("POST", "https://google.com/TODO", strings.NewReader(string(jsonPayload)))
+		req, _ := http.NewRequest("POST", "https://hooks.zapier.com/hooks/catch/8036302/ozlyo0q", strings.NewReader(string(jsonPayload)))
 		req.Header.Set("Authorization", "Bearer xxx")
 		res, err := client.Do(req)
 		if err != nil || res.StatusCode != 200 {
