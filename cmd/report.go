@@ -24,13 +24,22 @@ var report = &cobra.Command{
 		report := CreateReport()
 		jsonPayload, _ := json.Marshal(&report)
 		client := &http.Client{}
-		req, _ := http.NewRequest("POST", "https://hooks.zapier.com/hooks/catch/8036302/ozlyo0q", strings.NewReader(string(jsonPayload)))
-		req.Header.Set("Authorization", "Bearer xxx")
+		req, _ := http.NewRequest("POST", io.DefaultRootUrl+"/zapier/report", strings.NewReader(string(jsonPayload)))
+		req.Header.Set("Authorization", "Bearer "+io.GetAuthorizationToken())
+		req.Header.Set("content-type", "application/json")
 		res, err := client.Do(req)
-		if err != nil || res.StatusCode != 200 {
-			fmt.Println("Could not send the report.")
+		if err != nil {
+			fmt.Println("Error sending the report:")
 			fmt.Println(err.Error())
-			os.Exit(-1)
+			os.Exit(1)
+		}
+		if res.StatusCode == 401 {
+			fmt.Println("Authentication error. Could not send the report. Please, try to sign in again using 'qovery auth' command. ")
+			os.Exit(1)
+		}
+		if res.StatusCode != 200 {
+			fmt.Println("Received an unsuccessful response while sending the report. ")
+			os.Exit(1)
 		}
 		fmt.Println("Done!")
 	},
