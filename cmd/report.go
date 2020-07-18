@@ -87,20 +87,20 @@ func CreateReport() Report {
 	dockerfile := io.CurrentDockerfileContent()
 
 	return Report{
-		UserAccountId:            accountId,
-		CliVersion:               cliVersion,
-		GitAccess:                gitStatus,
-		WorkingDir:               wd,
-		Token:                    token,
-		RepoUrl:                  url,
-		RemoteUrls:               urls,
-		BranchName:               branch,
-		LastCommits:              commits,
-		Project:                  project,
-		Environment:              environment,
-		Application:              application,
-		CurrentDockerfileContent: dockerfile,
-		QoveryConfig:             yml,
+		UserAccountId:          accountId,
+		CliVersion:             cliVersion,
+		GitAccess:              gitStatus,
+		WorkingDir:             wd,
+		Token:                  token,
+		RepoUrl:                url,
+		RemoteUrls:             urls,
+		BranchName:             branch,
+		LastCommits:            commits,
+		Project:                project,
+		Environment:            environment,
+		Application:            application,
+		LocalDockerfileContent: dockerfile,
+		LocalQoveryConfig:      yml,
 	}
 }
 
@@ -116,18 +116,18 @@ func hash(commits []*object.Commit) []string {
 }
 
 type Report struct {
-	UserAccountId            string
-	CliVersion               string
-	GitAccess                io.GitAccessStatus
-	WorkingDir               string
-	Token                    string
-	RepoUrl                  string
-	RemoteUrls               []string
-	BranchName               string
-	LastCommits              []string
-	Project                  io.Project
-	Environment              io.Environment
-	Application              io.Application
-	CurrentDockerfileContent string
-	QoveryConfig             io.QoveryYML
+	UserAccountId          string
+	CliVersion             string
+	GitAccess              io.GitAccessStatus
+	WorkingDir             string
+	Token                  string
+	RepoUrl                string
+	RemoteUrls             []string
+	BranchName             string
+	LastCommits            []string
+	Project                io.Project
+	Environment            io.Environment
+	Application            io.Application
+	LocalDockerfileContent string
+	LocalQoveryConfig      io.QoveryYML
 }
