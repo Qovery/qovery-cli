@@ -2,41 +2,40 @@ package io
 
 import (
 	"github.com/fatih/color"
-	"strings"
 )
 
 type Status struct {
-	State                string `json:"state"`
-	Code                 int    `json:"code"`
-	CodeMessage          string `json:"code_message"`
-	Output               string `json:"output"`
+	//State string `json:"state"`
+	Kind string `json:"kind"`
+	//CodeMessage          string `json:"code_message"`
+	Message              string `json:"message"`
 	ProgressionInPercent int    `json:"progression_in_percent"`
 }
 
-func (s *Status) GetState() string {
-	if s.State == "" {
+func (s *Status) GetKind() string {
+	if s.Kind == "" {
 		return "unknown"
 	}
 
-	return s.State
+	return s.Kind
 }
 
 func (s *Status) IsError() bool {
-	return strings.HasSuffix(s.State, "_ERROR")
+	return s.Kind == "ERROR" || s.Kind == "FAILED"
 }
 
 func (s *Status) GetColoredCodeMessage() string {
-	if s.CodeMessage == "" {
+	if s.Kind == "" {
 		return color.RedString("unknown")
 	}
 
 	if s.IsError() {
-		return color.RedString(s.CodeMessage)
+		return s.Kind + " " + color.RedString(s.Message)
 	}
 
 	if s.ProgressionInPercent != 100 {
-		return color.YellowString(s.CodeMessage)
+		return s.Kind + " " + color.YellowString(s.Message)
 	}
 
-	return color.GreenString(s.CodeMessage)
+	return s.Kind + " " + color.GreenString(s.Message)
 }

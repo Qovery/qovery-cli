@@ -36,9 +36,9 @@ var statusCmd = &cobra.Command{
 			for {
 				a := io.GetEnvironmentByName(projectId, BranchName)
 				_ = bar.Set(a.Status.ProgressionInPercent)
-				bar.Describe(a.Status.CodeMessage)
+				bar.Describe(a.Status.Message)
 
-				if a.Status.State == "LIVE" || strings.Contains(a.Status.State, "_ERROR") {
+				if a.Status.Kind == "LIVE" || strings.Contains(a.Status.Kind, "ERROR") || strings.Contains(a.Status.Kind, "FAILED") {
 					break
 				}
 
@@ -47,7 +47,7 @@ var statusCmd = &cobra.Command{
 
 			aggregatedEnvironment := io.GetEnvironmentByName(projectId, BranchName)
 
-			if aggregatedEnvironment.Status.State == "LIVE" {
+			if aggregatedEnvironment.Status.Kind == "LIVE" {
 				fmt.Print("\n\n")
 				fmt.Printf("%s", color.GreenString("Your environment is ready!"))
 				fmt.Print("\n\n")
@@ -82,15 +82,16 @@ var statusCmd = &cobra.Command{
 		}
 
 		aggregatedEnvironment := io.GetEnvironmentByName(projectId, BranchName)
-		if !strings.Contains(aggregatedEnvironment.Status.State, "_ERROR") {
+		if !strings.Contains(aggregatedEnvironment.Status.Kind, "FAILED") || !strings.Contains(aggregatedEnvironment.Status.Kind, "ERROR") {
 			// no error
 			return
 		}
 
 		fmt.Printf("%s", color.RedString("Something goes wrong:"))
-		showOutputErrorMessage(aggregatedEnvironment.Status.Output)
+		showOutputErrorMessage(aggregatedEnvironment.Status.Message)
 
-		if aggregatedEnvironment.Status.State == "BUILDING_ERROR" {
+		// TODO BUILDING_ERROR is not possible to happen, we don't have this kind of status
+		if aggregatedEnvironment.Status.Kind == "BUILDING_ERROR" {
 			io.PrintHint("Ensure your Dockerfile is correct. Run and test your container locally with 'qovery run'")
 		}
 	},
