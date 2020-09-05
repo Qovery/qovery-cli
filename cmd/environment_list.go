@@ -48,7 +48,7 @@ var environmentListCmd = &cobra.Command{
 					a.Name,
 					a.Status.GetColoredCodeMessage(),
 					strings.Join(a.GetConnectionURIs(), ", "),
-					fmt.Sprintf("%s (%s)", a.CloudProviderRegion.FullName, a.CloudProviderRegion.Description),
+					fmt.Sprintf("%s (%s)", a.Kubernetes.CloudProviderRegion.FullName, a.Kubernetes.CloudProviderRegion.Description),
 					applicationName,
 					databaseName,
 				})

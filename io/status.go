@@ -6,37 +6,40 @@ import (
 )
 
 type Status struct {
-	State                string `json:"state"`
-	Code                 int    `json:"code"`
-	CodeMessage          string `json:"code_message"`
-	Output               string `json:"output"`
-	ProgressionInPercent int    `json:"progression_in_percent"`
+	Kind    string `json:"kind"`
+	Message string `json:"message"`
 }
 
-func (s *Status) GetState() string {
-	if s.State == "" {
+func (s *Status) GetKind() string {
+	if s.Kind == "" {
 		return "unknown"
 	}
 
-	return s.State
+	return s.Kind
 }
 
-func (s *Status) IsError() bool {
-	return strings.HasSuffix(s.State, "_ERROR")
+func (s *Status) IsOk() bool {
+	return s.IsRunning() || s.Kind == "DONE" || s.Kind == "DELETED"
+}
+
+func (s *Status) IsRunning() bool {
+	return s.Kind == "RUNNING"
+}
+
+func (s *Status) IsWaiting() bool {
+	return s.Kind == "WAITING"
 }
 
 func (s *Status) GetColoredCodeMessage() string {
-	if s.CodeMessage == "" {
+	if s.Kind == "" {
 		return color.RedString("unknown")
 	}
 
-	if s.IsError() {
-		return color.RedString(s.CodeMessage)
+	if s.IsRunning() || s.Kind == "DONE" || s.Kind == "DELETED" {
+		return color.GreenString(strings.ToLower(s.Kind))
+	} else if s.Kind == "FAILED" || s.Kind == "ERROR" {
+		return color.RedString(strings.ToLower(s.Kind))
 	}
 
-	if s.ProgressionInPercent != 100 {
-		return color.YellowString(s.CodeMessage)
-	}
-
-	return color.GreenString(s.CodeMessage)
+	return color.YellowString(strings.ToLower(s.Kind))
 }

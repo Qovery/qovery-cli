@@ -29,7 +29,7 @@ var projectEnvListCmd = &cobra.Command{
 func init() {
 	projectEnvListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	projectEnvListCmd.PersistentFlags().BoolVarP(&ShowCredentials, "credentials", "c", false, "Show credentials")
-	projectEnvListCmd.PersistentFlags().BoolVar(&OutputEnvironmentVariables, "dotenv", false, "Output environment variables KEY=VALUE")
+	projectEnvListCmd.PersistentFlags().BoolVar(&OutputEnvironmentVariables, "dotenv", false, "Message environment variables KEY=VALUE")
 
 	projectEnvCmd.AddCommand(projectEnvListCmd)
 }

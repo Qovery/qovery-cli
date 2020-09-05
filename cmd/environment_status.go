@@ -42,29 +42,29 @@ func ShowEnvironmentStatus(projectName string, branchName string) bool {
 	table.SetHeader([]string{"branch name", "status", "endpoints", "applications", "databases"})
 
 	result := false
-	a := io.GetEnvironmentByName(io.GetProjectByName(projectName).Id, branchName)
+	e := io.GetEnvironmentByName(io.GetProjectByName(projectName).Id, branchName)
 
-	if a.Name == "" {
+	if e.Name == "" {
 		table.Append([]string{"", "", "", "", "", ""})
 	} else {
 		applicationName := "none"
-		if a.Applications != nil {
-			applicationName = strings.Join(a.GetApplicationNames(), ", ")
+		if e.Applications != nil {
+			applicationName = strings.Join(e.GetApplicationNames(), ", ")
 		}
 
 		databaseName := "none"
-		if a.Databases != nil {
-			databaseName = strings.Join(a.GetDatabaseNames(), ", ")
+		if e.Databases != nil {
+			databaseName = strings.Join(e.GetDatabaseNames(), ", ")
 		}
 
-		endpoints := strings.Join(a.GetConnectionURIs(), "\n")
+		endpoints := strings.Join(e.GetConnectionURIs(), "\n")
 		if endpoints == "" {
 			endpoints = "none"
 		}
 
 		table.Append([]string{
-			a.Name,
-			a.Status.GetColoredCodeMessage(),
+			e.Name,
+			e.Status.GetColoredCodeMessage(),
 			endpoints,
 			applicationName,
 			databaseName,

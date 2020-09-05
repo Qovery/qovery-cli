@@ -39,7 +39,7 @@ func init() {
 	applicationEnvListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	applicationEnvListCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
 	applicationEnvListCmd.PersistentFlags().BoolVarP(&ShowCredentials, "credentials", "c", false, "Show credentials")
-	applicationEnvListCmd.PersistentFlags().BoolVar(&OutputEnvironmentVariables, "dotenv", false, "Output environment variables KEY=VALUE")
+	applicationEnvListCmd.PersistentFlags().BoolVar(&OutputEnvironmentVariables, "dotenv", false, "Message environment variables KEY=VALUE")
 	// TODO select application
 
 	applicationEnvCmd.AddCommand(applicationEnvListCmd)

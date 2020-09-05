@@ -13,17 +13,17 @@ type Environments struct {
 }
 
 type Environment struct {
-	Id                  string              `json:"id"`
-	Name                string              `json:"name"`
-	Status              Status              `json:"status"`
-	TotalApplications   *int                `json:"total_applications"`
-	TotalServices       *int                `json:"total_services"`
-	TotalDatabases      *int                `json:"total_databases"`
-	TotalBrokers        *int                `json:"total_brokers"`
-	CloudProviderRegion CloudProviderRegion `json:"cloud_provider_region"`
-	Applications        []Application       `json:"applications"`
-	Databases           []Service           `json:"databases"`
-	Routers             []Router            `json:"routers"`
+	Id                string        `json:"id"`
+	Name              string        `json:"name"`
+	Status            Status        `json:"status"`
+	TotalApplications *int          `json:"total_applications"`
+	TotalServices     *int          `json:"total_services"`
+	TotalDatabases    *int          `json:"total_databases"`
+	TotalBrokers      *int          `json:"total_brokers"`
+	Applications      []Application `json:"applications"`
+	Databases         []Service     `json:"databases"`
+	Routers           []Router      `json:"routers"`
+	Kubernetes        Kubernetes    `json:"kubernetes"`
 }
 
 func (e *Environment) GetApplicationNames() []string {
@@ -60,7 +60,7 @@ func (e *Environment) GetConnectionURIs() []string {
 	var uris []string
 	for _, r := range e.Routers {
 		for _, cd := range r.CustomDomains {
-			if cd.Status.State == "LIVE" {
+			if cd.Status.IsRunning() {
 				uris = append(uris, cd.Domain)
 			}
 		}

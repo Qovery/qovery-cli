@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/io"
-	"strings"
 	"time"
 )
 
@@ -35,10 +34,10 @@ var statusCmd = &cobra.Command{
 
 			for {
 				a := io.GetEnvironmentByName(projectId, BranchName)
-				_ = bar.Set(a.Status.ProgressionInPercent)
-				bar.Describe(a.Status.CodeMessage)
+				// _ = bar.Set(a.Status.ProgressionInPercent) TODO fix progress bar
+				bar.Describe(a.Status.Message)
 
-				if a.Status.State == "LIVE" || strings.Contains(a.Status.State, "_ERROR") {
+				if !a.Status.IsWaiting() {
 					break
 				}
 
@@ -47,7 +46,7 @@ var statusCmd = &cobra.Command{
 
 			aggregatedEnvironment := io.GetEnvironmentByName(projectId, BranchName)
 
-			if aggregatedEnvironment.Status.State == "LIVE" {
+			if aggregatedEnvironment.Status.IsRunning() {
 				fmt.Print("\n\n")
 				fmt.Printf("%s", color.GreenString("Your environment is ready!"))
 				fmt.Print("\n\n")
@@ -82,17 +81,17 @@ var statusCmd = &cobra.Command{
 		}
 
 		aggregatedEnvironment := io.GetEnvironmentByName(projectId, BranchName)
-		if !strings.Contains(aggregatedEnvironment.Status.State, "_ERROR") {
+		if aggregatedEnvironment.Status.IsOk() {
 			// no error
 			return
 		}
 
 		fmt.Printf("%s", color.RedString("Something goes wrong:"))
-		showOutputErrorMessage(aggregatedEnvironment.Status.Output)
+		showOutputErrorMessage(aggregatedEnvironment.Status.Message)
 
-		if aggregatedEnvironment.Status.State == "BUILDING_ERROR" {
-			io.PrintHint("Ensure your Dockerfile is correct. Run and test your container locally with 'qovery run'")
-		}
+		//if aggregatedEnvironment.Status.Kind == "BUILDING_ERROR" {
+		//	io.PrintHint("Ensure your Dockerfile is correct. Run and test your container locally with 'qovery run'")
+		//}
 	},
 }
 
