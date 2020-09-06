@@ -46,7 +46,7 @@ var statusCmd = &cobra.Command{
 
 			aggregatedEnvironment := io.GetEnvironmentByName(projectId, BranchName)
 
-			if aggregatedEnvironment.Status.IsRunning() {
+			if aggregatedEnvironment.Status.IsDone() {
 				fmt.Print("\n\n")
 				fmt.Printf("%s", color.GreenString("Your environment is ready!"))
 				fmt.Print("\n\n")

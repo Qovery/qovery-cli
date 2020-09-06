@@ -19,15 +19,19 @@ func (s *Status) GetKind() string {
 }
 
 func (s *Status) IsOk() bool {
-	return s.IsRunning() || s.Kind == "DONE" || s.Kind == "DELETED"
+	return s.IsDone() || s.Kind == "DELETED"
 }
 
-func (s *Status) IsRunning() bool {
-	return s.Kind == "RUNNING"
+func (s *Status) IsDone() bool {
+	return s.Kind == "DONE"
 }
 
 func (s *Status) IsWaiting() bool {
 	return s.Kind == "WAITING"
+}
+
+func (s *Status) IsFailed() bool {
+	return s.Kind == "FAILED"
 }
 
 func (s *Status) GetColoredCodeMessage() string {
@@ -35,11 +39,12 @@ func (s *Status) GetColoredCodeMessage() string {
 		return color.RedString("unknown")
 	}
 
-	if s.IsRunning() || s.Kind == "DONE" || s.Kind == "DELETED" {
+	if s.IsDone() {
 		return color.GreenString(strings.ToLower(s.Kind))
-	} else if s.Kind == "FAILED" || s.Kind == "ERROR" {
+	} else if s.IsFailed() {
 		return color.RedString(strings.ToLower(s.Kind))
 	}
 
+	// running and other states are yellow
 	return color.YellowString(strings.ToLower(s.Kind))
 }
