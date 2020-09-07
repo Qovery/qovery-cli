@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"encoding/json"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"qovery.go/io"
 )
@@ -51,13 +54,39 @@ func ShowDeploymentList(projectName string, branchName string, applicationName s
 		return
 	}
 
+	var deployedApplication = getDeployedCommit(project.Id, environment.Id, application.Id)
+
 	// TODO param for n last commits
 	for _, commit := range io.ListCommits(10) {
-		if application.Repository.CommitId == commit.ID().String() {
+		if deployedApplication.Commit == commit.ID().String() {
 			table.Append([]string{branchName, commit.Author.When.String(), commit.ID().String(), commit.Author.Name, color.GreenString("✓")})
 		} else {
 			table.Append([]string{branchName, commit.Author.When.String(), commit.ID().String(), commit.Author.Name, ""})
 		}
 	}
 	table.Render()
+}
+
+type LastDeployedApplication struct {
+	Commit string `json:"commit"`
+}
+
+func getDeployedCommit(project string, environment string, application string) LastDeployedApplication {
+	url := io.DefaultRootUrl + "/project/" + project + "/environment/" + environment + "/application/" + application + "/deployed"
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("Authorization", "Bearer "+io.GetAuthorizationToken())
+	req.Header.Set("content-type", "application/json")
+	res, err := client.Do(req)
+
+	if err != nil {
+		println("Error getting deployment list from Qovery")
+		os.Exit(1)
+	}
+
+	r := LastDeployedApplication{}
+	body, _ := ioutil.ReadAll(res.Body)
+	_ = json.Unmarshal(body, &r)
+
+	return r
 }
