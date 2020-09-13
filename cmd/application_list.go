@@ -54,7 +54,7 @@ func ShowApplicationList(projectName string, branchName string) {
 
 			table.Append([]string{
 				a.Name,
-				a.Status.GetColoredCodeMessage(),
+				a.Status.GetColoredStatus(),
 				databaseName,
 			})
 		}

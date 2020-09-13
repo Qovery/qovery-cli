@@ -13,16 +13,16 @@ type Services struct {
 }
 
 type Service struct {
-	Id           string        `json:"id"`
-	Name         string        `json:"name"`
-	Type         string        `json:"type"`
-	Version      string        `json:"version"`
-	Status       Status        `json:"status"`
-	FQDN         string        `json:"fqdn"`
-	Port         *int          `json:"port"`
-	Username     string        `json:"username"`
-	Password     string        `json:"password"`
-	Applications []Application `json:"applications"`
+	Id           string           `json:"id"`
+	Name         string           `json:"name"`
+	Type         string           `json:"type"`
+	Version      string           `json:"version"`
+	Status       DeploymentStatus `json:"status"`
+	FQDN         string           `json:"fqdn"`
+	Port         *int             `json:"port"`
+	Username     string           `json:"username"`
+	Password     string           `json:"password"`
+	Applications []Application    `json:"applications"`
 }
 
 func (s *Service) GetApplicationNames() []string {

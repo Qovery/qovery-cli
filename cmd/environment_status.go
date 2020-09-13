@@ -64,7 +64,7 @@ func ShowEnvironmentStatus(projectName string, branchName string) bool {
 
 		table.Append([]string{
 			e.Name,
-			e.Status.GetColoredCodeMessage(),
+			e.Status.GetColoredStatus(),
 			endpoints,
 			applicationName,
 			databaseName,

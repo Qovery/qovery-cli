@@ -68,7 +68,7 @@ func ShowDatabaseList(projectName string, branchName string, showCredentials boo
 
 			table.Append([]string{
 				a.Name,
-				a.Status.GetColoredCodeMessage(),
+				a.Status.GetColoredStatus(),
 				a.Type,
 				a.Version,
 				endpoint,

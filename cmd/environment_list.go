@@ -46,7 +46,7 @@ var environmentListCmd = &cobra.Command{
 				//output = append(output,
 				table.Append([]string{
 					a.Name,
-					a.Status.GetColoredCodeMessage(),
+					a.Status.GetColoredStatus(),
 					strings.Join(a.GetConnectionURIs(), ", "),
 					fmt.Sprintf("%s (%s)", a.Kubernetes.CloudProviderRegion.FullName, a.Kubernetes.CloudProviderRegion.Description),
 					applicationName,

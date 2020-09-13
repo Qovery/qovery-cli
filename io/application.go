@@ -13,15 +13,15 @@ type Applications struct {
 }
 
 type Application struct {
-	Id             string     `json:"id"`
-	Name           string     `json:"name"`
-	Status         Status     `json:"status"`
-	ConnectionURI  string     `json:"connection_uri"`
-	TotalDatabases *int       `json:"total_databases"`
-	TotalBrokers   *int       `json:"total_brokers"`
-	Databases      []Service  `json:"databases"`
-	Brokers        []Service  `json:"brokers"`
-	Repository     Repository `json:"repository"`
+	Id             string           `json:"id"`
+	Name           string           `json:"name"`
+	Status         DeploymentStatus `json:"status"`
+	ConnectionURI  string           `json:"connection_uri"`
+	TotalDatabases *int             `json:"total_databases"`
+	TotalBrokers   *int             `json:"total_brokers"`
+	Databases      []Service        `json:"databases"`
+	Brokers        []Service        `json:"brokers"`
+	Repository     Repository       `json:"repository"`
 }
 
 func GetApplicationByName(projectId string, environmentId string, name string) Application {

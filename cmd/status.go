@@ -34,10 +34,10 @@ var statusCmd = &cobra.Command{
 
 			for {
 				a := io.GetEnvironmentByName(projectId, BranchName)
-				// _ = bar.Set(a.Status.ProgressionInPercent) TODO fix progress bar
+				// _ = bar.Set(a.DeploymentStatus.ProgressionInPercent) TODO fix progress bar
 				bar.Describe(a.Status.Message)
 
-				if !a.Status.IsWaiting() {
+				if !a.Status.IsRunning() {
 					break
 				}
 
@@ -46,7 +46,7 @@ var statusCmd = &cobra.Command{
 
 			aggregatedEnvironment := io.GetEnvironmentByName(projectId, BranchName)
 
-			if aggregatedEnvironment.Status.IsDone() {
+			if aggregatedEnvironment.Status.IsTerminated() {
 				fmt.Print("\n\n")
 				fmt.Printf("%s", color.GreenString("Your environment is ready!"))
 				fmt.Print("\n\n")
@@ -80,26 +80,36 @@ var statusCmd = &cobra.Command{
 			}
 		}
 
-		aggregatedEnvironment := io.GetEnvironmentByName(projectId, BranchName)
-		if aggregatedEnvironment.Status.IsOk() {
+		environment := io.GetEnvironmentByName(projectId, BranchName)
+		if environment.Status.IsOk() && !DeploymentOutputFlag {
 			// no error
 			return
 		}
 
-		fmt.Printf("%s", color.RedString("Something goes wrong:"))
-		showOutputErrorMessage(aggregatedEnvironment.Status.Message)
+		deployments := io.ListDeployments(projectId, environment.Id)
+		deploymentStatuses := io.ListDeploymentStatuses(projectId, environment.Id, deployments.Results[0].Id)
 
-		//if aggregatedEnvironment.Status.Kind == "BUILDING_ERROR" {
+		if !environment.Status.IsOk() {
+			fmt.Printf("%s", color.RedString("Something goes wrong:"))
+		}
+
+		showOutputErrorMessage(deploymentStatuses.Results)
+
+		//if environment.DeploymentStatus.DeploymentStatus == "BUILDING_ERROR" {
 		//	io.PrintHint("Ensure your Dockerfile is correct. Run and test your container locally with 'qovery run'")
 		//}
 	},
 }
 
-func showOutputErrorMessage(message string) {
+func showOutputErrorMessage(statuses []io.DeploymentStatus) {
 	fmt.Printf("\n\n")
-	fmt.Println("---------- Start of error message ----------")
-	fmt.Printf("%s\n", message)
-	fmt.Println("----------- End of error message -----------")
+	fmt.Println("---------- Start of deployment output ----------")
+
+	for _, s := range statuses {
+		fmt.Printf("%s\n", s.GetColoredMessage())
+	}
+
+	fmt.Println("----------- End of deployment output -----------")
 	fmt.Println()
 }
 
@@ -108,6 +118,7 @@ func init() {
 	statusCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	statusCmd.PersistentFlags().BoolVarP(&ShowCredentials, "credentials", "c", false, "Show credentials")
 	statusCmd.PersistentFlags().BoolVar(&WatchFlag, "watch", false, "Watch the progression until the environment is up and running")
+	statusCmd.PersistentFlags().BoolVar(&DeploymentOutputFlag, "deployment-output", false, "Show deployment output (shown only an error occurred otherwise)")
 
 	RootCmd.AddCommand(statusCmd)
 }

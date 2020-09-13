@@ -20,9 +20,9 @@ type Router struct {
 }
 
 type CustomDomain struct {
-	Domain       string `json:"domain"`
-	TargetDomain string `json:"target_domain"`
-	Status       Status `json:"status"`
+	Domain       string           `json:"domain"`
+	TargetDomain string           `json:"target_domain"`
+	Status       DeploymentStatus `json:"status"`
 }
 
 func (c *CustomDomain) GetDomain() string {
