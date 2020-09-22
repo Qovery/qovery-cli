@@ -1,12 +1,13 @@
 package io
 
 import (
+	"bufio"
 	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 )
 
 type Logs struct {
@@ -19,11 +20,9 @@ type Log struct {
 	Message   string `json:"message"`
 }
 
-func ListApplicationLogs(lastLines int, follow bool, projectId string, environmentId string, applicationId string) Logs {
-	logs := Logs{}
-
+func ListApplicationLogs(lastLines int, follow bool, projectId string, environmentId string, applicationId string) {
 	if projectId == "" || environmentId == "" || applicationId == "" {
-		return logs
+		return
 	}
 
 	CheckAuthenticationOrQuitWithMessage()
@@ -40,29 +39,33 @@ func ListApplicationLogs(lastLines int, follow bool, projectId string, environme
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 	req.Header.Set("accept", "application/stream+json")
 
-	client := http.Client{}
+	tr := &http.Transport{}
+	client := &http.Client{Transport: tr}
+
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		tr.CancelRequest(req)
+		os.Exit(1)
+	}()
+
 	resp, err := client.Do(req)
 
 	if err != nil {
-		return logs
+		return
 	}
 
-	err = CheckHTTPResponse(resp)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	reader := bufio.NewReader(resp.Body)
 
-	d := json.NewDecoder(resp.Body)
 	for {
-		var v Log
-		if err := d.Decode(&v); err == io.EOF {
-			break
-		} else if err != nil {
-			// handle error
+		bytes, _ := reader.ReadBytes('\n')
+		if len(bytes) > 0 {
+			var log Log
+			_ = json.Unmarshal(bytes, &log)
+			print(log.Message)
+		} else if follow == false {
+			return
 		}
-		fmt.Print(v.Message)
 	}
-
-	return logs
 }
