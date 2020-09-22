@@ -4,10 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"net/http"
-	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 )
 
 type Logs struct {
@@ -39,16 +36,7 @@ func ListApplicationLogs(lastLines int, follow bool, projectId string, environme
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 	req.Header.Set("accept", "application/stream+json")
 
-	tr := &http.Transport{}
-	client := &http.Client{Transport: tr}
-
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-c
-		tr.CancelRequest(req)
-		os.Exit(1)
-	}()
+	client := &http.Client{}
 
 	resp, err := client.Do(req)
 
@@ -64,7 +52,7 @@ func ListApplicationLogs(lastLines int, follow bool, projectId string, environme
 			var log Log
 			_ = json.Unmarshal(bytes, &log)
 			print(log.Message)
-		} else if follow == false {
+		} else if !follow {
 			return
 		}
 	}
