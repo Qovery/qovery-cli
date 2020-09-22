@@ -5,7 +5,6 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/io"
-	"time"
 )
 
 var applicationLogCmd = &cobra.Command{
@@ -35,7 +34,7 @@ func init() {
 	applicationLogCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	applicationLogCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
 	// TODO select application
-	applicationLogCmd.PersistentFlags().IntVar(&Tail, "tail", 100, "Specify if the logs should be streamed")
+	applicationLogCmd.PersistentFlags().IntVar(&Tail, "tail", 500, "Start from X most recent logs")
 	applicationLogCmd.PersistentFlags().BoolVarP(&FollowFlag, "follow", "f", false, "Specify if the logs should be streamed")
 
 	applicationCmd.AddCommand(applicationLogCmd)
@@ -47,7 +46,7 @@ func ShowApplicationLog(projectName string, branchName string, applicationName s
 	application := io.GetApplicationByName(projectId, environment.Id, applicationName)
 
 	if !follow {
-		logs := io.ListApplicationLogs(lastLines, projectId, environment.Id, application.Id).Results
+		logs := io.ListApplicationLogs(lastLines, false, projectId, environment.Id, application.Id).Results
 
 		for _, log := range logs {
 			fmt.Print(log.Message)
@@ -58,26 +57,9 @@ func ShowApplicationLog(projectName string, branchName string, applicationName s
 
 	var logs []io.Log
 	for {
-		logs = io.ListApplicationLogs(lastLines, projectId, environment.Id, application.Id).Results
+		logs = io.ListApplicationLogs(lastLines, true, projectId, environment.Id, application.Id).Results
 		if len(logs) > 0 {
 			break
-		}
-	}
-
-	for _, log := range logs {
-		fmt.Print(log.Message)
-	}
-
-	lastLog := logs[len(logs)-1]
-	for {
-		time.Sleep(time.Duration(1) * time.Second)
-		logs = io.ListApplicationTailLogs(lastLog.Id, projectId, environment.Id, application.Id).Results
-		if len(logs) > 0 {
-			for _, log := range logs {
-				fmt.Print(log.Message)
-			}
-
-			lastLog = logs[len(logs)-1]
 		}
 	}
 }
