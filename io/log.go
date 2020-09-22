@@ -1,11 +1,9 @@
 package io
 
 import (
+	"bufio"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
-	"os"
 	"strconv"
 )
 
@@ -19,74 +17,43 @@ type Log struct {
 	Message   string `json:"message"`
 }
 
-func ListApplicationLogs(lastLines int, projectId string, environmentId string, applicationId string) Logs {
-	logs := Logs{}
-
+func ListApplicationLogs(lastLines int, follow bool, projectId string, environmentId string, applicationId string) {
 	if projectId == "" || environmentId == "" || applicationId == "" {
-		return logs
+		return
 	}
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	url := RootURL + "/project/" + projectId + "/environment/" + environmentId + "/application/" + applicationId +
-		"/log?size=" + strconv.Itoa(lastLines)
+	url := RootURL + "/project/" + projectId + "/environment/" + environmentId + "/application/" + applicationId + "/log"
 
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
 
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
+	q := req.URL.Query()
+	q.Add("tail", strconv.Itoa(lastLines))
+	q.Add("follow", strconv.FormatBool(follow))
+	req.URL.RawQuery = q.Encode()
 
-	client := http.Client{}
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
+	req.Header.Set("accept", "application/stream+json")
+
+	client := &http.Client{}
+
 	resp, err := client.Do(req)
 
 	if err != nil {
-		return logs
+		return
 	}
 
-	err = CheckHTTPResponse(resp)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	reader := bufio.NewReader(resp.Body)
+
+	for {
+		bytes, _ := reader.ReadBytes('\n')
+		if len(bytes) > 0 {
+			var log Log
+			_ = json.Unmarshal(bytes, &log)
+			print(log.Message)
+		} else if !follow {
+			return
+		}
 	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &logs)
-
-	return logs
-}
-
-func ListApplicationTailLogs(lastLogId string, projectId string, environmentId string, applicationId string) Logs {
-	logs := Logs{}
-
-	if projectId == "" || environmentId == "" || applicationId == "" {
-		return logs
-	}
-
-	CheckAuthenticationOrQuitWithMessage()
-
-	url := RootURL + "/project/" + projectId + "/environment/" + environmentId + "/application/" + applicationId +
-		"/log?last_id=" + lastLogId
-
-	req, _ := http.NewRequest(http.MethodGet, url, nil)
-
-	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-
-	if err != nil {
-		return logs
-	}
-
-	err = CheckHTTPResponse(resp)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	_ = json.Unmarshal(body, &logs)
-
-	return logs
 }
