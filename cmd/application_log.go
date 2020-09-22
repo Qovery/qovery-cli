@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/io"
@@ -44,22 +43,5 @@ func ShowApplicationLog(projectName string, branchName string, applicationName s
 	projectId := io.GetProjectByName(projectName).Id
 	environment := io.GetEnvironmentByName(projectId, branchName)
 	application := io.GetApplicationByName(projectId, environment.Id, applicationName)
-
-	if !follow {
-		logs := io.ListApplicationLogs(lastLines, false, projectId, environment.Id, application.Id).Results
-
-		for _, log := range logs {
-			fmt.Print(log.Message)
-		}
-
-		return
-	}
-
-	var logs []io.Log
-	for {
-		logs = io.ListApplicationLogs(lastLines, true, projectId, environment.Id, application.Id).Results
-		if len(logs) > 0 {
-			break
-		}
-	}
+	io.ListApplicationLogs(lastLines, follow, projectId, environment.Id, application.Id)
 }

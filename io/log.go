@@ -33,6 +33,7 @@ func ListApplicationLogs(lastLines int, follow bool, projectId string, environme
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
 
 	req.URL.Query().Set("tail", strconv.Itoa(lastLines))
+	req.URL.Query().Set("follow", strconv.FormatBool(follow))
 
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 	req.Header.Set("accept", "application/stream+json")
@@ -58,7 +59,7 @@ func ListApplicationLogs(lastLines int, follow bool, projectId string, environme
 		} else if err != nil {
 			// handle error
 		}
-		fmt.Println(v.Message)
+		fmt.Print(v.Message)
 	}
 
 	return logs
