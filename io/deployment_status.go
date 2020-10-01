@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 type DeploymentStatuses struct {
@@ -15,12 +16,13 @@ type DeploymentStatuses struct {
 }
 
 type DeploymentStatus struct {
-	Id      string `json:"id"`
-	Status  string `json:"status"`
-	Scope   string `json:"scope"`
-	Step    string `json:"step"`
-	Level   string `json:"level"`
-	Message string `json:"message"`
+	Id        string    `json:"id"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	Scope     string    `json:"scope"`
+	Step      string    `json:"step"`
+	Level     string    `json:"level"`
+	Message   string    `json:"message"`
 }
 
 func (s *DeploymentStatus) GetKind() string {

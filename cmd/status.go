@@ -3,10 +3,10 @@ package cmd
 import (
 	"fmt"
 	"github.com/fatih/color"
-	"github.com/schollz/progressbar/v2"
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/io"
+	"sort"
 	"time"
 )
 
@@ -30,27 +30,36 @@ var statusCmd = &cobra.Command{
 		projectId := io.GetProjectByName(ProjectName).Id
 
 		if WatchFlag {
-			bar := progressbar.NewOptions(100, progressbar.OptionSetPredictTime(true))
+			aggregatedEnvironment := io.GetEnvironmentByName(projectId, BranchName)
+			deploymentStatuses := deploymentStatusesFromLastDeployment(projectId, aggregatedEnvironment.Id)
 
-			for {
-				a := io.GetEnvironmentByName(projectId, BranchName)
-				// _ = bar.Set(a.DeploymentStatus.ProgressionInPercent) TODO fix progress bar
-				bar.Describe(a.Status.Message)
+			fmt.Printf("%s\n", color.GreenString("Environment deployment logs:"))
 
-				if !a.Status.IsRunning() {
-					break
-				}
-
-				time.Sleep(1 * time.Second)
+			for _, status := range deploymentStatuses.Results {
+				printStatusMessageLine(status)
 			}
 
-			aggregatedEnvironment := io.GetEnvironmentByName(projectId, BranchName)
-
 			if aggregatedEnvironment.Status.IsTerminated() {
-				fmt.Print("\n\n")
-				fmt.Printf("%s", color.GreenString("Your environment is ready!"))
-				fmt.Print("\n\n")
-				fmt.Printf("%s", color.GreenString("-- status output --"))
+				printEndOfDeploymentMessage()
+			} else if aggregatedEnvironment.Status.IsTerminatedWithError() {
+				printEndOfDeploymentErrorMessage()
+			} else {
+				for {
+					time.Sleep(3 * time.Second)
+					lastStatusTime := deploymentStatuses.Results[len(deploymentStatuses.Results)-1].CreatedAt
+					deploymentStatuses = deploymentStatusesFromLastDeployment(projectId, aggregatedEnvironment.Id)
+					for _, status := range deploymentStatuses.Results {
+						if status.CreatedAt.After(lastStatusTime) {
+							printStatusMessageLine(status)
+						}
+					}
+					aggregatedEnvironment = io.GetEnvironmentByName(projectId, BranchName)
+					if aggregatedEnvironment.Status.IsTerminated() {
+						printEndOfDeploymentMessage()
+					} else if aggregatedEnvironment.Status.IsTerminatedWithError() {
+						printEndOfDeploymentErrorMessage()
+					}
+				}
 			}
 
 			fmt.Print("\n\n")
@@ -80,25 +89,72 @@ var statusCmd = &cobra.Command{
 			}
 		}
 
-		environment := io.GetEnvironmentByName(projectId, BranchName)
-		if environment.Status.IsOk() && !DeploymentOutputFlag {
-			// no error
-			return
+		if !WatchFlag {
+			environment := io.GetEnvironmentByName(projectId, BranchName)
+			if environment.Status.IsOk() && !DeploymentOutputFlag {
+				// no error
+				return
+			}
+
+			deployments := io.ListDeployments(projectId, environment.Id)
+			deploymentStatuses := io.ListDeploymentStatuses(projectId, environment.Id, deployments.Results[0].Id)
+
+			if !environment.Status.IsOk() {
+				fmt.Printf("%s", color.RedString("Something goes wrong:"))
+			}
+
+			showOutputErrorMessage(deploymentStatuses.Results)
 		}
-
-		deployments := io.ListDeployments(projectId, environment.Id)
-		deploymentStatuses := io.ListDeploymentStatuses(projectId, environment.Id, deployments.Results[0].Id)
-
-		if !environment.Status.IsOk() {
-			fmt.Printf("%s", color.RedString("Something goes wrong:"))
-		}
-
-		showOutputErrorMessage(deploymentStatuses.Results)
 
 		//if environment.DeploymentStatus.DeploymentStatus == "BUILDING_ERROR" {
 		//	io.PrintHint("Ensure your Dockerfile is correct. Run and test your container locally with 'qovery run'")
 		//}
 	},
+}
+
+func printStatusMessageLine(status io.DeploymentStatus) {
+	time := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d",
+		status.CreatedAt.Year(), status.CreatedAt.Month(), status.CreatedAt.Day(),
+		status.CreatedAt.Hour(), status.CreatedAt.Minute(), status.CreatedAt.Second())
+	fmt.Print(color.YellowString(time + " | "))
+	fmt.Print(color.YellowString(status.Scope + " | "))
+	fmt.Print(color.YellowString(status.Level + " | "))
+	fmt.Println(status.Message)
+}
+
+func printEndOfDeploymentMessage() {
+	fmt.Printf("%s", color.GreenString("End of environment deployment logs."))
+	fmt.Print("\n\n")
+	fmt.Printf("%s", color.GreenString("Your environment is ready!"))
+	fmt.Print("\n\n")
+	fmt.Printf("%s", color.GreenString("-- status output --"))
+}
+
+func printEndOfDeploymentErrorMessage() {
+	fmt.Printf("%s", color.GreenString("End of environment deployment logs."))
+	fmt.Print("\n\n")
+	fmt.Printf("%s", color.GreenString("Your environment deployment has failed!"))
+	fmt.Print("\n\n")
+	fmt.Printf("%s", color.GreenString("-- status output --"))
+}
+
+func deploymentStatusesFromLastDeployment(projectId string, environmentId string) io.DeploymentStatuses {
+	deployments := io.ListDeployments(projectId, environmentId)
+
+	if len(deployments.Results) <= 0 {
+		return io.DeploymentStatuses{Results: []io.DeploymentStatus{}}
+	}
+
+	sortChronologically(deployments)
+	deploymentStatuses := io.ListDeploymentStatuses(projectId, environmentId, deployments.Results[0].Id)
+
+	return deploymentStatuses
+}
+
+func sortChronologically(deployments io.Deployments) {
+	sort.SliceStable(deployments.Results, func(i, j int) bool {
+		return deployments.Results[i].CreatedAt.Unix() > deployments.Results[j].CreatedAt.Unix()
+	})
 }
 
 func showOutputErrorMessage(statuses []io.DeploymentStatus) {

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Deployments struct {
@@ -13,7 +14,8 @@ type Deployments struct {
 }
 
 type Deployment struct {
-	Id string `json:"id"`
+	Id        string    `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func ListDeployments(projectId string, environmentId string) Deployments {
