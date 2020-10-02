@@ -90,6 +90,16 @@ func (s *DeploymentStatus) GetColoredMessage() string {
 	return s.Message
 }
 
+func (s *DeploymentStatus) GetColoredLevel() string {
+	if s.IsLevelError() {
+		return color.RedString(s.Level)
+	} else if s.IsLevelWarn() {
+		return color.YellowString(s.Level)
+	}
+
+	return color.GreenString(s.Level)
+}
+
 func ListDeploymentStatuses(projectId string, environmentId string, deploymentId string) DeploymentStatuses {
 	r := DeploymentStatuses{}
 

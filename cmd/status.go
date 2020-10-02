@@ -7,6 +7,7 @@ import (
 	"os"
 	"qovery.go/io"
 	"sort"
+	"text/tabwriter"
 	"time"
 )
 
@@ -33,7 +34,7 @@ var statusCmd = &cobra.Command{
 			aggregatedEnvironment := io.GetEnvironmentByName(projectId, BranchName)
 			deploymentStatuses := deploymentStatusesFromLastDeployment(projectId, aggregatedEnvironment.Id)
 
-			fmt.Printf("%s\n", color.GreenString("Environment deployment logs:"))
+			fmt.Printf("%s\n\n", color.CyanString("Environment deployment logs:"))
 
 			for _, status := range deploymentStatuses.Results {
 				printStatusMessageLine(status)
@@ -56,8 +57,10 @@ var statusCmd = &cobra.Command{
 					aggregatedEnvironment = io.GetEnvironmentByName(projectId, BranchName)
 					if aggregatedEnvironment.Status.IsTerminated() {
 						printEndOfDeploymentMessage()
+						break
 					} else if aggregatedEnvironment.Status.IsTerminatedWithError() {
 						printEndOfDeploymentErrorMessage()
+						break
 					}
 				}
 			}
@@ -115,27 +118,30 @@ var statusCmd = &cobra.Command{
 func printStatusMessageLine(status io.DeploymentStatus) {
 	time := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d",
 		status.CreatedAt.Year(), status.CreatedAt.Month(), status.CreatedAt.Day(),
-		status.CreatedAt.Hour(), status.CreatedAt.Minute(), status.CreatedAt.Second())
-	fmt.Print(color.YellowString(time + " | "))
-	fmt.Print(color.YellowString(status.Scope + " | "))
-	fmt.Print(color.YellowString(status.Level + " | "))
-	fmt.Println(status.Message)
+		status.CreatedAt.Hour(), status.CreatedAt.Minute(), status.CreatedAt.Second(),
+	)
+
+	message := status.GetColoredMessage()
+
+	if status.Message == "" {
+		message = "<empty line>"
+	}
+
+	writer := tabwriter.NewWriter(os.Stdout, 0, 2, 1, '\t', tabwriter.AlignRight)
+	_, _ = fmt.Fprintf(writer, "%s\t%s\t%s\t%s\n", time, status.Scope, status.GetColoredLevel(), message)
+	_ = writer.Flush()
 }
 
 func printEndOfDeploymentMessage() {
-	fmt.Printf("%s", color.GreenString("End of environment deployment logs."))
-	fmt.Print("\n\n")
-	fmt.Printf("%s", color.GreenString("Your environment is ready!"))
-	fmt.Print("\n\n")
-	fmt.Printf("%s", color.GreenString("-- status output --"))
+	fmt.Println("\nEnd of environment deployment logs.")
+	fmt.Printf("\n%s\n\n", color.GreenString("Your environment is ready!"))
+	fmt.Println("-- status output --")
 }
 
 func printEndOfDeploymentErrorMessage() {
-	fmt.Printf("%s", color.GreenString("End of environment deployment logs."))
-	fmt.Print("\n\n")
-	fmt.Printf("%s", color.GreenString("Your environment deployment has failed!"))
-	fmt.Print("\n\n")
-	fmt.Printf("%s", color.GreenString("-- status output --"))
+	fmt.Println("\nEnd of environment deployment logs.")
+	fmt.Printf("\n%s\n\n", color.RedString("Your environment deployment has failed!"))
+	fmt.Println("-- status output --")
 }
 
 func deploymentStatusesFromLastDeployment(projectId string, environmentId string) io.DeploymentStatuses {
