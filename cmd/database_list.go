@@ -5,7 +5,6 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"qovery.go/io"
-	"strings"
 )
 
 var databaseListCmd = &cobra.Command{
@@ -46,17 +45,12 @@ func ShowDatabaseListWithProjectAndBranchNames(projectName string, branchName st
 
 func ShowDatabaseList(databases []io.Service, showCredentials bool) {
 	table := io.GetTable()
-	table.SetHeader([]string{"database name", "status", "type", "version", "endpoint", "port", "username", "password", "applications"})
+	table.SetHeader([]string{"database name", "status", "type", "version", "endpoint", "port", "username", "password"})
 
 	if len(databases) == 0 {
-		table.Append([]string{"", "", "", "", "", "", "", "", ""})
+		table.Append([]string{"", "", "", "", "", "", "", ""})
 	} else {
 		for _, a := range databases {
-			applicationName := "none"
-			if a.Applications != nil {
-				applicationName = strings.Join(a.GetApplicationNames(), ", ")
-			}
-
 			endpoint := "<hidden>"
 			port := "<hidden>"
 			username := "<hidden>"
@@ -78,7 +72,6 @@ func ShowDatabaseList(databases []io.Service, showCredentials bool) {
 				port,
 				username,
 				password,
-				applicationName,
 			})
 		}
 	}
