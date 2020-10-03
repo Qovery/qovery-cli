@@ -26,7 +26,7 @@ var environmentStatusCmd = &cobra.Command{
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		ShowEnvironmentStatus(ProjectName, BranchName)
+		ShowEnvironmentStatusWithProjectAndBranchNames(ProjectName, BranchName)
 	},
 }
 
@@ -37,34 +37,38 @@ func init() {
 	environmentCmd.AddCommand(environmentStatusCmd)
 }
 
-func ShowEnvironmentStatus(projectName string, branchName string) bool {
+func ShowEnvironmentStatusWithProjectAndBranchNames(projectName string, branchName string) bool {
+	environment := io.GetEnvironmentByName(io.GetProjectByName(projectName).Id, branchName)
+	return ShowEnvironmentStatus(environment)
+}
+
+func ShowEnvironmentStatus(environment io.Environment) bool {
 	table := io.GetTable()
 	table.SetHeader([]string{"branch name", "status", "endpoints", "applications", "databases"})
 
 	result := false
-	e := io.GetEnvironmentByName(io.GetProjectByName(projectName).Id, branchName)
 
-	if e.Name == "" {
+	if environment.Name == "" {
 		table.Append([]string{"", "", "", "", "", ""})
 	} else {
 		applicationName := "none"
-		if e.Applications != nil {
-			applicationName = strings.Join(e.GetApplicationNames(), ", ")
+		if environment.Applications != nil {
+			applicationName = strings.Join(environment.GetApplicationNames(), ", ")
 		}
 
 		databaseName := "none"
-		if e.Databases != nil {
-			databaseName = strings.Join(e.GetDatabaseNames(), ", ")
+		if environment.Databases != nil {
+			databaseName = strings.Join(environment.GetDatabaseNames(), ", ")
 		}
 
-		endpoints := strings.Join(e.GetConnectionURIs(), "\n")
+		endpoints := strings.Join(environment.GetConnectionURIs(), "\n")
 		if endpoints == "" {
 			endpoints = "none"
 		}
 
 		table.Append([]string{
-			e.Name,
-			e.Status.GetColoredStatus(),
+			environment.Name,
+			environment.Status.GetColoredStatus(),
 			endpoints,
 			applicationName,
 			databaseName,

@@ -25,7 +25,7 @@ var databaseListCmd = &cobra.Command{
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		ShowDatabaseList(ProjectName, BranchName, ShowCredentials)
+		ShowDatabaseListWithProjectAndBranchNames(ProjectName, BranchName, ShowCredentials)
 	},
 }
 
@@ -37,18 +37,21 @@ func init() {
 	databaseCmd.AddCommand(databaseListCmd)
 }
 
-func ShowDatabaseList(projectName string, branchName string, showCredentials bool) {
+func ShowDatabaseListWithProjectAndBranchNames(projectName string, branchName string, showCredentials bool) {
+	projectId := io.GetProjectByName(projectName).Id
+	environment := io.GetEnvironmentByName(projectId, branchName)
+	databases := io.ListDatabases(projectId, environment.Id)
+	ShowDatabaseList(databases.Results, showCredentials)
+}
+
+func ShowDatabaseList(databases []io.Service, showCredentials bool) {
 	table := io.GetTable()
 	table.SetHeader([]string{"database name", "status", "type", "version", "endpoint", "port", "username", "password", "applications"})
 
-	projectId := io.GetProjectByName(projectName).Id
-	environment := io.GetEnvironmentByName(projectId, branchName)
-
-	services := io.ListDatabases(projectId, environment.Id)
-	if services.Results == nil || len(services.Results) == 0 {
+	if len(databases) == 0 {
 		table.Append([]string{"", "", "", "", "", "", "", "", ""})
 	} else {
-		for _, a := range services.Results {
+		for _, a := range databases {
 			applicationName := "none"
 			if a.Applications != nil {
 				applicationName = strings.Join(a.GetApplicationNames(), ", ")

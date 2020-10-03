@@ -31,8 +31,8 @@ var statusCmd = &cobra.Command{
 		projectId := io.GetProjectByName(ProjectName).Id
 
 		if WatchFlag {
-			aggregatedEnvironment := io.GetEnvironmentByName(projectId, BranchName)
-			deploymentStatuses := deploymentStatusesFromLastDeployment(projectId, aggregatedEnvironment.Id)
+			environment := io.GetEnvironmentByName(projectId, BranchName)
+			deploymentStatuses := deploymentStatusesFromLastDeployment(projectId, environment.Id)
 
 			fmt.Printf("%s\n\n", color.CyanString("Environment deployment logs:"))
 
@@ -40,25 +40,26 @@ var statusCmd = &cobra.Command{
 				printStatusMessageLine(status)
 			}
 
-			if aggregatedEnvironment.Status.IsTerminated() {
+			if environment.Status.IsTerminated() {
 				printEndOfDeploymentMessage()
-			} else if aggregatedEnvironment.Status.IsTerminatedWithError() {
+			} else if environment.Status.IsTerminatedWithError() {
 				printEndOfDeploymentErrorMessage()
 			} else {
 				for {
 					time.Sleep(3 * time.Second)
 					lastStatusTime := deploymentStatuses.Results[len(deploymentStatuses.Results)-1].CreatedAt
-					deploymentStatuses = deploymentStatusesFromLastDeployment(projectId, aggregatedEnvironment.Id)
+					deploymentStatuses = deploymentStatusesFromLastDeployment(projectId, environment.Id)
 					for _, status := range deploymentStatuses.Results {
 						if status.CreatedAt.After(lastStatusTime) {
 							printStatusMessageLine(status)
 						}
 					}
-					aggregatedEnvironment = io.GetEnvironmentByName(projectId, BranchName)
-					if aggregatedEnvironment.Status.IsTerminated() {
+
+					environment = io.GetEnvironmentByName(projectId, BranchName)
+					if environment.Status.IsTerminated() {
 						printEndOfDeploymentMessage()
 						break
-					} else if aggregatedEnvironment.Status.IsTerminatedWithError() {
+					} else if environment.Status.IsTerminatedWithError() {
 						printEndOfDeploymentErrorMessage()
 						break
 					}
@@ -68,12 +69,18 @@ var statusCmd = &cobra.Command{
 			fmt.Print("\n\n")
 		}
 
-		envExists := ShowEnvironmentStatus(ProjectName, BranchName)
+		// refresh environment
+		environment := io.GetEnvironmentByName(projectId, BranchName)
+		envExists := ShowEnvironmentStatus(environment)
+
 		// if an environment exists, then show the rest
-		ShowApplicationList(ProjectName, BranchName)
-		ShowDatabaseList(ProjectName, BranchName, ShowCredentials)
-		//ShowBrokerList(ProjectName, BranchName)
-		//ShowStorageList(ProjectName, BranchName)
+		if environment.Applications != nil {
+			ShowApplicationList(environment.Applications)
+		}
+
+		if environment.Databases != nil {
+			ShowDatabaseList(environment.Databases, ShowCredentials)
+		}
 
 		if !envExists {
 			// there is no environment, does the user forget to give access rights to Qovery ? Let's check
@@ -93,13 +100,17 @@ var statusCmd = &cobra.Command{
 		}
 
 		if !WatchFlag {
-			environment := io.GetEnvironmentByName(projectId, BranchName)
 			if environment.Status.IsOk() && !DeploymentOutputFlag {
 				// no error
 				return
 			}
 
 			deployments := io.ListDeployments(projectId, environment.Id)
+
+			if len(deployments.Results) == 0 {
+				return
+			}
+
 			deploymentStatuses := io.ListDeploymentStatuses(projectId, environment.Id, deployments.Results[0].Id)
 
 			if !environment.Status.IsOk() {
