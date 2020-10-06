@@ -46,7 +46,12 @@ var statusCmd = &cobra.Command{
 				printEndOfDeploymentErrorMessage()
 			} else {
 				for {
-					time.Sleep(3 * time.Second)
+					time.Sleep(2 * time.Second)
+					if deploymentStatuses.Results == nil || len(deploymentStatuses.Results) == 0 {
+						fmt.Println("no deployment logs")
+						break
+					}
+
 					lastStatusTime := deploymentStatuses.Results[len(deploymentStatuses.Results)-1].CreatedAt
 					deploymentStatuses = deploymentStatusesFromLastDeployment(projectId, environment.Id)
 					for _, status := range deploymentStatuses.Results {
