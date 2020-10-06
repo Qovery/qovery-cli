@@ -14,11 +14,12 @@ type Projects struct {
 }
 
 type Project struct {
-	ObjectType string `json:"object_type"`
-	Id         string `json:"id"`
-	CreatedAt  string `json:"created_at"`
-	UpdatedAt  string `json:"updated_at"`
-	Name       string `json:"name"`
+	ObjectType   string       `json:"object_type"`
+	Id           string       `json:"id"`
+	CreatedAt    string       `json:"created_at"`
+	UpdatedAt    string       `json:"updated_at"`
+	Name         string       `json:"name"`
+	Organization Organization `json:"organization"`
 }
 
 func GetProjectByName(name string) Project {

@@ -14,15 +14,15 @@ var projectListCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		table := io.GetTable()
-		table.SetHeader([]string{"name"})
+		table.SetHeader([]string{"name", "organization"})
 
 		projects := io.ListProjects()
 
 		if len(projects.Results) == 0 {
-			table.Append([]string{""})
+			table.Append([]string{"", ""})
 		} else {
 			for _, p := range projects.Results {
-				table.Append([]string{p.Name})
+				table.Append([]string{p.Name, p.Organization.Name})
 			}
 		}
 
