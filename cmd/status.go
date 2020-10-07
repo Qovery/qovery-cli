@@ -40,10 +40,8 @@ var statusCmd = &cobra.Command{
 				printStatusMessageLine(status)
 			}
 
-			if environment.Status.IsStarted() {
-				printEndOfDeploymentMessage()
-			} else if environment.Status.IsNotOk() {
-				printEndOfDeploymentErrorMessage()
+			if environment.Status.IsOk() || environment.Status.IsNotOk() {
+				printEndOfDeploymentMessage(environment.Status)
 			} else {
 				for {
 					time.Sleep(2 * time.Second)
@@ -61,11 +59,8 @@ var statusCmd = &cobra.Command{
 					}
 
 					environment = io.GetEnvironmentByName(projectId, BranchName)
-					if environment.Status.IsStarted() {
-						printEndOfDeploymentMessage()
-						break
-					} else if environment.Status.IsStartError() {
-						printEndOfDeploymentErrorMessage()
+					if environment.Status.IsOk() || environment.Status.IsNotOk() {
+						printEndOfDeploymentMessage(environment.Status)
 						break
 					}
 				}
@@ -148,15 +143,15 @@ func printStatusMessageLine(status io.DeploymentStatus) {
 	_ = writer.Flush()
 }
 
-func printEndOfDeploymentMessage() {
+func printEndOfDeploymentMessage(status io.DeploymentStatus) {
 	fmt.Println("\nEnd of environment deployment logs.")
-	fmt.Printf("\n%s\n\n", color.GreenString("Your environment is ready!"))
-	fmt.Println("-- status output --")
-}
 
-func printEndOfDeploymentErrorMessage() {
-	fmt.Println("\nEnd of environment deployment logs.")
-	fmt.Printf("\n%s\n\n", color.RedString("Your environment deployment has failed!"))
+	if status.IsOk() {
+		fmt.Printf("\n%s\n\n", color.GreenString("The environment has been "+status.StatusForHuman.Long))
+	} else {
+		fmt.Printf("\n%s\n\n", color.RedString("The environment has been "+status.StatusForHuman.Long))
+	}
+
 	fmt.Println("-- status output --")
 }
 

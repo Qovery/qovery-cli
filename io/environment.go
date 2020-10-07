@@ -60,7 +60,7 @@ func (e *Environment) GetConnectionURIs() []string {
 	var uris []string
 	for _, r := range e.Routers {
 		for _, cd := range r.CustomDomains {
-			if cd.Status.IsStarted() {
+			if cd.Status.IsDeployed() {
 				uris = append(uris, cd.Domain)
 			}
 		}

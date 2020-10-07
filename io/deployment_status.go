@@ -54,15 +54,19 @@ func (s *DeploymentStatus) IsLevelDebug() bool {
 }
 
 func (s *DeploymentStatus) IsOk() bool {
-	return s.IsStarted() || s.IsStartInProgress() || s.IsPaused() || s.IsPauseInProgress() || s.IsDeleted() || s.IsDeleteInProgress()
+	return s.IsDeployed() || s.IsPaused() || s.IsDeleted()
+}
+
+func (s *DeploymentStatus) IsInProgress() bool {
+	return s.IsDeploymentInProgress() || s.IsPauseInProgress() || s.IsDeleteInProgress()
 }
 
 func (s *DeploymentStatus) IsNotOk() bool {
 	return s.IsStartError() || s.IsPauseError() || s.IsDeleteError()
 }
 
-func (s *DeploymentStatus) IsStarted() bool {
-	return s.Status == "STARTED"
+func (s *DeploymentStatus) IsDeployed() bool {
+	return s.Status == "DEPLOYED"
 }
 
 func (s *DeploymentStatus) IsPaused() bool {
@@ -73,8 +77,8 @@ func (s *DeploymentStatus) IsDeleted() bool {
 	return s.Status == "DELETED"
 }
 
-func (s *DeploymentStatus) IsStartInProgress() bool {
-	return s.Status == "START_IN_PROGRESS"
+func (s *DeploymentStatus) IsDeploymentInProgress() bool {
+	return s.Status == "DEPLOYMENT_IN_PROGRESS"
 }
 
 func (s *DeploymentStatus) IsPauseInProgress() bool {
@@ -86,7 +90,7 @@ func (s *DeploymentStatus) IsDeleteInProgress() bool {
 }
 
 func (s *DeploymentStatus) IsStartError() bool {
-	return s.Status == "START_ERROR"
+	return s.Status == "DEPLOYMENT_ERROR"
 }
 
 func (s *DeploymentStatus) IsPauseError() bool {
@@ -102,7 +106,7 @@ func (s *DeploymentStatus) GetColoredStatus() string {
 		return color.RedString("unknown")
 	}
 
-	if s.IsStarted() || s.IsPaused() || s.IsDeleted() {
+	if s.IsOk() {
 		return color.GreenString(s.StatusForHuman.Long)
 	} else if s.IsNotOk() {
 		return color.RedString(s.StatusForHuman.Long)
