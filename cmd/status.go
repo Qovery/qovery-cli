@@ -100,7 +100,7 @@ var statusCmd = &cobra.Command{
 		}
 
 		if !WatchFlag {
-			if environment.Status.IsOk() && !DeploymentOutputFlag {
+			if (environment.Status.IsInProgress() || environment.Status.IsOk()) && !DeploymentOutputFlag {
 				// no error
 				return
 			}
@@ -113,7 +113,7 @@ var statusCmd = &cobra.Command{
 
 			deploymentStatuses := io.ListDeploymentStatuses(projectId, environment.Id, deployments.Results[0].Id)
 
-			if !environment.Status.IsOk() {
+			if environment.Status.IsNotOk() {
 				fmt.Printf("%s", color.RedString("Something goes wrong:"))
 			}
 
