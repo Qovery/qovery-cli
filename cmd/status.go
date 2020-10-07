@@ -40,9 +40,9 @@ var statusCmd = &cobra.Command{
 				printStatusMessageLine(status)
 			}
 
-			if environment.Status.IsTerminated() {
+			if environment.Status.IsStarted() {
 				printEndOfDeploymentMessage()
-			} else if environment.Status.IsTerminatedWithError() {
+			} else if environment.Status.IsNotOk() {
 				printEndOfDeploymentErrorMessage()
 			} else {
 				for {
@@ -61,10 +61,10 @@ var statusCmd = &cobra.Command{
 					}
 
 					environment = io.GetEnvironmentByName(projectId, BranchName)
-					if environment.Status.IsTerminated() {
+					if environment.Status.IsStarted() {
 						printEndOfDeploymentMessage()
 						break
-					} else if environment.Status.IsTerminatedWithError() {
+					} else if environment.Status.IsStartError() {
 						printEndOfDeploymentErrorMessage()
 						break
 					}

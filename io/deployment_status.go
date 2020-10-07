@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -16,13 +15,18 @@ type DeploymentStatuses struct {
 }
 
 type DeploymentStatus struct {
-	Id        string    `json:"id"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
-	Scope     string    `json:"scope"`
-	Step      string    `json:"step"`
-	Level     string    `json:"level"`
-	Message   string    `json:"message"`
+	Id             string         `json:"id"`
+	Status         string         `json:"status"`
+	CreatedAt      time.Time      `json:"created_at"`
+	Scope          string         `json:"scope"`
+	Level          string         `json:"level"`
+	Message        string         `json:"message"`
+	StatusForHuman StatusForHuman `json:"status_for_human"`
+}
+
+type StatusForHuman struct {
+	Long  string `json:"long"`
+	Short string `json:"short"`
 }
 
 func (s *DeploymentStatus) GetKind() string {
@@ -50,19 +54,47 @@ func (s *DeploymentStatus) IsLevelDebug() bool {
 }
 
 func (s *DeploymentStatus) IsOk() bool {
-	return s.IsTerminated() || s.IsRunning()
+	return s.IsStarted() || s.IsStartInProgress() || s.IsPaused() || s.IsPauseInProgress() || s.IsDeleted() || s.IsDeleteInProgress()
 }
 
-func (s *DeploymentStatus) IsTerminated() bool {
-	return s.Status == "TERMINATED"
+func (s *DeploymentStatus) IsNotOk() bool {
+	return s.IsStartError() || s.IsPauseError() || s.IsDeleteError()
 }
 
-func (s *DeploymentStatus) IsRunning() bool {
-	return s.Status == "RUNNING"
+func (s *DeploymentStatus) IsStarted() bool {
+	return s.Status == "STARTED"
 }
 
-func (s *DeploymentStatus) IsTerminatedWithError() bool {
-	return s.Status == "TERMINATED_WITH_ERROR"
+func (s *DeploymentStatus) IsPaused() bool {
+	return s.Status == "PAUSED"
+}
+
+func (s *DeploymentStatus) IsDeleted() bool {
+	return s.Status == "DELETED"
+}
+
+func (s *DeploymentStatus) IsStartInProgress() bool {
+	return s.Status == "START_IN_PROGRESS"
+}
+
+func (s *DeploymentStatus) IsPauseInProgress() bool {
+	return s.Status == "PAUSE_IN_PROGRESS"
+}
+
+func (s *DeploymentStatus) IsDeleteInProgress() bool {
+	return s.Status == "DELETE_IN_PROGRESS"
+}
+
+func (s *DeploymentStatus) IsStartError() bool {
+	return s.Status == "START_ERROR"
+}
+
+func (s *DeploymentStatus) IsPauseError() bool {
+	return s.Status == "PAUSE_ERROR"
+}
+
+func (s *DeploymentStatus) IsDeleteError() bool {
+	return s.Status == "DELETE_ERROR"
 }
 
 func (s *DeploymentStatus) GetColoredStatus() string {
@@ -70,14 +102,14 @@ func (s *DeploymentStatus) GetColoredStatus() string {
 		return color.RedString("unknown")
 	}
 
-	if s.IsTerminated() {
-		return color.GreenString(strings.ToLower("running"))
-	} else if s.IsTerminatedWithError() {
-		return color.RedString(strings.ToLower("an error occurred"))
+	if s.IsStarted() || s.IsPaused() || s.IsDeleted() {
+		return color.GreenString(s.StatusForHuman.Long)
+	} else if s.IsNotOk() {
+		return color.RedString(s.StatusForHuman.Long)
 	}
 
 	// running and other states are yellow
-	return color.YellowString(strings.ToLower("deployment in progress"))
+	return color.YellowString(s.StatusForHuman.Long)
 }
 
 func (s *DeploymentStatus) GetColoredMessage() string {
