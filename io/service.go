@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Services struct {
@@ -14,6 +15,7 @@ type Services struct {
 
 type Service struct {
 	Id           string           `json:"id"`
+	UpdatedAt    time.Time        `json:"updated_at"`
 	Name         string           `json:"name"`
 	Type         string           `json:"type"`
 	Version      string           `json:"version"`

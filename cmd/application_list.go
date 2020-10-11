@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/xeonx/timeago"
 	"os"
 	"qovery.go/io"
 	"strings"
@@ -44,10 +45,10 @@ func ShowApplicationListWithProjectAndBranchNames(projectName string, branchName
 
 func ShowApplicationList(applications []io.Application) {
 	table := io.GetTable()
-	table.SetHeader([]string{"application name", "status", "databases"})
+	table.SetHeader([]string{"application name", "status", "last update", "databases"})
 
 	if len(applications) == 0 {
-		table.Append([]string{"", "", ""})
+		table.Append([]string{"", "", "", ""})
 	} else {
 		for _, a := range applications {
 			databaseName := "none"
@@ -58,6 +59,7 @@ func ShowApplicationList(applications []io.Application) {
 			table.Append([]string{
 				a.Name,
 				a.Status.GetColoredStatus(),
+				timeago.English.Format(a.UpdatedAt),
 				databaseName,
 			})
 		}

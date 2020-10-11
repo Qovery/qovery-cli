@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/xeonx/timeago"
 	"os"
 	"qovery.go/io"
 )
@@ -45,10 +46,10 @@ func ShowDatabaseListWithProjectAndBranchNames(projectName string, branchName st
 
 func ShowDatabaseList(databases []io.Service, showCredentials bool) {
 	table := io.GetTable()
-	table.SetHeader([]string{"database name", "status", "type", "version", "endpoint", "port", "username", "password"})
+	table.SetHeader([]string{"database name", "status", "last update", "type", "version", "endpoint", "port", "username", "password"})
 
 	if len(databases) == 0 {
-		table.Append([]string{"", "", "", "", "", "", "", ""})
+		table.Append([]string{"", "", "", "", "", "", "", "", ""})
 	} else {
 		for _, a := range databases {
 			endpoint := "<hidden>"
@@ -66,6 +67,7 @@ func ShowDatabaseList(databases []io.Service, showCredentials bool) {
 			table.Append([]string{
 				a.Name,
 				a.Status.GetColoredStatus(),
+				timeago.English.Format(a.UpdatedAt),
 				a.Type,
 				a.Version,
 				endpoint,
