@@ -65,7 +65,6 @@ func runInit() {
 		projectTemplate := io.GetTemplate(templateFlag)
 		p.Application.Name = templateFlag
 		p.Application.Project = askForProject()
-		p.Application.CloudRegion = askForCloudRegion()
 		p.Routers = projectTemplate.QoveryYML.Routers
 		p.Databases = projectTemplate.QoveryYML.Databases
 		for routerIdx, router := range p.Routers {
@@ -105,9 +104,8 @@ func runInit() {
 	count := 0
 	for {
 		p.Application.Project = askForProject()
-		p.Application.CloudRegion = askForCloudRegion()
 
-		if p.Application.Project != "" && p.Application.CloudRegion != "" {
+		if p.Application.Project != "" {
 			break
 		}
 
@@ -305,34 +303,6 @@ func askForProject() string {
 	}
 
 	return projectName
-}
-
-func askForCloudRegion() string {
-	clouds := io.ListCloudProviders().Results
-
-	keyByDescription := make(map[string]string)
-	var names []string
-
-	for _, c := range clouds {
-		for _, r := range c.Regions {
-			key := fmt.Sprintf("%s/%s", c.Name, r.FullName)
-			name := fmt.Sprintf("%s | %s (%s)", strings.ToUpper(c.Name), r.Description, key)
-			names = append(names, name)
-			keyByDescription[name] = key
-		}
-	}
-
-	sort.Strings(names)
-
-	prompt := promptui.Select{
-		Label: "Choose the region where you want to host your project and applications",
-		Size:  len(names),
-		Items: names,
-	}
-
-	_, nameChoice, _ := prompt.Run()
-
-	return keyByDescription[nameChoice]
 }
 
 func addDatabaseWizard() *io.QoveryYMLDatabase {

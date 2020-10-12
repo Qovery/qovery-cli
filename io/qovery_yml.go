@@ -20,7 +20,6 @@ type QoveryYML struct {
 type QoveryYMLApplication struct {
 	Name               string `yaml:"name,omitempty"`
 	Project            string `yaml:"project,omitempty"`
-	CloudRegion        string `yaml:"cloud_region,omitempty"`
 	PubliclyAccessible bool   `yaml:"publicly_accessible,omitempty"`
 	Dockerfile         string `yaml:"dockerfile,omitempty"`
 }
