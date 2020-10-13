@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"github.com/xeonx/timeago"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"qovery.go/io"
+	"strings"
 )
 
 var deployListCmd = &cobra.Command{
@@ -42,14 +44,14 @@ func init() {
 
 func ShowDeploymentList(projectName string, branchName string, applicationName string) {
 	table := io.GetTable()
-	table.SetHeader([]string{"branch", "commit date", "commit id", "commit author", "deployed"})
+	table.SetHeader([]string{"branch", "commit date", "commit id", "commit message", "commit author", "deployed"})
 
 	project := io.GetProjectByName(projectName)
 	environment := io.GetEnvironmentByName(project.Id, branchName)
 	application := io.GetApplicationByName(project.Id, environment.Id, applicationName)
 
 	if environment.Id == "" {
-		table.Append([]string{"", "", "", "", ""})
+		table.Append([]string{"", "", "", "", "", ""})
 		table.Render()
 		return
 	}
@@ -58,11 +60,13 @@ func ShowDeploymentList(projectName string, branchName string, applicationName s
 
 	// TODO param for n last commits
 	for _, commit := range io.ListCommits(10) {
+		checkChar := ""
 		if deployedApplication.Commit == commit.ID().String() {
-			table.Append([]string{branchName, commit.Author.When.String(), commit.ID().String(), commit.Author.Name, color.GreenString("✓")})
-		} else {
-			table.Append([]string{branchName, commit.Author.When.String(), commit.ID().String(), commit.Author.Name, ""})
+			checkChar = color.GreenString("✓")
 		}
+
+		table.Append([]string{branchName, timeago.English.Format(commit.Author.When), commit.ID().String(),
+			strings.TrimSpace(commit.Message), commit.Author.Name, checkChar})
 	}
 	table.Render()
 }
