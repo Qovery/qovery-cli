@@ -45,10 +45,10 @@ func ShowApplicationListWithProjectAndBranchNames(projectName string, branchName
 
 func ShowApplicationList(applications []io.Application) {
 	table := io.GetTable()
-	table.SetHeader([]string{"application name", "status", "last update", "databases"})
+	table.SetHeader([]string{"application name", "status", "last update", "cpu", "ram", "databases"})
 
 	if len(applications) == 0 {
-		table.Append([]string{"", "", "", ""})
+		table.Append([]string{"", "", "", "", "", ""})
 	} else {
 		for _, a := range applications {
 			databaseName := "none"
@@ -60,6 +60,8 @@ func ShowApplicationList(applications []io.Application) {
 				a.Name,
 				a.Status.GetColoredStatus(),
 				timeago.English.Format(a.UpdatedAt),
+				a.Cpu,
+				a.Ram(),
 				databaseName,
 			})
 		}
