@@ -25,7 +25,9 @@ type Project struct {
 func GetProjectByName(name string) Project {
 	var projects []Project
 
-	for _, p := range ListProjects().Results {
+	results := ListProjects().Results
+
+	for _, p := range results {
 		if p.Name == name {
 			projects = append(projects, p)
 		}
@@ -79,7 +81,33 @@ func ListProjects() Projects {
 
 	_ = json.Unmarshal(body, &p)
 
-	return p
+	yml, err := CurrentQoveryYML()
+
+	if err != nil {
+		return Projects{}
+	}
+
+	filteredProjects := Projects{}
+
+	var org Organization
+
+	if yml.Application.Organization == "" {
+		org = GetPrivateOrganization()
+		for _, t := range p.Results {
+			if t.Organization.Id == org.Id {
+				filteredProjects.Results = append(filteredProjects.Results, t)
+			}
+		}
+	} else {
+		org = Organization{Name: yml.Application.Organization}
+		for _, t := range p.Results {
+			if t.Organization.Name == org.Name {
+				filteredProjects.Results = append(filteredProjects.Results, t)
+			}
+		}
+	}
+
+	return filteredProjects
 }
 
 func RenameProject(project Project, newName string) Project {

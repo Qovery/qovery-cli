@@ -22,6 +22,7 @@ type QoveryYMLApplication struct {
 	Project            string `yaml:"project,omitempty"`
 	PubliclyAccessible bool   `yaml:"publicly_accessible,omitempty"`
 	Dockerfile         string `yaml:"dockerfile,omitempty"`
+	Organization       string `yaml:"organization,omitempty"`
 }
 
 func (q *QoveryYMLApplication) GetSanitizeName() string {
