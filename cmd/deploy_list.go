@@ -10,6 +10,7 @@ import (
 	"os"
 	"qovery.go/io"
 	"strings"
+	"time"
 )
 
 var deployListCmd = &cobra.Command{
@@ -56,26 +57,30 @@ func ShowDeploymentList(projectName string, branchName string, applicationName s
 		return
 	}
 
-	var deployedApplication = getDeployedCommit(project.Id, environment.Id, application.Id)
+	var commits = getApplicationCommits(project.Id, environment.Id, application.Id)
 
-	// TODO param for n last commits
-	for _, commit := range io.ListCommits(10) {
+	for _, commit := range commits {
 		checkChar := ""
-		if deployedApplication.Commit == commit.ID().String() {
+		if commit.Deployed {
 			checkChar = color.GreenString("✓")
 		}
 
-		table.Append([]string{branchName, timeago.English.Format(commit.Author.When), commit.ID().String(),
-			strings.TrimSpace(commit.Message), commit.Author.Name, checkChar})
+		table.Append([]string{branchName, timeago.English.Format(commit.Timestamp), commit.Sha,
+			strings.TrimSpace(commit.Message), commit.AuthorName, checkChar})
+
 	}
 	table.Render()
 }
 
-type LastDeployedApplication struct {
-	Commit string `json:"commit"`
+type ApplicationCommit struct {
+	Sha        string    `json:"sha"`
+	Deployed   bool      `json:"deployed"`
+	Timestamp  time.Time `json:"timestamp"`
+	Message    string    `json:"message"`
+	AuthorName string    `json:"author_name"`
 }
 
-func getDeployedCommit(project string, environment string, application string) LastDeployedApplication {
+func getApplicationCommits(project string, environment string, application string) []ApplicationCommit {
 	url := io.DefaultRootUrl + "/project/" + project + "/environment/" + environment + "/application/" + application + "/deployed"
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", url, nil)
@@ -88,7 +93,7 @@ func getDeployedCommit(project string, environment string, application string) L
 		os.Exit(1)
 	}
 
-	r := LastDeployedApplication{}
+	var r []ApplicationCommit
 	body, _ := ioutil.ReadAll(res.Body)
 	_ = json.Unmarshal(body, &r)
 
