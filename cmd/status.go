@@ -18,17 +18,20 @@ var statusCmd = &cobra.Command{
 
 	qovery status`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if !hasFlagChanged(cmd) {
-			BranchName = io.CurrentBranchName()
-			qoveryYML, err := io.CurrentQoveryYML()
-			if err != nil {
-				io.PrintError("No qovery configuration file found")
-				os.Exit(1)
-			}
+		qoveryYML, err := io.CurrentQoveryYML()
+		if err == nil {
 			ProjectName = qoveryYML.Application.Project
+
+			if qoveryYML.Application.Organization != "" {
+				OrganizationName = qoveryYML.Application.Organization
+			}
 		}
 
-		projectId := io.GetProjectByName(ProjectName).Id
+		if !hasFlagChanged(cmd) {
+			BranchName = io.CurrentBranchName()
+		}
+
+		projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
 
 		if WatchFlag {
 			environment := io.GetEnvironmentByName(projectId, BranchName)
@@ -187,6 +190,7 @@ func showOutputErrorMessage(statuses []io.DeploymentStatus) {
 }
 
 func init() {
+	statusCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
 	statusCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	statusCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	statusCmd.PersistentFlags().BoolVarP(&ShowCredentials, "credentials", "c", false, "Show credentials")

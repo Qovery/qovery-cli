@@ -21,6 +21,7 @@ var projectEnvDeleteCmd = &cobra.Command{
 				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
 		}
 
@@ -29,7 +30,7 @@ var projectEnvDeleteCmd = &cobra.Command{
 			return
 		}
 
-		p := io.GetProjectByName(ProjectName)
+		p := io.GetProjectByName(ProjectName, OrganizationName)
 		ev := io.ListProjectEnvironmentVariables(p.Id).GetEnvironmentVariableByKey(args[0])
 
 		io.DeleteProjectEnvironmentVariable(ev.Id, p.Id)
@@ -39,6 +40,7 @@ var projectEnvDeleteCmd = &cobra.Command{
 }
 
 func init() {
+	projectEnvDeleteCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
 	projectEnvDeleteCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 
 	projectEnvCmd.AddCommand(projectEnvDeleteCmd)

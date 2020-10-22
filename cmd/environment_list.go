@@ -22,9 +22,10 @@ var environmentListCmd = &cobra.Command{
 				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
 		}
-		environments := io.ListEnvironments(io.GetProjectByName(ProjectName).Id)
+		environments := io.ListEnvironments(io.GetProjectByName(ProjectName, OrganizationName).Id)
 
 		table := io.GetTable()
 		table.SetHeader([]string{"branch", "status", "endpoints", "region", "applications", "databases"})

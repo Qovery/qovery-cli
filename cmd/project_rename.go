@@ -21,6 +21,7 @@ qovery project rename [new_name] - renames current project to new_name
 			io.PrintError("No qovery configuration file found")
 			os.Exit(1)
 		}
+		OrganizationName = qoveryYML.Application.Organization
 		ProjectName = qoveryYML.Application.Project
 
 		if len(args) != 1 {
@@ -28,7 +29,7 @@ qovery project rename [new_name] - renames current project to new_name
 			return
 		}
 
-		p := io.GetProjectByName(ProjectName)
+		p := io.GetProjectByName(ProjectName, OrganizationName)
 
 		project := io.RenameProject(p, args[0])
 
@@ -44,5 +45,8 @@ qovery project rename [new_name] - renames current project to new_name
 }
 
 func init() {
+	projectRenameCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
+	projectRenameCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
+
 	projectCmd.AddCommand(projectRenameCmd)
 }

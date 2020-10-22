@@ -22,14 +22,16 @@ var logCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			ApplicationName = qoveryYML.Application.GetSanitizeName()
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		ShowApplicationLog(ProjectName, BranchName, ApplicationName, Tail, FollowFlag)
+		ShowApplicationLog(OrganizationName, ProjectName, BranchName, ApplicationName, Tail, FollowFlag)
 	},
 }
 
 func init() {
+	logCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
 	logCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	logCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	logCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")

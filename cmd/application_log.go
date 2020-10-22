@@ -20,15 +20,17 @@ var applicationLogCmd = &cobra.Command{
 				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
-			ApplicationName = qoveryYML.Application.GetSanitizeName()
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
+			ApplicationName = qoveryYML.Application.GetSanitizeName()
 		}
 
-		ShowApplicationLog(ProjectName, BranchName, ApplicationName, Tail, FollowFlag)
+		ShowApplicationLog(OrganizationName, ProjectName, BranchName, ApplicationName, Tail, FollowFlag)
 	},
 }
 
 func init() {
+	applicationLogCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
 	applicationLogCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	applicationLogCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	applicationLogCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
@@ -39,8 +41,8 @@ func init() {
 	applicationCmd.AddCommand(applicationLogCmd)
 }
 
-func ShowApplicationLog(projectName string, branchName string, applicationName string, lastLines int, follow bool) {
-	projectId := io.GetProjectByName(projectName).Id
+func ShowApplicationLog(organizationName string, projectName string, branchName string, applicationName string, lastLines int, follow bool) {
+	projectId := io.GetProjectByName(projectName, organizationName).Id
 	environment := io.GetEnvironmentByName(projectId, branchName)
 	application := io.GetApplicationByName(projectId, environment.Id, applicationName)
 	io.ListApplicationLogs(lastLines, follow, projectId, environment.Id, application.Id)

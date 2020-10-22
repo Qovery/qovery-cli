@@ -27,15 +27,17 @@ var deployListCmd = &cobra.Command{
 				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
 			ApplicationName = qoveryYML.Application.GetSanitizeName()
 		}
 
-		ShowDeploymentList(ProjectName, BranchName, ApplicationName)
+		ShowDeploymentList(OrganizationName, ProjectName, BranchName, ApplicationName)
 	},
 }
 
 func init() {
+	deployListCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
 	deployListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	deployListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	deployListCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
@@ -43,11 +45,11 @@ func init() {
 	deployCmd.AddCommand(deployListCmd)
 }
 
-func ShowDeploymentList(projectName string, branchName string, applicationName string) {
+func ShowDeploymentList(organizationName string, projectName string, branchName string, applicationName string) {
 	table := io.GetTable()
 	table.SetHeader([]string{"branch", "commit date", "commit id", "commit message", "commit author", "deployed"})
 
-	project := io.GetProjectByName(projectName)
+	project := io.GetProjectByName(projectName, organizationName)
 	environment := io.GetEnvironmentByName(project.Id, branchName)
 	application := io.GetApplicationByName(project.Id, environment.Id, applicationName)
 

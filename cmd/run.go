@@ -36,7 +36,8 @@ var runCmd = &cobra.Command{
 		}
 		branchName := io.CurrentBranchName()
 		ApplicationName = qoveryYML.Application.GetSanitizeName()
-		projectName := qoveryYML.Application.Project
+		ProjectName := qoveryYML.Application.Project
+		OrganizationName := qoveryYML.Application.Organization
 
 		dockerClient, _ := client.NewClientWithOpts()
 		_, err = dockerClient.ImageList(context.Background(), types.ImageListOptions{})
@@ -46,7 +47,7 @@ var runCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		project := io.GetProjectByName(projectName)
+		project := io.GetProjectByName(ProjectName, OrganizationName)
 		if project.Id == "" {
 			io.PrintError("The project does not exist. Are you well authenticated with the right user? Do 'qovery auth' to be sure")
 			os.Exit(1)
@@ -66,7 +67,7 @@ var runCmd = &cobra.Command{
 					var environmentVariables []string
 					buildArgs := make(map[string]*string)
 
-					evs := ListEnvironmentVariables(projectName, branchName, ApplicationName)
+					evs := ListEnvironmentVariables(OrganizationName, ProjectName, branchName, ApplicationName)
 
 					for i := range evs {
 						ev := evs[i]

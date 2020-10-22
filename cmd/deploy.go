@@ -22,6 +22,7 @@ var deployCmd = &cobra.Command{
 				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
 			ApplicationName = qoveryYML.Application.GetSanitizeName()
 		}
@@ -33,7 +34,7 @@ var deployCmd = &cobra.Command{
 
 		commitId := args[0]
 
-		projectId := io.GetProjectByName(ProjectName).Id
+		projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
 		environmentId := io.GetEnvironmentByName(projectId, BranchName).Id
 		applicationId := io.GetApplicationByName(projectId, environmentId, ApplicationName).Id
 
@@ -44,6 +45,7 @@ var deployCmd = &cobra.Command{
 }
 
 func init() {
+	deployCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
 	deployCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	deployCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	deployCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")

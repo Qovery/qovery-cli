@@ -22,14 +22,16 @@ var databaseListCmd = &cobra.Command{
 				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		ShowDatabaseListWithProjectAndBranchNames(ProjectName, BranchName, ShowCredentials)
+		ShowDatabaseListWithProjectAndBranchNames(OrganizationName, ProjectName, BranchName, ShowCredentials)
 	},
 }
 
 func init() {
+	databaseListCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
 	databaseListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	databaseListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	databaseListCmd.PersistentFlags().BoolVarP(&ShowCredentials, "credentials", "c", false, "Show credentials")
@@ -37,8 +39,8 @@ func init() {
 	databaseCmd.AddCommand(databaseListCmd)
 }
 
-func ShowDatabaseListWithProjectAndBranchNames(projectName string, branchName string, showCredentials bool) {
-	projectId := io.GetProjectByName(projectName).Id
+func ShowDatabaseListWithProjectAndBranchNames(organizationName string, projectName string, branchName string, showCredentials bool) {
+	projectId := io.GetProjectByName(projectName, organizationName).Id
 	environment := io.GetEnvironmentByName(projectId, branchName)
 	databases := io.ListDatabases(projectId, environment.Id)
 	ShowDatabaseList(databases.Results, showCredentials)

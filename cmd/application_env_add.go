@@ -23,6 +23,7 @@ var applicationEnvAddCmd = &cobra.Command{
 			}
 			BranchName = io.CurrentBranchName()
 			ApplicationName = qoveryYML.Application.GetSanitizeName()
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
 		}
 
@@ -31,7 +32,7 @@ var applicationEnvAddCmd = &cobra.Command{
 			return
 		}
 
-		projectId := io.GetProjectByName(ProjectName).Id
+		projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
 		environment := io.GetEnvironmentByName(projectId, BranchName)
 		application := io.GetApplicationByName(projectId, environment.Id, ApplicationName)
 		io.CreateApplicationEnvironmentVariable(io.EnvironmentVariable{Key: args[0], Value: args[1]}, projectId,

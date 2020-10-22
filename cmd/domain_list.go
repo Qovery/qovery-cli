@@ -22,24 +22,26 @@ var domainListCmd = &cobra.Command{
 				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		ShowDomainList(ProjectName, BranchName)
+		ShowDomainList(OrganizationName, ProjectName, BranchName)
 	},
 }
 
 func init() {
+	domainListCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
 	domainListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	domainListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	domainCmd.AddCommand(domainListCmd)
 }
 
-func ShowDomainList(projectName string, branchName string) {
+func ShowDomainList(organizationName string, projectName string, branchName string) {
 	table := io.GetTable()
 	table.SetHeader([]string{"branch", "domain", "status", "validation domain", "router name"})
 
-	projectId := io.GetProjectByName(projectName).Id
+	projectId := io.GetProjectByName(projectName, organizationName).Id
 	environment := io.GetEnvironmentByName(projectId, branchName)
 
 	routers := io.ListRouters(projectId, environment.Id)

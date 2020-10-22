@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-func ShowEnvironmentVariablesByProjectName(projectName string, showCredentials bool, outputEnvironmentVariables bool) {
-	projectId := io.GetProjectByName(projectName).Id
+func ShowEnvironmentVariablesByProjectName(organizationName string, projectName string, showCredentials bool, outputEnvironmentVariables bool) {
+	projectId := io.GetProjectByName(projectName, organizationName).Id
 	evs := io.ListProjectEnvironmentVariables(projectId)
 
 	if outputEnvironmentVariables {
@@ -32,8 +32,8 @@ func getStaticBuiltInEnvironmentVariables(branchName string) []io.EnvironmentVar
 	}
 }
 
-func ShowEnvironmentVariablesByBranchName(projectName string, branchName string, showCredentials bool, outputEnvironmentVariables bool) {
-	projectId := io.GetProjectByName(projectName).Id
+func ShowEnvironmentVariablesByBranchName(organizationName string, projectName string, branchName string, showCredentials bool, outputEnvironmentVariables bool) {
+	projectId := io.GetProjectByName(projectName, organizationName).Id
 
 	var evs []io.EnvironmentVariable
 
@@ -49,8 +49,8 @@ func ShowEnvironmentVariablesByBranchName(projectName string, branchName string,
 	ShowEnvironmentVariablesWithTableFormat(evs, showCredentials)
 }
 
-func ShowEnvironmentVariablesByApplicationName(projectName string, branchName string, applicationName string, showCredentials bool, outputEnvironmentVariables bool) {
-	evs := ListEnvironmentVariables(projectName, branchName, applicationName)
+func ShowEnvironmentVariablesByApplicationName(organizationName string, projectName string, branchName string, applicationName string, showCredentials bool, outputEnvironmentVariables bool) {
+	evs := ListEnvironmentVariables(organizationName, projectName, branchName, applicationName)
 
 	if outputEnvironmentVariables {
 		ShowEnvironmentVariables(evs, showCredentials)
@@ -60,8 +60,8 @@ func ShowEnvironmentVariablesByApplicationName(projectName string, branchName st
 	ShowEnvironmentVariablesWithTableFormat(evs, showCredentials)
 }
 
-func ListEnvironmentVariables(projectName string, branchName string, applicationName string) []io.EnvironmentVariable {
-	projectId := io.GetProjectByName(projectName).Id
+func ListEnvironmentVariables(organizationName string, projectName string, branchName string, applicationName string) []io.EnvironmentVariable {
+	projectId := io.GetProjectByName(projectName, organizationName).Id
 	environment := io.GetEnvironmentByName(projectId, branchName)
 	application := io.GetApplicationByName(projectId, environment.Id, applicationName)
 

@@ -22,10 +22,10 @@ type Project struct {
 	Organization Organization `json:"organization"`
 }
 
-func GetProjectByName(name string) Project {
+func GetProjectByName(name string, organizationName string) Project {
 	var projects []Project
 
-	results := ListProjects().Results
+	results := ListProjects(organizationName).Results
 
 	for _, p := range results {
 		if p.Name == name {
@@ -57,7 +57,7 @@ func GetProjectByName(name string) Project {
 	return projects[0] // TODO temp
 }
 
-func ListProjects() Projects {
+func ListProjects(organizationName string) Projects {
 	p := Projects{}
 	CheckAuthenticationOrQuitWithMessage()
 
@@ -81,29 +81,10 @@ func ListProjects() Projects {
 
 	_ = json.Unmarshal(body, &p)
 
-	yml, err := CurrentQoveryYML()
-
-	if err != nil {
-		return Projects{}
-	}
-
 	filteredProjects := Projects{}
-
-	var org Organization
-
-	if yml.Application.Organization == "" {
-		org = GetPrivateOrganization()
-		for _, t := range p.Results {
-			if t.Organization.Id == org.Id {
-				filteredProjects.Results = append(filteredProjects.Results, t)
-			}
-		}
-	} else {
-		org = Organization{Name: yml.Application.Organization}
-		for _, t := range p.Results {
-			if t.Organization.Name == org.Name {
-				filteredProjects.Results = append(filteredProjects.Results, t)
-			}
+	for _, p := range p.Results {
+		if p.Organization.DisplayName == organizationName {
+			filteredProjects.Results = append(filteredProjects.Results, p)
 		}
 	}
 

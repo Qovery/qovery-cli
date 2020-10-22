@@ -21,6 +21,7 @@ var projectEnvAddCmd = &cobra.Command{
 				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
 		}
 
@@ -29,7 +30,7 @@ var projectEnvAddCmd = &cobra.Command{
 			return
 		}
 
-		p := io.GetProjectByName(ProjectName)
+		p := io.GetProjectByName(ProjectName, OrganizationName)
 		io.CreateProjectEnvironmentVariable(io.EnvironmentVariable{Key: args[0], Value: args[1]}, p.Id)
 
 		fmt.Println(color.GreenString("ok"))
@@ -37,6 +38,7 @@ var projectEnvAddCmd = &cobra.Command{
 }
 
 func init() {
+	projectEnvAddCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
 	projectEnvAddCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 
 	projectEnvCmd.AddCommand(projectEnvAddCmd)

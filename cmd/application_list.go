@@ -23,21 +23,23 @@ var applicationListCmd = &cobra.Command{
 				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		ShowApplicationListWithProjectAndBranchNames(ProjectName, BranchName)
+		ShowApplicationListWithProjectAndBranchNames(OrganizationName, ProjectName, BranchName)
 	},
 }
 
 func init() {
+	applicationListCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
 	applicationListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	applicationListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	applicationCmd.AddCommand(applicationListCmd)
 }
 
-func ShowApplicationListWithProjectAndBranchNames(projectName string, branchName string) {
-	projectId := io.GetProjectByName(projectName).Id
+func ShowApplicationListWithProjectAndBranchNames(organizationName string, projectName string, branchName string) {
+	projectId := io.GetProjectByName(projectName, organizationName).Id
 	environment := io.GetEnvironmentByName(projectId, branchName)
 	applications := io.ListApplications(projectId, environment.Id)
 	ShowApplicationList(applications.Results)

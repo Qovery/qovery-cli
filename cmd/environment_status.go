@@ -23,22 +23,24 @@ var environmentStatusCmd = &cobra.Command{
 				io.PrintError("No qovery configuration file found")
 				os.Exit(1)
 			}
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
 		}
 
-		ShowEnvironmentStatusWithProjectAndBranchNames(ProjectName, BranchName)
+		ShowEnvironmentStatusWithProjectAndBranchNames(OrganizationName, ProjectName, BranchName)
 	},
 }
 
 func init() {
+	environmentStatusCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
 	environmentStatusCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	environmentStatusCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 
 	environmentCmd.AddCommand(environmentStatusCmd)
 }
 
-func ShowEnvironmentStatusWithProjectAndBranchNames(projectName string, branchName string) bool {
-	environment := io.GetEnvironmentByName(io.GetProjectByName(projectName).Id, branchName)
+func ShowEnvironmentStatusWithProjectAndBranchNames(organizationName string, projectName string, branchName string) bool {
+	environment := io.GetEnvironmentByName(io.GetProjectByName(projectName, organizationName).Id, branchName)
 	return ShowEnvironmentStatus(environment)
 }
 

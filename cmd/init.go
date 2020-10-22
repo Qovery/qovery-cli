@@ -64,7 +64,8 @@ func runInit() {
 	if templateFlag != "" {
 		projectTemplate := io.GetTemplate(templateFlag)
 		p.Application.Name = templateFlag
-		p.Application.Project = askForProject()
+		p.Application.Organization = askForOrganization()
+		p.Application.Project = askForProject(p.Application.Organization)
 		p.Routers = projectTemplate.QoveryYML.Routers
 		p.Databases = projectTemplate.QoveryYML.Databases
 		for routerIdx, router := range p.Routers {
@@ -103,7 +104,13 @@ func runInit() {
 
 	count := 0
 	for {
-		p.Application.Project = askForProject()
+		p.Application.Organization = askForOrganization()
+
+		if p.Application.Organization != "" {
+			break
+		}
+
+		p.Application.Project = askForProject(p.Application.Organization)
 
 		if p.Application.Project != "" {
 			break
@@ -254,9 +261,37 @@ func askForTemplate() io.Template {
 	return io.GetTemplate(templateName)
 }
 
-func askForProject() string {
+func askForOrganization() string {
+	// select organizations from existing ones or ask to create a new one; then take the ID
+	organizations := io.ListOrganizations().Results
+
+	if len(organizations) == 1 {
+		return organizations[0].DisplayName
+	} else if len(organizations) == 0 {
+		return "QoveryCommunity"
+	}
+
+	var organizationNames []string
+	for _, v := range organizations {
+		organizationNames = append(organizationNames, v.Name)
+	}
+
+	sort.Strings(organizationNames)
+
+	prompt := promptui.Select{
+		Label: "Choose the organization you want",
+		Size:  len(organizationNames),
+		Items: organizationNames,
+	}
+
+	_, organizationName, _ := prompt.Run()
+
+	return organizationName
+}
+
+func askForProject(organizationName string) string {
 	// select project from existing ones or ask to create a new one; then take the ID
-	projects := io.ListProjects().Results
+	projects := io.ListProjects(organizationName).Results
 
 	var projectNames []string
 	for _, v := range projects {
@@ -285,7 +320,7 @@ func askForProject() string {
 			prompt := promptui.Prompt{Label: "Enter the project name"}
 
 			projectName, _ = prompt.Run()
-			if io.GetProjectByName(projectName).Id == "" {
+			if io.GetProjectByName(projectName, organizationName).Id == "" {
 				break
 			}
 

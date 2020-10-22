@@ -23,6 +23,7 @@ var applicationEnvDeleteCmd = &cobra.Command{
 			}
 			BranchName = io.CurrentBranchName()
 			ApplicationName = qoveryYML.Application.GetSanitizeName()
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
 		}
 
@@ -31,7 +32,7 @@ var applicationEnvDeleteCmd = &cobra.Command{
 			return
 		}
 
-		projectId := io.GetProjectByName(ProjectName).Id
+		projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
 		environment := io.GetEnvironmentByName(projectId, BranchName)
 		application := io.GetApplicationByName(projectId, environment.Id, ApplicationName)
 
@@ -43,6 +44,7 @@ var applicationEnvDeleteCmd = &cobra.Command{
 }
 
 func init() {
+	applicationEnvDeleteCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
 	applicationEnvDeleteCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	applicationEnvDeleteCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	applicationEnvDeleteCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")

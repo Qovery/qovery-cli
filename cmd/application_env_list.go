@@ -22,6 +22,7 @@ var applicationEnvListCmd = &cobra.Command{
 			}
 			BranchName = io.CurrentBranchName()
 			ApplicationName = qoveryYML.Application.GetSanitizeName()
+			OrganizationName = qoveryYML.Application.Organization
 			ProjectName = qoveryYML.Application.Project
 
 			if BranchName == "" || ProjectName == "" {
@@ -30,11 +31,12 @@ var applicationEnvListCmd = &cobra.Command{
 			}
 		}
 
-		ShowEnvironmentVariablesByApplicationName(ProjectName, BranchName, ApplicationName, ShowCredentials, OutputEnvironmentVariables)
+		ShowEnvironmentVariablesByApplicationName(OrganizationName, ProjectName, BranchName, ApplicationName, ShowCredentials, OutputEnvironmentVariables)
 	},
 }
 
 func init() {
+	applicationEnvListCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
 	applicationEnvListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	applicationEnvListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	applicationEnvListCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")

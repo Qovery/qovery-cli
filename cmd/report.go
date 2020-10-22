@@ -79,7 +79,7 @@ func CreateReport() Report {
 	if err != nil {
 		fmt.Println("Could not add Qovery config details to the report.")
 	} else {
-		project = io.GetProjectByName(yml.Application.Project)
+		project = io.GetProjectByName(yml.Application.Project, yml.Application.Organization)
 		environment = io.GetEnvironmentByName(project.Id, branch)
 		application = io.GetApplicationByName(project.Id, environment.Id, yml.Application.Name)
 	}

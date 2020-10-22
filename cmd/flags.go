@@ -14,6 +14,7 @@ var (
 	Name                       string
 	ApplicationName            string
 	ProjectName                string
+	OrganizationName           string
 	BranchName                 string
 	ShowCredentials            bool
 	OutputEnvironmentVariables bool
