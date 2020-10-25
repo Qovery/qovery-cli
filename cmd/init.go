@@ -105,14 +105,9 @@ func runInit() {
 	count := 0
 	for {
 		p.Application.Organization = askForOrganization()
-
-		if p.Application.Organization != "" {
-			break
-		}
-
 		p.Application.Project = askForProject(p.Application.Organization)
 
-		if p.Application.Project != "" {
+		if p.Application.Organization != "" && p.Application.Project != "" {
 			break
 		}
 
