@@ -150,9 +150,9 @@ func printEndOfDeploymentMessage(status io.DeploymentStatus) {
 	fmt.Println("\nEnd of environment deployment logs.")
 
 	if status.IsOk() {
-		fmt.Printf("\n%s\n\n", color.GreenString("The environment has been "+status.StatusForHuman.Long))
+		fmt.Printf("\n%s\n\n", color.GreenString("The environment is "+status.StatusForHuman.Long))
 	} else {
-		fmt.Printf("\n%s\n\n", color.RedString("The environment has been "+status.StatusForHuman.Long))
+		fmt.Printf("\n%s\n\n", color.RedString("The environment is "+status.StatusForHuman.Long))
 	}
 
 	fmt.Println("-- status output --")
