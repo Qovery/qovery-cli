@@ -20,24 +20,13 @@ var deployListCmd = &cobra.Command{
 
 	qovery deploy list`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if !hasFlagChanged(cmd) {
-			BranchName = io.CurrentBranchName()
-			qoveryYML, err := io.CurrentQoveryYML()
-			if err != nil {
-				io.PrintError("No qovery configuration file found")
-				os.Exit(1)
-			}
-			OrganizationName = qoveryYML.Application.Organization
-			ProjectName = qoveryYML.Application.Project
-			ApplicationName = qoveryYML.Application.GetSanitizeName()
-		}
-
+		LoadCommandOptions(cmd, true, true, true, true)
 		ShowDeploymentList(OrganizationName, ProjectName, BranchName, ApplicationName)
 	},
 }
 
 func init() {
-	deployListCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
+	deployListCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "", "Your organization name")
 	deployListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	deployListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	deployListCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")

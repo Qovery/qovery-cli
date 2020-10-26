@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"os"
 	"qovery.go/io"
 )
 
@@ -16,16 +15,7 @@ var environmentDeleteCmd = &cobra.Command{
 	qovery environment delete`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if !hasFlagChanged(cmd) {
-			BranchName = io.CurrentBranchName()
-			qoveryYML, err := io.CurrentQoveryYML()
-			if err != nil {
-				io.PrintError("No qovery configuration file found")
-				os.Exit(1)
-			}
-			OrganizationName = qoveryYML.Application.Organization
-			ProjectName = qoveryYML.Application.Project
-		}
+		LoadCommandOptions(cmd, true, true, true, false)
 
 		isConfirmed := io.AskForStringConfirmation(
 			false,
@@ -45,7 +35,7 @@ var environmentDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	environmentDeleteCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
+	environmentDeleteCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "", "Your organization name")
 	environmentDeleteCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	environmentDeleteCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 

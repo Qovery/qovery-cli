@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"os"
 	"qovery.go/io"
 )
 
@@ -16,13 +15,7 @@ var projectRenameCmd = &cobra.Command{
 qovery project rename [new_name] - renames current project to new_name 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		qoveryYML, err := io.CurrentQoveryYML()
-		if err != nil {
-			io.PrintError("No qovery configuration file found")
-			os.Exit(1)
-		}
-		OrganizationName = qoveryYML.Application.Organization
-		ProjectName = qoveryYML.Application.Project
+		LoadCommandOptions(cmd, true, true, false, false)
 
 		if len(args) != 1 {
 			_ = cmd.Help()
@@ -45,7 +38,7 @@ qovery project rename [new_name] - renames current project to new_name
 }
 
 func init() {
-	projectRenameCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
+	projectRenameCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "", "Your organization name")
 	projectRenameCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 
 	projectCmd.AddCommand(projectRenameCmd)

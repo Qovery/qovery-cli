@@ -13,10 +13,7 @@ var projectListCmd = &cobra.Command{
 	qovery project list`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		qoveryYML, err := io.CurrentQoveryYML()
-		if err == nil && qoveryYML.Application.Organization != "" {
-			OrganizationName = qoveryYML.Application.Organization
-		}
+		LoadCommandOptions(cmd, true, false, false, false)
 
 		table := io.GetTable()
 		table.SetHeader([]string{"name", "organization"})
@@ -36,6 +33,6 @@ var projectListCmd = &cobra.Command{
 }
 
 func init() {
-	projectListCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
+	projectListCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "", "Your organization name")
 	projectCmd.AddCommand(projectListCmd)
 }

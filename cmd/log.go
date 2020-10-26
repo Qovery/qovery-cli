@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"os"
-	"qovery.go/io"
 )
 
 var logCmd = &cobra.Command{
@@ -14,24 +12,13 @@ var logCmd = &cobra.Command{
 
 	qovery log`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if !hasFlagChanged(cmd) {
-			BranchName = io.CurrentBranchName()
-			qoveryYML, err := io.CurrentQoveryYML()
-			if err != nil {
-				io.PrintError("No qovery configuration file found")
-				os.Exit(1)
-			}
-			ApplicationName = qoveryYML.Application.GetSanitizeName()
-			OrganizationName = qoveryYML.Application.Organization
-			ProjectName = qoveryYML.Application.Project
-		}
-
+		LoadCommandOptions(cmd, true, true, true, true)
 		ShowApplicationLog(OrganizationName, ProjectName, BranchName, ApplicationName, Tail, FollowFlag)
 	},
 }
 
 func init() {
-	logCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
+	logCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "", "Your organization name")
 	logCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	logCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	logCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")

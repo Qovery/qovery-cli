@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"os"
 	"qovery.go/io"
 	"strings"
 )
@@ -16,15 +15,7 @@ var environmentListCmd = &cobra.Command{
 	qovery environment list`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if !hasFlagChanged(cmd) {
-			qoveryYML, err := io.CurrentQoveryYML()
-			if err != nil {
-				io.PrintError("No qovery configuration file found")
-				os.Exit(1)
-			}
-			OrganizationName = qoveryYML.Application.Organization
-			ProjectName = qoveryYML.Application.Project
-		}
+		LoadCommandOptions(cmd, true, true, false, false)
 		environments := io.ListEnvironments(io.GetProjectByName(ProjectName, OrganizationName).Id)
 
 		table := io.GetTable()

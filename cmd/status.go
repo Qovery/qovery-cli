@@ -18,18 +18,7 @@ var statusCmd = &cobra.Command{
 
 	qovery status`,
 	Run: func(cmd *cobra.Command, args []string) {
-		qoveryYML, err := io.CurrentQoveryYML()
-		if err == nil {
-			ProjectName = qoveryYML.Application.Project
-
-			if qoveryYML.Application.Organization != "" {
-				OrganizationName = qoveryYML.Application.Organization
-			}
-		}
-
-		if !hasFlagChanged(cmd) {
-			BranchName = io.CurrentBranchName()
-		}
+		LoadCommandOptions(cmd, true, true, true, false)
 
 		projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
 
@@ -190,7 +179,7 @@ func showOutputErrorMessage(statuses []io.DeploymentStatus) {
 }
 
 func init() {
-	statusCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
+	statusCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "", "Your organization name")
 	statusCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	statusCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	statusCmd.PersistentFlags().BoolVarP(&ShowCredentials, "credentials", "c", false, "Show credentials")

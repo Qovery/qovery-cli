@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"os"
-	"qovery.go/io"
 )
 
 var environmentEnvListCmd = &cobra.Command{
@@ -13,23 +11,13 @@ var environmentEnvListCmd = &cobra.Command{
 
 	qovery environment env list`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if !hasFlagChanged(cmd) {
-			BranchName = io.CurrentBranchName()
-			qoveryYML, err := io.CurrentQoveryYML()
-			if err != nil {
-				io.PrintError("No qovery configuration file found")
-				os.Exit(1)
-			}
-			OrganizationName = qoveryYML.Application.Organization
-			ProjectName = qoveryYML.Application.Project
-		}
-
+		LoadCommandOptions(cmd, true, true, true, false)
 		ShowEnvironmentVariablesByBranchName(OrganizationName, ProjectName, BranchName, ShowCredentials, OutputEnvironmentVariables)
 	},
 }
 
 func init() {
-	environmentEnvListCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
+	environmentEnvListCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "", "Your organization name")
 	environmentEnvListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	environmentEnvListCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	environmentEnvListCmd.PersistentFlags().BoolVarP(&ShowCredentials, "credentials", "c", false, "Show credentials")

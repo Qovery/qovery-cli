@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"os"
 	"qovery.go/io"
 )
 
@@ -15,17 +14,7 @@ var deployCmd = &cobra.Command{
 
 	qovery deploy`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if !hasFlagChanged(cmd) {
-			BranchName = io.CurrentBranchName()
-			qoveryYML, err := io.CurrentQoveryYML()
-			if err != nil {
-				io.PrintError("No qovery configuration file found")
-				os.Exit(1)
-			}
-			OrganizationName = qoveryYML.Application.Organization
-			ProjectName = qoveryYML.Application.Project
-			ApplicationName = qoveryYML.Application.GetSanitizeName()
-		}
+		LoadCommandOptions(cmd, true, true, true, true)
 
 		if len(args) != 1 {
 			_ = cmd.Help()
@@ -45,7 +34,7 @@ var deployCmd = &cobra.Command{
 }
 
 func init() {
-	deployCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "QoveryCommunity", "Your organization name")
+	deployCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "", "Your organization name")
 	deployCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
 	deployCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	deployCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")

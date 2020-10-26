@@ -29,18 +29,10 @@ var runCmd = &cobra.Command{
 
 	qovery run`,
 	Run: func(cmd *cobra.Command, args []string) {
-		qoveryYML, err := io.CurrentQoveryYML()
-		if err != nil {
-			io.PrintError("No qovery configuration file found")
-			os.Exit(1)
-		}
-		branchName := io.CurrentBranchName()
-		ApplicationName = qoveryYML.Application.GetSanitizeName()
-		ProjectName := qoveryYML.Application.Project
-		OrganizationName := qoveryYML.Application.Organization
+		LoadCommandOptions(cmd, true, true, true, true)
 
 		dockerClient, _ := client.NewClientWithOpts()
-		_, err = dockerClient.ImageList(context.Background(), types.ImageListOptions{})
+		_, err := dockerClient.ImageList(context.Background(), types.ImageListOptions{})
 
 		if err != nil {
 			io.PrintError("Run Docker or install it on your system")
@@ -53,7 +45,7 @@ var runCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		environment := io.GetEnvironmentByName(project.Id, branchName)
+		environment := io.GetEnvironmentByName(project.Id, BranchName)
 		applications := io.ListApplicationsRaw(project.Id, environment.Id)
 
 		if applications["results"] != nil {
@@ -62,12 +54,12 @@ var runCmd = &cobra.Command{
 			results := applications["results"].([]interface{})
 			for _, application := range results {
 				applicationConfigurationMap := application.(map[string]interface{})
-				if applicationConfigurationMap["name"] == qoveryYML.Application.GetSanitizeName() {
+				if applicationConfigurationMap["name"] == ApplicationName {
 
 					var environmentVariables []string
 					buildArgs := make(map[string]*string)
 
-					evs := ListEnvironmentVariables(OrganizationName, ProjectName, branchName, ApplicationName)
+					evs := ListEnvironmentVariables(OrganizationName, ProjectName, BranchName, ApplicationName)
 
 					for i := range evs {
 						ev := evs[i]
@@ -87,7 +79,7 @@ var runCmd = &cobra.Command{
 						buildArgs[k] = &v
 					}
 
-					image := buildContainer(dockerClient, qoveryYML.Application.DockerfilePath(), buildArgs)
+					image := buildContainer(dockerClient, ApplicationName, buildArgs)
 					runContainer(dockerClient, image, environmentVariables)
 
 					break
