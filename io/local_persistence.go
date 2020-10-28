@@ -14,18 +14,6 @@ func qoveryDirectoryPath() string {
 	return filepath.FromSlash(fmt.Sprintf("%s/.qovery", home))
 }
 
-func GetAdminToken() string {
-	filePath := filepath.FromSlash(qoveryDirectoryPath() + "/admin_token")
-	fileBytes, _ := ioutil.ReadFile(filePath)
-	return string(fileBytes)
-}
-
-func SetAdminToken(token string) {
-	_ = os.MkdirAll(qoveryDirectoryPath(), 0755)
-	filePath := filepath.FromSlash(qoveryDirectoryPath() + "/admin_token")
-	_ = ioutil.WriteFile(filePath, []byte(token), 0755)
-}
-
 func GetAuthorizationToken() string {
 	filePath := filepath.FromSlash(qoveryDirectoryPath() + "/access_token")
 	fileBytes, _ := ioutil.ReadFile(filePath)
