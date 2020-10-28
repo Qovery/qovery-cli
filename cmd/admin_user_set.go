@@ -24,7 +24,7 @@ var adminUserSetCmd = &cobra.Command{
 		payload := prepareUserMetadataPayload(args[0])
 		subClaim := getSubClaim(authorizationToken)
 
-		request, err := http.NewRequest("PATCH", "https://qovery.eu.auth0.com/api/v2/users/"+url.QueryEscape(subClaim), payload)
+		request, err := http.NewRequest("PATCH", "https://auth.qovery.com/api/v2/users/"+url.QueryEscape(subClaim), payload)
 		if err != nil {
 			log.Fatal(err)
 		}

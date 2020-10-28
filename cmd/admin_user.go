@@ -39,7 +39,7 @@ func getAdminToken(authorizationToken string) string {
 	}
 
 	req, _ := http.NewRequest(http.MethodGet, io.RootURL+"/admin/management-token", nil)
-	req.Header.Set("Authorization", "Bearer"+strings.TrimSpace(authorizationToken))
+	req.Header.Set("Authorization", "Bearer "+strings.TrimSpace(authorizationToken))
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -57,7 +57,7 @@ func getAdminToken(authorizationToken string) string {
 		log.Fatal(err)
 	}
 
-	return parsedResBody.AccessToken
+	return strings.TrimSpace(parsedResBody.AccessToken)
 }
 
 func prepareUserMetadataPayload(user string) *bytes.Buffer {
