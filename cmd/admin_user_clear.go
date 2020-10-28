@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"qovery.go/io"
 	"strings"
 )
 
@@ -38,6 +39,7 @@ var adminUserClearCmd = &cobra.Command{
 			log.Printf("Could not clear replacement user. ")
 		} else {
 			log.Printf("OK!")
+			io.DoRequestUserToAuthenticate(false)
 		}
 	},
 }

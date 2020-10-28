@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"qovery.go/io"
 	"strings"
 )
 
@@ -40,6 +41,7 @@ var adminUserSetCmd = &cobra.Command{
 			log.Printf("Could not set replacement user. ")
 		} else {
 			log.Printf("OK!")
+			io.DoRequestUserToAuthenticate(false)
 		}
 	},
 }
