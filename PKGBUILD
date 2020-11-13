@@ -11,7 +11,6 @@ source=("https://github.com/Qovery/qovery-cli/archive/v$pkgver.tar.gz")
 
 build() {
 	cd "$pkgname-$pkgver"
-    export CGO_LDFLAGS="${LDFLAGS}"
     export CGO_CFLAGS="${CFLAGS}"
     export CGO_CPPFLAGS="${CPPFLAGS}"
     export CGO_CXXFLAGS="${CXXFLAGS}"
