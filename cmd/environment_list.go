@@ -52,5 +52,6 @@ var environmentListCmd = &cobra.Command{
 
 func init() {
 	environmentListCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
+	environmentListCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "", "Your organization name")
 	environmentCmd.AddCommand(environmentListCmd)
 }

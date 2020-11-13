@@ -111,10 +111,6 @@ var statusCmd = &cobra.Command{
 
 			showOutputErrorMessage(deploymentStatuses.Results)
 		}
-
-		//if environment.DeploymentStatus.DeploymentStatus == "BUILDING_ERROR" {
-		//	io.PrintHint("Ensure your Dockerfile is correct. Run and test your container locally with 'qovery run'")
-		//}
 	},
 }
 
