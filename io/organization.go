@@ -13,12 +13,13 @@ type Organizations struct {
 }
 
 type Organization struct {
-	ObjectType  string `json:"object_type"`
-	Id          string `json:"id"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
-	Name        string `json:"name"`
-	DisplayName string `json:"display_name"`
+	ObjectType         string `json:"object_type"`
+	Id                 string `json:"id"`
+	CreatedAt          string `json:"created_at"`
+	UpdatedAt          string `json:"updated_at"`
+	Name               string `json:"name"`
+	DisplayName        string `json:"display_name"`
+	IsRealOrganization bool   `json:"is_real_organization"`
 }
 
 func ListOrganizations() Organizations {
