@@ -33,6 +33,7 @@ var runCmd = &cobra.Command{
 		qoveryYML, _ := io.CurrentQoveryYML()
 
 		dockerClient, _ := client.NewClientWithOpts()
+		disableBuildCache, _ := cmd.Flags().GetBool("disableBuildCache")
 		_, err := dockerClient.ImageList(context.Background(), types.ImageListOptions{})
 
 		if err != nil {
@@ -80,7 +81,7 @@ var runCmd = &cobra.Command{
 						buildArgs[k] = &v
 					}
 
-					image := buildContainer(dockerClient, qoveryYML.Application.DockerfilePath(), buildArgs)
+					image := buildContainer(dockerClient, qoveryYML.Application.DockerfilePath(), buildArgs, disableBuildCache)
 					runContainer(dockerClient, image, environmentVariables)
 
 					break
@@ -94,11 +95,12 @@ var runCmd = &cobra.Command{
 
 func init() {
 	runCmd.PersistentFlags().StringVarP(&ConfigurationDirectoryRoot, "configuration-directory-root", "c", ".", "Your configuration directory root path")
+	runCmd.Flags().BoolP("disableBuildCache", "n", true, "Disable Docker build cache in order to reduce server side build issue")
 
 	RootCmd.AddCommand(runCmd)
 }
 
-func buildContainer(client *client.Client, dockerfilePath string, buildArgs map[string]*string) *types.ImageSummary {
+func buildContainer(client *client.Client, dockerfilePath string, buildArgs map[string]*string, disableBuildCache bool) *types.ImageSummary {
 	currentDir, _ := os.Getwd()
 	excludes, err := ReadDockerignore(currentDir)
 
@@ -120,6 +122,7 @@ func buildContainer(client *client.Client, dockerfilePath string, buildArgs map[
 	r, err := client.ImageBuild(context.Background(), buildCtx, types.ImageBuildOptions{
 		Dockerfile: dockerfilePath,
 		BuildArgs:  buildArgs,
+		NoCache: disableBuildCache,
 	})
 
 	if err != nil {
