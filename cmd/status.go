@@ -21,9 +21,12 @@ var statusCmd = &cobra.Command{
 		LoadCommandOptions(cmd, true, true, true, false)
 
 		projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
+		QuitWithMessageIfProjectDoesNotExist(projectId)
 
 		if WatchFlag {
 			environment := io.GetEnvironmentByName(projectId, BranchName)
+			QuitWithMessageIfEnvironmentDoesNotExist(environment)
+
 			deploymentStatuses := deploymentStatusesFromLastDeployment(projectId, environment.Id)
 
 			fmt.Printf("%s\n\n", color.CyanString("Environment deployment logs:"))
@@ -63,6 +66,8 @@ var statusCmd = &cobra.Command{
 
 		// refresh environment
 		environment := io.GetEnvironmentByName(projectId, BranchName)
+		QuitWithMessageIfEnvironmentDoesNotExist(environment)
+
 		envExists := ShowEnvironmentStatus(environment)
 
 		// if an environment exists, then show the rest
@@ -112,6 +117,29 @@ var statusCmd = &cobra.Command{
 			showOutputErrorMessage(deploymentStatuses.Results)
 		}
 	},
+}
+
+func QuitWithMessageIfProjectDoesNotExist(projectId string) {
+	if projectId == "" {
+		fmt.Println("Could not find your project")
+		fmt.Println("To fix the issue:")
+		fmt.Println("1. Make sure Qovery can access your repository")
+		fmt.Println("   a) Github - visit https://github.com/apps/qovery/installations/new and allow Qovery to access your repository")
+		fmt.Println("   b) Gitlab - run `qovery git enable")
+		fmt.Println("2. After you are certain that access has been given, run the first deployment by pushing any commit to your repository")
+		fmt.Println("3. Track the status of the deployment by running `qovery status --watch`")
+		os.Exit(1)
+	}
+}
+
+func QuitWithMessageIfEnvironmentDoesNotExist(environment io.Environment) {
+	if environment.Id == "" {
+		fmt.Println("Could not find your environment")
+		fmt.Println("To fix the issue:")
+		fmt.Println("1. Try forcing a new deployment by pushing a new commit to your repository")
+		fmt.Println("2. Track the status of the deployment by running `qovery status --watch`")
+		os.Exit(1)
+	}
 }
 
 func printStatusMessageLine(status io.DeploymentStatus) {
