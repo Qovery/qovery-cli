@@ -46,7 +46,15 @@ func ListOrganizations() Organizations {
 
 	_ = json.Unmarshal(body, &organizations)
 
-	return organizations
+	filteredOrganizations := Organizations{}
+
+	for _, org := range organizations.Results {
+		if org.IsRealOrganization {
+			filteredOrganizations.Results = append(filteredOrganizations.Results, org)
+		}
+	}
+
+	return filteredOrganizations
 }
 
 func GetPrivateOrganization() Organization {

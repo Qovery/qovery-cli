@@ -25,9 +25,7 @@ var organizationListCmd = &cobra.Command{
 			return
 		} else {
 			for _, p := range orgs.Results {
-				if p.IsRealOrganization {
-					table.Append([]string{p.DisplayName})
-				}
+				table.Append([]string{p.DisplayName})
 			}
 		}
 
