@@ -9,7 +9,7 @@ import (
 )
 
 func GetCurrentVersion() string {
-	return "0.32.10" // ci-version-check
+	return "0.32.11" // ci-version-check
 }
 
 func GetLatestOnlineVersionUrl() (string, error) {
