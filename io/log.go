@@ -57,3 +57,44 @@ func ListApplicationLogs(lastLines int, follow bool, projectId string, environme
 		}
 	}
 }
+
+func ListEnvironmentLogs(lastLines int, follow bool, projectId string, environmentId string) {
+	if projectId == "" || environmentId == "" {
+		return
+	}
+
+	CheckAuthenticationOrQuitWithMessage()
+
+	url := RootURL + "/project/" + projectId + "/environment/" + environmentId + "/log"
+
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
+
+	q := req.URL.Query()
+	q.Add("tail", strconv.Itoa(lastLines))
+	q.Add("follow", strconv.FormatBool(follow))
+	req.URL.RawQuery = q.Encode()
+
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
+	req.Header.Set("accept", "application/stream+json")
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return
+	}
+
+	reader := bufio.NewReader(resp.Body)
+
+	for {
+		bytes, _ := reader.ReadBytes('\n')
+		if len(bytes) > 0 {
+			var log Log
+			_ = json.Unmarshal(bytes, &log)
+			print(log.Message)
+		} else if !follow {
+			return
+		}
+	}
+}
