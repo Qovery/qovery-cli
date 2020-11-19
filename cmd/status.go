@@ -133,7 +133,7 @@ func QuitWithMessageIfProjectDoesNotExist(projectId string) {
 }
 
 func QuitWithMessageIfEnvironmentDoesNotExist(environment io.Environment) {
-	if environment.Id == "" {
+	if environment.Name == "" {
 		fmt.Println("Could not find your environment")
 		fmt.Println("To fix the issue:")
 		fmt.Println("1. Try forcing a new deployment by pushing a new commit to your repository")
