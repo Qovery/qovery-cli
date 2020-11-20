@@ -6,8 +6,8 @@ import (
 )
 
 var environmentLogCmd = &cobra.Command{
-	Use:     "environment log",
-	Aliases: []string{"env log"},
+	Use:     "log",
+	Aliases: []string{"log"},
 	Short:   "Show environment logs",
 	Long: `LOG show all environment logs within a project. For example:
 
@@ -19,11 +19,6 @@ var environmentLogCmd = &cobra.Command{
 }
 
 func init() {
-	logCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "", "Your organization name")
-	logCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
-	logCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
-	logCmd.PersistentFlags().IntVar(&Tail, "tail", 100, "Specify if the logs should be streamed")
-	logCmd.PersistentFlags().BoolVarP(&FollowFlag, "follow", "f", false, "Specify if the logs should be streamed")
 	environmentCmd.AddCommand(environmentLogCmd)
 }
 
