@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type Logs struct {
@@ -12,9 +13,12 @@ type Logs struct {
 }
 
 type Log struct {
-	Id        string `json:"id"`
-	CreatedAt string `json:"created_at"`
-	Message   string `json:"message"`
+	Id            string `json:"id"`
+	CreatedAt     string `json:"created_at"`
+	Message       string `json:"message"`
+	Application   string `json:"application"`
+	ApplicationId string `json:"application_id"`
+	EnvironmentId string `json:"environment_id"`
 }
 
 func ListApplicationLogs(lastLines int, follow bool, projectId string, environmentId string, applicationId string) {
@@ -46,11 +50,16 @@ func ListApplicationLogs(lastLines int, follow bool, projectId string, environme
 
 	reader := bufio.NewReader(resp.Body)
 
+	var shortestAppNameLength = 1000
+	var longestAppNameLength = 0
+
 	for {
 		bytes, _ := reader.ReadBytes('\n')
 		if len(bytes) > 0 {
 			var log Log
 			_ = json.Unmarshal(bytes, &log)
+			l := len(log.Application)
+			print(log.Application + getPadding(shortestAppNameLength, l, longestAppNameLength) + "| ")
 			print(log.Message)
 		} else if !follow {
 			return
@@ -87,14 +96,31 @@ func ListEnvironmentLogs(lastLines int, follow bool, projectId string, environme
 
 	reader := bufio.NewReader(resp.Body)
 
+	var shortestAppNameLength = 1000
+	var longestAppNameLength = 0
+
 	for {
 		bytes, _ := reader.ReadBytes('\n')
 		if len(bytes) > 0 {
 			var log Log
 			_ = json.Unmarshal(bytes, &log)
+			l := len(log.Application)
+			print(log.Application + getPadding(shortestAppNameLength, l, longestAppNameLength) + "| ")
 			print(log.Message)
 		} else if !follow {
 			return
 		}
 	}
+}
+
+func getPadding(shortestAppNameLength int, currentAppNameLength int, longestAppNameLength int) string {
+	if shortestAppNameLength > currentAppNameLength {
+		shortestAppNameLength = currentAppNameLength
+	}
+	if longestAppNameLength < currentAppNameLength {
+		longestAppNameLength = currentAppNameLength
+	}
+	var paddingSize = longestAppNameLength - currentAppNameLength + 1
+	var padding = strings.Repeat(" ", paddingSize)
+	return padding
 }
