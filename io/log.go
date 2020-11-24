@@ -50,7 +50,6 @@ func ListApplicationLogs(lastLines int, follow bool, projectId string, environme
 
 	reader := bufio.NewReader(resp.Body)
 
-	var shortestAppNameLength = 1000
 	var longestAppNameLength = 0
 
 	for {
@@ -58,8 +57,15 @@ func ListApplicationLogs(lastLines int, follow bool, projectId string, environme
 		if len(bytes) > 0 {
 			var log Log
 			_ = json.Unmarshal(bytes, &log)
+
 			l := len(log.Application)
-			print(log.Application + getPadding(shortestAppNameLength, l, longestAppNameLength) + "| ")
+			if longestAppNameLength < l {
+				longestAppNameLength = l
+			}
+			var paddingSize = longestAppNameLength - l + 1
+			var padding = strings.Repeat(" ", paddingSize)
+
+			print(log.Application + padding + "| ")
 			print(log.Message)
 		} else if !follow {
 			return
@@ -96,7 +102,6 @@ func ListEnvironmentLogs(lastLines int, follow bool, projectId string, environme
 
 	reader := bufio.NewReader(resp.Body)
 
-	var shortestAppNameLength = 1000
 	var longestAppNameLength = 0
 
 	for {
@@ -104,23 +109,18 @@ func ListEnvironmentLogs(lastLines int, follow bool, projectId string, environme
 		if len(bytes) > 0 {
 			var log Log
 			_ = json.Unmarshal(bytes, &log)
+
 			l := len(log.Application)
-			print(log.Application + getPadding(shortestAppNameLength, l, longestAppNameLength) + "| ")
+			if longestAppNameLength < l {
+				longestAppNameLength = l
+			}
+			var paddingSize = longestAppNameLength - l + 1
+			var padding = strings.Repeat(" ", paddingSize)
+
+			print(log.Application + padding + "| ")
 			print(log.Message)
 		} else if !follow {
 			return
 		}
 	}
-}
-
-func getPadding(shortestAppNameLength int, currentAppNameLength int, longestAppNameLength int) string {
-	if shortestAppNameLength > currentAppNameLength {
-		shortestAppNameLength = currentAppNameLength
-	}
-	if longestAppNameLength < currentAppNameLength {
-		longestAppNameLength = currentAppNameLength
-	}
-	var paddingSize = longestAppNameLength - currentAppNameLength + 1
-	var padding = strings.Repeat(" ", paddingSize)
-	return padding
 }
