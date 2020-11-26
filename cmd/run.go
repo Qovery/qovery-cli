@@ -30,7 +30,7 @@ var runCmd = &cobra.Command{
 	qovery run`,
 	Run: func(cmd *cobra.Command, args []string) {
 		LoadCommandOptions(cmd, true, true, true, true)
-		qoveryYML, _ := io.CurrentQoveryYML()
+		qoveryYML, _ := io.CurrentQoveryYML(BranchName)
 
 		dockerClient, _ := client.NewClientWithOpts()
 		_, err := dockerClient.ImageList(context.Background(), types.ImageListOptions{})

@@ -11,7 +11,11 @@ import (
 func LoadCommandOptions(cmd *cobra.Command, isOrganizationMandatory bool, isProjectMandatory bool, isBranchMandatory bool, isApplicationMandatory bool) {
 	var errors []string
 
-	qoveryYML, _ := io.CurrentQoveryYML()
+	if BranchName == "" {
+		BranchName = io.CurrentBranchName()
+	}
+
+	qoveryYML, _ := io.CurrentQoveryYML(BranchName)
 
 	if OrganizationName != "" {
 		// do not do anything
@@ -23,10 +27,6 @@ func LoadCommandOptions(cmd *cobra.Command, isOrganizationMandatory bool, isProj
 
 	if ProjectName == "" {
 		ProjectName = qoveryYML.Application.Project
-	}
-
-	if BranchName == "" {
-		BranchName = io.CurrentBranchName()
 	}
 
 	if ApplicationName == "" {

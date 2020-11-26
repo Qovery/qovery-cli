@@ -74,7 +74,7 @@ func CreateReport() Report {
 	urls := io.ListRemoteURLs()
 	branch := io.CurrentBranchName()
 	commits := hash(io.ListCommits(10))
-	yml, err := io.CurrentQoveryYML()
+	yml, err := io.CurrentQoveryYML(branch)
 
 	if err != nil {
 		fmt.Println("Could not add Qovery config details to the report.")

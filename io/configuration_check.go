@@ -12,6 +12,7 @@ import (
 type ConfigurationCheckRequest struct {
 	QoveryYMLContent  string `json:"qovery_yml_content"`
 	DockerfileContent string `json:"dockerfile_content"`
+	EnvironmentName   string `json:"environment_name"`
 }
 
 type ConfigurationCheckResponse struct {
