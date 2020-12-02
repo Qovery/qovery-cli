@@ -119,8 +119,10 @@ func ListEnvironmentLogs(lastLines int, follow bool, projectId string, environme
 			var paddingSize = longestAppNameLength - l + 1
 			var padding = strings.Repeat(" ", paddingSize)
 
-			print(log.Application + padding + "| ")
-			print(log.Message)
+			if len(strings.TrimSpace(log.Message)) > 0 {
+				print(log.Application + padding + "| ")
+				print(log.Message)
+			}
 		} else if !follow {
 			return
 		}
