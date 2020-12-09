@@ -19,6 +19,12 @@ var environmentLogCmd = &cobra.Command{
 }
 
 func init() {
+	environmentLogCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "", "Your organization name")
+	environmentLogCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
+	environmentLogCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
+	environmentLogCmd.PersistentFlags().IntVar(&Tail, "tail", 100, "Specify if the logs should be streamed")
+	environmentLogCmd.PersistentFlags().BoolVarP(&FollowFlag, "follow", "f", false, "Specify if the logs should be streamed")
+
 	environmentCmd.AddCommand(environmentLogCmd)
 }
 
