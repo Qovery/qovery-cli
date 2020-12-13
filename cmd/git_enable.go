@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"gopkg.in/src-d/go-git.v4"
-	"net/http"
 	"os"
 	"qovery.go/io"
 	"strings"
@@ -19,8 +18,9 @@ enables sending notifications about events in remote git repository (determined 
 		repo, _ := git.PlainOpen(".git")
 		cfg, _ := repo.Config()
 		url := cfg.Raw.Section("remote").Subsection("origin").Option("url")
-		group, projectName := sanitize(url)
-		enableWebhooks(group, projectName)
+		group, name := sanitize(url)
+
+		io.EnableGitlabWebhooks(io.GitlabEnable{Group: group, Name: name})
 	},
 }
 
@@ -77,20 +77,4 @@ func printErrorAndQuit() {
 
 func init() {
 	gitCmd.AddCommand(gitEnableCmd)
-}
-
-func enableWebhooks(group string, projectName string) {
-	token := io.GetAuthorizationToken()
-	client := &http.Client{}
-	url := io.RootURL + "/hook/gitlab/enable?group=" + group + "&projectName=" + projectName
-	req, _ := http.NewRequest("POST", url, nil)
-	req.Header.Set("Authorization", "Bearer "+token)
-	res, err := client.Do(req)
-
-	if err != nil || res.StatusCode != 204 {
-		println("Could not enable Qovery in " + group + "/" + projectName)
-		os.Exit(1)
-	}
-
-	println("Enabled Qovery in " + group + "/" + projectName)
 }
