@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"gopkg.in/src-d/go-git.v4"
 	"os"
@@ -18,13 +19,21 @@ enables sending notifications about events in remote git repository (determined 
 		repo, _ := git.PlainOpen(".git")
 		cfg, _ := repo.Config()
 		url := cfg.Raw.Section("remote").Subsection("origin").Option("url")
-		group, name := sanitize(url)
 
-		io.EnableGitlabWebhooks(io.GitlabEnable{Group: group, Name: name})
+		if strings.Contains(url, "gitlab.com") {
+			group, name := extractGitlabProperties(url)
+			io.EnableGitlabWebhooks(io.GitlabEnable{Group: group, Name: name})
+		} else if strings.Contains(url, "github.com") {
+			fullName := extractGithubProperties(url)
+			io.EnableGithubWebhooks(io.GithubEnable{FullName: fullName})
+		} else {
+			_ = fmt.Sprintf("%s is not a supported repository. Only github or gitlab public repositories are supported\n", url)
+		}
+
 	},
 }
 
-func sanitize(repoUrl string) (group string, projectName string) {
+func extractGitlabProperties(repoUrl string) (group string, projectName string) {
 	if strings.Contains(repoUrl, "@gitlab.com/") {
 		prefixAndSuffix := strings.Split(repoUrl, "@gitlab.com/")
 
@@ -64,6 +73,49 @@ func sanitize(repoUrl string) (group string, projectName string) {
 		println("This command is currently supported for Gitlab projects only. ")
 		os.Exit(1)
 		return "", ""
+	}
+}
+
+func extractGithubProperties(repoUrl string) string {
+	if strings.Contains(repoUrl, "@github.com/") {
+		prefixAndSuffix := strings.Split(repoUrl, "@github.com/")
+
+		if len(prefixAndSuffix) != 2 {
+			printErrorAndQuit()
+		}
+
+		suffix := prefixAndSuffix[1]
+		split := strings.Split(suffix, "/")
+
+		if len(prefixAndSuffix) != 2 {
+			printErrorAndQuit()
+		}
+
+		return fmt.Sprintf("%s/%s", split[0], strings.ReplaceAll(split[1], ".git", ""))
+	} else if strings.Contains(repoUrl, "git@github.com:") {
+		suffix := strings.ReplaceAll(repoUrl, "git@github.com:", "")
+
+		split := strings.Split(suffix, "/")
+
+		if len(split) != 2 {
+			printErrorAndQuit()
+		}
+
+		return fmt.Sprintf("%s/%s", split[0], strings.ReplaceAll(split[1], ".git", ""))
+	} else if strings.Contains(repoUrl, "https://github.com/") {
+		suffix := strings.ReplaceAll(repoUrl, "https://github.com/", "")
+
+		split := strings.Split(suffix, "/")
+
+		if len(split) != 2 {
+			printErrorAndQuit()
+		}
+
+		return fmt.Sprintf("%s/%s", split[0], strings.ReplaceAll(split[1], ".git", ""))
+	} else {
+		println("This command is currently supported for Github projects only. ")
+		os.Exit(1)
+		return ""
 	}
 }
 
