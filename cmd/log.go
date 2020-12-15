@@ -23,7 +23,7 @@ func init() {
 	logCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
 	logCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
 	// TODO select application
-	logCmd.PersistentFlags().IntVar(&Tail, "tail", 100, "Specify if the logs should be streamed")
+	logCmd.PersistentFlags().IntVar(&Tail, "tail", 0, "Specify if the logs should be streamed")
 	logCmd.PersistentFlags().BoolVarP(&FollowFlag, "follow", "f", false, "Specify if the logs should be streamed")
 
 	RootCmd.AddCommand(logCmd)
