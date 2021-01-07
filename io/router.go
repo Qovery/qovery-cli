@@ -14,15 +14,26 @@ type Routers struct {
 }
 
 type Router struct {
-	Name          string         `json:"name"`
-	ConnectionURI string         `json:"connection_uri"`
-	CustomDomains []CustomDomain `json:"custom_domains"`
+	Name          string       `json:"name"`
+	ConnectionURI string       `json:"connection_uri"`
+	CustomDomain  CustomDomain `json:"custom_domain"`
+}
+
+type DomainStatus string
+
+const (
+	Verifying DomainStatus = "VERIFYING"
+	Verified  DomainStatus = "VERIFIED"
+)
+
+type Status struct {
+	Status DomainStatus
 }
 
 type CustomDomain struct {
-	Domain       string           `json:"domain"`
-	TargetDomain string           `json:"target_domain"`
-	Status       DeploymentStatus `json:"status"`
+	Domain       string `json:"provided_domain"`
+	TargetDomain string `json:"target_domain"`
+	Status       Status `json:"status"`
 }
 
 func (c *CustomDomain) GetDomain() string {

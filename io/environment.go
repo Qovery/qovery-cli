@@ -59,10 +59,8 @@ func (e *Environment) GetApplication(name string) Application {
 func (e *Environment) GetConnectionURIs() []string {
 	var uris []string
 	for _, r := range e.Routers {
-		for _, cd := range r.CustomDomains {
-			if cd.Status.IsDeployed() {
-				uris = append(uris, cd.Domain)
-			}
+		if r.CustomDomain.Status.Status == Verified {
+			uris = append(uris, r.CustomDomain.Domain)
 		}
 
 		uris = append(uris, r.ConnectionURI)
