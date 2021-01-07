@@ -23,7 +23,7 @@ brews:
   -
     name: qovery-cli
     goarm: 6
-    github:
+    tap:
       owner: qovery
       name: homebrew-qovery-cli
     url_template: "https://github.com/Qovery/qovery-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
