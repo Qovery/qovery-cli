@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"net/http"
-	"qovery.go/io"
+	"qovery-cli/io"
 	"strings"
 )
 

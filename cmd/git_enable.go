@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/src-d/go-git.v4"
 	"os"
-	"qovery.go/io"
+	"qovery-cli/io"
 	"strings"
 )
 

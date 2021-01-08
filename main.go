@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"qovery.go/cmd"
+	"qovery-cli/cmd"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module qovery.go
+module qovery-cli
 
 go 1.13
 

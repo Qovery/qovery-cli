@@ -8,7 +8,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"net/http"
 	"os"
-	"qovery.go/io"
+	"qovery-cli/io"
 	"strings"
 )
 

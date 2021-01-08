@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"qovery.go/io"
+	"qovery-cli/io"
 )
 
 var environmentLogCmd = &cobra.Command{

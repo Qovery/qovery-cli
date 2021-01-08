@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"qovery.go/io"
+	"qovery-cli/io"
 	"strings"
 	"time"
 )

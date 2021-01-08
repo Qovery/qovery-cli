@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"qovery.go/io"
+	"qovery-cli/io"
 )
 
 var redeployCmd = &cobra.Command{

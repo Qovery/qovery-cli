@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"qovery.go/io"
+	"qovery-cli/io"
 )
 
 var environmentEnvDeleteCmd = &cobra.Command{

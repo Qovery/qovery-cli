@@ -3,7 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
-	"qovery.go/io"
+	"qovery-cli/io"
 	"testing"
 )
 
