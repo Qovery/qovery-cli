@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/xeonx/timeago"
-	"qovery.go/io"
+	"qovery-cli/io"
 )
 
 var databaseListCmd = &cobra.Command{

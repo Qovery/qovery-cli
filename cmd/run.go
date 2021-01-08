@@ -17,7 +17,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"qovery.go/io"
+	"qovery-cli/io"
 )
 
 import iio "io"

@@ -11,7 +11,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"qovery.go/io"
+	"qovery-cli/io"
 	"sort"
 	"strconv"
 	"strings"

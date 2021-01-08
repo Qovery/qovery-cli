@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"qovery.go/io"
+	"qovery-cli/io"
 	"runtime"
 )
 

@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"qovery.go/io"
+	"qovery-cli/io"
 	"strings"
 )
 
