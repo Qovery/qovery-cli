@@ -1,5 +1,5 @@
 builds:
-  - main: qovery.go
+  - main: main.go
     binary: qovery
     goos:
       - darwin
