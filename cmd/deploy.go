@@ -14,7 +14,7 @@ var deployCmd = &cobra.Command{
 
 	qovery deploy`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, true)
+		LoadCommandOptions(cmd, true, true, true, true, true)
 
 		if len(args) != 1 {
 			_ = cmd.Help()
@@ -24,8 +24,8 @@ var deployCmd = &cobra.Command{
 		commitId := args[0]
 
 		projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
-		environmentId := io.GetEnvironmentByName(projectId, BranchName).Id
-		applicationId := io.GetApplicationByName(projectId, environmentId, ApplicationName).Id
+		environmentId := io.GetEnvironmentByName(projectId, BranchName, true).Id
+		applicationId := io.GetApplicationByName(projectId, environmentId, ApplicationName, true).Id
 
 		io.Deploy(projectId, environmentId, applicationId, commitId)
 

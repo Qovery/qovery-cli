@@ -18,13 +18,13 @@ var statusCmd = &cobra.Command{
 
 	qovery status`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, false)
+		LoadCommandOptions(cmd, true, true, true, false, true)
 
 		projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
 		QuitWithMessageIfProjectDoesNotExist(projectId)
 
 		if WatchFlag {
-			environment := io.GetEnvironmentByName(projectId, BranchName)
+			environment := io.GetEnvironmentByName(projectId, BranchName, true)
 			QuitWithMessageIfEnvironmentDoesNotExist(environment)
 
 			deploymentStatuses := deploymentStatusesFromLastDeployment(projectId, environment.Id)
@@ -53,7 +53,7 @@ var statusCmd = &cobra.Command{
 						}
 					}
 
-					environment = io.GetEnvironmentByName(projectId, BranchName)
+					environment = io.GetEnvironmentByName(projectId, BranchName, true)
 					if environment.Status.IsOk() || environment.Status.IsNotOk() {
 						printEndOfDeploymentMessage(environment.Status)
 						break
@@ -65,7 +65,7 @@ var statusCmd = &cobra.Command{
 		}
 
 		// refresh environment
-		environment := io.GetEnvironmentByName(projectId, BranchName)
+		environment := io.GetEnvironmentByName(projectId, BranchName, true)
 		QuitWithMessageIfEnvironmentDoesNotExist(environment)
 
 		envExists := ShowEnvironmentStatus(environment)

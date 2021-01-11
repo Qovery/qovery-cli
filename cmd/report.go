@@ -74,14 +74,14 @@ func CreateReport() Report {
 	urls := io.ListRemoteURLs()
 	branch := io.CurrentBranchName()
 	commits := hash(io.ListCommits(10))
-	yml, err := io.CurrentQoveryYML(branch)
+	yml, err := io.CurrentQoveryYML(branch, true)
 
 	if err != nil {
 		fmt.Println("Could not add Qovery config details to the report.")
 	} else {
 		project = io.GetProjectByName(yml.Application.Project, yml.Application.Organization)
-		environment = io.GetEnvironmentByName(project.Id, branch)
-		application = io.GetApplicationByName(project.Id, environment.Id, yml.Application.Name)
+		environment = io.GetEnvironmentByName(project.Id, branch, true)
+		application = io.GetApplicationByName(project.Id, environment.Id, yml.Application.Name, true)
 	}
 
 	dockerfile := io.CurrentDockerfileContent()

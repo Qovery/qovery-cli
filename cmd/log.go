@@ -12,7 +12,7 @@ var logCmd = &cobra.Command{
 
 	qovery log`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, true)
+		LoadCommandOptions(cmd, true, true, true, true, true)
 		ShowApplicationLog(OrganizationName, ProjectName, BranchName, ApplicationName, Tail, FollowFlag)
 	},
 }

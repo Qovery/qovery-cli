@@ -15,7 +15,7 @@ var applicationListCmd = &cobra.Command{
 
 	qovery application list`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, false)
+		LoadCommandOptions(cmd, true, true, true, false, false)
 		ShowApplicationListWithProjectAndBranchNames(OrganizationName, ProjectName, BranchName)
 	},
 }
@@ -29,7 +29,7 @@ func init() {
 
 func ShowApplicationListWithProjectAndBranchNames(organizationName string, projectName string, branchName string) {
 	projectId := io.GetProjectByName(projectName, organizationName).Id
-	environment := io.GetEnvironmentByName(projectId, branchName)
+	environment := io.GetEnvironmentByName(projectId, branchName, true)
 	applications := io.ListApplications(projectId, environment.Id)
 	ShowApplicationList(applications.Results)
 }

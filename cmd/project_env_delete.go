@@ -14,7 +14,7 @@ var projectEnvDeleteCmd = &cobra.Command{
 
 	qovery project env delete`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, false, false)
+		LoadCommandOptions(cmd, true, true, false, false, true)
 
 		if len(args) != 1 {
 			_ = cmd.Help()

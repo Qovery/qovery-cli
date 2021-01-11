@@ -29,8 +29,8 @@ var runCmd = &cobra.Command{
 
 	qovery run`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, true)
-		qoveryYML, _ := io.CurrentQoveryYML(BranchName)
+		LoadCommandOptions(cmd, true, true, true, true, true)
+		qoveryYML, _ := io.CurrentQoveryYML(BranchName, true)
 
 		dockerClient, _ := client.NewClientWithOpts()
 		_, err := dockerClient.ImageList(context.Background(), types.ImageListOptions{})
@@ -46,7 +46,7 @@ var runCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		environment := io.GetEnvironmentByName(project.Id, BranchName)
+		environment := io.GetEnvironmentByName(project.Id, BranchName, true)
 		applications := io.ListApplicationsRaw(project.Id, environment.Id)
 
 		if applications["results"] != nil {

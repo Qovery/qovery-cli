@@ -11,7 +11,7 @@ var environmentEnvListCmd = &cobra.Command{
 
 	qovery environment env list`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, false)
+		LoadCommandOptions(cmd, true, true, true, false, true)
 		ShowEnvironmentVariablesByBranchName(OrganizationName, ProjectName, BranchName, ShowCredentials, OutputEnvironmentVariables)
 	},
 }

@@ -14,7 +14,7 @@ var databaseListCmd = &cobra.Command{
 
 	qovery database list`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, false)
+		LoadCommandOptions(cmd, true, true, true, false, false)
 		ShowDatabaseListWithProjectAndBranchNames(OrganizationName, ProjectName, BranchName, ShowCredentials)
 	},
 }
@@ -30,7 +30,7 @@ func init() {
 
 func ShowDatabaseListWithProjectAndBranchNames(organizationName string, projectName string, branchName string, showCredentials bool) {
 	projectId := io.GetProjectByName(projectName, organizationName).Id
-	environment := io.GetEnvironmentByName(projectId, branchName)
+	environment := io.GetEnvironmentByName(projectId, branchName, true)
 	databases := io.ListDatabases(projectId, environment.Id)
 	ShowDatabaseList(databases.Results, showCredentials)
 }

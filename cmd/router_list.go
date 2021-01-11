@@ -11,7 +11,7 @@ var routerListCmd = &cobra.Command{
 
 	qovery router list`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, false)
+		LoadCommandOptions(cmd, true, true, true, false, true)
 
 		// TODO API call
 	},

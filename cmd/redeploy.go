@@ -12,18 +12,18 @@ var redeployCmd = &cobra.Command{
 	Long:  `REDEPLOY allows you to (re)deploy your application with the last deployed commit`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, true)
+		LoadCommandOptions(cmd, true, true, true, true, true)
 
 		project := io.GetProjectByName(ProjectName, OrganizationName)
-		environment := io.GetEnvironmentByName(project.Id, BranchName)
-		application := io.GetApplicationByName(project.Id, environment.Id, ApplicationName)
+		environment := io.GetEnvironmentByName(project.Id, BranchName, true)
+		application := io.GetApplicationByName(project.Id, environment.Id, ApplicationName, true)
 
 		// TODO how many commits to check?
 		for _, commit := range io.ListCommits(10) {
 			if application.Repository.CommitId == commit.ID().String() {
 				projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
-				environmentId := io.GetEnvironmentByName(projectId, BranchName).Id
-				applicationId := io.GetApplicationByName(projectId, environmentId, ApplicationName).Id
+				environmentId := io.GetEnvironmentByName(projectId, BranchName, true).Id
+				applicationId := io.GetApplicationByName(projectId, environmentId, ApplicationName, true).Id
 				io.Deploy(projectId, environmentId, applicationId, commit.Hash.String())
 				fmt.Println("Redeployed application with commit " + commit.Hash.String())
 				return

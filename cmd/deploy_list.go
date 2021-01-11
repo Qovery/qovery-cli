@@ -20,7 +20,7 @@ var deployListCmd = &cobra.Command{
 
 	qovery deploy list`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, true)
+		LoadCommandOptions(cmd, true, true, true, true, false)
 		ShowDeploymentList(OrganizationName, ProjectName, BranchName, ApplicationName)
 	},
 }
@@ -39,8 +39,8 @@ func ShowDeploymentList(organizationName string, projectName string, branchName 
 	table.SetHeader([]string{"branch", "commit date", "commit id", "commit message", "commit author", "deployed"})
 
 	project := io.GetProjectByName(projectName, organizationName)
-	environment := io.GetEnvironmentByName(project.Id, branchName)
-	application := io.GetApplicationByName(project.Id, environment.Id, applicationName)
+	environment := io.GetEnvironmentByName(project.Id, branchName, false)
+	application := io.GetApplicationByName(project.Id, environment.Id, applicationName, false)
 
 	if environment.Id == "" {
 		table.Append([]string{"", "", "", "", "", ""})

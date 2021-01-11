@@ -14,7 +14,7 @@ var validateCmd = &cobra.Command{
 	Short:   "Validate the current config is valid",
 	Long:    `Validate the Dockerfile and Qovery configuration file`,
 	Run: func(cmd *cobra.Command, args []string) {
-		_, err := io.CurrentQoveryYML(BranchName)
+		_, err := io.CurrentQoveryYML(BranchName, true)
 		if err != nil {
 			io.PrintError("No qovery configuration file found")
 			os.Exit(1)

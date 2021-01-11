@@ -15,7 +15,7 @@ var environmentStatusCmd = &cobra.Command{
 	qovery environment status`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, false)
+		LoadCommandOptions(cmd, true, true, true, false, true)
 		ShowEnvironmentStatusWithProjectAndBranchNames(OrganizationName, ProjectName, BranchName)
 	},
 }
@@ -29,7 +29,7 @@ func init() {
 }
 
 func ShowEnvironmentStatusWithProjectAndBranchNames(organizationName string, projectName string, branchName string) bool {
-	environment := io.GetEnvironmentByName(io.GetProjectByName(projectName, organizationName).Id, branchName)
+	environment := io.GetEnvironmentByName(io.GetProjectByName(projectName, organizationName).Id, branchName, true)
 	return ShowEnvironmentStatus(environment)
 }
 

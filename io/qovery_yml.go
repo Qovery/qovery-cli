@@ -67,12 +67,12 @@ type QoveryYMLStorage struct {
 	Name    string `yaml:"name,omitempty"`
 }
 
-func CurrentQoveryYML(envNameForConfigValidation string) (QoveryYML, error) {
+func CurrentQoveryYML(envNameForConfigValidation string, checkconfig bool) (QoveryYML, error) {
 	path, _ := os.Getwd()
-	return CurrentQoveryYMLFromPath(path, envNameForConfigValidation)
+	return CurrentQoveryYMLFromPath(path, envNameForConfigValidation, checkconfig)
 }
 
-func CurrentQoveryYMLFromPath(path string, envNameForConfigValidation string) (QoveryYML, error) {
+func CurrentQoveryYMLFromPath(path string, envNameForConfigValidation string, checkConfig bool) (QoveryYML, error) {
 	q := QoveryYML{}
 
 	absolutePath := filepath.Join(path, ".qovery.yml")
@@ -81,7 +81,7 @@ func CurrentQoveryYMLFromPath(path string, envNameForConfigValidation string) (Q
 			return q, err
 		}
 
-		return CurrentQoveryYMLFromPath(GetAbsoluteParentPath(path), envNameForConfigValidation)
+		return CurrentQoveryYMLFromPath(GetAbsoluteParentPath(path), envNameForConfigValidation, checkConfig)
 	}
 
 	f, err := ioutil.ReadFile(absolutePath)
@@ -92,9 +92,11 @@ func CurrentQoveryYMLFromPath(path string, envNameForConfigValidation string) (Q
 
 	_ = yaml.Unmarshal(f, &q)
 
-	configIsValid := validateConfig(string(f), CurrentDockerfileContent(), envNameForConfigValidation)
-	if !configIsValid {
-		os.Exit(1)
+	if checkConfig {
+		configIsValid := validateConfig(string(f), CurrentDockerfileContent(), envNameForConfigValidation)
+		if !configIsValid {
+			os.Exit(1)
+		}
 	}
 
 	return q, nil

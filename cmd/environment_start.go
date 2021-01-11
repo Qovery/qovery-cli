@@ -13,11 +13,11 @@ var environmentStartCmd = &cobra.Command{
 	qovery environment start`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, true)
+		LoadCommandOptions(cmd, true, true, true, true, true)
 
 		projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
-		application := io.GetApplicationByName(projectId, BranchName, ApplicationName)
-		environment := io.GetEnvironmentByName(projectId, BranchName)
+		application := io.GetApplicationByName(projectId, BranchName, ApplicationName, true)
+		environment := io.GetEnvironmentByName(projectId, BranchName, true)
 
 		io.Deploy(projectId, environment.Id, application.Id, application.Repository.CommitId)
 		ShowDeploymentMessage()

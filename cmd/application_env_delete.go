@@ -14,7 +14,7 @@ var applicationEnvDeleteCmd = &cobra.Command{
 
 	qovery application env delete`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, true)
+		LoadCommandOptions(cmd, true, true, true, true, true)
 
 		if len(args) != 1 {
 			_ = cmd.Help()
@@ -22,8 +22,8 @@ var applicationEnvDeleteCmd = &cobra.Command{
 		}
 
 		projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
-		environment := io.GetEnvironmentByName(projectId, BranchName)
-		application := io.GetApplicationByName(projectId, environment.Id, ApplicationName)
+		environment := io.GetEnvironmentByName(projectId, BranchName, true)
+		application := io.GetApplicationByName(projectId, environment.Id, ApplicationName, true)
 
 		ev := io.ListApplicationEnvironmentVariables(projectId, environment.Id, application.Id).GetEnvironmentVariableByKey(args[0])
 		io.DeleteApplicationEnvironmentVariable(ev.Id, projectId, environment.Id, application.Id)

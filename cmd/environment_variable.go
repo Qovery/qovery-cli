@@ -38,7 +38,7 @@ func ShowEnvironmentVariablesByBranchName(organizationName string, projectName s
 	var evs []io.EnvironmentVariable
 
 	evs = append(evs, getStaticBuiltInEnvironmentVariables(branchName)...)
-	environmentId := io.GetEnvironmentByName(projectId, branchName).Id
+	environmentId := io.GetEnvironmentByName(projectId, branchName, true).Id
 	evs = append(evs, io.ListEnvironmentEnvironmentVariables(projectId, environmentId).Results...)
 
 	if outputEnvironmentVariables {
@@ -62,8 +62,8 @@ func ShowEnvironmentVariablesByApplicationName(organizationName string, projectN
 
 func ListEnvironmentVariables(organizationName string, projectName string, branchName string, applicationName string) []io.EnvironmentVariable {
 	projectId := io.GetProjectByName(projectName, organizationName).Id
-	environment := io.GetEnvironmentByName(projectId, branchName)
-	application := io.GetApplicationByName(projectId, environment.Id, applicationName)
+	environment := io.GetEnvironmentByName(projectId, branchName, true)
+	application := io.GetApplicationByName(projectId, environment.Id, applicationName, true)
 
 	var evs []io.EnvironmentVariable
 

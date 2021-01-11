@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -45,14 +46,37 @@ func (a *Application) Ram() string {
 	return fmt.Sprintf("%.0f %cB", float64(ramInBytes)/float64(div), "KMGTPE"[exp])
 }
 
-func GetApplicationByName(projectId string, environmentId string, name string) Application {
-	for _, a := range ListApplications(projectId, environmentId).Results {
-		if a.Name == name {
-			return a
-		}
+func GetApplicationByName(projectId string, environmentId string, name string, withDetails bool) Application {
+	app := Application{}
+
+	if projectId == "" || environmentId == "" || name == "" {
+		return app
 	}
 
-	return Application{}
+	CheckAuthenticationOrQuitWithMessage()
+
+	req, _ := http.NewRequest(http.MethodGet, RootURL + "/project/" + projectId +
+		"/environment/" + environmentId + "/application/name/" + name + "?details=" + strconv.FormatBool(withDetails),  nil)
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
+
+	client := http.Client{}
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return app
+	}
+
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	_ = json.Unmarshal(body, &app)
+
+	return app
 }
 
 func (a *Application) GetDatabaseNames() []string {

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 type Environments struct {
@@ -69,14 +70,37 @@ func (e *Environment) GetConnectionURIs() []string {
 	return uris
 }
 
-func GetEnvironmentByName(projectId string, name string) Environment {
-	for _, v := range ListEnvironments(projectId).Results {
-		if v.Name == name {
-			return v
-		}
+func GetEnvironmentByName(projectId string, name string, withDetails bool) Environment {
+	r := Environment{}
+
+	if projectId == "" || name == "" {
+		return r
 	}
 
-	return Environment{}
+	CheckAuthenticationOrQuitWithMessage()
+
+	req, _ := http.NewRequest(http.MethodGet, RootURL + "/project/" + projectId +
+		"/environment/name/" + name + "?details=" + strconv.FormatBool(withDetails), nil)
+	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
+
+	client := http.Client{}
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return r
+	}
+
+	err = CheckHTTPResponse(resp)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	_ = json.Unmarshal(body, &r)
+
+	return r
 }
 
 func ListEnvironments(projectId string) Environments {
