@@ -8,14 +8,14 @@ import (
 	"strings"
 )
 
-func LoadCommandOptions(cmd *cobra.Command, isOrganizationMandatory bool, isProjectMandatory bool, isBranchMandatory bool, isApplicationMandatory bool) {
+func LoadCommandOptions(cmd *cobra.Command, isOrganizationMandatory bool, isProjectMandatory bool, isBranchMandatory bool, isApplicationMandatory bool, checkConfig bool) {
 	var errors []string
 
 	if BranchName == "" {
 		BranchName = io.CurrentBranchName()
 	}
 
-	qoveryYML, _ := io.CurrentQoveryYML(BranchName)
+	qoveryYML, _ := io.CurrentQoveryYML(BranchName, checkConfig)
 
 	if OrganizationName != "" {
 		// do not do anything

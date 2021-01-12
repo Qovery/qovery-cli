@@ -14,7 +14,7 @@ var domainListCmd = &cobra.Command{
 
 	qovery domain list`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, false)
+		LoadCommandOptions(cmd, true, true, true, false, false)
 		ShowDomainList(OrganizationName, ProjectName, BranchName)
 	},
 }
@@ -31,7 +31,7 @@ func ShowDomainList(organizationName string, projectName string, branchName stri
 	table.SetHeader([]string{"branch", "domain", "status", "validation domain", "router name"})
 
 	projectId := io.GetProjectByName(projectName, organizationName).Id
-	environment := io.GetEnvironmentByName(projectId, branchName)
+	environment := io.GetEnvironmentByName(projectId, branchName, true)
 
 	routers := io.ListRouters(projectId, environment.Id)
 	if routers.Results == nil || len(routers.Results) == 0 {

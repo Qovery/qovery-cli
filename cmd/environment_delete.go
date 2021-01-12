@@ -15,7 +15,7 @@ var environmentDeleteCmd = &cobra.Command{
 	qovery environment delete`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, false)
+		LoadCommandOptions(cmd, true, true, true, false, true)
 
 		isConfirmed := io.AskForStringConfirmation(
 			false,
@@ -27,7 +27,7 @@ var environmentDeleteCmd = &cobra.Command{
 
 		projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
 
-		io.DeleteEnvironment(projectId, io.GetEnvironmentByName(projectId, BranchName).Id)
+		io.DeleteEnvironment(projectId, io.GetEnvironmentByName(projectId, BranchName, true).Id)
 
 		fmt.Println(color.YellowString("deletion in progress..."))
 		fmt.Println("Hint: type \"qovery status --watch\" to track the progression of the deletion")

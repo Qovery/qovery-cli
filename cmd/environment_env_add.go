@@ -14,7 +14,7 @@ var environmentEnvAddCmd = &cobra.Command{
 
 	qovery environment env add`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, false)
+		LoadCommandOptions(cmd, true, true, true, false, true)
 
 		if len(args) != 2 {
 			_ = cmd.Help()
@@ -22,7 +22,7 @@ var environmentEnvAddCmd = &cobra.Command{
 		}
 
 		p := io.GetProjectByName(ProjectName, OrganizationName)
-		e := io.GetEnvironmentByName(p.Id, BranchName)
+		e := io.GetEnvironmentByName(p.Id, BranchName, true)
 
 		io.CreateEnvironmentEnvironmentVariable(io.EnvironmentVariable{Key: args[0], Value: args[1]}, p.Id, e.Id)
 		fmt.Println(color.GreenString("ok"))

@@ -13,7 +13,7 @@ var organizationListCmd = &cobra.Command{
 	qovery organization list`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, false, false, false, false)
+		LoadCommandOptions(cmd, false, false, false, false, true)
 
 		table := io.GetTable()
 		table.SetHeader([]string{"name"})

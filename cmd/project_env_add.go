@@ -14,7 +14,7 @@ var projectEnvAddCmd = &cobra.Command{
 
 	qovery project env add`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, false, false)
+		LoadCommandOptions(cmd, true, true, false, false, true)
 
 		if len(args) != 2 {
 			_ = cmd.Help()

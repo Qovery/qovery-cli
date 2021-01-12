@@ -15,7 +15,7 @@ var projectRenameCmd = &cobra.Command{
 qovery project rename [new_name] - renames current project to new_name 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, false, false)
+		LoadCommandOptions(cmd, true, true, false, false, true)
 
 		if len(args) != 1 {
 			_ = cmd.Help()

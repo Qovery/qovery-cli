@@ -13,7 +13,7 @@ var environmentLogCmd = &cobra.Command{
 
 	qovery environment log`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, false)
+		LoadCommandOptions(cmd, true, true, true, false, true)
 		ShowEnvironmentLog(OrganizationName, ProjectName, BranchName, Tail, FollowFlag)
 	},
 }
@@ -30,6 +30,6 @@ func init() {
 
 func ShowEnvironmentLog(organizationName string, projectName string, branchName string, lastLines int, follow bool) {
 	projectId := io.GetProjectByName(projectName, organizationName).Id
-	environment := io.GetEnvironmentByName(projectId, branchName)
+	environment := io.GetEnvironmentByName(projectId, branchName, true)
 	io.ListEnvironmentLogs(lastLines, follow, projectId, environment.Id)
 }

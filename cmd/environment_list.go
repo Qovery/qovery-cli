@@ -15,7 +15,7 @@ var environmentListCmd = &cobra.Command{
 	qovery environment list`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, false, false)
+		LoadCommandOptions(cmd, true, true, false, false, true)
 		environments := io.ListEnvironments(io.GetProjectByName(ProjectName, OrganizationName).Id)
 
 		table := io.GetTable()

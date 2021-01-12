@@ -12,7 +12,7 @@ var applicationLogCmd = &cobra.Command{
 
 	qovery application log`,
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, true)
+		LoadCommandOptions(cmd, true, true, true, true, true)
 		ShowApplicationLog(OrganizationName, ProjectName, BranchName, ApplicationName, Tail, FollowFlag)
 	},
 }
@@ -31,7 +31,7 @@ func init() {
 
 func ShowApplicationLog(organizationName string, projectName string, branchName string, applicationName string, lastLines int, follow bool) {
 	projectId := io.GetProjectByName(projectName, organizationName).Id
-	environment := io.GetEnvironmentByName(projectId, branchName)
-	application := io.GetApplicationByName(projectId, environment.Id, applicationName)
+	environment := io.GetEnvironmentByName(projectId, branchName, true)
+	application := io.GetApplicationByName(projectId, environment.Id, applicationName, true)
 	io.ListApplicationLogs(lastLines, follow, projectId, environment.Id, application.Id)
 }
