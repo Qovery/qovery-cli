@@ -38,15 +38,15 @@ func ShowDomainList(organizationName string, projectName string, branchName stri
 		table.Append([]string{"", "", ""})
 	} else {
 		for _, r := range routers.Results {
-
-			table.Append([]string{
-				branchName,
-				r.CustomDomain.Domain,
-				string(r.CustomDomain.Status.Status),
-				r.CustomDomain.GetTargetDomain(),
-				r.Name,
-			})
-
+			if r.CustomDomain.Domain != "" {
+				table.Append([]string{
+					branchName,
+					r.CustomDomain.Domain,
+					string(r.CustomDomain.Status.Status),
+					r.CustomDomain.GetTargetDomain(),
+					r.Name,
+				})
+			}
 			table.Append([]string{
 				branchName,
 				r.ConnectionURI,
