@@ -123,9 +123,7 @@ func QuitWithMessageIfProjectDoesNotExist(projectId string) {
 	if projectId == "" {
 		fmt.Println("Could not find your project")
 		fmt.Println("To fix the issue:")
-		fmt.Println("1. Make sure Qovery can access your repository")
-		fmt.Println("   a) Github - visit https://github.com/apps/qovery/installations/new and allow Qovery to access your repository")
-		fmt.Println("   b) Gitlab - run `qovery git enable")
+		fmt.Println("1. Make sure Qovery can access your repository by running `qovery git enable`")
 		fmt.Println("2. After you are certain that access has been given, run the first deployment by pushing any commit to your repository")
 		fmt.Println("3. Track the status of the deployment by running `qovery status --watch`")
 		os.Exit(1)

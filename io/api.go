@@ -52,8 +52,7 @@ func CheckHTTPResponse(resp *http.Response) error {
 		return errors.New("" +
 			"You are not authorized to access this resource. \n" +
 			"Have you allowed Qovery to access your repositories? \n" +
-			"Please, check if Qovery is correctly installed in your repository by visiting https://github.com/apps/qovery/installations/new \n" +
-			"or, if you are using Gitlab, enable Qovery by running `qovery git enable` in your repository directory. \n\n" +
+			"Please, check if Qovery is correctly installed by running `qovery git enable` in your repository directory. \n\n" +
 			"After you make sure Qovery is correctly enabled, please try deploying your project again by pushing a new commit \n" +
 			"to your application's repository and running `qovery status --watch` to track the status a deployment. \n\n" +
 			"If the issue still exists, please join #support on https://discord.qovery.com to get more help and information. ")
