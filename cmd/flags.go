@@ -6,6 +6,7 @@ var (
 	WatchFlag                  bool
 	DeploymentOutputFlag       bool
 	FollowFlag                 bool
+	EnvironmentFlag            bool
 	Name                       string
 	ApplicationName            string
 	ProjectName                string

@@ -14,6 +14,12 @@ var logCmd = &cobra.Command{
 	qovery log`,
 	Run: func(cmd *cobra.Command, args []string) {
 		LoadCommandOptions(cmd, true, true, true, true, true)
+
+		if EnvironmentFlag == true {
+			ShowEnvironmentLog(OrganizationName, ProjectName, BranchName, Tail, FollowFlag)
+			return
+		}
+
 		ShowApplicationLog(OrganizationName, ProjectName, BranchName, ApplicationName, Tail, FollowFlag)
 	},
 }
@@ -25,6 +31,7 @@ func init() {
 	logCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
 	logCmd.PersistentFlags().IntVar(&Tail, "tail", 0, "Specify if the logs should be streamed")
 	logCmd.PersistentFlags().BoolVarP(&FollowFlag, "follow", "f", false, "Specify if the logs should be streamed")
+	logCmd.PersistentFlags().BoolVarP(&EnvironmentFlag, "environment", "e", false, "Display logs from all apps in the environment")
 
 	RootCmd.AddCommand(logCmd)
 }
