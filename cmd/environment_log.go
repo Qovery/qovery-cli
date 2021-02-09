@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"qovery-cli/io"
 )
 
 var environmentLogCmd = &cobra.Command{
@@ -26,10 +25,4 @@ func init() {
 	environmentLogCmd.PersistentFlags().BoolVarP(&FollowFlag, "follow", "f", false, "Specify if the logs should be streamed")
 
 	environmentCmd.AddCommand(environmentLogCmd)
-}
-
-func ShowEnvironmentLog(organizationName string, projectName string, branchName string, lastLines int, follow bool) {
-	projectId := io.GetProjectByName(projectName, organizationName).Id
-	environment := io.GetEnvironmentByName(projectId, branchName, true)
-	io.ListEnvironmentLogs(lastLines, follow, projectId, environment.Id)
 }
