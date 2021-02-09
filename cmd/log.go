@@ -15,7 +15,7 @@ var logCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		LoadCommandOptions(cmd, true, true, true, true, true)
 
-		if EnvironmentFlag == true {
+		if EnvironmentFlag {
 			ShowEnvironmentLog(OrganizationName, ProjectName, BranchName, Tail, FollowFlag)
 			return
 		}
