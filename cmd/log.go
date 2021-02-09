@@ -30,9 +30,14 @@ func init() {
 }
 
 func ShowApplicationLog(organizationName string, projectName string, branchName string, applicationName string, lastLines int, follow bool) {
-	projectId := io.GetProjectByName(projectName, organizationName).Id
+	project := io.GetProjectByName(projectName, organizationName)
+	projectId := project.Id
+	orgId := project.Organization.Id
 	environment := io.GetEnvironmentByName(projectId, branchName, true)
 	application := io.GetApplicationByName(projectId, environment.Id, applicationName, true)
+
+	io.PrintHint("View the logs in the UI: " + "https://console.qovery.com/platform/organization/" + orgId + "/projects/" + projectId + "/" + environment.Id + "/" + application.Id + "/logs")
+
 	io.ListApplicationLogs(lastLines, follow, projectId, environment.Id, application.Id)
 }
 

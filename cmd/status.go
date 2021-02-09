@@ -8,6 +8,7 @@ import (
 	"os"
 	"qovery-cli/io"
 	"sort"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -22,7 +23,10 @@ var statusCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		LoadCommandOptions(cmd, true, true, true, false, true)
 
-		projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
+		project := io.GetProjectByName(ProjectName, OrganizationName)
+		projectId := project.Id
+		orgId := project.Organization.Id
+
 		QuitWithMessageIfProjectDoesNotExist(projectId)
 
 		if WatchFlag {
@@ -101,6 +105,7 @@ var statusCmd = &cobra.Command{
 		if !WatchFlag {
 			if (environment.Status.IsInProgress() || environment.Status.IsOk()) && !DeploymentOutputFlag {
 				// no error
+				io.PrintHint("View the status in the UI: " + "https://console.qovery.com/platform/organization/" + orgId + "/projects/" + projectId + "/" + environment.Id)
 				return
 			}
 
@@ -117,6 +122,7 @@ var statusCmd = &cobra.Command{
 			}
 
 			showOutputErrorMessage(deploymentStatuses.Results)
+			io.PrintHint("View the status in the web UI: " + "https://console.qovery.com/platform/organization/" + orgId + "/projects/" + projectId + "/" + environment.Id)
 		}
 	},
 }
@@ -317,4 +323,11 @@ func ShowDatabaseList(databases []io.Service, showCredentials bool) {
 	}
 	table.Render()
 	fmt.Printf("\n")
+}
+
+func intPointerValue(i *int) string {
+	if i == nil {
+		return "0"
+	}
+	return strconv.Itoa(*i)
 }
