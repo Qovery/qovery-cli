@@ -17,8 +17,6 @@ var initCmd = &cobra.Command{
 	},
 }
 
-var templateFlag string
-
 func init() {
 	RootCmd.AddCommand(initCmd)
 }
