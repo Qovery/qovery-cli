@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"github.com/xeonx/timeago"
 	"os"
 	"qovery-cli/io"
 	"sort"
+	"strconv"
+	"strings"
 	"text/tabwriter"
 	"time"
 )
@@ -20,7 +23,10 @@ var statusCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		LoadCommandOptions(cmd, true, true, true, false, true)
 
-		projectId := io.GetProjectByName(ProjectName, OrganizationName).Id
+		project := io.GetProjectByName(ProjectName, OrganizationName)
+		projectId := project.Id
+		orgId := project.Organization.Id
+
 		QuitWithMessageIfProjectDoesNotExist(projectId)
 
 		if WatchFlag {
@@ -99,6 +105,7 @@ var statusCmd = &cobra.Command{
 		if !WatchFlag {
 			if (environment.Status.IsInProgress() || environment.Status.IsOk()) && !DeploymentOutputFlag {
 				// no error
+				io.PrintHint("View the status in the UI: " + "https://console.qovery.com/platform/organization/" + orgId + "/projects/" + projectId + "/" + environment.Id)
 				return
 			}
 
@@ -115,6 +122,7 @@ var statusCmd = &cobra.Command{
 			}
 
 			showOutputErrorMessage(deploymentStatuses.Results)
+			io.PrintHint("View the status in the web UI: " + "https://console.qovery.com/platform/organization/" + orgId + "/projects/" + projectId + "/" + environment.Id)
 		}
 	},
 }
@@ -209,4 +217,117 @@ func init() {
 	statusCmd.PersistentFlags().BoolVar(&DeploymentOutputFlag, "deployment-output", false, "Show deployment output (shown only an error occurred otherwise)")
 
 	RootCmd.AddCommand(statusCmd)
+}
+
+func ShowEnvironmentStatus(environment io.Environment) bool {
+	table := io.GetTable()
+	table.SetHeader([]string{"branch name", "status", "endpoints", "applications", "databases"})
+
+	result := false
+
+	if environment.Name == "" {
+		table.Append([]string{"", "", "", "", "", ""})
+	} else {
+		applicationName := "none"
+		if environment.Applications != nil {
+			applicationName = strings.Join(environment.GetApplicationNames(), ", ")
+		}
+
+		databaseName := "none"
+		if environment.Databases != nil {
+			databaseName = strings.Join(environment.GetDatabaseNames(), ", ")
+		}
+
+		endpoints := strings.Join(environment.GetConnectionURIs(), "\n")
+		if endpoints == "" {
+			endpoints = "none"
+		}
+
+		table.Append([]string{
+			environment.Name,
+			environment.Status.GetColoredStatus(),
+			endpoints,
+			applicationName,
+			databaseName,
+		})
+
+		result = true
+	}
+
+	table.Render()
+	fmt.Printf("\n")
+
+	return result
+}
+
+func ShowApplicationList(applications []io.Application) {
+	table := io.GetTable()
+	table.SetHeader([]string{"application name", "status", "last update", "cpu", "ram", "databases"})
+
+	if len(applications) == 0 {
+		table.Append([]string{"", "", "", "", "", ""})
+	} else {
+		for _, a := range applications {
+			databaseName := "none"
+			if a.Databases != nil {
+				databaseName = strings.Join(a.GetDatabaseNames(), ", ")
+			}
+
+			table.Append([]string{
+				a.Name,
+				a.Status.GetColoredStatus(),
+				timeago.English.Format(a.UpdatedAt),
+				a.Cpu,
+				a.Ram(),
+				databaseName,
+			})
+		}
+	}
+
+	table.Render()
+	fmt.Printf("\n")
+}
+
+func ShowDatabaseList(databases []io.Service, showCredentials bool) {
+	table := io.GetTable()
+	table.SetHeader([]string{"database name", "status", "last update", "type", "version", "endpoint", "port", "username", "password"})
+
+	if len(databases) == 0 {
+		table.Append([]string{"", "", "", "", "", "", "", "", ""})
+	} else {
+		for _, a := range databases {
+			endpoint := "<hidden>"
+			port := "<hidden>"
+			username := "<hidden>"
+			password := "<hidden>"
+
+			if showCredentials {
+				endpoint = a.FQDN
+				port = intPointerValue(a.Port)
+				username = a.Username
+				password = a.Password
+			}
+
+			table.Append([]string{
+				a.Name,
+				a.Status.GetColoredStatus(),
+				timeago.English.Format(a.UpdatedAt),
+				a.Type,
+				a.Version,
+				endpoint,
+				port,
+				username,
+				password,
+			})
+		}
+	}
+	table.Render()
+	fmt.Printf("\n")
+}
+
+func intPointerValue(i *int) string {
+	if i == nil {
+		return "0"
+	}
+	return strconv.Itoa(*i)
 }
