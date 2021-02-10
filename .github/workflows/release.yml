@@ -51,7 +51,7 @@ jobs:
           echo "md5sums=('${md5version}')" >> PKGBUILD
       -
         name: Publish AUR package
-        uses: KSXGitHub/github-actions-deploy-aur@2b89cb6b44dbf7bd06916a1a2fe411357dfff236
+        uses: KSXGitHub/github-actions-deploy-aur@72b5fe2a413d8f824fc12a2c5e4abba7229cd469
         with:
           pkgname: qovery-cli
           pkgbuild: ./PKGBUILD
