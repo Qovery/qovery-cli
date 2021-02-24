@@ -21,8 +21,7 @@ changelog:
     - '^docs:'
     - '^test:'
 brews:
-  -
-    name: qovery-cli
+  - name: qovery
     goarm: 6
     tap:
       owner: qovery
