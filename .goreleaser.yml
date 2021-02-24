@@ -21,7 +21,7 @@ changelog:
     - '^docs:'
     - '^test:'
 brews:
-  - name: qovery
+  - name: qovery-cli
     goarm: 6
     tap:
       owner: qovery
@@ -34,6 +34,8 @@ brews:
     homepage: "https://docs.qovery.com"
     description: "Deploy modern application in seconds"
     skip_upload: false
+    install: |
+      bin.install "qovery"
 scoop:
   url_template: "https://github.com/Qovery/qovery-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
   bucket:
