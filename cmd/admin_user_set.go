@@ -1,11 +1,11 @@
 package cmd
 
 import (
+	"github.com/Qovery/qovery-cli/io"
 	"github.com/spf13/cobra"
 	"log"
 	"net/http"
 	"net/url"
-	"qovery-cli/io"
 	"strings"
 )
 

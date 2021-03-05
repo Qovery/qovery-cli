@@ -79,8 +79,8 @@ func GetEnvironmentByName(projectId string, name string, withDetails bool) Envir
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodGet, RootURL + "/project/" + projectId +
-		"/environment/name/" + name + "?details=" + strconv.FormatBool(withDetails), nil)
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+
+		"/environment/name/"+name+"?details="+strconv.FormatBool(withDetails), nil)
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}

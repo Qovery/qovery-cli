@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"qovery-cli/io"
+	"github.com/Qovery/qovery-cli/io"
 	"strconv"
 	"strings"
 )

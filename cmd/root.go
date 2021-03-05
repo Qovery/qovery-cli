@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Qovery/qovery-cli/io"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery-cli/io"
 )
 
 // RootCmd represents the base command when called without any subcommands

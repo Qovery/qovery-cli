@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Qovery/qovery-cli/io"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/builder/dockerignore"
@@ -17,7 +18,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"qovery-cli/io"
 )
 
 import iio "io"

@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Qovery/qovery-cli/io"
 	"github.com/spf13/cobra"
 	"gopkg.in/src-d/go-git.v4"
 	"os"
-	"qovery-cli/io"
 	"strings"
 )
 

@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"github.com/Qovery/qovery-cli/io"
 	"github.com/spf13/cobra"
-	"qovery-cli/io"
 )
 
 var environmentStartCmd = &cobra.Command{
