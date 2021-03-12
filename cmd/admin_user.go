@@ -19,7 +19,7 @@ func init() {
 	adminCmd.AddCommand(adminUserCmd)
 }
 
-func getTokens() (string, string) {
+func GetTokens() (string, string) {
 	authorizationToken := io.GetAuthorizationToken()
 	if authorizationToken == "" {
 		log.Fatal("Authorization token not found. Use 'qovery auth' to sign in first. ")

@@ -19,7 +19,7 @@ var adminUserClearCmd = &cobra.Command{
 	Use:  "clear",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		authorizationToken, adminToken := getTokens()
+		authorizationToken, adminToken := GetTokens()
 		payload := prepareEmptyUserMetadataPayload()
 		subClaim := getSubClaim(authorizationToken)
 

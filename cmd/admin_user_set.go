@@ -21,7 +21,7 @@ var adminUserSetCmd = &cobra.Command{
 	Use:  "set",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		authorizationToken, adminToken := getTokens()
+		authorizationToken, adminToken := GetTokens()
 		payload := prepareUserMetadataPayload(args[0])
 		subClaim := getSubClaim(authorizationToken)
 

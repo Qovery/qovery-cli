@@ -1,11 +1,14 @@
 package io
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type Organizations struct {
@@ -82,4 +85,28 @@ func GetPrivateOrganization() Organization {
 	_ = json.Unmarshal(body, &p)
 
 	return p
+}
+
+func AddUserToOrganization(organizationName string, userInfo string)  {
+	_, adminToken := GetTokens()
+	json, _ := json.Marshal(userInfo)
+	payload := bytes.NewBuffer(json)
+
+	request, err := http.NewRequest("POST", DefaultRootUrl + "/admin/organization/" + organizationName, payload)
+	if err != nil {
+		log.Fatal(err)
+	}
+	request.Header.Set("Authorization", "Bearer " + strings.TrimSpace(adminToken))
+	request.Header.Set("Content-Type", "application/json")
+
+	res, err := http.DefaultClient.Do(request)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if res.StatusCode != 200 {
+		log.Printf("Could not add user to organization.")
+	} else {
+		log.Printf("User added to " + organizationName + ".")
+	}
 }
