@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"encoding/json"
+	"github.com/Qovery/qovery-cli/io"
 	"github.com/stretchr/testify/assert"
-	"qovery-cli/io"
 	"testing"
 )
 

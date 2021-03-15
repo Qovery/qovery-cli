@@ -55,8 +55,8 @@ func GetApplicationByName(projectId string, environmentId string, name string, w
 
 	CheckAuthenticationOrQuitWithMessage()
 
-	req, _ := http.NewRequest(http.MethodGet, RootURL + "/project/" + projectId +
-		"/environment/" + environmentId + "/application/name/" + name + "?details=" + strconv.FormatBool(withDetails),  nil)
+	req, _ := http.NewRequest(http.MethodGet, RootURL+"/project/"+projectId+
+		"/environment/"+environmentId+"/application/name/"+name+"?details="+strconv.FormatBool(withDetails), nil)
 	req.Header.Set(headerAuthorization, headerValueBearer+GetAuthorizationToken())
 
 	client := http.Client{}

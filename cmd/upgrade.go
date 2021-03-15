@@ -4,6 +4,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Qovery/qovery-cli/io"
 	"github.com/kardianos/osext"
 	"github.com/mholt/archiver/v3"
 	"github.com/spf13/cobra"
@@ -11,7 +12,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"qovery-cli/io"
 	"runtime"
 )
 

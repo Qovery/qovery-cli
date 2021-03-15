@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Qovery/qovery-cli/io"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"qovery-cli/io"
 )
 
 var projectEnvDeleteCmd = &cobra.Command{

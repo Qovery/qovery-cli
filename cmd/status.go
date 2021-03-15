@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Qovery/qovery-cli/io"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/xeonx/timeago"
 	"os"
-	"qovery-cli/io"
 	"sort"
 	"strconv"
 	"strings"
