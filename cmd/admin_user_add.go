@@ -10,7 +10,7 @@ var (
 	userInfo string
 	organizationName string
 	userErr error
-	orgaErr error
+	organizationErr error
 	adminUserAddCmd = &cobra.Command{
 		Use: "add",
 		Short: "Add a user in an organization",
@@ -23,14 +23,14 @@ func init() {
 	adminUserAddCmd.Flags().StringVarP(&userInfo, "user", "u", "", "User's mail or SubId")
 	userErr = adminUserAddCmd.MarkFlagRequired("user")
 	adminUserAddCmd.Flags().StringVarP(&organizationName, "organization", "o", "", "Organization's name")
-	orgaErr = adminUserAddCmd.MarkFlagRequired("organization")
+	organizationErr = adminUserAddCmd.MarkFlagRequired("organization")
 	adminCmd.AddCommand(adminUserAddCmd)
 }
 
 func addUserToOrganization(){
 	if userErr != nil {
 		log.Error("Invalid user info")
-	} else if orgaErr != nil {
+	} else if organizationErr != nil {
 		log.Error("Invalid organization name")
 	} else {
 		io.AddUserToOrganization(organizationName, userInfo)

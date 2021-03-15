@@ -2,8 +2,11 @@ package io
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func Deploy(projectId string, environmentId string, applicationId string, commitId string) {
@@ -34,4 +37,28 @@ func Deploy(projectId string, environmentId string, applicationId string, commit
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func AdminDeploy(clusterId string){
+	authToken,_ := GetTokens()
+
+	req, err  := http.NewRequest(http.MethodPost, RootURL + "/infrastructure/init/" + clusterId, nil )
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	req.Header.Set("Authorization", "Bearer " + strings.TrimSpace(authToken))
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !strings.Contains(res.Status, "200") {
+		result, _ := ioutil.ReadAll(res.Body)
+		log.Errorf("Could not deploy cluster : %s. %s", res.Status, string(result) )
+	} else {
+		fmt.Println("Cluster " + clusterId + " deploying.")
+	}
+
 }
