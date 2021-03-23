@@ -19,11 +19,11 @@ require (
 	github.com/golang/gddo v0.0.0-20200219175727-df439dd5819e // indirect
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/hashicorp/go-getter v1.4.1
+	github.com/hashicorp/vault/api v1.0.4
 	github.com/joho/godotenv v1.3.0
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0
 	github.com/klauspost/compress v1.10.1 // indirect
 	github.com/klauspost/pgzip v1.2.3 // indirect
-	github.com/manifoldco/promptui v0.7.0
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.9 // indirect
 	github.com/mholt/archiver/v3 v3.3.0
@@ -35,7 +35,6 @@ require (
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.6
-	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.4.0
 	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/xeonx/timeago v1.0.0-rc4
