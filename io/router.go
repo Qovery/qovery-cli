@@ -17,6 +17,7 @@ type Router struct {
 	Name          string       `json:"name"`
 	ConnectionURI string       `json:"connection_uri"`
 	CustomDomain  CustomDomain `json:"custom_domain"`
+	DeletedAt     string       `json:"deleted_at"`
 }
 
 type DomainStatus string
@@ -81,5 +82,12 @@ func ListRouters(projectId string, environmentId string) Routers {
 
 	_ = json.Unmarshal(body, &routers)
 
-	return routers
+	filteredRouters := Routers{}
+	for _, p := range routers.Results {
+		if p.DeletedAt == "" {
+			filteredRouters.Results = append(filteredRouters.Results, p)
+		}
+	}
+
+	return filteredRouters
 }
