@@ -40,6 +40,8 @@ type TokensResponse struct {
 }
 
 func DoRequestUserToAuthenticate(headless bool) {
+	qoveryConsoleUrl := "https://console.qovery.com"
+
 	available, message, _ := CheckAvailableNewVersion()
 	if available {
 		fmt.Println(message)
@@ -70,10 +72,11 @@ func DoRequestUserToAuthenticate(headless bool) {
 				xmlHttp.open("GET", "http://localhost:%d/authorization/valid?code=" + hash, false);
 				xmlHttp.send(null);
 				xmlHttp.responseText;
+				window.setTimeout('window.location="` + qoveryConsoleUrl + `"; ',2000);
              </script>`, httpAuthPort)
 
 		_, _ = writer.Write([]byte(js))
-		_, _ = writer.Write([]byte("Authentication successful. You can close this window."))
+		_, _ = writer.Write([]byte("Authentication successful, you'll be redirected to Qovery console. If it's not the case, click on this link: <a href='" + qoveryConsoleUrl + "'>" + qoveryConsoleUrl + "</a>"))
 	})
 
 	http.HandleFunc("/authorization/valid", func(writer http.ResponseWriter, request *http.Request) {
