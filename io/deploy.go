@@ -1,6 +1,7 @@
 package io
 
 import (
+	"bytes"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -39,15 +40,21 @@ func Deploy(projectId string, environmentId string, applicationId string, commit
 	}
 }
 
-func AdminDeploy(clusterId string){
+func AdminDeploy(clusterId string, dryRunDisabled bool){
 	authToken,_ := GetTokens()
+	var body *bytes.Buffer
 
-	req, err  := http.NewRequest(http.MethodPost, RootURL + "/infrastructure/init/" + clusterId, nil )
+	if !dryRunDisabled {
+		body = bytes.NewBuffer([]byte( `{"metadata": {"dry_run_deploy": true}}`))
+	}
+
+	req, err  := http.NewRequest(http.MethodPost, RootURL + "/infrastructure/init/" + clusterId, body )
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	req.Header.Set("Authorization", "Bearer " + strings.TrimSpace(authToken))
+
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
