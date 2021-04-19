@@ -42,13 +42,16 @@ func Deploy(projectId string, environmentId string, applicationId string, commit
 
 func AdminDeploy(clusterId string, dryRunDisabled bool){
 	authToken,_ := GetTokens()
-	var body *bytes.Buffer
+	var req *http.Request
+	var err error
 
 	if !dryRunDisabled {
-		body = bytes.NewBuffer([]byte( `{"metadata": {"dry_run_deploy": true}}`))
+		body := bytes.NewBuffer([]byte( `{"metadata": {"dry_run_deploy": true}}`))
+		req, err  = http.NewRequest(http.MethodPost, RootURL + "/infrastructure/init/" + clusterId, body )
+	} else {
+		req, err  = http.NewRequest(http.MethodPost, RootURL + "/infrastructure/init/" + clusterId, nil )
 	}
 
-	req, err  := http.NewRequest(http.MethodPost, RootURL + "/infrastructure/init/" + clusterId, body )
 	if err != nil {
 		log.Fatal(err)
 	}
