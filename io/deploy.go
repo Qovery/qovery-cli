@@ -57,18 +57,17 @@ func AdminDeploy(clusterId string, dryRunDisabled bool){
 	}
 
 	req.Header.Set("Authorization", "Bearer " + strings.TrimSpace(authToken))
-
+	req.Header.Set("Content-Type", "application/json ")
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	result, _ := ioutil.ReadAll(res.Body)
 	if !strings.Contains(res.Status, "200") {
-		result, _ := ioutil.ReadAll(res.Body)
 		log.Errorf("Could not deploy cluster : %s. %s", res.Status, string(result) )
-	} else {
-		fmt.Println("Cluster " + clusterId + " deploying.")
+	} else if dryRunDisabled {
+		fmt.Printf("Cluster %s deploying. %s", clusterId, result)
 	}
 
 }
