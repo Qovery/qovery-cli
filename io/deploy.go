@@ -40,24 +40,25 @@ func Deploy(projectId string, environmentId string, applicationId string, commit
 	}
 }
 
-func AdminDeploy(clusterId string, dryRunDisabled bool){
-	authToken,_ := GetTokens()
+func AdminDeploy(clusterId string, dryRunDisabled bool) {
+	authToken, _ := GetTokens()
 	var req *http.Request
 	var err error
 
 	if !dryRunDisabled {
-		body := bytes.NewBuffer([]byte( `{"metadata": {"dry_run_deploy": true}}`))
-		req, err  = http.NewRequest(http.MethodPost, RootURL + "/infrastructure/init/" + clusterId, body )
+		body := bytes.NewBuffer([]byte(`{"metadata": {"dry_run_deploy": true}}`))
+		req, err = http.NewRequest(http.MethodPost, RootURL+"/infrastructure/init/"+clusterId, body)
 	} else {
-		req, err  = http.NewRequest(http.MethodPost, RootURL + "/infrastructure/init/" + clusterId, nil )
+		body := bytes.NewBuffer([]byte(`{"metadata": {"dry_run_deploy": false}}`))
+		req, err = http.NewRequest(http.MethodPost, RootURL+"/infrastructure/init/"+clusterId, body)
 	}
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	req.Header.Set("Authorization", "Bearer " + strings.TrimSpace(authToken))
-
+	req.Header.Set("Authorization", "Bearer "+strings.TrimSpace(authToken))
+	req.Header.Set("Content-Type", "application/json")
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -66,7 +67,7 @@ func AdminDeploy(clusterId string, dryRunDisabled bool){
 
 	if !strings.Contains(res.Status, "200") {
 		result, _ := ioutil.ReadAll(res.Body)
-		log.Errorf("Could not deploy cluster : %s. %s", res.Status, string(result) )
+		log.Errorf("Could not deploy cluster : %s. %s", res.Status, string(result))
 	} else {
 		fmt.Println("Cluster " + clusterId + " deploying.")
 	}
