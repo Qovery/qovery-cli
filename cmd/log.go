@@ -48,7 +48,7 @@ func ShowApplicationLog(organizationName string, projectName string, branchName 
 
 	io.PrintHint("Opening the logs in your browser : " + logUrl)
 
-	browser.OpenURL(logUrl)
+	_ = browser.OpenURL(logUrl)
 
 	io.ListApplicationLogs(lastLines, follow, projectId, environment.Id, application.Id)
 }
