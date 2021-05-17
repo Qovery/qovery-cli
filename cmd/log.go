@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/pkg/browser"
 	"qovery-cli/io"
 )
 
@@ -43,7 +44,11 @@ func ShowApplicationLog(organizationName string, projectName string, branchName 
 	environment := io.GetEnvironmentByName(projectId, branchName, true)
 	application := io.GetApplicationByName(projectId, environment.Id, applicationName, true)
 
-	io.PrintHint("View the logs in the UI: " + "https://console.qovery.com/platform/organization/" + orgId + "/projects/" + projectId + "/" + environment.Id + "/" + application.Id + "/logs")
+	logUrl := "https://console.qovery.com/platform/organization/" + orgId + "/projects/" + projectId + "/" + environment.Id + "/" + application.Id + "/logs"
+
+	io.PrintHint("Opening the logs in your browser : " + logUrl)
+
+	browser.OpenURL(logUrl)
 
 	io.ListApplicationLogs(lastLines, follow, projectId, environment.Id, application.Id)
 }
