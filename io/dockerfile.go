@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -27,7 +28,12 @@ func CurrentDockerfileContentFromPath(path string) string {
 }
 
 func ExposePortsFromCurrentDockerfile() []string {
-	dockerfileContent := strings.Split(CurrentDockerfileContent(), "\n")
+	var dockerfileContent []string
+	if (runtime.GOOS == "windows") {
+		dockerfileContent = strings.Split(CurrentDockerfileContent(), "\r\n")
+	} else {
+		dockerfileContent = strings.Split(CurrentDockerfileContent(), "\n")
+	}
 
 	var ports []string
 
