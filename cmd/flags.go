@@ -16,4 +16,5 @@ var (
 	OutputEnvironmentVariables bool
 	Tail                       int
 	ConfigurationDirectoryRoot string
+	OpenInBrowserFlag          bool
 )

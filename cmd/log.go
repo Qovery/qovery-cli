@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/pkg/browser"
 	"qovery-cli/io"
 )
 
@@ -32,6 +33,7 @@ func init() {
 	logCmd.PersistentFlags().IntVar(&Tail, "tail", 0, "Specify if the logs should be streamed")
 	logCmd.PersistentFlags().BoolVarP(&FollowFlag, "follow", "f", false, "Specify if the logs should be streamed")
 	logCmd.PersistentFlags().BoolVarP(&EnvironmentFlag, "environment", "e", false, "Display logs from all apps in the environment")
+	logCmd.PersistentFlags().BoolVarP(&OpenInBrowserFlag, "tab", "t", false, "Open logs url in a new tab in the browser")
 
 	RootCmd.AddCommand(logCmd)
 }
@@ -43,7 +45,14 @@ func ShowApplicationLog(organizationName string, projectName string, branchName 
 	environment := io.GetEnvironmentByName(projectId, branchName, true)
 	application := io.GetApplicationByName(projectId, environment.Id, applicationName, true)
 
-	io.PrintHint("View the logs in the UI: " + "https://console.qovery.com/platform/organization/" + orgId + "/projects/" + projectId + "/" + environment.Id + "/" + application.Id + "/logs")
+	logUrl := "https://console.qovery.com/platform/organization/" + orgId + "/projects/" + projectId + "/" + environment.Id + "/" + application.Id + "/logs"
+
+	if OpenInBrowserFlag {
+		io.PrintHint("Opening the logs in your browser : " + logUrl)
+		_ = browser.OpenURL(logUrl)
+	} else {
+		io.PrintHint("View logs in the UI: " + logUrl)
+	}
 
 	io.ListApplicationLogs(lastLines, follow, projectId, environment.Id, application.Id)
 }
