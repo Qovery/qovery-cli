@@ -35,6 +35,7 @@ var consoleCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		url := fmt.Sprintf("https://console.qovery.com/platform/organization/%v/projects/%v/environments/%v/applications/%v/summary", organization, project, environment, application)
+		utils.PrintlnInfo("Opening " + url)
 		err = browser.OpenURL(url)
 		if err != nil {
 			utils.PrintlnError(err)
