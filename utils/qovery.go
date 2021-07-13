@@ -36,6 +36,10 @@ func SelectOrganization() error {
 		orgas[org.Name] = org.Id
 	}
 
+	if len(organizationNames) < 1 {
+		return errors.New("no organizations found")
+	}
+
 	fmt.Println("Organization:")
 	prompt := promptui.Select{
 		Items: organizationNames,
@@ -83,6 +87,10 @@ func SelectProject(organization Id) error {
 		projectsNames = append(projectsNames, proj.Name)
 		projectsIds = append(projectsIds, proj.Id)
 		projects[proj.Name] = proj.Id
+	}
+
+	if len(projectsNames) < 1 {
+		return errors.New("no projects found")
 	}
 
 	fmt.Println("Project:")
@@ -134,6 +142,10 @@ func SelectEnvironment(project Id) error {
 		environments[env.Name] = env.Id
 	}
 
+	if len(environmentsNames) < 1 {
+		return errors.New("no environments found")
+	}
+
 	fmt.Println("Environment:")
 	prompt := promptui.Select{
 		Items: environmentsNames,
@@ -181,6 +193,10 @@ func SelectApplication(environment Id) error {
 		applicationsNames = append(applicationsNames, *app.Name)
 		applicationsIds = append(applicationsIds, app.Id)
 		applications[*app.Name] = app.Id
+	}
+
+	if len(applicationsNames) < 1 {
+		return errors.New("no applications found")
 	}
 
 	fmt.Println("Application:")

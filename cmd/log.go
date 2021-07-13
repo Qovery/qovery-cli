@@ -34,22 +34,15 @@ var logCmd = &cobra.Command{
 		for follow {
 			table := setupTable(false)
 
-			// -2 means the last log line (we append empty lines to add some padding after each log)
-			lastLogDateString := lastRenderedLogs[len(lastRenderedLogs)-2][0]
+			lastLogDateString := lastRenderedLogs[len(lastRenderedLogs)-1][0]
 			lastLogDate, _ := time.Parse(time.StampMicro, lastLogDateString)
 			var newLogs = getLogs()
 
 			if len(newLogs) > 0 {
 				for _, newLog := range newLogs {
-					// skipping padding lines
-					if newLog[0] == "" {
-						continue
-					}
 					newLogDate, _ := time.Parse(time.StampMicro, newLog[0])
 					if lastLogDate.Before(newLogDate) {
 						table.Append(newLog)
-						// add padding
-						table.Append([]string{"", ""})
 					}
 				}
 				table.Render()
@@ -89,8 +82,6 @@ func getLogs() [][]string {
 
 	for _, log := range logs.GetResults() {
 		logRows = append(logRows, []string{log.CreatedAt.Format(time.StampMicro), log.Message})
-		// add padding
-		logRows = append(logRows, []string{"", ""})
 	}
 
 	return logRows

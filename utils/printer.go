@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/pterm/pterm"
 	"os"
 )
 
@@ -15,29 +16,30 @@ func PrintlnInfo(info string) {
 }
 
 func PrintlnContext() {
-	PrintlnInfo("Current context:")
 	_, oName, err := CurrentOrganization()
 	if err != nil {
 		PrintlnError(err)
 		os.Exit(1)
 	}
-	fmt.Printf("%v: %v\n", color.CyanString("Organization"), oName)
 	_, pName, err := CurrentProject()
 	if err != nil {
 		PrintlnError(err)
 		os.Exit(1)
 	}
-	fmt.Printf("%v: %v\n", color.CyanString("Project"), pName)
 	_, eName, err := CurrentEnvironment()
 	if err != nil {
 		PrintlnError(err)
 		os.Exit(1)
 	}
-	fmt.Printf("%v: %v\n", color.CyanString("Environment"), eName)
 	_, aName, err := CurrentApplication()
 	if err != nil {
 		PrintlnError(err)
 		os.Exit(1)
 	}
-	fmt.Printf("%v: %v\n", color.CyanString("Application"), aName)
+	err = pterm.DefaultTable.WithData(pterm.TableData{
+		{"Organization", string(oName)},
+		{"Project", string(pName)},
+		{"Environment", string(eName)},
+		{"Application", string(aName)},
+	}).Render()
 }
