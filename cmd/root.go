@@ -2,58 +2,36 @@ package cmd
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
+	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery-cli/io"
 )
 
-// RootCmd represents the base command when called without any subcommands
-var RootCmd = &cobra.Command{
+// rootCmd represents the base command when called without any subcommands
+var rootCmd = &cobra.Command{
 	Use:   "qovery",
-	Short: "The qovery command line interface.",
-	Long:  `The qovery command line interface lets you manage your Qovery environment.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Short: "A Command-line interface of Qovery platform",
 }
 
-// Execute adds all child commands to the root command sets flags appropriately.
+// Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	fmt.Println("Execute called")
-
-	if err := RootCmd.Execute(); err != nil {
-		log.Debug(err.Error())
-		os.Exit(-1)
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
-
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	log.Debug("init called")
-	io.RefreshExpiredTokenSilently()
-	RootCmd.PersistentFlags().BoolVar(&DebugFlag, "debug", false, "Enable debugging when true.")
 }
 
 func initConfig() {
-	if DebugFlag {
-		log.SetLevel(log.DebugLevel)
-		log.Debug("debug flag is set to true")
+	if !utils.QoveryContextExists() {
+		err := utils.InitializeQoveryContext()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	}
-
-	if os.Getenv("GENERATE_BASH_COMPLETION") != "" {
-		generateBashCompletion()
-	}
-}
-
-func generateBashCompletion() {
-	log.Debugf("generating bash completion script")
-	file, err := os.Create("/tmp/qovery-bash-completion.out")
-	if err != nil {
-		fmt.Println("Error: ", err.Error())
-	}
-	defer file.Close()
-	_ = RootCmd.GenBashCompletion(file)
 }
