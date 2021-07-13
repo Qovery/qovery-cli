@@ -6,6 +6,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/qovery/qovery-client-go"
 	"golang.org/x/net/context"
+	"strings"
 )
 
 func SelectOrganization() error {
@@ -35,9 +36,12 @@ func SelectOrganization() error {
 		orgas[org.Name] = org.Id
 	}
 
-	fmt.Printf("Organization:")
+	fmt.Println("Organization:")
 	prompt := promptui.Select{
 		Items: organizationNames,
+		Searcher: func(input string, index int) bool {
+			return strings.Contains(strings.ToLower(organizationNames[index]), strings.ToLower(input))
+		},
 	}
 	_, selectedOrganization, err := prompt.Run()
 	if err != nil {
@@ -84,6 +88,9 @@ func SelectProject(organization Id) error {
 	fmt.Println("Project:")
 	prompt := promptui.Select{
 		Items: projectsNames,
+		Searcher: func(input string, index int) bool {
+			return strings.Contains(strings.ToLower(projectsNames[index]), strings.ToLower(input))
+		},
 	}
 	_, selectedProject, err := prompt.Run()
 	if err != nil {
@@ -130,6 +137,9 @@ func SelectEnvironment(project Id) error {
 	fmt.Println("Environment:")
 	prompt := promptui.Select{
 		Items: environmentsNames,
+		Searcher: func(input string, index int) bool {
+			return strings.Contains(strings.ToLower(environmentsNames[index]), strings.ToLower(input))
+		},
 	}
 	_, selectedEnvironment, err := prompt.Run()
 	if err != nil {
@@ -176,6 +186,9 @@ func SelectApplication(environment Id) error {
 	fmt.Println("Application:")
 	prompt := promptui.Select{
 		Items: applicationsNames,
+		Searcher: func(input string, index int) bool {
+			return strings.Contains(strings.ToLower(applicationsNames[index]), strings.ToLower(input))
+		},
 	}
 	_, selectedApplication, err := prompt.Run()
 	if err != nil {
