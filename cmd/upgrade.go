@@ -3,7 +3,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"github.com/kardianos/osext"
 	"github.com/mholt/archiver/v3"
@@ -45,28 +44,28 @@ var upgradeCmd = &cobra.Command{
 
 		binaryWriteAccess := unix.Access(currentBinaryFilename, unix.W_OK)
 		if binaryWriteAccess != nil {
-			utils.PrintlnError(errors.New(fmt.Sprintf("Upgrade cancelled: no write permission on the Qovery CLI binary file: %s", currentBinaryFilename)))
+			utils.PrintlnError(fmt.Errorf("Upgrade cancelled: no write permission on the Qovery CLI binary file: %s", currentBinaryFilename))
 			cleanArchives(cleanList)
 			os.Exit(0)
 		}
 
 		resp, err := http.Get(url)
 		if err != nil {
-			utils.PrintlnError(errors.New(fmt.Sprintf("Error while downloading the latest version: %s", err)))
+			utils.PrintlnError(fmt.Errorf("Error while downloading the latest version: %s", err))
 			os.Exit(0)
 		}
 		defer resp.Body.Close()
 
 		out, err := os.Create(archivePathName)
 		if err != nil {
-			utils.PrintlnError(errors.New(fmt.Sprintf("Error while overriding Qovery CLI binary file: %s", err)))
+			utils.PrintlnError(fmt.Errorf("Error while overriding Qovery CLI binary file: %s", err))
 			os.Exit(0)
 		}
 		defer out.Close()
 
 		_, err = iio.Copy(out, resp.Body)
 		if err != nil {
-			utils.PrintlnError(errors.New(fmt.Sprintf("Error while adding content to Qovery CLI binary file: %s", err)))
+			utils.PrintlnError(fmt.Errorf("Error while adding content to Qovery CLI binary file: %s", err))
 			os.Exit(0)
 		}
 
@@ -76,7 +75,7 @@ var upgradeCmd = &cobra.Command{
 
 		err = archiver.Unarchive(archivePathName, uncompressPath)
 		if err != nil {
-			utils.PrintlnError(errors.New(fmt.Sprintf("Error while uncompressing the archive: %s", err)))
+			utils.PrintlnError(fmt.Errorf("Error while uncompressing the archive: %s", err))
 			os.Exit(0)
 		}
 
@@ -100,7 +99,7 @@ func cleanArchives(listToRemove []string) {
 	for _, value := range listToRemove {
 		err := os.RemoveAll(value)
 		if err != nil {
-			utils.PrintlnError(errors.New(fmt.Sprintf("Error while removing the element: %s", err)))
+			utils.PrintlnError(fmt.Errorf("Error while removing the element: %s", err))
 			os.Exit(0)
 		}
 	}
