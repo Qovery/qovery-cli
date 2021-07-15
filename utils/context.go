@@ -82,11 +82,11 @@ func CurrentOrganization() (Id, Name, error) {
 
 	id := context.OrganizationId
 	if id == "" {
-		return "", "", errors.New("Current organization has not been selected. Please, use 'qovery context' to set up Qovery context. ")
+		return "", "", errors.New("Current organization has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 	name := context.OrganizationName
 	if name == "" {
-		return "", "", errors.New("Current organization has not been selected. Please, use 'qovery context' to set up Qovery context. ")
+		return "", "", errors.New("Current organization has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
 	return id, name, nil
@@ -112,11 +112,11 @@ func CurrentProject() (Id, Name, error) {
 
 	id := context.ProjectId
 	if id == "" {
-		return "", "", errors.New("Current project has not been selected. Please, use 'qovery context' to set up Qovery context. ")
+		return "", "", errors.New("Current project has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 	name := context.ProjectName
 	if name == "" {
-		return "", "", errors.New("Current project has not been selected. Please, use 'qovery context' to set up Qovery context. ")
+		return "", "", errors.New("Current project has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
 	return id, name, nil
@@ -142,11 +142,11 @@ func CurrentEnvironment() (Id, Name, error) {
 
 	id := context.EnvironmentId
 	if id == "" {
-		return "", "", errors.New("Current environment has not been selected. Please, use 'qovery context' to set up Qovery context. ")
+		return "", "", errors.New("Current environment has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 	name := context.EnvironmentName
 	if name == "" {
-		return "", "", errors.New("Current environment has not been selected. Please, use 'qovery context' to set up Qovery context. ")
+		return "", "", errors.New("Current environment has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
 	return id, name, nil
@@ -172,11 +172,11 @@ func CurrentApplication() (Id, Name, error) {
 
 	id := context.ApplicationId
 	if id == "" {
-		return "", "", errors.New("Current application has not been selected. Please, use 'qovery context' to set up Qovery context. ")
+		return "", "", errors.New("Current application has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 	name := context.ApplicationName
 	if name == "" {
-		return "", "", errors.New("Current application has not been selected. Please, use 'qovery context' to set up Qovery context. ")
+		return "", "", errors.New("Current application has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
 	return id, name, nil
