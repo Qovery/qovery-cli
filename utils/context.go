@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"errors"
+	"github.com/dgrijalva/jwt-go"
 	"io/ioutil"
 	"os"
 	"time"
@@ -22,6 +23,7 @@ type QoveryContext struct {
 	EnvironmentName       Name         `json:"environment_name"`
 	ApplicationId         Id           `json:"application_id"`
 	ApplicationName       Name         `json:"application_name"`
+	User                  Name         `json:"user"`
 }
 type Name string
 type AccessToken string
@@ -47,6 +49,15 @@ func CurrentContext() (QoveryContext, error) {
 	}
 
 	return context, err
+}
+
+func (c QoveryContext) ToPosthogProperties() map[string]interface{} {
+	return map[string]interface{}{
+		"organization": c.OrganizationName,
+		"project":      c.ProjectName,
+		"environment":  c.EnvironmentName,
+		"application":  c.ApplicationName,
+	}
 }
 
 func StoreContext(context QoveryContext) error {
@@ -230,6 +241,17 @@ func SetAccessToken(token AccessToken, expiration time.Time) error {
 
 	context.AccessToken = token
 	context.AccessTokenExpiration = expiration
+
+	claims := jwt.MapClaims{}
+	_, _ = jwt.ParseWithClaims(string(token), claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(""), nil
+	})
+
+	sub, ok := claims["sub"]
+	subStr := sub.(string)
+	if ok {
+		context.User = Name(subStr)
+	}
 
 	return StoreContext(context)
 }
