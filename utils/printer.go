@@ -37,7 +37,7 @@ func PrintlnContext() error {
 	if err != nil {
 		return err
 	}
-	err = pterm.DefaultTable.WithData(pterm.TableData{
+	_ = pterm.DefaultTable.WithData(pterm.TableData{
 		{"Organization", string(oName)},
 		{"Project", string(pName)},
 		{"Environment", string(eName)},

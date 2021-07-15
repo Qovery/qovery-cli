@@ -27,12 +27,10 @@ func SelectOrganization() error {
 	}
 
 	var organizationNames []string
-	var organizationIds []string
 	var orgas = make(map[string]string)
 
 	for _, org := range organizations.GetResults() {
 		organizationNames = append(organizationNames, org.Name)
-		organizationIds = append(organizationIds, org.Id)
 		orgas[org.Name] = org.Id
 	}
 
@@ -80,12 +78,10 @@ func SelectProject(organization Id) error {
 	}
 
 	var projectsNames []string
-	var projectsIds []string
 	var projects = make(map[string]string)
 
 	for _, proj := range p.GetResults() {
 		projectsNames = append(projectsNames, proj.Name)
-		projectsIds = append(projectsIds, proj.Id)
 		projects[proj.Name] = proj.Id
 	}
 
@@ -133,12 +129,10 @@ func SelectEnvironment(project Id) error {
 	}
 
 	var environmentsNames []string
-	var environmentsIds []string
 	var environments = make(map[string]string)
 
 	for _, env := range e.GetResults() {
 		environmentsNames = append(environmentsNames, env.Name)
-		environmentsIds = append(environmentsIds, env.Id)
 		environments[env.Name] = env.Id
 	}
 
@@ -186,12 +180,10 @@ func SelectApplication(environment Id) error {
 	}
 
 	var applicationsNames []string
-	var applicationsIds []string
 	var applications = make(map[string]string)
 
 	for _, app := range a.GetResults() {
 		applicationsNames = append(applicationsNames, *app.Name)
-		applicationsIds = append(applicationsIds, app.Id)
 		applications[*app.Name] = app.Id
 	}
 
