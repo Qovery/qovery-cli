@@ -8,7 +8,7 @@ import (
 
 var contextCmd = &cobra.Command{
 	Use:   "context",
-	Short: "Setup the Qovery CLI context",
+	Short: "Manage Qovery CLI context",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.PrintlnInfo("Current context:")
 		err := utils.PrintlnContext()
@@ -16,40 +16,7 @@ var contextCmd = &cobra.Command{
 			fmt.Println("Context not yet configured. ")
 		}
 		println()
-		utils.PrintlnInfo("Select new context")
-		err = utils.SelectOrganization()
-		if err != nil {
-			utils.PrintlnError(err)
-			return
-		}
-		id, _, _ := utils.CurrentOrganization()
-
-		err = utils.SelectProject(id)
-		if err != nil {
-			utils.PrintlnError(err)
-			return
-		}
-		id, _, _ = utils.CurrentProject()
-
-		err = utils.SelectEnvironment(id)
-		if err != nil {
-			utils.PrintlnError(err)
-			return
-		}
-		id, _, _ = utils.CurrentEnvironment()
-
-		err = utils.SelectApplication(id)
-		if err != nil {
-			utils.PrintlnError(err)
-			return
-		}
-		_, _, _ = utils.CurrentApplication()
-		println()
-		utils.PrintlnInfo("New context:")
-		err = utils.PrintlnContext()
-		if err != nil {
-			utils.PrintlnError(err)
-		}
+		utils.PrintlnInfo("You can set a new context using 'qovery context set'. ")
 	},
 }
 
