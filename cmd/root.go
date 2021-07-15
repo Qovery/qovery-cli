@@ -44,7 +44,7 @@ func initSentry() {
 		Release:     io.GetCurrentVersion(),
 		// Enable printing of SDK debug messages.
 		// Useful when getting started or trying to figure something out.
-		Debug: true,
+		Debug: false,
 		BeforeSend: func(event *sentry.Event, hint *sentry.EventHint) *sentry.Event {
 			if len(event.Exception) > 0 && len(event.Exception[0].Stacktrace.Frames) > 0 {
 				frames := event.Exception[0].Stacktrace.Frames
