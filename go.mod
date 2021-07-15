@@ -7,7 +7,9 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/getsentry/sentry-go v0.11.0
 	github.com/hashicorp/vault/api v1.1.1
+	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0
 	github.com/manifoldco/promptui v0.8.0
+	github.com/mholt/archiver/v3 v3.5.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2
 	github.com/posthog/posthog-go v0.0.0-20210616140600-8bebac98515e
@@ -17,4 +19,5 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
+	golang.org/x/sys v0.0.0-20210616045830-e2b7044e8c71
 )
