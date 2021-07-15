@@ -212,3 +212,23 @@ func SelectApplication(environment Id) error {
 
 	return nil
 }
+
+func ResetApplicationContext() error {
+	ctx, err := CurrentContext()
+	if err != nil {
+		return err
+	}
+
+	ctx.OrganizationName = ""
+	ctx.OrganizationId = ""
+	ctx.ProjectName = ""
+	ctx.ProjectId = ""
+	ctx.EnvironmentName = ""
+	ctx.EnvironmentId = ""
+	ctx.ApplicationName = ""
+	ctx.ApplicationId = ""
+
+	err = StoreContext(ctx)
+
+	return err
+}

@@ -18,6 +18,7 @@ var setCmd = &cobra.Command{
 			fmt.Println("Context not yet configured. ")
 		}
 		println()
+		_ = utils.ResetApplicationContext()
 		utils.PrintlnInfo("Select new context")
 		err = utils.SelectOrganization()
 		if err != nil {
