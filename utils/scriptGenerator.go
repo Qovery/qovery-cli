@@ -1,7 +1,7 @@
 package utils
 
 type Var struct {
-	Key string
+	Key   string
 	Value string
 }
 

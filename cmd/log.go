@@ -1,55 +1,118 @@
 package cmd
 
 import (
+	"errors"
+	_ "fmt"
+	"github.com/olekukonko/tablewriter"
+	"github.com/qovery/qovery-cli/utils"
+	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"qovery-cli/io"
+	"golang.org/x/net/context"
+	"os"
+	"time"
 )
 
+var follow bool
+
 var logCmd = &cobra.Command{
-	Use:     "log",
-	Aliases: []string{"logs"},
-	Short:   "Show application logs",
-	Long: `LOG show all application logs within a project and environment. For example:
-
-	qovery log`,
+	Use:   "log",
+	Short: "Print your application logs",
 	Run: func(cmd *cobra.Command, args []string) {
-		LoadCommandOptions(cmd, true, true, true, true, true)
+		utils.Capture(cmd)
+		var logs = getLogs()
 
-		if EnvironmentFlag {
-			ShowEnvironmentLog(OrganizationName, ProjectName, BranchName, Tail, FollowFlag)
-			return
+		table := setupTable(true)
+		table.AppendBulk(logs)
+		table.Render()
+
+		if len(logs) <= 0 {
+			utils.PrintlnInfo("No logs found. ")
+			os.Exit(0)
 		}
 
-		ShowApplicationLog(OrganizationName, ProjectName, BranchName, ApplicationName, Tail, FollowFlag)
+		var lastRenderedLogs = logs
+
+		for follow {
+			table := setupTable(false)
+
+			lastLogDateString := lastRenderedLogs[len(lastRenderedLogs)-1][0]
+			lastLogDate, _ := time.Parse(time.StampMicro, lastLogDateString)
+			var newLogs = getLogs()
+
+			if len(newLogs) > 0 {
+				for _, newLog := range newLogs {
+					newLogDate, _ := time.Parse(time.StampMicro, newLog[0])
+					if lastLogDate.Before(newLogDate) {
+						table.Append(newLog)
+					}
+				}
+				table.Render()
+				lastRenderedLogs = newLogs
+			}
+
+			time.Sleep(time.Second * 5)
+		}
 	},
 }
 
+func getLogs() [][]string {
+	token, err := utils.GetAccessToken()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(0)
+	}
+	application, _, err := utils.CurrentApplication()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(0)
+	}
+
+	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
+	client := qovery.NewAPIClient(qovery.NewConfiguration())
+
+	logs, res, err := client.ApplicationLogsApi.ListApplicationLog(auth, string(application)).Execute()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(0)
+	}
+	if res.StatusCode >= 400 {
+		utils.PrintlnError(errors.New("Received " + res.Status + " response while listing organizations. "))
+	}
+
+	var logRows = make([][]string, 0)
+
+	for _, log := range logs.GetResults() {
+		logRows = append(logRows, []string{log.CreatedAt.Format(time.StampMicro), log.Message})
+	}
+
+	return logRows
+}
+
+func setupTable(header bool) *tablewriter.Table {
+	table := tablewriter.NewWriter(os.Stdout)
+
+	if header {
+		table.SetHeader([]string{"TIME", "MESSAGE"})
+	}
+
+	table.SetBorder(false)
+	table.SetHeaderLine(false)
+	table.SetColumnSeparator("")
+	table.SetAutoWrapText(true)
+	table.SetRowLine(false)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetColWidth(160)
+	table.SetBorders(tablewriter.Border{
+		Left:   false,
+		Right:  false,
+		Top:    false,
+		Bottom: false,
+	})
+
+	return table
+}
+
 func init() {
-	logCmd.PersistentFlags().StringVarP(&OrganizationName, "organization", "o", "", "Your organization name")
-	logCmd.PersistentFlags().StringVarP(&ProjectName, "project", "p", "", "Your project name")
-	logCmd.PersistentFlags().StringVarP(&BranchName, "branch", "b", "", "Your branch name")
-	logCmd.PersistentFlags().StringVarP(&ApplicationName, "application", "a", "", "Your application name")
-	logCmd.PersistentFlags().IntVar(&Tail, "tail", 0, "Specify if the logs should be streamed")
-	logCmd.PersistentFlags().BoolVarP(&FollowFlag, "follow", "f", false, "Specify if the logs should be streamed")
-	logCmd.PersistentFlags().BoolVarP(&EnvironmentFlag, "environment", "e", false, "Display logs from all apps in the environment")
-
-	RootCmd.AddCommand(logCmd)
-}
-
-func ShowApplicationLog(organizationName string, projectName string, branchName string, applicationName string, lastLines int, follow bool) {
-	project := io.GetProjectByName(projectName, organizationName)
-	projectId := project.Id
-	orgId := project.Organization.Id
-	environment := io.GetEnvironmentByName(projectId, branchName, true)
-	application := io.GetApplicationByName(projectId, environment.Id, applicationName, true)
-
-	io.PrintHint("View the logs in the UI: " + "https://console.qovery.com/platform/organization/" + orgId + "/projects/" + projectId + "/" + environment.Id + "/" + application.Id + "/logs")
-
-	io.ListApplicationLogs(lastLines, follow, projectId, environment.Id, application.Id)
-}
-
-func ShowEnvironmentLog(organizationName string, projectName string, branchName string, lastLines int, follow bool) {
-	projectId := io.GetProjectByName(projectName, organizationName).Id
-	environment := io.GetEnvironmentByName(projectId, branchName, true)
-	io.ListEnvironmentLogs(lastLines, follow, projectId, environment.Id)
+	rootCmd.AddCommand(logCmd)
+	logCmd.Flags().BoolVarP(&follow, "follow", "f", false, "Follow application logs")
 }

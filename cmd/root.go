@@ -1,59 +1,66 @@
 package cmd
 
 import (
-	"fmt"
-	log "github.com/sirupsen/logrus"
+	"github.com/getsentry/sentry-go"
+	"github.com/qovery/qovery-cli/io"
+	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"os"
-	"qovery-cli/io"
+	"time"
 )
 
-// RootCmd represents the base command when called without any subcommands
-var RootCmd = &cobra.Command{
+var rootCmd = &cobra.Command{
 	Use:   "qovery",
-	Short: "The qovery command line interface.",
-	Long:  `The qovery command line interface lets you manage your Qovery environment.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Short: "A Command-line Interface of the Qovery platform",
 }
 
-// Execute adds all child commands to the root command sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	fmt.Println("Execute called")
-
-	if err := RootCmd.Execute(); err != nil {
-		log.Debug(err.Error())
-		os.Exit(-1)
+	if err := rootCmd.Execute(); err != nil {
+		utils.PrintlnError(err)
+		os.Exit(0)
 	}
-
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	log.Debug("init called")
-	io.RefreshExpiredTokenSilently()
-	RootCmd.PersistentFlags().BoolVar(&DebugFlag, "debug", false, "Enable debugging when true.")
 }
 
 func initConfig() {
-	if DebugFlag {
-		log.SetLevel(log.DebugLevel)
-		log.Debug("debug flag is set to true")
+	if !utils.QoveryContextExists() {
+		err := utils.InitializeQoveryContext()
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(0)
+		}
 	}
-
-	if os.Getenv("GENERATE_BASH_COMPLETION") != "" {
-		generateBashCompletion()
-	}
+	initSentry()
 }
 
-func generateBashCompletion() {
-	log.Debugf("generating bash completion script")
-	file, err := os.Create("/tmp/qovery-bash-completion.out")
+func initSentry() {
+	io.GetCurrentVersion()
+	err := sentry.Init(sentry.ClientOptions{
+		Dsn:         "https://199e1e8385d94377a98676dadcd77e2d@o471935.ingest.sentry.io/5866472",
+		Environment: "prod",
+		Release:     io.GetCurrentVersion(),
+		// Enable printing of SDK debug messages.
+		// Useful when getting started or trying to figure something out.
+		Debug: false,
+		BeforeSend: func(event *sentry.Event, hint *sentry.EventHint) *sentry.Event {
+			if len(event.Exception) > 0 && len(event.Exception[0].Stacktrace.Frames) > 0 {
+				frames := event.Exception[0].Stacktrace.Frames
+				event.Exception[0].Stacktrace.Frames = frames[:len(frames)-1]
+				frames = event.Exception[0].Stacktrace.Frames
+				path := frames[len(frames)-1].AbsPath
+				event.Transaction = path
+			}
+			return event
+		},
+	})
 	if err != nil {
-		fmt.Println("Error: ", err.Error())
+		utils.PrintlnError(err)
 	}
-	defer file.Close()
-	_ = RootCmd.GenBashCompletion(file)
+	// Flush buffered events before the program terminates.
+	// Set the timeout to the maximum duration the program can afford to wait.
+	defer sentry.Recover()
+	defer sentry.Flush(5 * time.Second)
 }

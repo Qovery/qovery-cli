@@ -1,12 +1,12 @@
 package io
 
 import (
+	b64 "encoding/base64"
 	"github.com/hashicorp/vault/api"
+	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
 	"os"
-	"qovery-cli/utils"
 	"strings"
-	b64 "encoding/base64"
 )
 
 func connectToVault() *api.Client {
@@ -34,7 +34,7 @@ func getClusterPath(client *api.Client, clusterID string) string {
 		log.Error(err)
 	}
 
-	for _, secret := range (result.Data["keys"]).([]interface {}) {
+	for _, secret := range (result.Data["keys"]).([]interface{}) {
 		if strings.Contains(secret.(string), clusterID) {
 			return secret.(string)
 		}
@@ -53,22 +53,22 @@ func GetVarsByClusterId(clusterID string) []utils.Var {
 	}
 
 	var vaultVars []utils.Var
-	for key, value := range (result.Data["data"]).(map[string]interface {}) {
+	for key, value := range (result.Data["data"]).(map[string]interface{}) {
 		switch key {
-			case "AWS_ACCESS_KEY_ID":
-				vaultVars = append(vaultVars, utils.Var{Key: key, Value: value.(string)})
-			case "AWS_DEFAULT_REGION":
-				vaultVars = append(vaultVars, utils.Var{Key: key, Value: value.(string)})
-			case "AWS_SECRET_ACCESS_KEY":
-				vaultVars = append(vaultVars, utils.Var{Key: key, Value: value.(string)})
-			case "KUBECONFIG_b64":
-				decodedValue, encErr := b64.StdEncoding.DecodeString(value.(string))
-				if encErr != nil {
-					log.Error("Can't decode KUBECONFIG")
-					return []utils.Var{}
-				}
-				filePath := utils.WriteInFile(clusterID, "kubeconfig", decodedValue)
-				vaultVars = append(vaultVars, utils.Var{Key: "KUBECONFIG", Value: filePath})
+		case "AWS_ACCESS_KEY_ID":
+			vaultVars = append(vaultVars, utils.Var{Key: key, Value: value.(string)})
+		case "AWS_DEFAULT_REGION":
+			vaultVars = append(vaultVars, utils.Var{Key: key, Value: value.(string)})
+		case "AWS_SECRET_ACCESS_KEY":
+			vaultVars = append(vaultVars, utils.Var{Key: key, Value: value.(string)})
+		case "KUBECONFIG_b64":
+			decodedValue, encErr := b64.StdEncoding.DecodeString(value.(string))
+			if encErr != nil {
+				log.Error("Can't decode KUBECONFIG")
+				return []utils.Var{}
+			}
+			filePath := utils.WriteInFile(clusterID, "kubeconfig", decodedValue)
+			vaultVars = append(vaultVars, utils.Var{Key: "KUBECONFIG", Value: filePath})
 		}
 	}
 

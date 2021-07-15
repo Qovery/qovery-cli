@@ -6,7 +6,6 @@ import (
 	"runtime"
 )
 
-
 func WriteInFile(clusterId string, fileName string, content []byte) string {
 	fullPath := GetFullPath(clusterId)
 	err := os.Mkdir(fullPath, 0777)
@@ -14,7 +13,7 @@ func WriteInFile(clusterId string, fileName string, content []byte) string {
 		log.Error("Couldn't create folder : " + err.Error())
 	}
 
-	err = os.WriteFile(fullPath + fileName, content, 0777)
+	err = os.WriteFile(fullPath+fileName, content, 0777)
 	if err != nil {
 		log.Error("Couldn't write file : " + err.Error())
 		return ""
