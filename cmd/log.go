@@ -16,7 +16,7 @@ var follow bool
 
 var logCmd = &cobra.Command{
 	Use:   "log",
-	Short: "Displays application logs",
+	Short: "Print your application logs",
 	Run: func(cmd *cobra.Command, args []string) {
 		var logs = getLogs()
 
@@ -25,7 +25,7 @@ var logCmd = &cobra.Command{
 		table.Render()
 
 		if len(logs) <= 0 {
-			utils.PrintlnInfo("No logs found")
+			utils.PrintlnInfo("No logs found. ")
 			os.Exit(0)
 		}
 
@@ -58,12 +58,12 @@ func getLogs() [][]string {
 	token, err := utils.GetAccessToken()
 	if err != nil {
 		utils.PrintlnError(err)
-		os.Exit(1)
+		os.Exit(0)
 	}
 	application, _, err := utils.CurrentApplication()
 	if err != nil {
 		utils.PrintlnError(err)
-		os.Exit(1)
+		os.Exit(0)
 	}
 
 	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
@@ -72,10 +72,10 @@ func getLogs() [][]string {
 	logs, res, err := client.ApplicationLogsApi.ListApplicationLog(auth, string(application)).Execute()
 	if err != nil {
 		utils.PrintlnError(err)
-		os.Exit(1)
+		os.Exit(0)
 	}
 	if res.StatusCode >= 400 {
-		utils.PrintlnError(errors.New("Received " + res.Status + " response while listing organizations"))
+		utils.PrintlnError(errors.New("Received " + res.Status + " response while listing organizations. "))
 	}
 
 	var logRows = make([][]string, 0)

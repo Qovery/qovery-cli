@@ -1,6 +1,3 @@
-/*
-TODO: THIS FILE DESERVES A CLEANUP
-*/
 package cmd
 
 import (
@@ -24,28 +21,16 @@ import (
 	"time"
 )
 
-// authCmd represents the auth command
 var authCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Log in to Qovery",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("auth called")
 		DoRequestUserToAuthenticate(false)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(authCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// authCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// authCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 const (
@@ -83,14 +68,14 @@ func DoRequestUserToAuthenticate(headless bool) {
 	verifier := createCodeVerifier()
 	challenge, err := createCodeChallengeS256(verifier)
 	if err != nil {
-		fmt.Println("Can not create authorization code challenge. Please contact the #support at 'https://discord.qovery.com'.")
-		os.Exit(1)
+		fmt.Println("Can not create authorization code challenge. Please contact the #support at 'https://discord.qovery.com'. ")
+		os.Exit(0)
 	}
 	// TODO link to web auth
 	_ = browser.OpenURL(fmt.Sprintf(oAuthQoveryUrl, url.QueryEscape(oAuthUrlParamValueScopes), oAuthUrlParamValueClient, url.QueryEscape(oAuthUrlParamValueResponseType),
 		url.QueryEscape(oAuthUrlParamValueAudience), url.QueryEscape(oAuthUrlParamValueRedirect), challenge))
 
-	fmt.Println("\nOpening your browser, waiting for your authentication...")
+	fmt.Println("\nOpening your browser, waiting for your authentication... ")
 
 	srv := &http.Server{Addr: fmt.Sprintf("localhost:%d", httpAuthPort)}
 
@@ -120,65 +105,30 @@ func DoRequestUserToAuthenticate(headless bool) {
 
 		if err != nil {
 			println("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. ")
-			os.Exit(1)
+			os.Exit(0)
 		} else {
 			defer res.Body.Close()
 			tokens := TokensResponse{}
 			err := json.NewDecoder(res.Body).Decode(&tokens)
 			if err != nil {
 				println("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. ")
-				os.Exit(1)
+				os.Exit(0)
 			}
 			expiredAt := tokenExpiration()
 			_ = utils.SetAccessToken(utils.AccessToken(tokens.AccessToken), expiredAt)
 			_ = utils.SetRefreshToken(utils.RefreshToken(tokens.RefreshToken))
+			utils.PrintlnInfo("Success!")
 		}
 
 		go func() {
 			time.Sleep(time.Second)
 			if err := srv.Shutdown(context.TODO()); err != nil {
-				log.Printf("fail to shudown http server: %s", err.Error())
+				log.Printf("Fail to shudown http server: %s", err.Error())
 			}
 		}()
 	})
 
 	_ = srv.ListenAndServe()
-}
-
-func RefreshAccessToken() error {
-	token, _ := utils.GetRefreshToken()
-	refreshToken := strings.TrimSpace(string(token))
-	if refreshToken == "" {
-		return errors.New("Could not reauthenticate automatically. Please, run 'qovery auth' to authenticate. ")
-	}
-	res, err := http.PostForm(oAuthTokenEndpoint, url.Values{
-		"grant_type":    {"refresh_token"},
-		"client_id":     {oAuthUrlParamValueClient},
-		"refresh_token": {refreshToken},
-	})
-	if err != nil {
-		return errors.New("Error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ")
-	} else {
-		defer res.Body.Close()
-		tokens := TokensResponse{}
-		err := json.NewDecoder(res.Body).Decode(&tokens)
-		if err != nil {
-			return errors.New("Error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ")
-		}
-		expiredAt := time.Now().Local().Add(time.Second * time.Duration(30000))
-		_ = utils.SetAccessToken(utils.AccessToken(tokens.AccessToken), expiredAt)
-	}
-	return nil
-}
-
-func RefreshExpiredTokenSilently() {
-	token, _ := utils.GetRefreshToken()
-	refreshToken := strings.TrimSpace(string(token))
-	expiration, err := utils.GetAccessTokenExpiration()
-
-	if err == nil && expiration.Before(time.Now()) && refreshToken != "" {
-		_ = RefreshAccessToken()
-	}
 }
 
 func createCodeVerifier() string {
@@ -226,8 +176,8 @@ func runHeadlessFlow() {
 		}
 	}
 
-	fmt.Println("Code has expired!")
-	os.Exit(1)
+	fmt.Println("Code has expired! ")
+	os.Exit(0)
 }
 
 func tokenExpiration() time.Time {
@@ -240,16 +190,16 @@ func deviceFlowParameters() DeviceFlowParameters {
 	req, err := http.NewRequest("POST", endpoint, payload)
 
 	if err != nil {
-		printContactSupportMessage("Error forming device code request.")
-		os.Exit(1)
+		printContactSupportMessage("Error forming device code request. ")
+		os.Exit(0)
 	}
 
 	req.Header.Add("content-type", "application/x-www-form-urlencoded")
 	res, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		printContactSupportMessage("Error getting device code.")
-		os.Exit(1)
+		printContactSupportMessage("Error getting device code. ")
+		os.Exit(0)
 	}
 
 	if res.StatusCode == 200 {
@@ -259,25 +209,25 @@ func deviceFlowParameters() DeviceFlowParameters {
 		err = json.NewDecoder(res.Body).Decode(&parameters)
 
 		if err != nil {
-			printContactSupportMessage("Error parsing device code response.")
-			os.Exit(1)
+			printContactSupportMessage("Error parsing device code response. ")
+			os.Exit(0)
 		}
 
 		return parameters
 	} else {
-		printContactSupportMessage("Error getting device code.")
-		os.Exit(1)
+		printContactSupportMessage("Error getting device code. ")
+		os.Exit(0)
 		return DeviceFlowParameters{}
 	}
 }
 
 func printContactSupportMessage(msg string) {
 	fmt.Println(msg)
-	fmt.Println("Please contact the #support at 'https://discord.qovery.com'.")
+	fmt.Println("Please contact the #support at 'https://discord.qovery.com'. ")
 }
 
 func requestDeviceActivationWith(params DeviceFlowParameters) {
-	fmt.Println("Please, open browser @ " + params.VerificationUri + " using any device and enter " + params.UserCode + " code.")
+	fmt.Println("Please, open browser @ " + params.VerificationUri + " using any device and enter " + params.UserCode + " code. ")
 }
 
 func getTokensWith(params DeviceFlowParameters) (TokensResponse, error) {
@@ -286,16 +236,16 @@ func getTokensWith(params DeviceFlowParameters) (TokensResponse, error) {
 	req, err := http.NewRequest("POST", endpoint, payload)
 
 	if err != nil {
-		printContactSupportMessage("Error forming get access token request.")
-		os.Exit(1)
+		printContactSupportMessage("Error forming get access token request. ")
+		os.Exit(0)
 	}
 
 	req.Header.Add("content-type", "application/x-www-form-urlencoded")
 	res, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		printContactSupportMessage("Error pooling access token.")
-		os.Exit(1)
+		printContactSupportMessage("Error pooling access token. ")
+		os.Exit(0)
 	}
 
 	defer res.Body.Close()

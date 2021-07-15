@@ -14,17 +14,17 @@ import (
 
 var statusCmd = &cobra.Command{
 	Use:   "status",
-	Short: "A brief description of your command",
+	Short: "Print the status of your application",
 	Run: func(cmd *cobra.Command, args []string) {
 		token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
-			os.Exit(1)
+			os.Exit(0)
 		}
 		application, name, err := utils.CurrentApplication()
 		if err != nil {
 			utils.PrintlnError(err)
-			os.Exit(1)
+			os.Exit(0)
 		}
 
 		auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
@@ -33,17 +33,17 @@ var statusCmd = &cobra.Command{
 		status, res, err := client.ApplicationMainCallsApi.GetApplicationStatus(auth, string(application)).Execute()
 		if err != nil {
 			utils.PrintlnError(err)
-			os.Exit(1)
+			os.Exit(0)
 		}
 		if res.StatusCode >= 400 {
-			utils.PrintlnError(errors.New("Received " + res.Status + " response while listing organizations"))
+			utils.PrintlnError(errors.New("Received " + res.Status + " response while listing organizations. "))
 		}
 
 		fmt.Printf("%v\n", time.Now().Format(time.RFC822))
 		err = pterm.DefaultTable.WithData(pterm.TableData{{"Application", string(name)}, {"Status", status.State}}).Render()
 		if err != nil {
 			utils.PrintlnError(err)
-			os.Exit(1)
+			os.Exit(0)
 		}
 	},
 }

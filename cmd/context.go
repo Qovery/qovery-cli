@@ -1,19 +1,23 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 )
 
 var contextCmd = &cobra.Command{
 	Use:   "context",
-	Short: "Setup the CLI context",
+	Short: "Setup the Qovery CLI context",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.PrintlnInfo("Current context:")
-		utils.PrintlnContext()
+		err := utils.PrintlnContext()
+		if err != nil {
+			fmt.Println("Context not yet configured. ")
+		}
 		println()
 		utils.PrintlnInfo("Select new context")
-		err := utils.SelectOrganization()
+		err = utils.SelectOrganization()
 		if err != nil {
 			utils.PrintlnError(err)
 			return
@@ -42,7 +46,10 @@ var contextCmd = &cobra.Command{
 		_, _, _ = utils.CurrentApplication()
 		println()
 		utils.PrintlnInfo("New context:")
-		utils.PrintlnContext()
+		err = utils.PrintlnContext()
+		if err != nil {
+			utils.PrintlnError(err)
+		}
 	},
 }
 

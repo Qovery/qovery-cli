@@ -72,11 +72,11 @@ func CurrentOrganization() (Id, Name, error) {
 
 	id := context.OrganizationId
 	if id == "" {
-		return "", "", errors.New("organization_id not selected")
+		return "", "", errors.New("Current organization has not been selected. Please, use 'qovery context' to set up Qovery context. ")
 	}
 	name := context.OrganizationName
 	if name == "" {
-		return "", "", errors.New("organization_name not selected")
+		return "", "", errors.New("Current organization has not been selected. Please, use 'qovery context' to set up Qovery context. ")
 	}
 
 	return id, name, nil
@@ -102,11 +102,11 @@ func CurrentProject() (Id, Name, error) {
 
 	id := context.ProjectId
 	if id == "" {
-		return "", "", errors.New("project_id not selected")
+		return "", "", errors.New("Current project has not been selected. Please, use 'qovery context' to set up Qovery context. ")
 	}
 	name := context.ProjectName
 	if name == "" {
-		return "", "", errors.New("project_name not selected")
+		return "", "", errors.New("Current project has not been selected. Please, use 'qovery context' to set up Qovery context. ")
 	}
 
 	return id, name, nil
@@ -132,11 +132,11 @@ func CurrentEnvironment() (Id, Name, error) {
 
 	id := context.EnvironmentId
 	if id == "" {
-		return "", "", errors.New("environment_id not selected")
+		return "", "", errors.New("Current environment has not been selected. Please, use 'qovery context' to set up Qovery context. ")
 	}
 	name := context.EnvironmentName
 	if name == "" {
-		return "", "", errors.New("environment_name not selected")
+		return "", "", errors.New("Current environment has not been selected. Please, use 'qovery context' to set up Qovery context. ")
 	}
 
 	return id, name, nil
@@ -162,11 +162,11 @@ func CurrentApplication() (Id, Name, error) {
 
 	id := context.ApplicationId
 	if id == "" {
-		return "", "", errors.New("application_id not selected")
+		return "", "", errors.New("Current application has not been selected. Please, use 'qovery context' to set up Qovery context. ")
 	}
 	name := context.ApplicationName
 	if name == "" {
-		return "", "", errors.New("application_name not selected")
+		return "", "", errors.New("Current application has not been selected. Please, use 'qovery context' to set up Qovery context. ")
 	}
 
 	return id, name, nil
@@ -192,7 +192,17 @@ func GetAccessToken() (AccessToken, error) {
 
 	token := context.AccessToken
 	if token == "" {
-		return "", errors.New("access_token not present")
+		return "", errors.New("Access token has not been found. Please, sign in using 'qovery auth' command. ")
+	}
+
+	expired := context.AccessTokenExpiration.Before(time.Now())
+	if expired {
+		RefreshExpiredTokenSilently()
+		refreshed, err := GetAccessToken()
+		if err != nil {
+			return AccessToken(""), err
+		}
+		token = refreshed
 	}
 
 	return token, nil
@@ -207,7 +217,7 @@ func GetAccessTokenExpiration() (time.Time, error) {
 
 	expiration := context.AccessTokenExpiration
 	if expiration == t {
-		return t, errors.New("access_token_expiration not present")
+		return t, errors.New("Access token has not been found. Please, sign in using 'qovery auth' command. ")
 	}
 
 	return expiration, nil
@@ -233,7 +243,7 @@ func GetRefreshToken() (RefreshToken, error) {
 
 	token := context.RefreshToken
 	if token == "" {
-		return "", errors.New("refresh_token not present")
+		return "", errors.New("Refresh token has not been found. Please, sign in using 'qovery auth' command. ")
 	}
 
 	return token, nil
@@ -301,7 +311,7 @@ func QoveryDirExists() bool {
 	path, err := QoveryDirPath()
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		os.Exit(0)
 	}
 	return pathExists(path)
 }
@@ -310,7 +320,7 @@ func QoveryContextExists() bool {
 	path, err := QoveryContextPath()
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		os.Exit(0)
 	}
 	return pathExists(path)
 }

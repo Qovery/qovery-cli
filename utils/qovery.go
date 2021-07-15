@@ -23,7 +23,7 @@ func SelectOrganization() error {
 		return err
 	}
 	if res.StatusCode >= 400 {
-		return errors.New("Received " + res.Status + " response while listing organizations")
+		return errors.New("Received " + res.Status + " response while listing organizations. ")
 	}
 
 	var organizationNames []string
@@ -37,7 +37,7 @@ func SelectOrganization() error {
 	}
 
 	if len(organizationNames) < 1 {
-		return errors.New("no organizations found")
+		return errors.New("No organizations found. ")
 	}
 
 	fmt.Println("Organization:")
@@ -76,7 +76,7 @@ func SelectProject(organization Id) error {
 		return err
 	}
 	if res.StatusCode >= 400 {
-		return errors.New("Received " + res.Status + " response while listing projects")
+		return errors.New("Received " + res.Status + " response while listing projects. ")
 	}
 
 	var projectsNames []string
@@ -90,7 +90,7 @@ func SelectProject(organization Id) error {
 	}
 
 	if len(projectsNames) < 1 {
-		return errors.New("no projects found")
+		return errors.New("No projects found. ")
 	}
 
 	fmt.Println("Project:")
@@ -129,7 +129,7 @@ func SelectEnvironment(project Id) error {
 		return err
 	}
 	if res.StatusCode >= 400 {
-		return errors.New("Received " + res.Status + " response while listing environments")
+		return errors.New("Received " + res.Status + " response while listing environments. ")
 	}
 
 	var environmentsNames []string
@@ -143,7 +143,7 @@ func SelectEnvironment(project Id) error {
 	}
 
 	if len(environmentsNames) < 1 {
-		return errors.New("no environments found")
+		return errors.New("No environments found. ")
 	}
 
 	fmt.Println("Environment:")
@@ -182,7 +182,7 @@ func SelectApplication(environment Id) error {
 		return err
 	}
 	if res.StatusCode >= 400 {
-		return errors.New("Received " + res.Status + " response while listing applications")
+		return errors.New("Received " + res.Status + " response while listing applications. ")
 	}
 
 	var applicationsNames []string
@@ -196,7 +196,7 @@ func SelectApplication(environment Id) error {
 	}
 
 	if len(applicationsNames) < 1 {
-		return errors.New("no applications found")
+		return errors.New("No applications found. ")
 	}
 
 	fmt.Println("Application:")

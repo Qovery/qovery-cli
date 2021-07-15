@@ -4,37 +4,32 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/pterm/pterm"
-	"os"
 )
 
 func PrintlnError(err error) {
-	fmt.Printf("%s %v\n", color.RedString("Error:"), err)
+	fmt.Printf("%s: %v\n", color.RedString("Error"), err)
 }
 
 func PrintlnInfo(info string) {
 	fmt.Printf("%v: %v\n", color.CyanString("Qovery"), info)
 }
 
-func PrintlnContext() {
+func PrintlnContext() error {
 	_, oName, err := CurrentOrganization()
 	if err != nil {
-		PrintlnError(err)
-		os.Exit(1)
+		return err
 	}
 	_, pName, err := CurrentProject()
 	if err != nil {
-		PrintlnError(err)
-		os.Exit(1)
+		return err
 	}
 	_, eName, err := CurrentEnvironment()
 	if err != nil {
-		PrintlnError(err)
-		os.Exit(1)
+		return err
 	}
 	_, aName, err := CurrentApplication()
 	if err != nil {
-		PrintlnError(err)
-		os.Exit(1)
+		return err
 	}
 	err = pterm.DefaultTable.WithData(pterm.TableData{
 		{"Organization", string(oName)},
@@ -42,4 +37,6 @@ func PrintlnContext() {
 		{"Environment", string(eName)},
 		{"Application", string(aName)},
 	}).Render()
+
+	return nil
 }
