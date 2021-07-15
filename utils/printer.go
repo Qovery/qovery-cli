@@ -1,20 +1,19 @@
 package utils
 
 import (
-	"errors"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/getsentry/sentry-go"
 	"github.com/pterm/pterm"
+	"time"
 )
 
-func PrintlnErrorMessage(err string) {
-	PrintlnError(errors.New(err))
-}
-
 func PrintlnError(err error) {
-	sentry.CaptureException(err)
+	localHub := sentry.CurrentHub().Clone()
+	localHub.Scope().SetTransaction(err.Error())
+	localHub.CaptureException(err)
 	fmt.Printf("%s: %v\n", color.RedString("Error"), err)
+	defer localHub.Flush(5 * time.Second)
 }
 
 func PrintlnInfo(info string) {

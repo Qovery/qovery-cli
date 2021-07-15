@@ -45,6 +45,16 @@ func initSentry() {
 		// Enable printing of SDK debug messages.
 		// Useful when getting started or trying to figure something out.
 		Debug: true,
+		BeforeSend: func(event *sentry.Event, hint *sentry.EventHint) *sentry.Event {
+			if len(event.Exception) > 0 && len(event.Exception[0].Stacktrace.Frames) > 0 {
+				frames := event.Exception[0].Stacktrace.Frames
+				event.Exception[0].Stacktrace.Frames = frames[:len(frames)-1]
+				frames = event.Exception[0].Stacktrace.Frames
+				path := frames[len(frames)-1].AbsPath
+				event.Transaction = path
+			}
+			return event
+		},
 	})
 	if err != nil {
 		utils.PrintlnError(err)
@@ -52,5 +62,5 @@ func initSentry() {
 	// Flush buffered events before the program terminates.
 	// Set the timeout to the maximum duration the program can afford to wait.
 	defer sentry.Recover()
-	defer sentry.Flush(2 * time.Second)
+	defer sentry.Flush(5 * time.Second)
 }

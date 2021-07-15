@@ -103,14 +103,14 @@ func DoRequestUserToAuthenticate(headless bool) {
 		})
 
 		if err != nil {
-			utils.PrintlnErrorMessage("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. ")
+			utils.PrintlnError(errors.New("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
 			os.Exit(0)
 		} else {
 			defer res.Body.Close()
 			tokens := TokensResponse{}
 			err := json.NewDecoder(res.Body).Decode(&tokens)
 			if err != nil {
-				utils.PrintlnErrorMessage("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. ")
+				utils.PrintlnError(errors.New("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
 				os.Exit(0)
 			}
 			expiredAt := tokenExpiration()
@@ -122,7 +122,7 @@ func DoRequestUserToAuthenticate(headless bool) {
 		go func() {
 			time.Sleep(time.Second)
 			if err := srv.Shutdown(context.TODO()); err != nil {
-				utils.PrintlnErrorMessage(fmt.Sprintf("Fail to shudown http server: %s", err.Error()))
+				utils.PrintlnError(err)
 			}
 		}()
 	})
