@@ -20,17 +20,20 @@ import (
 	"time"
 )
 
+var headless bool
+
 var authCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Log in to Qovery",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		DoRequestUserToAuthenticate(false)
+		DoRequestUserToAuthenticate(headless)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(authCmd)
+	authCmd.Flags().BoolVarP(&headless, "headless", "", false, "Headless auth")
 }
 
 const (
@@ -63,6 +66,7 @@ func DoRequestUserToAuthenticate(headless bool) {
 
 	if headless {
 		runHeadlessFlow()
+		return
 	}
 
 	verifier := createCodeVerifier()
@@ -173,6 +177,8 @@ func runHeadlessFlow() {
 			expiredAt := tokenExpiration()
 			_ = utils.SetRefreshToken(utils.RefreshToken(tokens.RefreshToken))
 			_ = utils.SetAccessToken(utils.AccessToken(tokens.AccessToken), expiredAt)
+			utils.PrintlnInfo("Success!")
+			return
 		}
 	}
 
