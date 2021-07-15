@@ -40,7 +40,7 @@ func initSentry() {
 	io.GetCurrentVersion()
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:         "https://199e1e8385d94377a98676dadcd77e2d@o471935.ingest.sentry.io/5866472",
-		Environment: "LOCAL",
+		Environment: "prod",
 		Release:     io.GetCurrentVersion(),
 		// Enable printing of SDK debug messages.
 		// Useful when getting started or trying to figure something out.
