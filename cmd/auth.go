@@ -24,7 +24,7 @@ var authCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Log in to Qovery",
 	Run: func(cmd *cobra.Command, args []string) {
-		utils.Capture("auth")
+		utils.Capture(cmd)
 		DoRequestUserToAuthenticate(false)
 	},
 }

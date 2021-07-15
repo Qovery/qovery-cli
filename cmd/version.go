@@ -11,7 +11,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print installed version of the Qovery CLI",
 	Run: func(cmd *cobra.Command, args []string) {
-		utils.Capture("version")
+		utils.Capture(cmd)
 		utils.PrintlnInfo(fmt.Sprintf("%s\n", io.GetCurrentVersion()))
 	},
 }

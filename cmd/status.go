@@ -16,7 +16,7 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Print the status of your application",
 	Run: func(cmd *cobra.Command, args []string) {
-		utils.Capture("status")
+		utils.Capture(cmd)
 		token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)

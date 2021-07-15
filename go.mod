@@ -14,5 +14,6 @@ require (
 	github.com/pterm/pterm v0.12.27 // indirect
 	github.com/qovery/qovery-client-go v0.0.0-20210713083701-176aa737a39a
 	github.com/spf13/cobra v1.2.1
+	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
 )

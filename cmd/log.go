@@ -18,13 +18,7 @@ var logCmd = &cobra.Command{
 	Use:   "log",
 	Short: "Print your application logs",
 	Run: func(cmd *cobra.Command, args []string) {
-		var command string
-		if follow {
-			command = "follow -f"
-		} else {
-			command = "follow"
-		}
-		utils.Capture(utils.Name(command))
+		utils.Capture(cmd)
 		var logs = getLogs()
 
 		table := setupTable(true)

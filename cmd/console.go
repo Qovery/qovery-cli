@@ -12,7 +12,7 @@ var consoleCmd = &cobra.Command{
 	Use:   "console",
 	Short: "Opens the application in Qovery Console in your browser",
 	Run: func(cmd *cobra.Command, args []string) {
-		utils.Capture("console")
+		utils.Capture(cmd)
 		organization, _, err := utils.CurrentOrganization()
 		if err != nil {
 			utils.PrintlnError(err)
