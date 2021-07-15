@@ -1,12 +1,19 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/getsentry/sentry-go"
 	"github.com/pterm/pterm"
 )
 
+func PrintlnErrorMessage(err string) {
+	PrintlnError(errors.New(err))
+}
+
 func PrintlnError(err error) {
+	sentry.CaptureException(err)
 	fmt.Printf("%s: %v\n", color.RedString("Error"), err)
 }
 

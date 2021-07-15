@@ -3,7 +3,6 @@ package utils
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -310,7 +309,7 @@ func QoveryDirPath() (string, error) {
 func QoveryDirExists() bool {
 	path, err := QoveryDirPath()
 	if err != nil {
-		fmt.Println(err)
+		PrintlnError(err)
 		os.Exit(0)
 	}
 	return pathExists(path)
@@ -319,7 +318,7 @@ func QoveryDirExists() bool {
 func QoveryContextExists() bool {
 	path, err := QoveryContextPath()
 	if err != nil {
-		fmt.Println(err)
+		PrintlnError(err)
 		os.Exit(0)
 	}
 	return pathExists(path)

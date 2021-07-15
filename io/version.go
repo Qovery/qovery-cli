@@ -3,6 +3,7 @@ package io
 import (
 	"errors"
 	"fmt"
+	"github.com/qovery/qovery-cli/utils"
 	"net/http"
 	"os"
 	"strings"
@@ -24,7 +25,7 @@ func GetLatestOnlineVersionUrl() (string, error) {
 func GetLatestOnlineVersionNumber() (string, error) {
 	urlPath, err := GetLatestOnlineVersionUrl()
 	if err != nil {
-		fmt.Println(err)
+		utils.PrintlnError(err)
 		os.Exit(0)
 	}
 	splitUrl := strings.Split(urlPath, "/v")

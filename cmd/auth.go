@@ -11,7 +11,6 @@ import (
 	"github.com/qovery/qovery-cli/io"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
-	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -68,7 +67,7 @@ func DoRequestUserToAuthenticate(headless bool) {
 	verifier := createCodeVerifier()
 	challenge, err := createCodeChallengeS256(verifier)
 	if err != nil {
-		fmt.Println("Can not create authorization code challenge. Please contact the #support at 'https://discord.qovery.com'. ")
+		utils.PrintlnError(errors.New("Can not create authorization code challenge. Please contact the #support at 'https://discord.qovery.com'. "))
 		os.Exit(0)
 	}
 	// TODO link to web auth
@@ -104,14 +103,14 @@ func DoRequestUserToAuthenticate(headless bool) {
 		})
 
 		if err != nil {
-			println("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. ")
+			utils.PrintlnErrorMessage("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. ")
 			os.Exit(0)
 		} else {
 			defer res.Body.Close()
 			tokens := TokensResponse{}
 			err := json.NewDecoder(res.Body).Decode(&tokens)
 			if err != nil {
-				println("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. ")
+				utils.PrintlnErrorMessage("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. ")
 				os.Exit(0)
 			}
 			expiredAt := tokenExpiration()
@@ -123,7 +122,7 @@ func DoRequestUserToAuthenticate(headless bool) {
 		go func() {
 			time.Sleep(time.Second)
 			if err := srv.Shutdown(context.TODO()); err != nil {
-				log.Printf("Fail to shudown http server: %s", err.Error())
+				utils.PrintlnErrorMessage(fmt.Sprintf("Fail to shudown http server: %s", err.Error()))
 			}
 		}()
 	})
