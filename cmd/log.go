@@ -97,7 +97,7 @@ func setupTable(header bool) *tablewriter.Table {
 	table.SetBorder(false)
 	table.SetHeaderLine(false)
 	table.SetColumnSeparator("")
-	table.SetAutoWrapText(false)
+	table.SetAutoWrapText(true)
 	table.SetRowLine(false)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetColWidth(160)
