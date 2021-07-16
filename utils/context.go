@@ -248,8 +248,8 @@ func SetAccessToken(token AccessToken, expiration time.Time) error {
 	})
 
 	sub, ok := claims["sub"]
-	subStr := sub.(string)
 	if ok {
+		subStr := sub.(string)
 		context.User = Name(subStr)
 	}
 

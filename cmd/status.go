@@ -2,14 +2,12 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/context"
 	"os"
-	"time"
 )
 
 var statusCmd = &cobra.Command{
@@ -40,8 +38,7 @@ var statusCmd = &cobra.Command{
 			utils.PrintlnError(errors.New("Received " + res.Status + " response while listing organizations. "))
 		}
 
-		fmt.Printf("%v\n", time.Now().Format(time.RFC822))
-		err = pterm.DefaultTable.WithData(pterm.TableData{{"Application", string(name)}, {"Status", status.State}}).Render()
+		err = pterm.DefaultTable.WithData(pterm.TableData{{"Application", "Status"}, {string(name), status.State}}).Render()
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(0)
