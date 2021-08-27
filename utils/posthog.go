@@ -10,9 +10,9 @@ import (
 
 func Capture(command *cobra.Command) {
 	ph, err := posthog.NewWithConfig(
-		"OxbbcR7J3ohTXEDGfsIL9KDlq5Gs080sbgfjrWYIOvU",
+		"phc_IgdG1K2GveDUte1gJ6hlwNbFHCv9nViWETUyLMU7ciq",
 		posthog.Config{
-			Endpoint: "https://ph.qovery.com",
+			Endpoint: "https://app.posthog.com",
 		},
 	)
 	if err != nil {
