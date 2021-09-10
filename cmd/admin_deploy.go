@@ -17,14 +17,6 @@ var(
 		deployClusterById()
 		},
 	}
-
-	adminDeployAllCmd = &cobra.Command{
-		Use: "deploy_all",
-		Short: "Deploy all customers clusters",
-		Run: func(cmd *cobra.Command, args []string){
-			deployAllClusters()
-		},
-	}
 )
 
 func init() {
@@ -32,9 +24,6 @@ func init() {
 	adminDeployByIdCmd.Flags().BoolVarP(&dryRun,"disable-dry-run", "y", false, "Disable dry run mode")
 	orgaErr = adminDeployByIdCmd.MarkFlagRequired("cluster")
 	adminCmd.AddCommand(adminDeployByIdCmd)
-
-	adminDeployAllCmd.Flags().BoolVarP(&dryRun,"disable-dry-run", "y", false, "Disable dry run mode")
-	adminCmd.AddCommand(adminDeployAllCmd)
 }
 
 func deployClusterById(){
@@ -43,8 +32,4 @@ func deployClusterById(){
 	} else {
 		io.DeployById(clusterId, dryRun)
 	}
-}
-
-func deployAllClusters() {
-	io.DeployAll(dryRun)
 }
