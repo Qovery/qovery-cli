@@ -1,4 +1,4 @@
-module github.com/qovery/qovery-cli/io
+module github.com/qovery/qovery-cli/pkg
 
 go 1.16
 

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/qovery/qovery-cli/io"
+	"github.com/qovery/qovery-cli/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -21,5 +21,5 @@ func init() {
 }
 
 func deployAllClusters() {
-	io.DeployAll(dryRun)
+	pkg.DeployAll(dryRun)
 }

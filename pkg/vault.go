@@ -1,4 +1,4 @@
-package io
+package pkg
 
 import (
 	b64 "encoding/base64"
