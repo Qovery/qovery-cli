@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/qovery/qovery-cli/io"
+	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -29,7 +29,7 @@ func launchK9s(args []string) {
 		return
 	}
 
-	vars := io.GetVarsByClusterId(args[0])
+	vars := pkg.GetVarsByClusterId(args[0])
 	if len(vars) == 0 {
 		return
 	}

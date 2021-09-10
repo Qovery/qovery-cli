@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/qovery/qovery-cli/io"
+	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 )
@@ -12,7 +12,7 @@ var versionCmd = &cobra.Command{
 	Short: "Print installed version of the Qovery CLI",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		utils.PrintlnInfo(fmt.Sprintf("%s\n", io.GetCurrentVersion()))
+		utils.PrintlnInfo(fmt.Sprintf("%s\n", pkg.GetCurrentVersion()))
 	},
 }
 

@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/pkg/browser"
-	"github.com/qovery/qovery-cli/io"
+	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"math/rand"
@@ -59,7 +59,7 @@ type TokensResponse struct {
 func DoRequestUserToAuthenticate(headless bool) {
 	qoveryConsoleUrl := "https://console.qovery.com"
 
-	available, message, _ := io.CheckAvailableNewVersion()
+	available, message, _ := pkg.CheckAvailableNewVersion()
 	if available {
 		fmt.Println(message)
 	}

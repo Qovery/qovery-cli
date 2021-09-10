@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/qovery/qovery-cli/utils"
-
 	"github.com/spf13/cobra"
 )
 

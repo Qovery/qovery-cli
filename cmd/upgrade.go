@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/kardianos/osext"
 	"github.com/mholt/archiver/v3"
-	"github.com/qovery/qovery-cli/io"
+	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
@@ -33,7 +33,7 @@ var upgradeCmd = &cobra.Command{
 		uncompressQoveryBinaryPath := uncompressPath + filename
 		cleanList := []string{uncompressPath, archivePathName}
 
-		available, message, desiredVersion := io.CheckAvailableNewVersion()
+		available, message, desiredVersion := pkg.CheckAvailableNewVersion()
 		if !available {
 			fmt.Print(message)
 			os.Exit(0)

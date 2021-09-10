@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/qovery/qovery-cli/io"
+	"github.com/qovery/qovery-cli/pkg"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -30,6 +30,6 @@ func deployClusterById(){
 	if orgaErr != nil {
 		log.Error("Invalid cluster Id")
 	} else {
-		io.DeployById(clusterId, dryRun)
+		pkg.DeployById(clusterId, dryRun)
 	}
 }
