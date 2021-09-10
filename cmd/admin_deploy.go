@@ -12,15 +12,15 @@ var(
 	dryRun bool
 	adminDeployByIdCmd = &cobra.Command{
 		Use: "deploy",
-		Short: "Deploy organization's cluster with cluster's Id",
+		Short: "Deploy  cluster with its Id",
 		Run: func(cmd *cobra.Command, args []string){
 		deployClusterById()
 		},
 	}
 
 	adminDeployAllCmd = &cobra.Command{
-		Use: "deploy",
-		Short: "Deploy organization's cluster with cluster's Id",
+		Use: "deploy_all",
+		Short: "Deploy all customers clusters",
 		Run: func(cmd *cobra.Command, args []string){
 			deployAllClusters()
 		},
