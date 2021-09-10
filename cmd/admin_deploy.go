@@ -12,7 +12,7 @@ var(
 	dryRun bool
 	adminDeployByIdCmd = &cobra.Command{
 		Use: "deploy",
-		Short: "Deploy  cluster with its Id",
+		Short: "Deploy cluster with its Id",
 		Run: func(cmd *cobra.Command, args []string){
 		deployClusterById()
 		},
