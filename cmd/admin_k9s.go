@@ -54,18 +54,13 @@ func launchK9s(args []string) {
 }
 
 func checkEnv() {
-	var isError bool
-	if os.Getenv("VAULT_ADDR") == "" {
+	if _, ok := os.LookupEnv("VAULT_ADDR"); !ok {
 		log.Error("You must set vault address env variable (VAULT_ADDR).")
-		isError = true
+		os.Exit(1)
 	}
 
-	if os.Getenv("VAULT_TOKEN") == "" {
+	if _, ok := os.LookupEnv("VAULT_TOKEN"); !ok {
 		log.Error("You must set vault token env variable (VAULT_TOKEN).")
-		isError = true
-	}
-
-	if isError {
 		os.Exit(1)
 	}
 }
