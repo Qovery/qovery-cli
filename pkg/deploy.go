@@ -3,6 +3,7 @@ package pkg
 import (
 	"bytes"
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -14,26 +15,32 @@ import (
 func DeployById(clusterId string, dryRunDisabled bool){
 	checkAdminUrl()
 
-	res := deploy(http.MethodPost, os.Getenv("ADMIN_URL") + "/admin/cluster/deploy/" + clusterId, dryRunDisabled )
+	dryRunPrint(dryRunDisabled)
+	if utils.Validate("deployment") {
+		res := deploy(http.MethodPost, os.Getenv("ADMIN_URL") + "/admin/cluster/deploy/" + clusterId, dryRunDisabled )
 
-	if !strings.Contains(res.Status, "200") {
-		result, _ := ioutil.ReadAll(res.Body)
-		log.Errorf("Could not deploy cluster : %s. %s", res.Status, string(result) )
-	} else {
-		fmt.Println("Cluster " + clusterId + " deploying.")
+		if !strings.Contains(res.Status, "200") {
+			result, _ := ioutil.ReadAll(res.Body)
+			log.Errorf("Could not deploy cluster : %s. %s", res.Status, string(result) )
+		} else {
+			fmt.Println("Cluster " + clusterId + " deploying.")
+		}
 	}
 }
 
 func DeployAll(dryRunDisabled bool) {
 	checkAdminUrl()
 
-	res := deploy(http.MethodPost, os.Getenv("ADMIN_URL") + "/admin/cluster/deploy", dryRunDisabled )
+	dryRunPrint(dryRunDisabled)
+	if utils.Validate("deployment") {
+		res := deploy(http.MethodPost, os.Getenv("ADMIN_URL") + "/admin/cluster/deploy", dryRunDisabled )
 
-	if !strings.Contains(res.Status, "200") {
-		result, _ := ioutil.ReadAll(res.Body)
-		log.Errorf("Could not deploy clusters : %s. %s", res.Status, string(result) )
-	} else {
-		fmt.Println("Clusters deploying.")
+		if !strings.Contains(res.Status, "200") {
+			result, _ := ioutil.ReadAll(res.Body)
+			log.Errorf("Could not deploy clusters : %s. %s", res.Status, string(result) )
+		} else {
+			fmt.Println("Clusters deploying.")
+		}
 	}
 }
 
@@ -70,4 +77,17 @@ func checkAdminUrl() {
 		log.Error("You must set the Qovery admin root url (ADMIN_URL).")
 		os.Exit(1)
 	}
+}
+
+func dryRunPrint(dryRunDisbled bool) {
+	green := color.New(color.FgGreen).SprintFunc()
+
+	message := green("enabled")
+
+	if dryRunDisbled {
+		red := color.New(color.FgRed).SprintFunc()
+		message = red("disabled")
+	}
+
+	log.Infof("Dry run: %s", message)
 }
