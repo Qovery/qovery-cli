@@ -18,7 +18,7 @@ jobs:
         run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       - name: Ensure tag match the current version
         run: |
-            if [ "v$(grep '// ci-version-check' io/version.go | sed -r 's/.+return\s"(.+)".+/\1/')" != "$(git tag | sort --version-sort | tail -1)" ] ; then
+            if [ "v$(grep '// ci-version-check' pkg/version.go | sed -r 's/.+return\s"(.+)".+/\1/')" != "$(git tag | sort --version-sort | tail -1)" ] ; then
                 echo "Tag version do not match application version"
                 exit 1
             fi
