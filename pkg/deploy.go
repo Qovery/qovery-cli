@@ -17,7 +17,7 @@ func DeployById(clusterId string, dryRunDisabled bool){
 
 	dryRunPrint(dryRunDisabled)
 	if utils.Validate("deployment") {
-		res := deploy(os.Getenv("ADMIN_URL") + "/admin/cluster/deploy/" + clusterId, http.MethodPost, dryRunDisabled )
+		res := deploy(os.Getenv("ADMIN_URL") + "/cluster/deploy/" + clusterId, http.MethodPost, dryRunDisabled )
 
 		if !strings.Contains(res.Status, "200") {
 			result, _ := ioutil.ReadAll(res.Body)
@@ -33,7 +33,7 @@ func DeployAll(dryRunDisabled bool) {
 
 	dryRunPrint(dryRunDisabled)
 	if utils.Validate("deployment") {
-		res := deploy(os.Getenv("ADMIN_URL") + "/admin/cluster/deploy", http.MethodPost, dryRunDisabled )
+		res := deploy(os.Getenv("ADMIN_URL") + "/cluster/deploy", http.MethodPost, dryRunDisabled )
 
 		if !strings.Contains(res.Status, "200") {
 			result, _ := ioutil.ReadAll(res.Body)
