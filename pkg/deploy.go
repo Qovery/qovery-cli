@@ -54,7 +54,7 @@ func deploy(url string, method string, dryRunDisabled bool) *http.Response {
 	var body *bytes.Buffer
 
 	if !dryRunDisabled {
-		body = bytes.NewBuffer([]byte( `{"metadata": {"dry_run_deploy": true}}`))
+		body = bytes.NewBuffer([]byte( `{ "metadata": { "dry_run_deploy": true } }`))
 	}
 
 	req, err  := http.NewRequest(method, url, body)
@@ -63,6 +63,10 @@ func deploy(url string, method string, dryRunDisabled bool) *http.Response {
 	}
 
 	req.Header.Set("Authorization", "Bearer " + strings.TrimSpace(string(authToken)))
+	if !dryRunDisabled {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
