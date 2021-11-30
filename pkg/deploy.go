@@ -21,6 +21,8 @@ func DeployById(clusterId string, dryRunDisabled bool){
 		if !strings.Contains(res.Status, "200") {
 			result, _ := ioutil.ReadAll(res.Body)
 			log.Errorf("Could not deploy cluster : %s. %s", res.Status, string(result) )
+		} else if dryRunDisabled {
+			fmt.Println("Cluster " + clusterId + " deployable.")
 		} else {
 			fmt.Println("Cluster " + clusterId + " deploying.")
 		}
@@ -37,6 +39,8 @@ func DeployAll(dryRunDisabled bool) {
 		if !strings.Contains(res.Status, "200") {
 			result, _ := ioutil.ReadAll(res.Body)
 			log.Errorf("Could not deploy clusters : %s. %s", res.Status, string(result) )
+		} else if dryRunDisabled {
+			fmt.Println("Clusters deployable.")
 		} else {
 			fmt.Println("Clusters deploying.")
 		}
@@ -50,7 +54,7 @@ func deploy(url string, method string, dryRunDisabled bool) *http.Response {
 		os.Exit(0)
 	}
 
-	var body *bytes.Buffer
+	body := bytes.NewBuffer([]byte( `{ "metadata": { "dry_run_deploy": false } }`))
 
 	if dryRunDisabled {
 		body = bytes.NewBuffer([]byte( `{ "metadata": { "dry_run_deploy": true } }`))
@@ -62,10 +66,7 @@ func deploy(url string, method string, dryRunDisabled bool) *http.Response {
 	}
 
 	req.Header.Set("Authorization", "Bearer " + strings.TrimSpace(string(authToken)))
-	if dryRunDisabled {
 		req.Header.Set("Content-Type", "application/json")
-	}
-
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {

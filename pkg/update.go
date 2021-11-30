@@ -21,6 +21,8 @@ func UpdateById(clusterId string, dryRunDisabled bool, version string){
 		if !strings.Contains(res.Status, "200") {
 			result, _ := ioutil.ReadAll(res.Body)
 			log.Errorf("Could not update cluster : %s. %s", res.Status, string(result) )
+		} else if dryRunDisabled {
+			fmt.Println("Cluster " + clusterId + " updatable.")
 		} else {
 			fmt.Println("Cluster " + clusterId + " updating.")
 		}
@@ -37,6 +39,8 @@ func UpdateAll(dryRunDisabled bool, version string) {
 		if !strings.Contains(res.Status, "200") {
 			result, _ := ioutil.ReadAll(res.Body)
 			log.Errorf("Could not update clusters : %s. %s", res.Status, string(result) )
+		} else if dryRunDisabled {
+			fmt.Println("Clusters updatable.")
 		} else {
 			fmt.Println("Clusters updating.")
 		}
@@ -50,7 +54,7 @@ func update(url string, method string, dryRunDisabled bool, version string) *htt
 		os.Exit(0)
 	}
 
-	var body *bytes.Buffer
+	body := bytes.NewBuffer([]byte( `{ "metadata": { "dry_run_deploy": false } }`))
 
 	if dryRunDisabled {
 		body = bytes.NewBuffer([]byte(fmt.Sprintf(`{ "metadata": { "dry_run_deploy": true, "target_version": "%s" } }`, version)))
@@ -62,9 +66,7 @@ func update(url string, method string, dryRunDisabled bool, version string) *htt
 	}
 
 	req.Header.Set("Authorization", "Bearer " + strings.TrimSpace(string(authToken)))
-	if dryRunDisabled {
 		req.Header.Set("Content-Type", "application/json")
-	}
 
 
 	res, err := http.DefaultClient.Do(req)
