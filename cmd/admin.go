@@ -5,12 +5,12 @@ import (
 )
 
 var (
-	clusterId string
-	orgaErr error
-	dryRun bool
-	version string
+	clusterId  string
+	orgaErr    error
+	dryRun     bool
+	version    string
 	versionErr error
-	adminCmd = &cobra.Command{Use: "admin", Hidden: true}
+	adminCmd   = &cobra.Command{Use: "admin", Hidden: true}
 )
 
 func init() {

@@ -6,24 +6,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var(
+var (
 	adminDeployByIdCmd = &cobra.Command{
-		Use: "deploy",
+		Use:   "deploy",
 		Short: "Deploy cluster with its Id",
-		Run: func(cmd *cobra.Command, args []string){
-		deployClusterById()
+		Run: func(cmd *cobra.Command, args []string) {
+			deployClusterById()
 		},
 	}
 )
 
 func init() {
-	adminDeployByIdCmd.Flags().StringVarP(&clusterId,"cluster", "c","","Cluster's id")
-	adminDeployByIdCmd.Flags().BoolVarP(&dryRun,"disable-dry-run", "y", false, "Disable dry run mode")
+	adminDeployByIdCmd.Flags().StringVarP(&clusterId, "cluster", "c", "", "Cluster's id")
+	adminDeployByIdCmd.Flags().BoolVarP(&dryRun, "disable-dry-run", "y", false, "Disable dry run mode")
 	orgaErr = adminDeployByIdCmd.MarkFlagRequired("cluster")
 	adminCmd.AddCommand(adminDeployByIdCmd)
 }
 
-func deployClusterById(){
+func deployClusterById() {
 	if orgaErr != nil {
 		log.Error("Invalid cluster Id")
 	} else {

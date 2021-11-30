@@ -6,26 +6,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var(
+var (
 	adminUpdateByIdCmd = &cobra.Command{
-		Use: "update",
+		Use:   "update",
 		Short: "Update cluster with its Id to a specific version",
-		Run: func(cmd *cobra.Command, args []string){
+		Run: func(cmd *cobra.Command, args []string) {
 			updateClusterById()
 		},
 	}
 )
 
 func init() {
-	adminUpdateByIdCmd.Flags().StringVarP(&clusterId,"cluster", "c","","Cluster's id")
+	adminUpdateByIdCmd.Flags().StringVarP(&clusterId, "cluster", "c", "", "Cluster's id")
 	adminUpdateByIdCmd.Flags().StringVarP(&version, "version", "v", "", "Targeted version")
-	adminUpdateByIdCmd.Flags().BoolVarP(&dryRun,"disable-dry-run", "y", false, "Disable dry run mode")
+	adminUpdateByIdCmd.Flags().BoolVarP(&dryRun, "disable-dry-run", "y", false, "Disable dry run mode")
 	orgaErr = adminUpdateByIdCmd.MarkFlagRequired("cluster")
 	versionErr = adminUpdateByIdCmd.MarkFlagRequired("version")
 	adminCmd.AddCommand(adminUpdateByIdCmd)
 }
 
-func updateClusterById(){
+func updateClusterById() {
 	if orgaErr != nil {
 		log.Error("Invalid cluster Id")
 	} else {

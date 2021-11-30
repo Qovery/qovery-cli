@@ -60,4 +60,3 @@ func DryRunPrint(dryRunDisbled bool) {
 
 	log.Infof("Dry run: %s", message)
 }
-
