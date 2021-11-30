@@ -54,10 +54,10 @@ func deploy(url string, method string, dryRunDisabled bool) *http.Response {
 		os.Exit(0)
 	}
 
-	body := bytes.NewBuffer([]byte( `{ "metadata": { "dry_run_deploy": false } }`))
+	body := bytes.NewBuffer([]byte( `{ "metadata": { "dry_run_deploy": true } }`))
 
 	if dryRunDisabled {
-		body = bytes.NewBuffer([]byte( `{ "metadata": { "dry_run_deploy": true } }`))
+		body = bytes.NewBuffer([]byte( `{ "metadata": { "dry_run_deploy": false } }`))
 	}
 
 	req, err  := http.NewRequest(method, url, body)

@@ -54,10 +54,10 @@ func update(url string, method string, dryRunDisabled bool, version string) *htt
 		os.Exit(0)
 	}
 
-	body := bytes.NewBuffer([]byte( `{ "metadata": { "dry_run_deploy": false } }`))
+	body := bytes.NewBuffer([]byte( `{ "metadata": { "dry_run_deploy": true } }`))
 
 	if dryRunDisabled {
-		body = bytes.NewBuffer([]byte(fmt.Sprintf(`{ "metadata": { "dry_run_deploy": true, "target_version": "%s" } }`, version)))
+		body = bytes.NewBuffer([]byte(fmt.Sprintf(`{ "metadata": { "dry_run_deploy": false, "target_version": "%s" } }`, version)))
 	}
 
 	req, err  := http.NewRequest(method, url, body)
