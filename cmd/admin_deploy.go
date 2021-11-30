@@ -7,9 +7,6 @@ import (
 )
 
 var(
-	clusterId string
-	orgaErr error
-	dryRun bool
 	adminDeployByIdCmd = &cobra.Command{
 		Use: "deploy",
 		Short: "Deploy cluster with its Id",

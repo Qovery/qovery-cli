@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/manifoldco/promptui"
 	"github.com/qovery/qovery-client-go"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
+	"os"
 	"strings"
 )
 
@@ -231,4 +233,11 @@ func ResetApplicationContext() error {
 	err = StoreContext(ctx)
 
 	return err
+}
+
+func CheckAdminUrl() {
+	if _, ok := os.LookupEnv("ADMIN_URL"); !ok {
+		log.Error("You must set the Qovery admin root url (ADMIN_URL).")
+		os.Exit(1)
+	}
 }

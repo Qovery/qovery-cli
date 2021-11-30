@@ -11,39 +11,39 @@ import (
 	"strings"
 )
 
-func DeployById(clusterId string, dryRunDisabled bool){
+func UpdateById(clusterId string, dryRunDisabled bool, version string){
 	utils.CheckAdminUrl()
 
 	utils.DryRunPrint(dryRunDisabled)
-	if utils.Validate("deployment") {
-		res := deploy(os.Getenv("ADMIN_URL") + "/cluster/deploy/" + clusterId, http.MethodPost, dryRunDisabled )
+	if utils.Validate("update") {
+		res := update(os.Getenv("ADMIN_URL") + "/cluster/update/" + clusterId, http.MethodPost, dryRunDisabled, version)
 
 		if !strings.Contains(res.Status, "200") {
 			result, _ := ioutil.ReadAll(res.Body)
-			log.Errorf("Could not deploy cluster : %s. %s", res.Status, string(result) )
+			log.Errorf("Could not update cluster : %s. %s", res.Status, string(result) )
 		} else {
-			fmt.Println("Cluster " + clusterId + " deploying.")
+			fmt.Println("Cluster " + clusterId + " updating.")
 		}
 	}
 }
 
-func DeployAll(dryRunDisabled bool) {
+func UpdateAll(dryRunDisabled bool, version string) {
 	utils.CheckAdminUrl()
 
 	utils.DryRunPrint(dryRunDisabled)
-	if utils.Validate("deployment") {
-		res := deploy(os.Getenv("ADMIN_URL") + "/cluster/deploy", http.MethodPost, dryRunDisabled )
+	if utils.Validate("update") {
+		res := update(os.Getenv("ADMIN_URL") + "/cluster/update", http.MethodPost, dryRunDisabled, version)
 
 		if !strings.Contains(res.Status, "200") {
 			result, _ := ioutil.ReadAll(res.Body)
-			log.Errorf("Could not deploy clusters : %s. %s", res.Status, string(result) )
+			log.Errorf("Could not update clusters : %s. %s", res.Status, string(result) )
 		} else {
-			fmt.Println("Clusters deploying.")
+			fmt.Println("Clusters updating.")
 		}
 	}
 }
 
-func deploy(url string, method string, dryRunDisabled bool) *http.Response {
+func update(url string, method string, dryRunDisabled bool, version string) *http.Response {
 	authToken, tokenErr := utils.GetAccessToken()
 	if tokenErr != nil {
 		utils.PrintlnError(tokenErr)
@@ -53,7 +53,7 @@ func deploy(url string, method string, dryRunDisabled bool) *http.Response {
 	var body *bytes.Buffer
 
 	if dryRunDisabled {
-		body = bytes.NewBuffer([]byte( `{ "metadata": { "dry_run_deploy": true } }`))
+		body = bytes.NewBuffer([]byte(fmt.Sprintf(`{ "metadata": { "dry_run_deploy": true, "target_version": "%s" } }`, version)))
 	}
 
 	req, err  := http.NewRequest(method, url, body)
@@ -74,4 +74,3 @@ func deploy(url string, method string, dryRunDisabled bool) *http.Response {
 
 	return res
 }
-

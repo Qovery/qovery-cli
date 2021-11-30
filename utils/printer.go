@@ -5,6 +5,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/getsentry/sentry-go"
 	"github.com/pterm/pterm"
+	log "github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -46,3 +47,17 @@ func PrintlnContext() error {
 
 	return nil
 }
+
+func DryRunPrint(dryRunDisbled bool) {
+	green := color.New(color.FgGreen).SprintFunc()
+
+	message := green("enabled")
+
+	if dryRunDisbled {
+		red := color.New(color.FgRed).SprintFunc()
+		message = red("disabled")
+	}
+
+	log.Infof("Dry run: %s", message)
+}
+
