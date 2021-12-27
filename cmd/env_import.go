@@ -76,6 +76,8 @@ var envImportCmd = &cobra.Command{
 			return
 		}
 
+		var errors []string
+
 		for k, v := range envsToImport {
 			err = nil
 			if isSecrets {
@@ -85,8 +87,14 @@ var envImportCmd = &cobra.Command{
 			}
 
 			if err != nil {
-				utils.PrintlnError(err)
+				errors = append(errors, fmt.Sprintf("%s (%s)", k, err))
 			}
+		}
+
+		if len(errors) == 0 {
+			utils.PrintlnInfo(fmt.Sprintf("✅ %s successfully imported!", envVarOrSecret))
+		} else {
+			utils.PrintlnError(fmt.Errorf("those %s have failed to be imported: %s", envVarOrSecret, strings.Join(errors, ", ")))
 		}
 	},
 }
