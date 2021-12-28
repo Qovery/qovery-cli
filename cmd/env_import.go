@@ -76,13 +76,38 @@ var envImportCmd = &cobra.Command{
 			return
 		}
 
+		prompt = &survey.Select{
+			Message: fmt.Sprintf("Do you want to overwrite existing %s?", envVarOrSecret),
+			Options: []string{"No", "Yes"},
+		}
+
+		var overrideEnvVarOrSecretString string
+		err = survey.AskOne(prompt, &overrideEnvVarOrSecretString)
+		if err != nil {
+			utils.PrintlnError(err)
+			return
+		}
+
+		overrideEnvVarOrSecret := false
+		if overrideEnvVarOrSecretString == "Yes" {
+			overrideEnvVarOrSecret = true
+		}
+
 		var errors []string
 
 		for k, v := range envsToImport {
 			err = nil
 			if isSecrets {
+				if overrideEnvVarOrSecret {
+					_ = utils.DeleteSecret(application, k)
+				}
+
 				err = utils.AddSecret(application, k, v)
 			} else {
+				if overrideEnvVarOrSecret {
+					_ = utils.DeleteEnvironmentVariable(application, k)
+				}
+
 				err = utils.AddEnvironmentVariable(application, k, v)
 			}
 

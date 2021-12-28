@@ -242,6 +242,47 @@ func CheckAdminUrl() {
 	}
 }
 
+func DeleteEnvironmentVariable(application Id, key string) error {
+	token, err := GetAccessToken()
+	if err != nil {
+		return err
+	}
+
+	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
+	client := qovery.NewAPIClient(qovery.NewConfiguration())
+
+	// TODO optimize this call by caching the result?
+	envVars, res, err := client.ApplicationEnvironmentVariableApi.ListApplicationEnvironmentVariable(auth, string(application)).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	var envVar *qovery.EnvironmentVariableResponse
+	for _, mEnvVar := range envVars.GetResults() {
+		if mEnvVar.Key == key {
+			envVar = &mEnvVar
+			break
+		}
+	}
+
+	if envVar == nil {
+		return nil
+	}
+
+	res, err = client.ApplicationEnvironmentVariableApi.DeleteApplicationEnvironmentVariable(auth, string(application), envVar.Id).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 400 {
+		return errors.New(fmt.Sprintf("Received "+res.Status+" response while deleting an Environment Variable for application %s with key %s", string(application), key))
+	}
+
+	return nil
+}
+
 func AddEnvironmentVariable(application Id, key string, value string) error {
 	token, err := GetAccessToken()
 	if err != nil {
@@ -261,6 +302,47 @@ func AddEnvironmentVariable(application Id, key string, value string) error {
 
 	if res.StatusCode >= 400 {
 		return errors.New(fmt.Sprintf("Received "+res.Status+" response while adding an environment variable for application %s", string(application)))
+	}
+
+	return nil
+}
+
+func DeleteSecret(application Id, key string) error {
+	token, err := GetAccessToken()
+	if err != nil {
+		return err
+	}
+
+	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
+	client := qovery.NewAPIClient(qovery.NewConfiguration())
+
+	// TODO optimize this call by caching the result?
+	secrets, res, err := client.ApplicationSecretApi.ListApplicationSecrets(auth, string(application)).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	var secret *qovery.SecretResponse
+	for _, mSecret := range secrets.GetResults() {
+		if *mSecret.Key == key {
+			secret = &mSecret
+			break
+		}
+	}
+
+	if secret == nil {
+		return nil
+	}
+
+	res, err = client.ApplicationSecretApi.DeleteApplicationSecret(auth, string(application), secret.Id).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 400 {
+		return errors.New(fmt.Sprintf("Received "+res.Status+" response while deleting a secret for application %s with key %s", string(application), key))
 	}
 
 	return nil
