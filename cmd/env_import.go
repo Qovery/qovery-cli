@@ -71,7 +71,7 @@ var envImportCmd = &cobra.Command{
 		}
 
 		envsToImport := getEnvsToImport(envs)
-		if envsToImport == nil {
+		if envsToImport == nil || len(envsToImport) == 0 {
 			utils.PrintlnError(fmt.Errorf("no environment variables to import"))
 			return
 		}
@@ -148,13 +148,14 @@ func getEnvsToImport(envs map[string]string) map[string]string {
 		Options: envKeys,
 	}
 
-	err := survey.AskOne(prompt, &envKeys)
+	var selectedEnvKeys []string
+	err := survey.AskOne(prompt, &selectedEnvKeys)
 	if err != nil {
 		return nil
 	}
 
 	results := make(map[string]string)
-	for _, key := range envKeys {
+	for _, key := range selectedEnvKeys {
 		sKey := strings.Split(key, "=")
 		results[sKey[0]] = envs[sKey[0]]
 	}
