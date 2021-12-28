@@ -8,7 +8,9 @@ replace (
 )
 
 require (
+	github.com/AlecAivazis/survey/v2 v2.3.2
 	github.com/getsentry/sentry-go v0.11.0
+	github.com/joho/godotenv v1.4.0
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0
 	github.com/mholt/archiver/v3 v3.5.0
 	github.com/olekukonko/tablewriter v0.0.5

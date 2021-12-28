@@ -241,3 +241,51 @@ func CheckAdminUrl() {
 		os.Exit(1)
 	}
 }
+
+func AddEnvironmentVariable(application Id, key string, value string) error {
+	token, err := GetAccessToken()
+	if err != nil {
+		return err
+	}
+
+	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
+	client := qovery.NewAPIClient(qovery.NewConfiguration())
+
+	_, res, err := client.ApplicationEnvironmentVariableApi.CreateApplicationEnvironmentVariable(auth, string(application)).EnvironmentVariableRequest(
+		qovery.EnvironmentVariableRequest{Key: key, Value: value},
+	).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 400 {
+		return errors.New(fmt.Sprintf("Received "+res.Status+" response while adding an environment variable for application %s", string(application)))
+	}
+
+	return nil
+}
+
+func AddSecret(application Id, key string, value string) error {
+	token, err := GetAccessToken()
+	if err != nil {
+		return err
+	}
+
+	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
+	client := qovery.NewAPIClient(qovery.NewConfiguration())
+
+	_, res, err := client.ApplicationSecretApi.CreateApplicationSecret(auth, string(application)).SecretRequest(
+		qovery.SecretRequest{Key: key, Value: value},
+	).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 400 {
+		return errors.New(fmt.Sprintf("Received "+res.Status+" response while adding an secret for application %s", string(application)))
+	}
+
+	return nil
+}
