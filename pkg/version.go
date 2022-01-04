@@ -3,14 +3,15 @@ package pkg
 import (
 	"errors"
 	"fmt"
-	"github.com/qovery/qovery-cli/utils"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 func GetCurrentVersion() string {
-	return "0.36.2" // ci-version-check
+	return "0.37.0" // ci-version-check
 }
 
 func GetLatestOnlineVersionUrl() (string, error) {
