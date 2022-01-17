@@ -6,6 +6,7 @@ import (
 
 var (
 	clusterId  string
+	lockReason string
 	orgaErr    error
 	dryRun     bool
 	version    string

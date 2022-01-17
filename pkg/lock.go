@@ -1,6 +1,8 @@
 package pkg
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -11,15 +13,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func LockById(clusterId string) {
+func LockById(clusterId string, reason string) {
 	utils.CheckAdminUrl()
 
+	if reason == "" {
+		log.Errorf("Lock reason is required")
+		return
+	}
+
 	if utils.Validate("lock") {
-		res := updateLockById(clusterId, http.MethodPost)
+		res := updateLockById(clusterId, reason, http.MethodPost)
 
 		if res.StatusCode != http.StatusOK {
 			result, _ := ioutil.ReadAll(res.Body)
-			log.Errorf("Could not unlock cluster : %s. %s", res.Status, string(result))
+			log.Errorf("Could not lock cluster : %s. %s", res.Status, string(result))
 		} else {
 			fmt.Println("Cluster locked.")
 		}
@@ -30,7 +37,7 @@ func UnockById(clusterId string) {
 	utils.CheckAdminUrl()
 
 	if utils.Validate("unlock") {
-		res := updateLockById(clusterId, http.MethodDelete)
+		res := updateLockById(clusterId, "", http.MethodDelete)
 
 		if res.StatusCode != http.StatusOK {
 			result, _ := ioutil.ReadAll(res.Body)
@@ -41,15 +48,24 @@ func UnockById(clusterId string) {
 	}
 }
 
-func updateLockById(clusterId string, method string) *http.Response {
+func updateLockById(clusterId string, reason string, method string) *http.Response {
 	authToken, tokenErr := utils.GetAccessToken()
 	if tokenErr != nil {
 		utils.PrintlnError(tokenErr)
 		os.Exit(0)
 	}
 
+	payload := map[string]string{}
+	if method == http.MethodPost {
+		payload["reason"] = reason
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	url := fmt.Sprintf("%s/cluster/lock/%s", os.Getenv("ADMIN_URL"), clusterId)
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
 		log.Fatal(err)
 	}
