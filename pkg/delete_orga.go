@@ -15,7 +15,7 @@ func DeleteOrganizationByClusterId(clusterId string, dryRunDisabled bool) {
 
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("delete") {
-		res := delete(os.Getenv("ADMIN_URL")+"/organization/"+clusterId, http.MethodDelete, dryRunDisabled)
+		res := delete(os.Getenv("ADMIN_URL")+"/organization?clusterId="+clusterId, http.MethodDelete, dryRunDisabled)
 
 		if !strings.Contains(res.Status, "200") {
 			result, _ := ioutil.ReadAll(res.Body)
