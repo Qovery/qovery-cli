@@ -18,7 +18,9 @@ var (
 
 func init() {
 	adminLockByIdCmd.Flags().StringVarP(&clusterId, "cluster", "c", "", "Cluster's id")
+	adminLockByIdCmd.Flags().StringVarP(&lockReason, "reason", "r", "", "Lock reason")
 	orgaErr = adminLockByIdCmd.MarkFlagRequired("cluster")
+	orgaErr = adminLockByIdCmd.MarkFlagRequired("reason")
 	adminCmd.AddCommand(adminLockByIdCmd)
 }
 
@@ -26,6 +28,6 @@ func lockClusterById() {
 	if orgaErr != nil {
 		log.Error("Invalid cluster Id")
 	} else {
-		pkg.LockById(clusterId)
+		pkg.LockById(clusterId, lockReason)
 	}
 }
