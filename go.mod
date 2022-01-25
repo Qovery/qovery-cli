@@ -8,4 +8,7 @@ replace (
 	github.com/qovery/qovery-cli/utils => ./utils
 )
 
-require github.com/qovery/qovery-cli/cmd v0.0.0-00010101000000-000000000000
+require (
+	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/qovery/qovery-cli/cmd v0.0.0-00010101000000-000000000000
+)

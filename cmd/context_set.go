@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 )
@@ -19,28 +20,25 @@ var setCmd = &cobra.Command{
 		println()
 		_ = utils.ResetApplicationContext()
 		utils.PrintlnInfo("Select new context")
-		err = utils.SelectOrganization()
+		orga, err := utils.SelectAndSetOrganization()
 		if err != nil {
 			utils.PrintlnError(err)
 			return
 		}
-		id, _, _ := utils.CurrentOrganization()
 
-		err = utils.SelectProject(id)
+		project, err := utils.SelectAndSetProject(orga.ID)
 		if err != nil {
 			utils.PrintlnError(err)
 			return
 		}
-		id, _, _ = utils.CurrentProject()
 
-		err = utils.SelectEnvironment(id)
+		env, err := utils.SelectAndSetEnvironment(project.ID)
 		if err != nil {
 			utils.PrintlnError(err)
 			return
 		}
-		id, _, _ = utils.CurrentEnvironment()
 
-		err = utils.SelectApplication(id)
+		_, err = utils.SelectAndSetApplication(env.ID)
 		if err != nil {
 			utils.PrintlnError(err)
 			return

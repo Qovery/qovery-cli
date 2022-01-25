@@ -3,18 +3,24 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/manifoldco/promptui"
 	"github.com/qovery/qovery-client-go"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"os"
-	"strings"
 )
 
-func SelectOrganization() error {
+type Organization struct {
+	ID   Id
+	Name Name
+}
+
+func SelectOrganization() (*Organization, error) {
 	token, err := GetAccessToken()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
@@ -22,10 +28,10 @@ func SelectOrganization() error {
 
 	organizations, res, err := client.OrganizationMainCallsApi.ListOrganization(auth).Execute()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if res.StatusCode >= 400 {
-		return errors.New("Received " + res.Status + " response while listing organizations. ")
+		return nil, errors.New("Received " + res.Status + " response while listing organizations. ")
 	}
 
 	var organizationNames []string
@@ -37,7 +43,7 @@ func SelectOrganization() error {
 	}
 
 	if len(organizationNames) < 1 {
-		return errors.New("No organizations found. ")
+		return nil, errors.New("No organizations found. ")
 	}
 
 	fmt.Println("Organization:")
@@ -49,34 +55,50 @@ func SelectOrganization() error {
 	}
 	_, selectedOrganization, err := prompt.Run()
 	if err != nil {
-		PrintlnError(err)
-		return nil
+		return nil, err
 	}
 
-	err = SetOrganization(Name(selectedOrganization), Id(orgas[selectedOrganization]))
-	if err != nil {
-		PrintlnError(err)
-		return nil
-	}
-
-	return nil
+	return &Organization{
+		ID:   Id(orgas[selectedOrganization]),
+		Name: Name(selectedOrganization),
+	}, nil
 }
 
-func SelectProject(organization Id) error {
+func SelectAndSetOrganization() (*Organization, error) {
+	selectedOrganization, err := SelectOrganization()
+	if err != nil {
+		PrintlnError(err)
+		return nil, err
+	}
+	err = SetOrganization(selectedOrganization)
+	if err != nil {
+		PrintlnError(err)
+		return nil, err
+	}
+
+	return selectedOrganization, nil
+}
+
+type Project struct {
+	ID   Id
+	Name Name
+}
+
+func SelectProject(organizationID Id) (*Project, error) {
 	token, err := GetAccessToken()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
 	client := qovery.NewAPIClient(qovery.NewConfiguration())
 
-	p, res, err := client.ProjectsApi.ListProject(auth, string(organization)).Execute()
+	p, res, err := client.ProjectsApi.ListProject(auth, string(organizationID)).Execute()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if res.StatusCode >= 400 {
-		return errors.New("Received " + res.Status + " response while listing projects. ")
+		return nil, errors.New("Received " + res.Status + " response while listing projects. ")
 	}
 
 	var projectsNames []string
@@ -88,7 +110,7 @@ func SelectProject(organization Id) error {
 	}
 
 	if len(projectsNames) < 1 {
-		return errors.New("No projects found. ")
+		return nil, errors.New("No projects found. ")
 	}
 
 	fmt.Println("Project:")
@@ -101,45 +123,62 @@ func SelectProject(organization Id) error {
 	_, selectedProject, err := prompt.Run()
 	if err != nil {
 		PrintlnError(err)
-		return nil
+		return nil, err
 	}
 
-	err = SetProject(Name(selectedProject), Id(projects[selectedProject]))
-	if err != nil {
-		PrintlnError(err)
-		return nil
-	}
-
-	return nil
+	return &Project{
+		ID:   Id(projects[selectedProject]),
+		Name: Name(selectedProject),
+	}, nil
 }
 
-func SelectEnvironment(project Id) error {
+func SelectAndSetProject(organizationID Id) (*Project, error) {
+	selectedProject, err := SelectProject(organizationID)
+	if err != nil {
+		return nil, err
+	}
+	err = SetProject(selectedProject)
+	if err != nil {
+		PrintlnError(err)
+		return nil, err
+	}
+
+	return selectedProject, nil
+}
+
+type Environment struct {
+	ID        Id
+	ClusterID Id
+	Name      Name
+}
+
+func SelectEnvironment(projectID Id) (*Environment, error) {
 	token, err := GetAccessToken()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
 	client := qovery.NewAPIClient(qovery.NewConfiguration())
 
-	e, res, err := client.EnvironmentsApi.ListEnvironment(auth, string(project)).Execute()
+	e, res, err := client.EnvironmentsApi.ListEnvironment(auth, string(projectID)).Execute()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if res.StatusCode >= 400 {
-		return errors.New("Received " + res.Status + " response while listing environments. ")
+		return nil, errors.New("Received " + res.Status + " response while listing environments. ")
 	}
 
 	var environmentsNames []string
-	var environments = make(map[string]string)
+	var environments = make(map[string]qovery.EnvironmentResponse)
 
 	for _, env := range e.GetResults() {
 		environmentsNames = append(environmentsNames, env.Name)
-		environments[env.Name] = env.Id
+		environments[env.Name] = env
 	}
 
 	if len(environmentsNames) < 1 {
-		return errors.New("No environments found. ")
+		return nil, errors.New("No environments found. ")
 	}
 
 	fmt.Println("Environment:")
@@ -152,22 +191,40 @@ func SelectEnvironment(project Id) error {
 	_, selectedEnvironment, err := prompt.Run()
 	if err != nil {
 		PrintlnError(err)
-		return nil
+		return nil, err
 	}
-
-	err = SetEnvironment(Name(selectedEnvironment), Id(environments[selectedEnvironment]))
-	if err != nil {
-		PrintlnError(err)
-		return nil
-	}
-
-	return nil
+	return &Environment{
+		ID:   Id(environments[selectedEnvironment].Id),
+		Name: Name(selectedEnvironment),
+		// ClusterID: environments[selectedEnvironment].KuberneteProviderId,
+	}, nil
 }
 
-func SelectApplication(environment Id) error {
+func SelectAndSetEnvironment(projectID Id) (*Environment, error) {
+	selectedEnvironment, err := SelectEnvironment(projectID)
+	if err != nil {
+		PrintlnError(err)
+		return nil, err
+	}
+
+	err = SetEnvironment(selectedEnvironment)
+	if err != nil {
+		PrintlnError(err)
+		return nil, err
+	}
+
+	return selectedEnvironment, nil
+}
+
+type Application struct {
+	ID   Id
+	Name Name
+}
+
+func SelectApplication(environment Id) (*Application, error) {
 	token, err := GetAccessToken()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
@@ -175,10 +232,10 @@ func SelectApplication(environment Id) error {
 
 	a, res, err := client.ApplicationsApi.ListApplication(auth, string(environment)).Execute()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if res.StatusCode >= 400 {
-		return errors.New("Received " + res.Status + " response while listing applications. ")
+		return nil, errors.New("Received " + res.Status + " response while listing applications. ")
 	}
 
 	var applicationsNames []string
@@ -190,7 +247,7 @@ func SelectApplication(environment Id) error {
 	}
 
 	if len(applicationsNames) < 1 {
-		return errors.New("No applications found. ")
+		return nil, errors.New("No applications found. ")
 	}
 
 	fmt.Println("Application:")
@@ -203,16 +260,22 @@ func SelectApplication(environment Id) error {
 	_, selectedApplication, err := prompt.Run()
 	if err != nil {
 		PrintlnError(err)
-		return nil
+		return nil, err
 	}
 
-	err = SetApplication(Name(selectedApplication), Id(applications[selectedApplication]))
+	return &Application{
+		ID:   Id(applications[selectedApplication]),
+		Name: Name(selectedApplication),
+	}, nil
+}
+
+func SelectAndSetApplication(environment Id) (*Application, error) {
+	application, err := SelectApplication(environment)
 	if err != nil {
 		PrintlnError(err)
-		return nil
+		return nil, err
 	}
-
-	return nil
+	return application, err
 }
 
 func ResetApplicationContext() error {
