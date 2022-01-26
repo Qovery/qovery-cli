@@ -3,18 +3,14 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
-	"os"
 )
 
 func Validate(actionType string) bool {
-	yes := getInput(actionType)
-	if yes != "yes" {
-		return false
-	}
-
-	return true
+	return getInput(actionType) == "yes"
 }
 
 func getInput(actionType string) string {

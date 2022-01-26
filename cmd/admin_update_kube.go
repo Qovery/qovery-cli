@@ -28,7 +28,11 @@ func init() {
 func updateClusterById() {
 	if orgaErr != nil {
 		log.Error("Invalid cluster Id")
-	} else {
-		pkg.UpdateById(clusterId, dryRun, version)
+		return
 	}
+	if versionErr != nil {
+		log.Error("Invalid version")
+		return
+	}
+	pkg.UpdateById(clusterId, dryRun, version)
 }

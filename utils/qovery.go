@@ -315,7 +315,7 @@ func DeleteEnvironmentVariable(application Id, key string) error {
 	client := qovery.NewAPIClient(qovery.NewConfiguration())
 
 	// TODO optimize this call by caching the result?
-	envVars, res, err := client.ApplicationEnvironmentVariableApi.ListApplicationEnvironmentVariable(auth, string(application)).Execute()
+	envVars, _, err := client.ApplicationEnvironmentVariableApi.ListApplicationEnvironmentVariable(auth, string(application)).Execute()
 
 	if err != nil {
 		return err
@@ -333,14 +333,14 @@ func DeleteEnvironmentVariable(application Id, key string) error {
 		return nil
 	}
 
-	res, err = client.ApplicationEnvironmentVariableApi.DeleteApplicationEnvironmentVariable(auth, string(application), envVar.Id).Execute()
+	res, err := client.ApplicationEnvironmentVariableApi.DeleteApplicationEnvironmentVariable(auth, string(application), envVar.Id).Execute()
 
 	if err != nil {
 		return err
 	}
 
 	if res.StatusCode >= 400 {
-		return errors.New(fmt.Sprintf("Received "+res.Status+" response while deleting an Environment Variable for application %s with key %s", string(application), key))
+		return fmt.Errorf("Received "+res.Status+" response while deleting an Environment Variable for application %s with key %s", string(application), key)
 	}
 
 	return nil
@@ -364,7 +364,7 @@ func AddEnvironmentVariable(application Id, key string, value string) error {
 	}
 
 	if res.StatusCode >= 400 {
-		return errors.New(fmt.Sprintf("Received "+res.Status+" response while adding an environment variable for application %s", string(application)))
+		return fmt.Errorf("Received "+res.Status+" response while adding an environment variable for application %s", string(application))
 	}
 
 	return nil
@@ -380,7 +380,7 @@ func DeleteSecret(application Id, key string) error {
 	client := qovery.NewAPIClient(qovery.NewConfiguration())
 
 	// TODO optimize this call by caching the result?
-	secrets, res, err := client.ApplicationSecretApi.ListApplicationSecrets(auth, string(application)).Execute()
+	secrets, _, err := client.ApplicationSecretApi.ListApplicationSecrets(auth, string(application)).Execute()
 
 	if err != nil {
 		return err
@@ -398,14 +398,14 @@ func DeleteSecret(application Id, key string) error {
 		return nil
 	}
 
-	res, err = client.ApplicationSecretApi.DeleteApplicationSecret(auth, string(application), secret.Id).Execute()
+	res, err := client.ApplicationSecretApi.DeleteApplicationSecret(auth, string(application), secret.Id).Execute()
 
 	if err != nil {
 		return err
 	}
 
 	if res.StatusCode >= 400 {
-		return errors.New(fmt.Sprintf("Received "+res.Status+" response while deleting a secret for application %s with key %s", string(application), key))
+		return fmt.Errorf("Received "+res.Status+" response while deleting a secret for application %s with key %s", string(application), key)
 	}
 
 	return nil
@@ -429,7 +429,7 @@ func AddSecret(application Id, key string, value string) error {
 	}
 
 	if res.StatusCode >= 400 {
-		return errors.New(fmt.Sprintf("Received "+res.Status+" response while adding an secret for application %s", string(application)))
+		return fmt.Errorf("Received "+res.Status+" response while adding an secret for application %s", string(application))
 	}
 
 	return nil

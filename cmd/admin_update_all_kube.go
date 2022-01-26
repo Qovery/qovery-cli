@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/qovery/qovery-cli/pkg"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -23,5 +24,9 @@ func init() {
 }
 
 func updateAllClusters() {
+	if versionErr != nil {
+		log.Error("Invalid version")
+		return
+	}
 	pkg.UpdateAll(dryRun, version)
 }
