@@ -1,11 +1,12 @@
 package utils
 
 import (
+	"strings"
+	"time"
+
 	"github.com/posthog/posthog-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"strings"
-	"time"
 )
 
 func Capture(command *cobra.Command) {

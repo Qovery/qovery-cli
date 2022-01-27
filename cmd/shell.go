@@ -37,6 +37,7 @@ var shellCmd = &cobra.Command{
 			ProjectID:      project.ID,
 			OrganizationID: orga.ID,
 			EnvironmentID:  env.ID,
+			ClusterID:      env.ClusterID,
 		})
 	},
 }

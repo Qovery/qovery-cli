@@ -16,11 +16,10 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/posthog/posthog-go v0.0.0-20211028072449-93c17c49e2b0
 	github.com/pterm/pterm v0.12.34
-	github.com/qovery/qovery-client-go v0.0.0-20211108074704-2bbfc41ad985
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/pflag v1.0.5
-	golang.org/x/net v0.0.0-20220121210141-e204ce36a2ba
+	golang.org/x/net v0.0.0-20220127074510-2fabfed7e28f
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 )
 
@@ -31,6 +30,7 @@ require (
 	github.com/atomicgo/cursor v0.0.1 // indirect
 	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
+	github.com/containerd/console v1.0.3 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -71,6 +71,7 @@ require (
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/pierrec/lz4 v2.5.2+incompatible // indirect
 	github.com/pierrec/lz4/v4 v4.1.2 // indirect
+	github.com/qovery/qovery-client-go v0.0.0-20220127101633-6d8131211ac5 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/ulikunitz/xz v0.5.9 // indirect

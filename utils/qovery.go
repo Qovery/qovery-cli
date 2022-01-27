@@ -194,9 +194,9 @@ func SelectEnvironment(projectID Id) (*Environment, error) {
 		return nil, err
 	}
 	return &Environment{
-		ID:   Id(environments[selectedEnvironment].Id),
-		Name: Name(selectedEnvironment),
-		// ClusterID: environments[selectedEnvironment].KuberneteProviderId,
+		ID:        Id(environments[selectedEnvironment].Id),
+		Name:      Name(selectedEnvironment),
+		ClusterID: Id(environments[selectedEnvironment].ClusterId),
 	}, nil
 }
 
