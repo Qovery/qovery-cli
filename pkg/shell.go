@@ -12,6 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const StdinBufferSize = 4096
+
 type ShellRequest struct {
 	ApplicationID  utils.Id
 	EnvironmentID  utils.Id
@@ -103,7 +105,7 @@ func readWebsocketConnection(wsConn *websocket.Conn, currentConsole console.Cons
 
 func readUserConsole(currentConsole console.Console, stdIn chan []byte, done chan struct{}) {
 	defer close(done)
-	buffer := make([]byte, 4096)
+	buffer := make([]byte, StdinBufferSize)
 	for {
 		count, err := currentConsole.Read(buffer)
 		if err != nil {
