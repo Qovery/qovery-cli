@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 
 	"github.com/containerd/console"
 	"github.com/gorilla/websocket"
@@ -89,8 +88,7 @@ func readWebsocketConnection(wsConn *websocket.Conn, currentConsole console.Cons
 		_, msg, err := wsConn.ReadMessage()
 		if err != nil {
 			if e, ok := err.(*websocket.CloseError); ok {
-				errSplit := strings.Split(e.Error(), ":")
-				log.Error("connection closed by server: ", errSplit[len(errSplit)-1])
+				log.Error("connection closed by server: ", e)
 				return
 			}
 			log.Error("error while reading on websocket:", err)
