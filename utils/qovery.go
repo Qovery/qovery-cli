@@ -275,6 +275,10 @@ func SelectAndSetApplication(environment Id) (*Application, error) {
 		PrintlnError(err)
 		return nil, err
 	}
+	if err := SetApplication(application); err != nil {
+		PrintlnError(err)
+		return nil, err
+	}
 	return application, err
 }
 
