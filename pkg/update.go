@@ -16,7 +16,7 @@ func UpdateById(clusterId string, dryRunDisabled bool, version string) {
 
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("update") {
-		res := update(os.Getenv("ADMIN_URL")+"/cluster/update/"+clusterId, http.MethodPost, dryRunDisabled, version)
+		res := update(utils.ADMIN_URL+"/cluster/update/"+clusterId, http.MethodPost, dryRunDisabled, version)
 
 		if !strings.Contains(res.Status, "200") {
 			result, _ := ioutil.ReadAll(res.Body)
@@ -34,7 +34,7 @@ func UpdateAll(dryRunDisabled bool, version string) {
 
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("update") {
-		res := update(os.Getenv("ADMIN_URL")+"/cluster/update", http.MethodPost, dryRunDisabled, version)
+		res := update(utils.ADMIN_URL+"/cluster/update", http.MethodPost, dryRunDisabled, version)
 
 		if !strings.Contains(res.Status, "200") {
 			result, _ := ioutil.ReadAll(res.Body)

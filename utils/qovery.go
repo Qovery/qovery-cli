@@ -17,6 +17,8 @@ type Organization struct {
 	Name Name
 }
 
+const ADMIN_URL = "https://api-admin.qovery.com"
+
 func SelectOrganization() (*Organization, error) {
 	token, err := GetAccessToken()
 	if err != nil {
