@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/joho/godotenv"
 	"github.com/manifoldco/promptui"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 var envImportCmd = &cobra.Command{
@@ -71,7 +72,7 @@ var envImportCmd = &cobra.Command{
 		}
 
 		envsToImport := getEnvsToImport(envs)
-		if envsToImport == nil || len(envsToImport) == 0 {
+		if len(envsToImport) == 0 {
 			utils.PrintlnError(fmt.Errorf("no environment variables to import"))
 			return
 		}
@@ -96,7 +97,7 @@ var envImportCmd = &cobra.Command{
 		var errors []string
 
 		for k, v := range envsToImport {
-			err = nil
+			var err error
 			if isSecrets {
 				if overrideEnvVarOrSecret {
 					_ = utils.DeleteSecret(application, k)

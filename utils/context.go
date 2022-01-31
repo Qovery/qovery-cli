@@ -3,10 +3,11 @@ package utils
 import (
 	"encoding/json"
 	"errors"
-	"github.com/dgrijalva/jwt-go"
 	"io/ioutil"
 	"os"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 const ContextFileName = "context"
@@ -92,14 +93,14 @@ func CurrentOrganization() (Id, Name, error) {
 	return id, name, nil
 }
 
-func SetOrganization(name Name, id Id) error {
+func SetOrganization(orga *Organization) error {
 	context, err := CurrentContext()
 	if err != nil {
 		return err
 	}
 
-	context.OrganizationName = name
-	context.OrganizationId = id
+	context.OrganizationName = orga.Name
+	context.OrganizationId = orga.ID
 
 	return StoreContext(context)
 }
@@ -122,14 +123,14 @@ func CurrentProject() (Id, Name, error) {
 	return id, name, nil
 }
 
-func SetProject(name Name, id Id) error {
+func SetProject(project *Project) error {
 	context, err := CurrentContext()
 	if err != nil {
 		return err
 	}
 
-	context.ProjectName = name
-	context.ProjectId = id
+	context.ProjectName = project.Name
+	context.ProjectId = project.ID
 
 	return StoreContext(context)
 }
@@ -152,14 +153,14 @@ func CurrentEnvironment() (Id, Name, error) {
 	return id, name, nil
 }
 
-func SetEnvironment(name Name, id Id) error {
+func SetEnvironment(env *Environment) error {
 	context, err := CurrentContext()
 	if err != nil {
 		return err
 	}
 
-	context.EnvironmentName = name
-	context.EnvironmentId = id
+	context.EnvironmentName = env.Name
+	context.EnvironmentId = env.ID
 
 	return StoreContext(context)
 }
@@ -182,14 +183,14 @@ func CurrentApplication() (Id, Name, error) {
 	return id, name, nil
 }
 
-func SetApplication(name Name, id Id) error {
+func SetApplication(application *Application) error {
 	context, err := CurrentContext()
 	if err != nil {
 		return err
 	}
 
-	context.ApplicationName = name
-	context.ApplicationId = id
+	context.ApplicationName = application.Name
+	context.ApplicationId = application.ID
 
 	return StoreContext(context)
 }
