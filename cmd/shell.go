@@ -22,11 +22,12 @@ var shellCmd = &cobra.Command{
 			utils.PrintlnError(err)
 			return
 		}
+
+		utils.PrintlnInfo("Current context:")
 		if currentContext.ApplicationId != "" && currentContext.ApplicationName != "" &&
 			currentContext.EnvironmentId != "" && currentContext.EnvironmentName != "" &&
 			currentContext.ProjectId != "" && currentContext.ProjectName != "" &&
 			currentContext.OrganizationId != "" && currentContext.OrganizationName != "" {
-			utils.PrintlnInfo("Current context:")
 			if err := utils.PrintlnContext(); err != nil {
 				fmt.Println("Context not yet configured.")
 			}
@@ -36,7 +37,6 @@ var shellCmd = &cobra.Command{
 			useContext = utils.Validate("context")
 			fmt.Println()
 		} else {
-			utils.PrintlnInfo("Current context:")
 			if err := utils.PrintlnContext(); err != nil {
 				fmt.Println("Context not yet configured.")
 				fmt.Println("Unable to use current context for `shell` command.")
@@ -107,7 +107,7 @@ func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequ
 		return nil, err
 	}
 	if res.StatusCode >= 400 {
-		return nil, errors.New("Received " + res.Status + " response while listing organizations. ")
+		return nil, errors.New("Received " + res.Status + " response while fetching environment. ")
 	}
 
 	return &pkg.ShellRequest{
