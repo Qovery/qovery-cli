@@ -16,7 +16,7 @@ func UpdateById(clusterId string, dryRunDisabled bool, version string) {
 
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("update") {
-		res := update(utils.ADMIN_URL+"/cluster/update/"+clusterId, http.MethodPost, dryRunDisabled, version)
+		res := update(utils.ADMIN_URL+"/cluster/update/"+clusterId, http.MethodPost, dryRunDisabled, version, "", 0)
 
 		if !strings.Contains(res.Status, "200") {
 			result, _ := ioutil.ReadAll(res.Body)
@@ -29,12 +29,12 @@ func UpdateById(clusterId string, dryRunDisabled bool, version string) {
 	}
 }
 
-func UpdateAll(dryRunDisabled bool, version string) {
+func UpdateAll(dryRunDisabled bool, version string, providerKind string, parallelRun int) {
 	utils.CheckAdminUrl()
 
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("update") {
-		res := update(utils.ADMIN_URL+"/cluster/update", http.MethodPost, dryRunDisabled, version)
+		res := update(utils.ADMIN_URL+"/cluster/update", http.MethodPost, dryRunDisabled, version, providerKind, parallelRun)
 
 		if !strings.Contains(res.Status, "200") {
 			result, _ := ioutil.ReadAll(res.Body)
@@ -47,7 +47,7 @@ func UpdateAll(dryRunDisabled bool, version string) {
 	}
 }
 
-func update(url string, method string, dryRunDisabled bool, version string) *http.Response {
+func update(url string, method string, dryRunDisabled bool, version string, providerKind string, parallelRun int) *http.Response {
 	authToken, tokenErr := utils.GetAccessToken()
 	if tokenErr != nil {
 		utils.PrintlnError(tokenErr)
@@ -57,7 +57,7 @@ func update(url string, method string, dryRunDisabled bool, version string) *htt
 	body := bytes.NewBuffer([]byte(`{ "metadata": { "dry_run_deploy": true } }`))
 
 	if dryRunDisabled {
-		body = bytes.NewBuffer([]byte(fmt.Sprintf(`{ "metadata": { "dry_run_deploy": false, "target_version": "%s" } }`, version)))
+		body = bytes.NewBuffer([]byte(fmt.Sprintf(`{ "metadata": { "dry_run_deploy": false, "target_version": "%s", "provider_kind": "%s", "parallel_run": %d } }`, version, providerKind, parallelRun)))
 	}
 
 	req, err := http.NewRequest(method, url, body)
