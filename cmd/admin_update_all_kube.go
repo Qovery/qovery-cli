@@ -34,5 +34,9 @@ func updateAllClusters() {
 		log.Error("Invalid version")
 		return
 	}
+	if providerErr != nil {
+		log.Error("Provider kind is mandatory")
+		return
+	}
 	pkg.UpdateAll(dryRun, version, providerKind, parallelRun)
 }
