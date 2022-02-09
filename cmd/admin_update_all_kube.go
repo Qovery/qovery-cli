@@ -41,6 +41,8 @@ func updateAllClusters() {
 
 	if parallelRun > 20 {
 		log.Error("Can't update more than 20 clusters")
+		return
 	}
+
 	pkg.UpdateAll(dryRun, version, providerKind, parallelRun)
 }
