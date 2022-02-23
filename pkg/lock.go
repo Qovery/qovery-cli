@@ -95,7 +95,7 @@ func listLockedClusters() *http.Response {
 		os.Exit(0)
 	}
 
-	url := fmt.Sprintf("%s/cluster/lock", utils.ADMIN_URL)
+	url := fmt.Sprintf("%s/cluster/lock", utils.AdminUrl)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -126,7 +126,7 @@ func updateLockById(clusterId string, reason string, method string) *http.Respon
 		log.Fatal(err)
 	}
 
-	url := fmt.Sprintf("%s/cluster/lock/%s", utils.ADMIN_URL, clusterId)
+	url := fmt.Sprintf("%s/cluster/lock/%s", utils.AdminUrl, clusterId)
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
 		log.Fatal(err)

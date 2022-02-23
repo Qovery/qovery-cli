@@ -21,6 +21,10 @@ func PrintlnInfo(info string) {
 	fmt.Printf("%v: %v\n", color.CyanString("Qovery"), info)
 }
 
+func Println(text string) {
+	fmt.Printf("%v\n", text)
+}
+
 func PrintlnContext() error {
 	_, oName, err := CurrentOrganization()
 	if err != nil {
