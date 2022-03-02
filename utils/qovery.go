@@ -17,6 +17,12 @@ type Organization struct {
 	Name Name
 }
 
+type TokenInformation struct {
+	Organization *Organization
+	Name         string
+	Description  string
+}
+
 const AdminUrl = "https://api-admin.qovery.com"
 
 func SelectOrganization() (*Organization, error) {
@@ -439,4 +445,42 @@ func AddSecret(application Id, key string, value string) error {
 	}
 
 	return nil
+}
+
+func SelectTokenInformation() (*TokenInformation, error) {
+	organization, err := SelectOrganization()
+
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Choose a token name")
+	promptName := promptui.Prompt{
+		Label: "Token name",
+	}
+	name, err := promptName.Run()
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(strings.Trim(name, "")) == 0 {
+		return nil, errors.New("Token name must not be empty")
+	}
+
+	fmt.Println("Choose a token description")
+	promptDescription := promptui.Prompt{
+		Label: "Token description",
+	}
+	description, err := promptDescription.Run()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &TokenInformation{
+		organization,
+		name,
+		description,
+	}, nil
 }

@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
@@ -16,13 +18,13 @@ var tokenCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		utils.PrintlnInfo("Select organization")
-		organization, err := utils.SelectOrganization()
+		tokenInformation, err := utils.SelectTokenInformation()
 		if err != nil {
 			utils.PrintlnError(err)
 			return
 		}
 
-		token, err := generateMachineToMachineAPIToken(organization)
+		token, err := generateMachineToMachineAPIToken(tokenInformation)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -35,14 +37,28 @@ var tokenCmd = &cobra.Command{
 	},
 }
 
-func generateMachineToMachineAPIToken(organization *utils.Organization) (string, error) {
+func generateMachineToMachineAPIToken(tokenInformation *utils.TokenInformation) (string, error) {
 	token, err := utils.GetAccessToken()
 	if err != nil {
 		return "", err
 	}
 
+	requestBody, err := json.Marshal(map[string]string{
+		"name":        tokenInformation.Name,
+		"description": tokenInformation.Description,
+		"scope":       "ADMIN",
+	})
+
+	if err != nil {
+		return "", err
+	}
+
 	// apiToken endpoint is not yet exposed in the OpenAPI spec at the moment. It's planned officially for Q3 2022
-	req, err := http.NewRequest(http.MethodPost, string("https://api.qovery.com/organization/"+organization.ID+"/apiToken"), nil)
+	req, err := http.NewRequest(
+		http.MethodPost,
+		string("https://api.qovery.com/organization/"+tokenInformation.Organization.ID+"/apiToken"),
+		bytes.NewBuffer(requestBody),
+	)
 	if err != nil {
 		return "", err
 	}
