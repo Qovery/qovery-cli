@@ -11,6 +11,10 @@ import (
 	"strings"
 )
 
+type TokenCreationResponseDto struct {
+	Token string
+}
+
 var tokenCmd = &cobra.Command{
 	Use:   "token",
 	Short: "Generate an API token",
@@ -75,8 +79,15 @@ func generateMachineToMachineAPIToken(tokenInformation *utils.TokenInformation) 
 		return "", errors.New("Received " + res.Status + " response while fetching environment. ")
 	}
 
-	result, _ := ioutil.ReadAll(res.Body)
-	return string(result), nil
+	jsonResponse, _ := ioutil.ReadAll(res.Body)
+	var tokenCreationResponseDto TokenCreationResponseDto
+
+	err = json.Unmarshal(jsonResponse, &tokenCreationResponseDto)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenCreationResponseDto.Token, nil
 }
 
 func init() {
