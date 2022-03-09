@@ -11,7 +11,7 @@ import (
 )
 
 func GetCurrentVersion() string {
-	return "0.41.2" // ci-version-check
+	return "0.41.3" // ci-version-check
 }
 
 func GetLatestOnlineVersionUrl() (string, error) {
