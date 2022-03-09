@@ -46,6 +46,10 @@ func initSentry() {
 		// Useful when getting started or trying to figure something out.
 		Debug: false,
 		BeforeSend: func(event *sentry.Event, hint *sentry.EventHint) *sentry.Event {
+			// should not happen by design
+			if event == nil {
+				return event
+			}
 			if event.Exception == nil {
 				return event
 			}
