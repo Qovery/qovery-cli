@@ -46,7 +46,13 @@ func initSentry() {
 		// Useful when getting started or trying to figure something out.
 		Debug: false,
 		BeforeSend: func(event *sentry.Event, hint *sentry.EventHint) *sentry.Event {
-			if len(event.Exception) > 0 && len(event.Exception[0].Stacktrace.Frames) > 0 {
+			if event.Exception == nil {
+				return event
+			}
+			if len(event.Exception) > 0 && (event.Exception[0].Stacktrace == nil || event.Exception[0].Stacktrace.Frames == nil) {
+				return event
+			}
+			if len(event.Exception[0].Stacktrace.Frames) > 0 {
 				frames := event.Exception[0].Stacktrace.Frames
 				event.Exception[0].Stacktrace.Frames = frames[:len(frames)-1]
 				frames = event.Exception[0].Stacktrace.Frames
