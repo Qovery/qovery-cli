@@ -7,7 +7,7 @@ require (
 	github.com/containerd/console v1.0.3
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.13.0
-	github.com/getsentry/sentry-go v0.12.0
+	github.com/getsentry/sentry-go v0.13.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/vault/api v1.3.1
 	github.com/joho/godotenv v1.4.0
