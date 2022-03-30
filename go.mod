@@ -17,13 +17,13 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/posthog/posthog-go v0.0.0-20211028072449-93c17c49e2b0
-	github.com/pterm/pterm v0.12.39
+	github.com/pterm/pterm v0.12.40
 	github.com/qovery/qovery-client-go v0.0.0-20220127101633-6d8131211ac5
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/net v0.0.0-20220127074510-2fabfed7e28f
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
+	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8
 )
 
 require (
@@ -36,7 +36,7 @@ require (
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/gookit/color v1.4.2 // indirect
+	github.com/gookit/color v1.5.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-hclog v1.0.0 // indirect
