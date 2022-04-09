@@ -90,3 +90,4 @@ dist/
 *.iml
 bin
 qovery
+qovery-cli
