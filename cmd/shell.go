@@ -4,11 +4,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/qovery/qovery-cli/pkg"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/context"
+
+	"github.com/qovery/qovery-cli/pkg"
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var shellCmd = &cobra.Command{
@@ -16,47 +17,55 @@ var shellCmd = &cobra.Command{
 	Short: "Connect to an application container",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		useContext := false
-		currentContext, err := utils.CurrentContext()
+		shellRequest, err := shellRequestWithoutArg()
 		if err != nil {
 			utils.PrintlnError(err)
 			return
 		}
 
-		utils.PrintlnInfo("Current context:")
-		if currentContext.ApplicationId != "" && currentContext.ApplicationName != "" &&
-			currentContext.EnvironmentId != "" && currentContext.EnvironmentName != "" &&
-			currentContext.ProjectId != "" && currentContext.ProjectName != "" &&
-			currentContext.OrganizationId != "" && currentContext.OrganizationName != "" {
-			if err := utils.PrintlnContext(); err != nil {
-				fmt.Println("Context not yet configured.")
-			}
-			fmt.Println()
-
-			utils.PrintlnInfo("Continue with shell command using this context ?")
-			useContext = utils.Validate("context")
-			fmt.Println()
-		} else {
-			if err := utils.PrintlnContext(); err != nil {
-				fmt.Println("Context not yet configured.")
-				fmt.Println("Unable to use current context for `shell` command.")
-				fmt.Println()
-			}
-		}
-
-		var req *pkg.ShellRequest
-		if useContext {
-			req, err = shellRequestFromContext(currentContext)
-		} else {
-			req, err = shellRequestFromSelect()
-		}
-		if err != nil {
-			utils.PrintlnError(err)
-			return
-		}
-
-		pkg.ExecShell(req)
+		pkg.ExecShell(shellRequest)
 	},
+}
+
+func shellRequestWithoutArg() (*pkg.ShellRequest, error) {
+	useContext := false
+	currentContext, err := utils.CurrentContext()
+	if err != nil {
+		return nil, err
+	}
+
+	utils.PrintlnInfo("Current context:")
+	if currentContext.ApplicationId != "" && currentContext.ApplicationName != "" &&
+		currentContext.EnvironmentId != "" && currentContext.EnvironmentName != "" &&
+		currentContext.ProjectId != "" && currentContext.ProjectName != "" &&
+		currentContext.OrganizationId != "" && currentContext.OrganizationName != "" {
+		if err := utils.PrintlnContext(); err != nil {
+			fmt.Println("Context not yet configured.")
+		}
+		fmt.Println()
+
+		utils.PrintlnInfo("Continue with shell command using this context ?")
+		useContext = utils.Validate("context")
+		fmt.Println()
+	} else {
+		if err := utils.PrintlnContext(); err != nil {
+			fmt.Println("Context not yet configured.")
+			fmt.Println("Unable to use current context for `shell` command.")
+			fmt.Println()
+		}
+	}
+
+	var req *pkg.ShellRequest
+	if useContext {
+		req, err = shellRequestFromContext(currentContext)
+	} else {
+		req, err = shellRequestFromSelect()
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 func shellRequestFromSelect() (*pkg.ShellRequest, error) {
