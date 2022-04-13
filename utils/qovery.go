@@ -92,6 +92,29 @@ type Project struct {
 	Name Name
 }
 
+func GetOrganizationById(id string) (*Organization, error) {
+	token, err := GetAccessToken()
+	if err != nil {
+		return nil, err
+	}
+
+	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
+	client := qovery.NewAPIClient(qovery.NewConfiguration())
+
+	organization, res, err := client.OrganizationMainCallsApi.GetOrganization(auth, id).Execute()
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while getting organization " + id)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &Organization{
+		ID:   Id(organization.Id),
+		Name: Name(organization.Name),
+	}, nil
+}
+
 func SelectProject(organizationID Id) (*Project, error) {
 	token, err := GetAccessToken()
 	if err != nil {
@@ -160,6 +183,29 @@ type Environment struct {
 	Name      Name
 }
 
+func GetProjectById(id string) (*Project, error) {
+	token, err := GetAccessToken()
+	if err != nil {
+		return nil, err
+	}
+
+	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
+	client := qovery.NewAPIClient(qovery.NewConfiguration())
+
+	project, res, err := client.ProjectMainCallsApi.GetProject(auth, id).Execute()
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while getting project " + id)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &Project{
+		ID:   Id(project.Id),
+		Name: Name(project.Name),
+	}, nil
+}
+
 func SelectEnvironment(projectID Id) (*Environment, error) {
 	token, err := GetAccessToken()
 	if err != nil {
@@ -222,6 +268,30 @@ func SelectAndSetEnvironment(projectID Id) (*Environment, error) {
 	}
 
 	return selectedEnvironment, nil
+}
+
+func GetEnvironmentById(id string) (*Environment, error) {
+	token, err := GetAccessToken()
+	if err != nil {
+		return nil, err
+	}
+
+	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
+	client := qovery.NewAPIClient(qovery.NewConfiguration())
+
+	environment, res, err := client.EnvironmentMainCallsApi.GetEnvironment(auth, id).Execute()
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while getting environment " + id)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &Environment{
+		ID:        Id(environment.Id),
+		ClusterID: Id(environment.ClusterId),
+		Name:      Name(environment.Name),
+	}, nil
 }
 
 type Application struct {
@@ -288,6 +358,29 @@ func SelectAndSetApplication(environment Id) (*Application, error) {
 		return nil, err
 	}
 	return application, err
+}
+
+func GetApplicationById(id string) (*Application, error) {
+	token, err := GetAccessToken()
+	if err != nil {
+		return nil, err
+	}
+
+	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
+	client := qovery.NewAPIClient(qovery.NewConfiguration())
+
+	application, res, err := client.ApplicationMainCallsApi.GetApplication(auth, id).Execute()
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while getting application " + id)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &Application{
+		ID:   Id(application.Id),
+		Name: Name(application.GetName()),
+	}, nil
 }
 
 func ResetApplicationContext() error {
