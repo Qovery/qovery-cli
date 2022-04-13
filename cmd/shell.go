@@ -3,7 +3,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"strings"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/context"
@@ -17,7 +19,14 @@ var shellCmd = &cobra.Command{
 	Short: "Connect to an application container",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		shellRequest, err := shellRequestWithoutArg()
+
+		var shellRequest *pkg.ShellRequest
+		var err error
+		if len(args) > 0 {
+			shellRequest, err = shellRequestWithApplicationUrl(args)
+		} else {
+			shellRequest, err = shellRequestWithoutArg()
+		}
 		if err != nil {
 			utils.PrintlnError(err)
 			return
@@ -125,6 +134,55 @@ func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequ
 		OrganizationID: currentContext.OrganizationId,
 		EnvironmentID:  currentContext.EnvironmentId,
 		ClusterID:      utils.Id(e.ClusterId),
+	}, nil
+}
+
+func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
+	var url = args[0]
+	url = strings.Replace(url, "https://console.qovery.com/platform/", "", 1)
+	urlSplit := strings.Split(url, "/")
+
+	if len(urlSplit) < 8 {
+		return nil, errors.New("Wrong URL format: " + url)
+	}
+
+	var organizationId = urlSplit[1]
+	organization, err := utils.GetOrganizationById(organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	var projectId = urlSplit[3]
+	project, err := utils.GetProjectById(projectId)
+	if err != nil {
+		return nil, err
+	}
+
+	var environmentId = urlSplit[5]
+	environment, err := utils.GetEnvironmentById(environmentId)
+	if err != nil {
+		return nil, err
+	}
+
+	var applicationId = urlSplit[7]
+	application, err := utils.GetApplicationById(applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = pterm.DefaultTable.WithData(pterm.TableData{
+		{"Organization", string(organization.Name)},
+		{"Project", string(project.Name)},
+		{"Environment", string(environment.Name)},
+		{"Application", string(application.Name)},
+	}).Render()
+
+	return &pkg.ShellRequest{
+		OrganizationID: organization.ID,
+		ProjectID:      project.ID,
+		EnvironmentID:  environment.ID,
+		ApplicationID:  application.ID,
+		ClusterID:      environment.ClusterID,
 	}, nil
 }
 
