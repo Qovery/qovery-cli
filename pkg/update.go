@@ -35,14 +35,16 @@ func UpdateAll(dryRunDisabled bool, version string, providerKind string, paralle
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("update") {
 		res := update(utils.AdminUrl+"/cluster/update", http.MethodPost, dryRunDisabled, version, providerKind, parallelRun)
+		result, _ := ioutil.ReadAll(res.Body)
+		if strings.Contains(res.Status, "40") || strings.Contains(res.Status, "50") {
 
-		if !strings.Contains(res.Status, "200") {
-			result, _ := ioutil.ReadAll(res.Body)
 			log.Errorf("Could not update clusters : %s. %s", res.Status, string(result))
-		} else if !dryRunDisabled {
-			fmt.Println("Clusters updatable.")
 		} else {
-			fmt.Println("Clusters updating.")
+			depl := "Deployable"
+			if dryRunDisabled {
+				depl = "Deploying"
+			}
+			log.Infof("%s clusters: %s", depl, result)
 		}
 	}
 }
