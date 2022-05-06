@@ -37,7 +37,6 @@ func UpdateAll(dryRunDisabled bool, version string, providerKind string, paralle
 		res := update(utils.AdminUrl+"/cluster/update", http.MethodPost, dryRunDisabled, version, providerKind, parallelRun)
 		result, _ := ioutil.ReadAll(res.Body)
 		if strings.Contains(res.Status, "40") || strings.Contains(res.Status, "50") {
-
 			log.Errorf("Could not update clusters : %s. %s", res.Status, string(result))
 		} else {
 			depl := "Deployable"
@@ -56,11 +55,8 @@ func update(url string, method string, dryRunDisabled bool, version string, prov
 		os.Exit(0)
 	}
 
-	body := bytes.NewBuffer([]byte(`{ "metadata": { "dry_run_deploy": true } }`))
-
-	if dryRunDisabled {
-		body = bytes.NewBuffer([]byte(fmt.Sprintf(`{ "metadata": { "dry_run_deploy": false, "target_version": "%s", "provider_kind": "%s", "parallel_run": %d } }`, version, providerKind, parallelRun)))
-	}
+	content := fmt.Sprintf(`{ "metadata": { "dry_run_deploy": %t, "target_version": "%s", "provider_kind": "%s", "parallel_run": %d } }`, !dryRunDisabled, version, providerKind, parallelRun)
+	body := bytes.NewBuffer([]byte(content))
 
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
