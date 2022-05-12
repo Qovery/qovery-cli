@@ -53,7 +53,7 @@ func getVaultToken(args []string) (string, string) {
 	}
 
 	// get and store new token
-	if tokenFileModificationTime.After(time.Now().Add(time.Duration(-maxTokenValidity))) {
+	if tokenFileModificationTime.Before(time.Now().Add(time.Duration(-maxTokenValidity) * time.Second)) {
 		log.Info("Getting vault token")
 
 		cmd := exec.Command(vaultPath, "login", "-token-only", "-method=github", fmt.Sprintf("token=%s", ghToken))
