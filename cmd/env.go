@@ -5,9 +5,8 @@ import (
 )
 
 var envCmd = &cobra.Command{
-	Use:    "env",
-	Short:  "Manage Qovery CLI Environment Variables and Secrets",
-	Hidden: true,
+	Use:   "env",
+	Short: "Manage Qovery CLI Environment Variables and Secrets",
 }
 
 func init() {
