@@ -62,7 +62,7 @@ var envParseCmd = &cobra.Command{
 		}
 
 		for key, value := range envs {
-			fmt.Println(fmt.Sprintf("%s=%s", key, value))
+			fmt.Printf("%s=%s", key, value)
 		}
 	},
 }
