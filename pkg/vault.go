@@ -49,7 +49,7 @@ func GetVarsByClusterId(clusterID string) []utils.Var {
 			vaultVars = append(vaultVars, utils.Var{Key: key, Value: value.(string)})
 		case "AWS_SECRET_ACCESS_KEY":
 			vaultVars = append(vaultVars, utils.Var{Key: key, Value: value.(string)})
-		case "kubeconfig_b64":
+		case "kubeconfig_b64", "KUBECONFIG_b64":
 			decodedValue, encErr := b64.StdEncoding.DecodeString(value.(string))
 			if encErr != nil {
 				log.Error("Can't decode KUBECONFIG")
