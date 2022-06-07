@@ -1,14 +1,12 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 var k9sCmd = &cobra.Command{
@@ -31,13 +29,7 @@ func launchK9s(args []string) {
 		return
 	}
 
-	// generate short cluster id from long id
 	clusterId := args[0]
-	if !strings.HasPrefix(args[0], "z") && strings.Contains(args[0], "-") {
-		uuidArray := strings.Split(args[0], "-")
-		clusterId = fmt.Sprintf("z%s", uuidArray[0])
-	}
-
 	vars := pkg.GetVarsByClusterId(clusterId)
 	if len(vars) == 0 {
 		return

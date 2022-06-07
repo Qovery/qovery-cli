@@ -6,7 +6,6 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
 	"os"
-	"strings"
 )
 
 func connectToVault() *api.Client {
@@ -28,28 +27,17 @@ func connectToVault() *api.Client {
 	return client
 }
 
-func getClusterPath(client *api.Client, clusterID string) string {
-	result, err := client.Logical().List("official-clusters-access/metadata")
-	if err != nil {
-		log.Error(err)
-	}
-
-	for _, secret := range (result.Data["keys"]).([]interface{}) {
-		if strings.Contains(secret.(string), clusterID) {
-			return secret.(string)
-		}
-	}
-
-	return ""
-}
-
 func GetVarsByClusterId(clusterID string) []utils.Var {
 	client := connectToVault()
-	path := getClusterPath(client, clusterID)
 
-	result, err := client.Logical().Read("official-clusters-access/data/" + path)
+	result, err := client.Logical().Read("/official-clusters-access/data/" + clusterID)
 	if err != nil {
 		log.Error(err)
+		os.Exit(1)
+	}
+	if result == nil {
+		log.Error("Cluster information are not found")
+		os.Exit(1)
 	}
 
 	var vaultVars []utils.Var
@@ -61,7 +49,7 @@ func GetVarsByClusterId(clusterID string) []utils.Var {
 			vaultVars = append(vaultVars, utils.Var{Key: key, Value: value.(string)})
 		case "AWS_SECRET_ACCESS_KEY":
 			vaultVars = append(vaultVars, utils.Var{Key: key, Value: value.(string)})
-		case "KUBECONFIG_b64":
+		case "kubeconfig_b64":
 			decodedValue, encErr := b64.StdEncoding.DecodeString(value.(string))
 			if encErr != nil {
 				log.Error("Can't decode KUBECONFIG")
