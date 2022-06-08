@@ -43,12 +43,12 @@ func GetVarsByClusterId(clusterID string) []utils.Var {
 	var vaultVars []utils.Var
 	for key, value := range (result.Data["data"]).(map[string]interface{}) {
 		switch key {
-		case "AWS_ACCESS_KEY_ID":
-			vaultVars = append(vaultVars, utils.Var{Key: key, Value: value.(string)})
-		case "AWS_DEFAULT_REGION":
-			vaultVars = append(vaultVars, utils.Var{Key: key, Value: value.(string)})
-		case "AWS_SECRET_ACCESS_KEY":
-			vaultVars = append(vaultVars, utils.Var{Key: key, Value: value.(string)})
+		case "AWS_ACCESS_KEY_ID", "aws_access_key":
+			vaultVars = append(vaultVars, utils.Var{Key: "AWS_ACCESS_KEY_ID", Value: value.(string)})
+		case "AWS_DEFAULT_REGION", "aws_default_region":
+			vaultVars = append(vaultVars, utils.Var{Key: "AWS_DEFAULT_REGION", Value: value.(string)})
+		case "AWS_SECRET_ACCESS_KEY", "aws_secret_access_key":
+			vaultVars = append(vaultVars, utils.Var{Key: "AWS_SECRET_ACCESS_KEY", Value: value.(string)})
 		case "kubeconfig_b64", "KUBECONFIG_b64":
 			decodedValue, encErr := b64.StdEncoding.DecodeString(value.(string))
 			if encErr != nil {
