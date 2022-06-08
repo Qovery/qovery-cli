@@ -3,7 +3,7 @@ module github.com/qovery/qovery-cli
 go 1.17
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.3.4
+	github.com/AlecAivazis/survey/v2 v2.3.5
 	github.com/containerd/console v1.0.3
 	github.com/fatih/color v1.13.0
 	github.com/getsentry/sentry-go v0.13.0
@@ -23,7 +23,7 @@ require (
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/net v0.0.0-20220127074510-2fabfed7e28f
-	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8
+	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150
 )
 
 require (
