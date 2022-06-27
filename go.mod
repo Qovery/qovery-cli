@@ -20,7 +20,7 @@ require (
 	github.com/pterm/pterm v0.12.41
 	github.com/qovery/qovery-client-go v0.0.0-20220127101633-6d8131211ac5
 	github.com/sirupsen/logrus v1.8.1
-	github.com/spf13/cobra v1.4.0
+	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/net v0.0.0-20220127074510-2fabfed7e28f
 	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150
