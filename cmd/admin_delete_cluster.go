@@ -9,8 +9,8 @@ import (
 
 var (
 	adminDeleteClusterCmd = &cobra.Command{
-		Use:   "delete-cluster",
-		Short: "Delete cluster by id (only Qovery DB side, without calling the engine)",
+		Use:   "force-delete-cluster",
+		Short: "Force delete cluster by id (only Qovery DB side, without calling the engine)",
 		Run: func(cmd *cobra.Command, args []string) {
 			deleteClusterById()
 		},
