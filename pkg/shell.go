@@ -14,6 +14,7 @@ import (
 const StdinBufferSize = 4096
 
 type ShellRequest struct {
+	ServiceID      utils.Id
 	ApplicationID  utils.Id
 	EnvironmentID  utils.Id
 	ProjectID      utils.Id
@@ -58,7 +59,8 @@ func ExecShell(req *ShellRequest) {
 
 func createWebsocketConn(req *ShellRequest) (*websocket.Conn, error) {
 	wsURL, err := url.Parse(fmt.Sprintf(
-		"wss://ws.qovery.com/shell/exec?application=%s&cluster=%s&environment=%s&organization=%s&project=%s",
+		"wss://ws.qovery.com/shell/exec?service=%s&application=%s&cluster=%s&environment=%s&organization=%s&project=%s",
+		req.ServiceID,
 		req.ApplicationID,
 		req.ClusterID,
 		req.EnvironmentID,

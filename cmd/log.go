@@ -61,7 +61,7 @@ func getLogs() [][]string {
 		utils.PrintlnError(err)
 		os.Exit(0)
 	}
-	application, _, err := utils.CurrentApplication()
+	service, err := utils.CurrentService()
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)
@@ -70,19 +70,34 @@ func getLogs() [][]string {
 	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
 	client := qovery.NewAPIClient(qovery.NewConfiguration())
 
-	logs, res, err := client.ApplicationLogsApi.ListApplicationLog(auth, string(application)).Execute()
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(0)
-	}
-	if res.StatusCode >= 400 {
-		utils.PrintlnError(errors.New("Received " + res.Status + " response while listing organizations. "))
-	}
-
 	var logRows = make([][]string, 0)
+	switch service.Type {
+	case utils.ApplicationType:
+		logs, res, err := client.ApplicationLogsApi.ListApplicationLog(auth, string(service.ID)).Execute()
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(0)
+		}
+		if res.StatusCode >= 400 {
+			utils.PrintlnError(errors.New("Received " + res.Status + " response while getting application logs "))
+		}
 
-	for _, log := range logs.GetResults() {
-		logRows = append(logRows, []string{log.CreatedAt.Format(time.StampMicro), log.Message})
+		for _, log := range logs.GetResults() {
+			logRows = append(logRows, []string{log.CreatedAt.Format(time.StampMicro), log.Message})
+		}
+	case utils.ContainerType:
+		logs, res, err := client.ContainerLogsApi.ListContainerLog(auth, string(service.ID)).Execute()
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(0)
+		}
+		if res.StatusCode >= 400 {
+			utils.PrintlnError(errors.New("Received " + res.Status + " response while getting container logs"))
+		}
+
+		for _, log := range logs.GetResults() {
+			logRows = append(logRows, []string{log.CreatedAt.Format(time.StampMicro), log.Message})
+		}
 	}
 
 	return logRows

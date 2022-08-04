@@ -20,7 +20,7 @@ var statusCmd = &cobra.Command{
 			utils.PrintlnError(err)
 			os.Exit(0)
 		}
-		application, name, err := utils.CurrentApplication()
+		service, err := utils.CurrentService()
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(0)
@@ -29,20 +29,39 @@ var statusCmd = &cobra.Command{
 		auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
 		client := qovery.NewAPIClient(qovery.NewConfiguration())
 
-		status, res, err := client.ApplicationMainCallsApi.GetApplicationStatus(auth, string(application)).Execute()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(0)
-		}
-		if res.StatusCode >= 400 {
-			utils.PrintlnError(errors.New("Received " + res.Status + " response while listing organizations. "))
+		switch service.Type {
+		case utils.ApplicationType:
+			status, res, err := client.ApplicationMainCallsApi.GetApplicationStatus(auth, string(service.ID)).Execute()
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(0)
+			}
+			if res.StatusCode >= 400 {
+				utils.PrintlnError(errors.New("Received " + res.Status + " response while listing organizations. "))
+			}
+
+			err = pterm.DefaultTable.WithData(pterm.TableData{{"Application", "Status"}, {string(service.Name), string(status.State)}}).Render()
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(0)
+			}
+		case utils.ContainerType:
+			status, res, err := client.ContainerMainCallsApi.GetContainerStatus(auth, string(service.ID)).Execute()
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(0)
+			}
+			if res.StatusCode >= 400 {
+				utils.PrintlnError(errors.New("Received " + res.Status + " response while listing organizations. "))
+			}
+
+			err = pterm.DefaultTable.WithData(pterm.TableData{{"Container", "Status"}, {string(service.Name), string(status.State)}}).Render()
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(0)
+			}
 		}
 
-		err = pterm.DefaultTable.WithData(pterm.TableData{{"Application", "Status"}, {string(name), status.State}}).Render()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(0)
-		}
 	},
 }
 

@@ -44,7 +44,7 @@ func shellRequestWithoutArg() (*pkg.ShellRequest, error) {
 	}
 
 	utils.PrintlnInfo("Current context:")
-	if currentContext.ApplicationId != "" && currentContext.ApplicationName != "" &&
+	if currentContext.ServiceId != "" && currentContext.ServiceName != "" &&
 		currentContext.EnvironmentId != "" && currentContext.EnvironmentName != "" &&
 		currentContext.ProjectId != "" && currentContext.ProjectName != "" &&
 		currentContext.OrganizationId != "" && currentContext.OrganizationName != "" {
@@ -96,19 +96,32 @@ func shellRequestFromSelect() (*pkg.ShellRequest, error) {
 		return nil, err
 	}
 
-	utils.PrintlnInfo("Select application")
-	app, err := utils.SelectApplication(env.ID)
+	utils.PrintlnInfo("Select service")
+	service, err := utils.SelectService(env.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pkg.ShellRequest{
-		ApplicationID:  app.ID,
-		ProjectID:      project.ID,
-		OrganizationID: orga.ID,
-		EnvironmentID:  env.ID,
-		ClusterID:      env.ClusterID,
-	}, nil
+	switch service.Type {
+	case utils.ApplicationType:
+		return &pkg.ShellRequest{
+			ApplicationID:  service.ID,
+			ProjectID:      project.ID,
+			OrganizationID: orga.ID,
+			EnvironmentID:  env.ID,
+			ClusterID:      env.ClusterID,
+		}, nil
+	case utils.ContainerType:
+		return &pkg.ShellRequest{
+			ServiceID:      service.ID,
+			ProjectID:      project.ID,
+			OrganizationID: orga.ID,
+			EnvironmentID:  env.ID,
+			ClusterID:      env.ClusterID,
+		}, nil
+	}
+
+	return nil, nil
 }
 
 func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequest, error) {
@@ -128,13 +141,26 @@ func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequ
 		return nil, errors.New("Received " + res.Status + " response while fetching environment. ")
 	}
 
-	return &pkg.ShellRequest{
-		ApplicationID:  currentContext.ApplicationId,
-		ProjectID:      currentContext.ProjectId,
-		OrganizationID: currentContext.OrganizationId,
-		EnvironmentID:  currentContext.EnvironmentId,
-		ClusterID:      utils.Id(e.ClusterId),
-	}, nil
+	switch currentContext.ServiceType {
+	case utils.ApplicationType:
+		return &pkg.ShellRequest{
+			ApplicationID:  currentContext.ServiceId,
+			ProjectID:      currentContext.ProjectId,
+			OrganizationID: currentContext.OrganizationId,
+			EnvironmentID:  currentContext.EnvironmentId,
+			ClusterID:      utils.Id(e.ClusterId),
+		}, nil
+	case utils.ContainerType:
+		return &pkg.ShellRequest{
+			ServiceID:      currentContext.ServiceId,
+			ProjectID:      currentContext.ProjectId,
+			OrganizationID: currentContext.OrganizationId,
+			EnvironmentID:  currentContext.EnvironmentId,
+			ClusterID:      utils.Id(e.ClusterId),
+		}, nil
+	}
+
+	return nil, nil
 }
 
 func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
@@ -164,26 +190,64 @@ func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 		return nil, err
 	}
 
-	var applicationId = urlSplit[7]
-	application, err := utils.GetApplicationById(applicationId)
-	if err != nil {
-		return nil, err
+	var serviceType = urlSplit[6]
+	var service = &utils.Service{}
+	if serviceType == "applications" {
+		var applicationId = urlSplit[7]
+		applicationApi, err := utils.GetApplicationById(applicationId)
+		if err != nil {
+			return nil, err
+		}
+
+		service = &utils.Service{
+			ID:   applicationApi.ID,
+			Name: applicationApi.Name,
+			Type: utils.ApplicationType,
+		}
+	}
+
+	if serviceType == "containers" {
+		var containerId = urlSplit[7]
+		containerApi, err := utils.GetContainerById(containerId)
+		if err != nil {
+			return nil, err
+		}
+
+		service = &utils.Service{
+			ID:   containerApi.ID,
+			Name: containerApi.Name,
+			Type: utils.ContainerType,
+		}
 	}
 
 	_ = pterm.DefaultTable.WithData(pterm.TableData{
 		{"Organization", string(organization.Name)},
 		{"Project", string(project.Name)},
 		{"Environment", string(environment.Name)},
-		{"Application", string(application.Name)},
+		{"Service", string(service.Name)},
+		{"ServiceType", string(service.Type)},
 	}).Render()
 
-	return &pkg.ShellRequest{
-		OrganizationID: organization.ID,
-		ProjectID:      project.ID,
-		EnvironmentID:  environment.ID,
-		ApplicationID:  application.ID,
-		ClusterID:      environment.ClusterID,
-	}, nil
+	switch service.Type {
+	case utils.ApplicationType:
+		return &pkg.ShellRequest{
+			OrganizationID: organization.ID,
+			ProjectID:      project.ID,
+			EnvironmentID:  environment.ID,
+			ApplicationID:  service.ID,
+			ClusterID:      environment.ClusterID,
+		}, nil
+	case utils.ContainerType:
+		return &pkg.ShellRequest{
+			OrganizationID: organization.ID,
+			ProjectID:      project.ID,
+			EnvironmentID:  environment.ID,
+			ServiceID:      service.ID,
+			ClusterID:      environment.ClusterID,
+		}, nil
+	}
+
+	return nil, nil
 }
 
 func init() {
