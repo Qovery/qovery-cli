@@ -46,9 +46,14 @@ var envImportCmd = &cobra.Command{
 			return
 		}
 
-		application, _, err := utils.CurrentApplication()
+		service, err := utils.CurrentService()
 		if err != nil {
 			utils.PrintlnError(err)
+			os.Exit(0)
+		}
+
+		if service.Type != utils.ApplicationType {
+			utils.PrintlnError(fmt.Errorf("cannot import variables for service different than Application"))
 			os.Exit(0)
 		}
 
@@ -100,16 +105,16 @@ var envImportCmd = &cobra.Command{
 			var err error
 			if isSecrets {
 				if overrideEnvVarOrSecret {
-					_ = utils.DeleteSecret(application, k)
+					_ = utils.DeleteSecret(service.ID, k)
 				}
 
-				err = utils.AddSecret(application, k, v)
+				err = utils.AddSecret(service.ID, k, v)
 			} else {
 				if overrideEnvVarOrSecret {
-					_ = utils.DeleteEnvironmentVariable(application, k)
+					_ = utils.DeleteEnvironmentVariable(service.ID, k)
 				}
 
-				err = utils.AddEnvironmentVariable(application, k, v)
+				err = utils.AddEnvironmentVariable(service.ID, k, v)
 			}
 
 			if err != nil {

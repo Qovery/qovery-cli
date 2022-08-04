@@ -224,7 +224,7 @@ func SelectEnvironment(projectID Id) (*Environment, error) {
 	}
 
 	var environmentsNames []string
-	var environments = make(map[string]qovery.EnvironmentResponse)
+	var environments = make(map[string]qovery.Environment)
 
 	for _, env := range e.GetResults() {
 		environmentsNames = append(environmentsNames, env.Name)
@@ -294,12 +294,25 @@ func GetEnvironmentById(id string) (*Environment, error) {
 	}, nil
 }
 
+type ServiceType string
+
+const (
+	ApplicationType ServiceType = "application"
+	ContainerType   ServiceType = "container"
+)
+
+type Service struct {
+	ID   Id
+	Name Name
+	Type ServiceType
+}
+
 type Application struct {
 	ID   Id
 	Name Name
 }
 
-func SelectApplication(environment Id) (*Application, error) {
+func SelectService(environment Id) (*Service, error) {
 	token, err := GetAccessToken()
 	if err != nil {
 		return nil, err
@@ -308,56 +321,75 @@ func SelectApplication(environment Id) (*Application, error) {
 	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
 	client := qovery.NewAPIClient(qovery.NewConfiguration())
 
-	a, res, err := client.ApplicationsApi.ListApplication(auth, string(environment)).Execute()
+	apps, res, err := client.ApplicationsApi.ListApplication(auth, string(environment)).Execute()
 	if err != nil {
 		return nil, err
 	}
 	if res.StatusCode >= 400 {
-		return nil, errors.New("Received " + res.Status + " response while listing applications. ")
+		return nil, errors.New("Received " + res.Status + " response while listing services. ")
 	}
 
-	var applicationsNames []string
-	var applications = make(map[string]string)
-
-	for _, app := range a.GetResults() {
-		applicationsNames = append(applicationsNames, *app.Name)
-		applications[*app.Name] = app.Id
+	containers, res, err := client.ContainersApi.ListContainer(auth, string(environment)).Execute()
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while listing containers. ")
 	}
 
-	if len(applicationsNames) < 1 {
-		return nil, errors.New("No applications found. ")
+	var servicesNames []string
+	var services = make(map[string]Service)
+
+	for _, app := range apps.GetResults() {
+		servicesNames = append(servicesNames, *app.Name)
+		services[*app.Name] = Service{
+			ID:   Id(app.Id),
+			Name: Name(*app.Name),
+			Type: ApplicationType,
+		}
 	}
 
-	fmt.Println("Application:")
+	for _, container := range containers.GetResults() {
+		servicesNames = append(servicesNames, *container.Name)
+		services[*container.Name] = Service{
+			ID:   Id(container.Id),
+			Name: Name(*container.Name),
+			Type: ContainerType,
+		}
+	}
+
+	if len(servicesNames) < 1 {
+		return nil, errors.New("No services found. ")
+	}
+
+	fmt.Println("Services:")
 	prompt := promptui.Select{
-		Items: applicationsNames,
+		Items: servicesNames,
 		Searcher: func(input string, index int) bool {
-			return strings.Contains(strings.ToLower(applicationsNames[index]), strings.ToLower(input))
+			return strings.Contains(strings.ToLower(servicesNames[index]), strings.ToLower(input))
 		},
 	}
-	_, selectedApplication, err := prompt.Run()
+	_, selectedService, err := prompt.Run()
 	if err != nil {
 		PrintlnError(err)
 		return nil, err
 	}
 
-	return &Application{
-		ID:   Id(applications[selectedApplication]),
-		Name: Name(selectedApplication),
-	}, nil
+	service := services[selectedService]
+	return &service, nil
 }
 
-func SelectAndSetApplication(environment Id) (*Application, error) {
-	application, err := SelectApplication(environment)
+func SelectAndSetService(environment Id) (*Service, error) {
+	service, err := SelectService(environment)
 	if err != nil {
 		PrintlnError(err)
 		return nil, err
 	}
-	if err := SetApplication(application); err != nil {
+	if err := SetService(service); err != nil {
 		PrintlnError(err)
 		return nil, err
 	}
-	return application, err
+	return service, err
 }
 
 func GetApplicationById(id string) (*Application, error) {
@@ -395,12 +427,41 @@ func ResetApplicationContext() error {
 	ctx.ProjectId = ""
 	ctx.EnvironmentName = ""
 	ctx.EnvironmentId = ""
-	ctx.ApplicationName = ""
-	ctx.ApplicationId = ""
+	ctx.ServiceName = ""
+	ctx.ServiceId = ""
+	ctx.ServiceType = ApplicationType
 
 	err = StoreContext(ctx)
 
 	return err
+}
+
+type Container struct {
+	ID   Id
+	Name Name
+}
+
+func GetContainerById(id string) (*Container, error) {
+	token, err := GetAccessToken()
+	if err != nil {
+		return nil, err
+	}
+
+	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
+	client := qovery.NewAPIClient(qovery.NewConfiguration())
+
+	container, res, err := client.ContainerMainCallsApi.GetContainer(auth, id).Execute()
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while getting container " + id)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &Container{
+		ID:   Id(container.Id),
+		Name: Name(container.GetName()),
+	}, nil
 }
 
 func CheckAdminUrl() {
@@ -426,7 +487,7 @@ func DeleteEnvironmentVariable(application Id, key string) error {
 		return err
 	}
 
-	var envVar *qovery.EnvironmentVariableResponse
+	var envVar *qovery.EnvironmentVariable
 	for _, mEnvVar := range envVars.GetResults() {
 		if mEnvVar.Key == key {
 			envVar = &mEnvVar
@@ -491,7 +552,7 @@ func DeleteSecret(application Id, key string) error {
 		return err
 	}
 
-	var secret *qovery.SecretResponse
+	var secret *qovery.Secret
 	for _, mSecret := range secrets.GetResults() {
 		if *mSecret.Key == key {
 			secret = &mSecret

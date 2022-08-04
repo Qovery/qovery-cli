@@ -22,8 +22,9 @@ type QoveryContext struct {
 	ProjectName           Name         `json:"project_name"`
 	EnvironmentId         Id           `json:"environment_id"`
 	EnvironmentName       Name         `json:"environment_name"`
-	ApplicationId         Id           `json:"application_id"`
-	ApplicationName       Name         `json:"application_name"`
+	ServiceId             Id           `json:"service_id"`
+	ServiceName           Name         `json:"service_name"`
+	ServiceType           ServiceType  `json:"service_type"`
 	User                  Name         `json:"user"`
 }
 type Name string
@@ -57,7 +58,8 @@ func (c QoveryContext) ToPosthogProperties() map[string]interface{} {
 		"organization": c.OrganizationName,
 		"project":      c.ProjectName,
 		"environment":  c.EnvironmentName,
-		"application":  c.ApplicationName,
+		"service":      c.ServiceName,
+		"type":         c.ServiceType,
 	}
 }
 
@@ -165,32 +167,33 @@ func SetEnvironment(env *Environment) error {
 	return StoreContext(context)
 }
 
-func CurrentApplication() (Id, Name, error) {
+func CurrentService() (*Service, error) {
 	context, err := CurrentContext()
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	id := context.ApplicationId
+	id := context.ServiceId
 	if id == "" {
-		return "", "", errors.New("Current application has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return nil, errors.New("Current application has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
-	name := context.ApplicationName
+	name := context.ServiceName
 	if name == "" {
-		return "", "", errors.New("Current application has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return nil, errors.New("Current application has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
-	return id, name, nil
+	return &Service{ID: id, Name: name, Type: context.ServiceType}, nil
 }
 
-func SetApplication(application *Application) error {
+func SetService(service *Service) error {
 	context, err := CurrentContext()
 	if err != nil {
 		return err
 	}
 
-	context.ApplicationName = application.Name
-	context.ApplicationId = application.ID
+	context.ServiceName = service.Name
+	context.ServiceId = service.ID
+	context.ServiceType = service.Type
 
 	return StoreContext(context)
 }

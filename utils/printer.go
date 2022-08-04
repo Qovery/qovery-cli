@@ -38,7 +38,7 @@ func PrintlnContext() error {
 	if err != nil {
 		return err
 	}
-	_, aName, err := CurrentApplication()
+	srv, err := CurrentService()
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,8 @@ func PrintlnContext() error {
 		{"Organization", string(oName)},
 		{"Project", string(pName)},
 		{"Environment", string(eName)},
-		{"Application", string(aName)},
+		{"Service", string(srv.Name)},
+		{"Type", string(srv.Type)},
 	}).Render()
 
 	return nil

@@ -38,12 +38,12 @@ var setCmd = &cobra.Command{
 			return
 		}
 
-		_, err = utils.SelectAndSetApplication(env.ID)
+		_, err = utils.SelectAndSetService(env.ID)
 		if err != nil {
 			utils.PrintlnError(err)
 			return
 		}
-		_, _, _ = utils.CurrentApplication()
+		_, _ = utils.CurrentService()
 		println()
 		utils.PrintlnInfo("New context:")
 		err = utils.PrintlnContext()
