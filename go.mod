@@ -19,11 +19,11 @@ require (
 	github.com/posthog/posthog-go v0.0.0-20211028072449-93c17c49e2b0
 	github.com/pterm/pterm v0.12.42
 	github.com/qovery/qovery-client-go v0.0.0-20220801183144-2b8644bbbedf
-	github.com/sirupsen/logrus v1.8.1
+	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/net v0.0.0-20220127074510-2fabfed7e28f
-	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150
+	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8
 )
 
 require (
