@@ -3,7 +3,6 @@ package utils
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -40,7 +39,7 @@ func CurrentContext() (QoveryContext, error) {
 		return context, err
 	}
 
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return context, err
 	}
@@ -74,7 +73,7 @@ func StoreContext(context QoveryContext) error {
 		return err
 	}
 
-	return ioutil.WriteFile(path, bytes, os.ModePerm)
+	return os.WriteFile(path, bytes, os.ModePerm)
 }
 
 func CurrentOrganization() (Id, Name, error) {
@@ -308,7 +307,7 @@ func InitializeQoveryContext() error {
 		return err
 	}
 
-	err = ioutil.WriteFile(path, []byte("{}"), os.ModePerm)
+	err = os.WriteFile(path, []byte("{}"), os.ModePerm)
 	if err != nil {
 		return err
 	}

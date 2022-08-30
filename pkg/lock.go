@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -21,7 +21,7 @@ func LockedClusters() {
 	res := listLockedClusters()
 
 	if res.StatusCode != http.StatusOK {
-		result, _ := ioutil.ReadAll(res.Body)
+		result, _ := io.ReadAll(res.Body)
 		log.Errorf("Could not list locked clusters : %s. %s", res.Status, string(result))
 		return
 	}
@@ -36,7 +36,7 @@ func LockedClusters() {
 		} `json:"results"`
 	}{}
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func LockById(clusterId string, reason string) {
 		res := updateLockById(clusterId, reason, http.MethodPost)
 
 		if res.StatusCode != http.StatusOK {
-			result, _ := ioutil.ReadAll(res.Body)
+			result, _ := io.ReadAll(res.Body)
 			log.Errorf("Could not lock cluster : %s. %s", res.Status, string(result))
 		} else {
 			fmt.Println("Cluster locked.")
@@ -80,7 +80,7 @@ func UnockById(clusterId string) {
 		res := updateLockById(clusterId, "", http.MethodDelete)
 
 		if res.StatusCode != http.StatusOK {
-			result, _ := ioutil.ReadAll(res.Body)
+			result, _ := io.ReadAll(res.Body)
 			log.Errorf("Could not unlock cluster : %s. %s", res.Status, string(result))
 		} else {
 			fmt.Println("Cluster unlocked.")

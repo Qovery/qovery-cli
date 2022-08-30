@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -19,7 +19,7 @@ func DeployById(clusterId string, dryRunDisabled bool) {
 		res := deploy(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, dryRunDisabled)
 
 		if !strings.Contains(res.Status, "200") {
-			result, _ := ioutil.ReadAll(res.Body)
+			result, _ := io.ReadAll(res.Body)
 			log.Errorf("Could not deploy cluster : %s. %s", res.Status, string(result))
 		} else if !dryRunDisabled {
 			fmt.Println("Cluster " + clusterId + " deployable.")
@@ -37,7 +37,7 @@ func DeployAll(dryRunDisabled bool) {
 		res := deploy(utils.AdminUrl+"/cluster/deploy", http.MethodPost, dryRunDisabled)
 
 		if !strings.Contains(res.Status, "200") {
-			result, _ := ioutil.ReadAll(res.Body)
+			result, _ := io.ReadAll(res.Body)
 			log.Errorf("Could not deploy clusters : %s. %s", res.Status, string(result))
 		} else if !dryRunDisabled {
 			fmt.Println("Clusters deployable.")

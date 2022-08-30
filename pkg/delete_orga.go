@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -20,7 +20,7 @@ func DeleteOrganizationByClusterId(clusterId string, dryRunDisabled bool) {
 		if !dryRunDisabled {
 			fmt.Println("Organization owning cluster" + clusterId + " deletable.")
 		} else if !strings.Contains(res.Status, "200") {
-			result, _ := ioutil.ReadAll(res.Body)
+			result, _ := io.ReadAll(res.Body)
 			log.Errorf("Could not delete organization owning cluster %s : %s. %s", clusterId, res.Status, string(result))
 		} else {
 			fmt.Println("Organization owning cluster" + clusterId + " deleted.")

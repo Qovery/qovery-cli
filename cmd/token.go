@@ -6,7 +6,7 @@ import (
 	"errors"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -79,7 +79,7 @@ func generateMachineToMachineAPIToken(tokenInformation *utils.TokenInformation) 
 		return "", errors.New("Received " + res.Status + " response while fetching environment. ")
 	}
 
-	jsonResponse, _ := ioutil.ReadAll(res.Body)
+	jsonResponse, _ := io.ReadAll(res.Body)
 	var tokenCreationResponseDto TokenCreationResponseDto
 
 	err = json.Unmarshal(jsonResponse, &tokenCreationResponseDto)

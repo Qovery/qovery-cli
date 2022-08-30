@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -19,7 +19,7 @@ func UpdateById(clusterId string, dryRunDisabled bool, version string) {
 		res := update(utils.AdminUrl+"/cluster/update/"+clusterId, http.MethodPost, dryRunDisabled, version, "", 0)
 
 		if !strings.Contains(res.Status, "200") {
-			result, _ := ioutil.ReadAll(res.Body)
+			result, _ := io.ReadAll(res.Body)
 			log.Errorf("Could not update cluster : %s. %s", res.Status, string(result))
 		} else if !dryRunDisabled {
 			fmt.Println("Cluster " + clusterId + " updatable.")
@@ -35,7 +35,7 @@ func UpdateAll(dryRunDisabled bool, version string, providerKind string, paralle
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("update") {
 		res := update(utils.AdminUrl+"/cluster/update", http.MethodPost, dryRunDisabled, version, providerKind, parallelRun)
-		result, _ := ioutil.ReadAll(res.Body)
+		result, _ := io.ReadAll(res.Body)
 		if strings.Contains(res.Status, "40") || strings.Contains(res.Status, "50") {
 			log.Errorf("Could not update clusters : %s. %s", res.Status, string(result))
 		} else {

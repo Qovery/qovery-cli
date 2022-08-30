@@ -2,7 +2,7 @@ package pkg
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -21,7 +21,7 @@ func DeleteClusterById(clusterId string, dryRunDisabled bool) {
 		if !dryRunDisabled {
 			fmt.Println("Cluster with id " + clusterId + " deletable.")
 		} else if !strings.Contains(res.Status, "200") {
-			result, _ := ioutil.ReadAll(res.Body)
+			result, _ := io.ReadAll(res.Body)
 			log.Errorf("Could not delete cluster with id %s : %s. %s", clusterId, res.Status, string(result))
 		} else {
 			fmt.Println("Cluster with id " + clusterId + " deleted.")
@@ -35,10 +35,10 @@ func DeleteClusterUnDeployedInError() {
 		res := delete(utils.AdminUrl+"/cluster/deleteNotDeployedInErrorClusters", http.MethodPost, true)
 
 		if !strings.Contains(res.Status, "200") {
-			result, _ := ioutil.ReadAll(res.Body)
+			result, _ := io.ReadAll(res.Body)
 			log.Errorf("Could not delete all clusters undeployed and in error : %s. %s", res.Status, string(result))
 		} else {
-			result, _ := ioutil.ReadAll(res.Body)
+			result, _ := io.ReadAll(res.Body)
 			fmt.Println("Clusters deleted: " + string(result))
 		}
 	}
