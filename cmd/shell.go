@@ -102,26 +102,13 @@ func shellRequestFromSelect() (*pkg.ShellRequest, error) {
 		return nil, err
 	}
 
-	switch service.Type {
-	case utils.ApplicationType:
-		return &pkg.ShellRequest{
-			ApplicationID:  service.ID,
-			ProjectID:      project.ID,
-			OrganizationID: orga.ID,
-			EnvironmentID:  env.ID,
-			ClusterID:      env.ClusterID,
-		}, nil
-	case utils.ContainerType:
-		return &pkg.ShellRequest{
-			ServiceID:      service.ID,
-			ProjectID:      project.ID,
-			OrganizationID: orga.ID,
-			EnvironmentID:  env.ID,
-			ClusterID:      env.ClusterID,
-		}, nil
-	}
-
-	return nil, nil
+	return &pkg.ShellRequest{
+		ServiceID:      service.ID,
+		ProjectID:      project.ID,
+		OrganizationID: orga.ID,
+		EnvironmentID:  env.ID,
+		ClusterID:      env.ClusterID,
+	}, nil
 }
 
 func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequest, error) {
@@ -141,26 +128,13 @@ func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequ
 		return nil, errors.New("Received " + res.Status + " response while fetching environment. ")
 	}
 
-	switch currentContext.ServiceType {
-	case utils.ApplicationType:
-		return &pkg.ShellRequest{
-			ApplicationID:  currentContext.ServiceId,
-			ProjectID:      currentContext.ProjectId,
-			OrganizationID: currentContext.OrganizationId,
-			EnvironmentID:  currentContext.EnvironmentId,
-			ClusterID:      utils.Id(e.ClusterId),
-		}, nil
-	case utils.ContainerType:
-		return &pkg.ShellRequest{
-			ServiceID:      currentContext.ServiceId,
-			ProjectID:      currentContext.ProjectId,
-			OrganizationID: currentContext.OrganizationId,
-			EnvironmentID:  currentContext.EnvironmentId,
-			ClusterID:      utils.Id(e.ClusterId),
-		}, nil
-	}
-
-	return nil, nil
+	return &pkg.ShellRequest{
+		ServiceID:      currentContext.ServiceId,
+		ProjectID:      currentContext.ProjectId,
+		OrganizationID: currentContext.OrganizationId,
+		EnvironmentID:  currentContext.EnvironmentId,
+		ClusterID:      utils.Id(e.ClusterId),
+	}, nil
 }
 
 func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
