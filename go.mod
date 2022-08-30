@@ -17,7 +17,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/posthog/posthog-go v0.0.0-20211028072449-93c17c49e2b0
-	github.com/pterm/pterm v0.12.42
+	github.com/pterm/pterm v0.12.45
 	github.com/qovery/qovery-client-go v0.0.0-20220801183144-2b8644bbbedf
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.5.0
