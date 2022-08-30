@@ -202,26 +202,13 @@ func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 		{"ServiceType", string(service.Type)},
 	}).Render()
 
-	switch service.Type {
-	case utils.ApplicationType:
-		return &pkg.ShellRequest{
-			OrganizationID: organization.ID,
-			ProjectID:      project.ID,
-			EnvironmentID:  environment.ID,
-			ApplicationID:  service.ID,
-			ClusterID:      environment.ClusterID,
-		}, nil
-	case utils.ContainerType:
-		return &pkg.ShellRequest{
-			OrganizationID: organization.ID,
-			ProjectID:      project.ID,
-			EnvironmentID:  environment.ID,
-			ServiceID:      service.ID,
-			ClusterID:      environment.ClusterID,
-		}, nil
-	}
-
-	return nil, nil
+	return &pkg.ShellRequest{
+		OrganizationID: organization.ID,
+		ProjectID:      project.ID,
+		EnvironmentID:  environment.ID,
+		ServiceID:      service.ID,
+		ClusterID:      environment.ClusterID,
+	}, nil
 }
 
 func init() {
