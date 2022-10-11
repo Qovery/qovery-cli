@@ -20,7 +20,7 @@ require (
 	github.com/pterm/pterm v0.12.45
 	github.com/qovery/qovery-client-go v0.0.0-20220801183144-2b8644bbbedf
 	github.com/sirupsen/logrus v1.9.0
-	github.com/spf13/cobra v1.5.0
+	github.com/spf13/cobra v1.6.0
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/net v0.0.0-20220127074510-2fabfed7e28f
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8
@@ -56,7 +56,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/vault/sdk v0.5.1 // indirect
 	github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/klauspost/compress v1.11.4 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
