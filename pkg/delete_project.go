@@ -20,7 +20,7 @@ func DeleteProjectById(projectId string, dryRunDisabled bool) {
 
 		if !dryRunDisabled {
 			fmt.Println("Project with id " + projectId + " deletable.")
-		} else if !strings.Contains(res.Status, "200") {
+		} else if !(strings.Contains(res.Status, "200") || strings.Contains(res.Status, "204")) {
 			result, _ := io.ReadAll(res.Body)
 			log.Errorf("Could not delete project with id %s : %s. %s", projectId, res.Status, string(result))
 		} else {
