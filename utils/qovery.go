@@ -350,10 +350,10 @@ func SelectService(environment Id) (*Service, error) {
 	}
 
 	for _, container := range containers.GetResults() {
-		servicesNames = append(servicesNames, *container.Name)
-		services[*container.Name] = Service{
+		servicesNames = append(servicesNames, container.Name)
+		services[container.Name] = Service{
 			ID:   Id(container.Id),
-			Name: Name(*container.Name),
+			Name: Name(container.Name),
 			Type: ContainerType,
 		}
 	}
@@ -554,7 +554,7 @@ func DeleteSecret(application Id, key string) error {
 
 	var secret *qovery.Secret
 	for _, mSecret := range secrets.GetResults() {
-		if *mSecret.Key == key {
+		if mSecret.Key == key {
 			secret = &mSecret
 			break
 		}
