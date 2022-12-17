@@ -3,14 +3,23 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"github.com/pterm/pterm"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/manifoldco/promptui"
 	"github.com/qovery/qovery-client-go"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
+
+func init() {
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+	})
+}
 
 type Organization struct {
 	ID   Id
@@ -637,4 +646,124 @@ func SelectTokenInformation() (*TokenInformation, error) {
 		name,
 		description,
 	}, nil
+}
+
+func GetStatus(statuses []qovery.Status, serviceId string) string {
+	status := "Unknown"
+
+	for _, s := range statuses {
+		if serviceId == s.Id {
+			GetStatusTextWithColor(s)
+			break
+		}
+	}
+
+	return status
+}
+
+func GetStatusTextWithColor(s qovery.Status) string {
+	statusMsg := "Unknown"
+
+	if s.State == qovery.STATEENUM_RUNNING {
+		statusMsg = pterm.FgGreen.Sprintf(string(s.State))
+	} else if strings.HasSuffix(string(s.State), "ERROR") {
+		statusMsg = pterm.FgRed.Sprintf(string(s.State))
+	} else if strings.HasSuffix(string(s.State), "ING") {
+		statusMsg = pterm.FgLightBlue.Sprintf(string(s.State))
+	} else if strings.HasSuffix(string(s.State), "QUEUED") {
+		statusMsg = pterm.FgLightYellow.Sprintf(string(s.State))
+	} else if s.State == qovery.STATEENUM_READY {
+		statusMsg = pterm.FgYellow.Sprintf(string(s.State))
+	} else {
+		statusMsg = string(s.State)
+	}
+
+	if s.Message != nil && *s.Message != "" {
+		statusMsg += " (" + *s.Message + ")"
+	}
+
+	return statusMsg
+}
+
+func FindByOrganizationName(organizations []qovery.Organization, name string) *qovery.Organization {
+	for _, o := range organizations {
+		if o.Name == name {
+			return &o
+		}
+	}
+
+	return nil
+}
+
+func FindByProjectName(projects []qovery.Project, name string) *qovery.Project {
+	for _, p := range projects {
+		if p.Name == name {
+			return &p
+		}
+	}
+
+	return nil
+}
+
+func FindByEnvironmentName(environments []qovery.Environment, name string) *qovery.Environment {
+	for _, e := range environments {
+		if e.Name == name {
+			return &e
+		}
+	}
+
+	return nil
+}
+
+func FindByApplicationName(applications []qovery.Application, name string) *qovery.Application {
+	for _, a := range applications {
+		if *a.Name == name {
+			return &a
+		}
+	}
+
+	return nil
+}
+
+func WatchEnvironment(envId string, finalServiceState qovery.StateEnum, auth context.Context, client *qovery.APIClient) {
+	for {
+		status, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatus(auth, envId).Execute()
+
+		if err != nil {
+			return
+		}
+
+		statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(auth, envId).Execute()
+
+		countStatuses := countStatus(statuses.Applications, finalServiceState) + countStatus(statuses.Databases, finalServiceState) +
+			countStatus(statuses.Jobs, finalServiceState) + countStatus(statuses.Containers, finalServiceState)
+
+		totalStatuses := len(statuses.Applications) + len(statuses.Databases) + len(statuses.Jobs) + len(statuses.Containers)
+
+		// TODO make something more fancy here to display the status. Use UILIVE or something like that
+		log.Println(GetStatusTextWithColor(*status) + " (" + strconv.Itoa(countStatuses) + "/" + strconv.Itoa(totalStatuses) + " services ✅ )")
+
+		if status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DELETED ||
+			status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED {
+			return
+		}
+
+		if strings.HasSuffix(string(status.State), "ERROR") {
+			os.Exit(1)
+		}
+
+		time.Sleep(3 * time.Second)
+	}
+}
+
+func countStatus(statuses []qovery.Status, state qovery.StateEnum) int {
+	count := 0
+
+	for _, s := range statuses {
+		if s.State == state {
+			count++
+		}
+	}
+
+	return count
 }

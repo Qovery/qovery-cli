@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
@@ -12,6 +11,7 @@ import (
 var organizationName string
 var projectName string
 var environmentName string
+var watchFlag bool
 
 var serviceListCmd = &cobra.Command{
 	Use:   "list",
@@ -63,10 +63,7 @@ var serviceListCmd = &cobra.Command{
 			return
 		}
 
-		appStatuses, _, err := client.ApplicationsApi.GetEnvironmentApplicationStatus(auth, envId).Execute()
-		databaseStatuses, _, err := client.DatabasesApi.GetEnvironmentDatabaseStatus(auth, envId).Execute()
-		containerStatuses, _, err := client.ContainersApi.GetEnvironmentContainerStatus(auth, envId).Execute()
-		jobStatuses, _, err := client.JobsApi.GetEnvironmentJobStatus(auth, envId).Execute()
+		statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(auth, envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -76,19 +73,19 @@ var serviceListCmd = &cobra.Command{
 		var data [][]string
 
 		for _, app := range apps.GetResults() {
-			data = append(data, []string{app.GetName(), "Application", getStatus(appStatuses.GetResults(), app.Id)})
+			data = append(data, []string{app.GetName(), "Application", utils.GetStatus(statuses.GetApplications(), app.Id)})
 		}
 
 		for _, container := range containers.GetResults() {
-			data = append(data, []string{container.Name, "Container", getStatus(containerStatuses.GetResults(), container.Id)})
+			data = append(data, []string{container.Name, "Container", utils.GetStatus(statuses.GetContainers(), container.Id)})
 		}
 
 		for _, job := range jobs.GetResults() {
-			data = append(data, []string{job.Name, "Job", getStatus(jobStatuses.GetResults(), job.Id)})
+			data = append(data, []string{job.Name, "Job", utils.GetStatus(statuses.GetJobs(), job.Id)})
 		}
 
 		for _, database := range databases.GetResults() {
-			data = append(data, []string{database.Name, "Database", getStatus(databaseStatuses.GetResults(), database.Id)})
+			data = append(data, []string{database.Name, "Database", utils.GetStatus(statuses.GetDatabases(), database.Id)})
 		}
 
 		err = utils.PrintTable([]string{"Name", "Type", "Status"}, data)
@@ -113,19 +110,13 @@ func getContextResourcesId(auth context.Context, qoveryAPIClient *qovery.APIClie
 
 		organizationId = string(id)
 	} else {
-		// find organization id by name
 		organizations, _, err := qoveryAPIClient.OrganizationMainCallsApi.ListOrganization(auth).Execute()
 
 		if err != nil {
 			return "", "", "", err
 		}
 
-		for _, o := range organizations.GetResults() {
-			if o.Name == organizationName {
-				organizationId = o.Id
-				break
-			}
-		}
+		organizationId = utils.FindByOrganizationName(organizations.GetResults(), organizationName).Id
 	}
 
 	if strings.TrimSpace(projectName) == "" {
@@ -143,12 +134,7 @@ func getContextResourcesId(auth context.Context, qoveryAPIClient *qovery.APIClie
 			return "", "", "", err
 		}
 
-		for _, p := range projects.GetResults() {
-			if p.Name == projectName {
-				projectId = p.Id
-				break
-			}
-		}
+		projectId = utils.FindByProjectName(projects.GetResults(), organizationName).Id
 	}
 
 	if strings.TrimSpace(environmentName) == "" {
@@ -166,45 +152,10 @@ func getContextResourcesId(auth context.Context, qoveryAPIClient *qovery.APIClie
 			return "", "", "", err
 		}
 
-		for _, e := range environments.GetResults() {
-			if e.Name == environmentName {
-				environmentId = e.Id
-				break
-			}
-		}
+		environmentId = utils.FindByEnvironmentName(environments.GetResults(), environmentName).Id
 	}
 
 	return organizationId, projectId, environmentId, nil
-}
-
-func getStatus(refObjectStatuses []qovery.ReferenceObjectStatus, serviceId string) string {
-	status := "Unknown"
-
-	for _, s := range refObjectStatuses {
-		if serviceId == s.Id {
-			if s.State == qovery.STATEENUM_RUNNING {
-				status = pterm.FgGreen.Sprintf(string(s.State))
-			} else if strings.HasSuffix(string(s.State), "ERROR") {
-				status = pterm.FgRed.Sprintf(string(s.State))
-			} else if strings.HasSuffix(string(s.State), "ING") {
-				status = pterm.FgLightBlue.Sprintf(string(s.State))
-			} else if strings.HasSuffix(string(s.State), "QUEUED") {
-				status = pterm.FgLightYellow.Sprintf(string(s.State))
-			} else if s.State == qovery.STATEENUM_READY {
-				status = pterm.FgYellow.Sprintf(string(s.State))
-			} else {
-				status = string(s.State)
-			}
-
-			if s.Message != nil && *s.Message != "" {
-				status += " (" + *s.Message + ")"
-			}
-
-			break
-		}
-	}
-
-	return status
 }
 
 func init() {
