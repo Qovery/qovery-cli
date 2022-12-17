@@ -116,7 +116,10 @@ func getContextResourcesId(auth context.Context, qoveryAPIClient *qovery.APIClie
 			return "", "", "", err
 		}
 
-		organizationId = utils.FindByOrganizationName(organizations.GetResults(), organizationName).Id
+		organization := utils.FindByOrganizationName(organizations.GetResults(), organizationName)
+		if organization != nil {
+			organizationId = organization.Id
+		}
 	}
 
 	if strings.TrimSpace(projectName) == "" {
@@ -134,7 +137,10 @@ func getContextResourcesId(auth context.Context, qoveryAPIClient *qovery.APIClie
 			return "", "", "", err
 		}
 
-		projectId = utils.FindByProjectName(projects.GetResults(), organizationName).Id
+		project := utils.FindByProjectName(projects.GetResults(), organizationName)
+		if project != nil {
+			projectId = project.Id
+		}
 	}
 
 	if strings.TrimSpace(environmentName) == "" {
@@ -152,7 +158,10 @@ func getContextResourcesId(auth context.Context, qoveryAPIClient *qovery.APIClie
 			return "", "", "", err
 		}
 
-		environmentId = utils.FindByEnvironmentName(environments.GetResults(), environmentName).Id
+		environment := utils.FindByEnvironmentName(environments.GetResults(), environmentName)
+		if environment != nil {
+			environmentId = environment.Id
+		}
 	}
 
 	return organizationId, projectId, environmentId, nil
