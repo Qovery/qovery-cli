@@ -6,9 +6,12 @@ import (
 	"os"
 )
 
-var serviceCmd = &cobra.Command{
-	Use:   "service",
-	Short: "Manage services",
+var containerName string
+var containerTag string
+
+var containerCmd = &cobra.Command{
+	Use:   "container",
+	Short: "Manage containers",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -20,5 +23,5 @@ var serviceCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(serviceCmd)
+	rootCmd.AddCommand(containerCmd)
 }

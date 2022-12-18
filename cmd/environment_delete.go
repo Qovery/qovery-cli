@@ -5,6 +5,7 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var environmentDeleteCmd = &cobra.Command{
@@ -16,7 +17,7 @@ var environmentDeleteCmd = &cobra.Command{
 		token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
@@ -26,14 +27,14 @@ var environmentDeleteCmd = &cobra.Command{
 
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		_, err = client.EnvironmentMainCallsApi.DeleteEnvironment(auth, envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		utils.Println("Environment is deleting!")

@@ -5,6 +5,7 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var environmentListCmd = &cobra.Command{
@@ -16,7 +17,7 @@ var environmentListCmd = &cobra.Command{
 		token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
@@ -26,21 +27,21 @@ var environmentListCmd = &cobra.Command{
 
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		environments, _, err := client.EnvironmentsApi.ListEnvironment(auth, projectId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		statuses, _, err := client.EnvironmentsApi.GetProjectEnvironmentsStatus(auth, projectId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		var data [][]string
@@ -53,7 +54,7 @@ var environmentListCmd = &cobra.Command{
 
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 	},
 }

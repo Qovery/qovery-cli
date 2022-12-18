@@ -5,6 +5,7 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+	"os"
 	"strings"
 )
 
@@ -22,7 +23,7 @@ var serviceListCmd = &cobra.Command{
 		token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
@@ -32,42 +33,42 @@ var serviceListCmd = &cobra.Command{
 
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		apps, _, err := client.ApplicationsApi.ListApplication(auth, envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		databases, _, err := client.DatabasesApi.ListDatabase(auth, envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		containers, _, err := client.ContainersApi.ListContainer(auth, envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		jobs, _, err := client.JobsApi.ListJobs(auth, envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(auth, envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		var data [][]string
@@ -92,7 +93,7 @@ var serviceListCmd = &cobra.Command{
 
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 	},
 }

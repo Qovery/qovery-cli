@@ -653,8 +653,7 @@ func GetStatus(statuses []qovery.Status, serviceId string) string {
 
 	for _, s := range statuses {
 		if serviceId == s.Id {
-			GetStatusTextWithColor(s)
-			break
+			return GetStatusTextWithColor(s)
 		}
 	}
 
@@ -725,6 +724,36 @@ func FindByApplicationName(applications []qovery.Application, name string) *qove
 	return nil
 }
 
+func FindByContainerName(containers []qovery.ContainerResponse, name string) *qovery.ContainerResponse {
+	for _, c := range containers {
+		if c.Name == name {
+			return &c
+		}
+	}
+
+	return nil
+}
+
+func FindByJobName(jobs []qovery.JobResponse, name string) *qovery.JobResponse {
+	for _, j := range jobs {
+		if j.Name == name {
+			return &j
+		}
+	}
+
+	return nil
+}
+
+func FindByDatabaseName(databases []qovery.Database, name string) *qovery.Database {
+	for _, d := range databases {
+		if d.Name == name {
+			return &d
+		}
+	}
+
+	return nil
+}
+
 func WatchEnvironment(envId string, finalServiceState qovery.StateEnum, auth context.Context, client *qovery.APIClient) {
 	for {
 		status, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatus(auth, envId).Execute()
@@ -740,8 +769,37 @@ func WatchEnvironment(envId string, finalServiceState qovery.StateEnum, auth con
 
 		totalStatuses := len(statuses.Applications) + len(statuses.Databases) + len(statuses.Jobs) + len(statuses.Containers)
 
+		icon := "⏳"
+		if countStatuses > 0 {
+			icon = "✅"
+		}
+
 		// TODO make something more fancy here to display the status. Use UILIVE or something like that
-		log.Println(GetStatusTextWithColor(*status) + " (" + strconv.Itoa(countStatuses) + "/" + strconv.Itoa(totalStatuses) + " services ✅ )")
+		log.Println(GetStatusTextWithColor(*status) + " (" + strconv.Itoa(countStatuses) + "/" + strconv.Itoa(totalStatuses) + " services " + icon + " )")
+
+		if status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DELETED ||
+			status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED {
+			return
+		}
+
+		if strings.HasSuffix(string(status.State), "ERROR") {
+			os.Exit(1)
+		}
+
+		time.Sleep(3 * time.Second)
+	}
+}
+
+func WatchContainer(containerId string, auth context.Context, client *qovery.APIClient) {
+	for {
+		status, _, err := client.ContainerMainCallsApi.GetContainerStatus(auth, containerId).Execute()
+
+		if err != nil {
+			return
+		}
+
+		// TODO make something more fancy here to display the status. Use UILIVE or something like that
+		log.Println(GetStatusTextWithColor(*status))
 
 		if status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DELETED ||
 			status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED {

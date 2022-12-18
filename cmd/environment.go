@@ -8,7 +8,7 @@ import (
 
 var environmentCmd = &cobra.Command{
 	Use:   "environment",
-	Short: "Manage Qovery environments",
+	Short: "Manage environments",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
