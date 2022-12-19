@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
@@ -42,7 +41,7 @@ var containerRedeployCmd = &cobra.Command{
 		container := utils.FindByContainerName(containers.GetResults(), containerName)
 
 		if container == nil {
-			utils.PrintlnError(errors.New(fmt.Sprintf("Container %s not found", containerName)))
+			utils.PrintlnError(fmt.Errorf("container %s not found", containerName))
 			utils.PrintlnInfo("You can list all containers with: qovery container list")
 			os.Exit(1)
 		}
