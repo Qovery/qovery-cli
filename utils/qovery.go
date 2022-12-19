@@ -661,7 +661,7 @@ func GetStatus(statuses []qovery.Status, serviceId string) string {
 }
 
 func GetStatusTextWithColor(s qovery.Status) string {
-	statusMsg := "Unknown"
+	var statusMsg string
 
 	if s.State == qovery.STATEENUM_RUNNING {
 		statusMsg = pterm.FgGreen.Sprintf(string(s.State))
@@ -762,7 +762,7 @@ func WatchEnvironment(envId string, finalServiceState qovery.StateEnum, auth con
 			return
 		}
 
-		statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(auth, envId).Execute()
+		statuses, _, _ := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(auth, envId).Execute()
 
 		countStatuses := countStatus(statuses.Applications, finalServiceState) + countStatus(statuses.Databases, finalServiceState) +
 			countStatus(statuses.Jobs, finalServiceState) + countStatus(statuses.Containers, finalServiceState)
