@@ -43,7 +43,7 @@ var containerDeployCmd = &cobra.Command{
 
 		if container == nil {
 			utils.PrintlnError(errors.New(fmt.Sprintf("Container %s not found", containerName)))
-			utils.PrintlnInfo(fmt.Sprintf("You can list all containers with: qovery container list"))
+			utils.PrintlnInfo("You can list all containers with: qovery container list")
 			os.Exit(1)
 		}
 
