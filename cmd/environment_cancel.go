@@ -10,7 +10,7 @@ import (
 
 var environmentCancelCmd = &cobra.Command{
 	Use:   "cancel",
-	Short: "Cancel an environment",
+	Short: "Cancel an environment deployment",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 

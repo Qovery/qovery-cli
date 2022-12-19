@@ -198,12 +198,18 @@ func SetService(service *Service) error {
 }
 
 func GetAccessToken() (AccessToken, error) {
-	context, err := CurrentContext()
-	if err != nil {
-		return AccessToken(""), err
+	token := os.Getenv("QOVERY_CLI_ACCESS_TOKEN")
+
+	if token != "" {
+		return AccessToken(token), nil
 	}
 
-	token := context.AccessToken
+	context, err := CurrentContext()
+	if err != nil {
+		return "", err
+	}
+
+	token = string(context.AccessToken)
 	if token == "" {
 		return "", errors.New("Access token has not been found. Please, sign in using 'qovery auth' command. ")
 	}
@@ -213,12 +219,12 @@ func GetAccessToken() (AccessToken, error) {
 		RefreshExpiredTokenSilently()
 		refreshed, err := GetAccessToken()
 		if err != nil {
-			return AccessToken(""), err
+			return "", err
 		}
-		token = refreshed
+		token = string(refreshed)
 	}
 
-	return token, nil
+	return AccessToken(token), nil
 }
 
 func GetAccessTokenExpiration() (time.Time, error) {

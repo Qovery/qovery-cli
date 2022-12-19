@@ -10,9 +10,9 @@ import (
 	"os"
 )
 
-var containerStopCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "Stop a container",
+var containerDeployCmd = &cobra.Command{
+	Use:   "deploy",
+	Short: "Deploy a container",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -47,14 +47,22 @@ var containerStopCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		_, _, err = client.ContainerActionsApi.StopContainer(auth, container.Id).Execute()
+		req := qovery.ContainerDeployRequest{
+			ImageTag: container.Tag,
+		}
+
+		if containerTag != "" {
+			req.ImageTag = containerTag
+		}
+
+		_, _, err = client.ContainerActionsApi.DeployContainer(auth, container.Id).ContainerDeployRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
 
-		utils.Println("Container is stopping!")
+		utils.Println("Container is deploying!")
 
 		if watchFlag {
 			utils.WatchContainer(container.Id, auth, client)
@@ -63,12 +71,13 @@ var containerStopCmd = &cobra.Command{
 }
 
 func init() {
-	containerCmd.AddCommand(containerStopCmd)
-	containerStopCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
-	containerStopCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
-	containerStopCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	containerStopCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
-	containerStopCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch container status until it's ready or an error occurs")
+	containerCmd.AddCommand(containerDeployCmd)
+	containerDeployCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	containerDeployCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	containerDeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	containerDeployCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
+	containerDeployCmd.Flags().StringVarP(&containerTag, "tag", "t", "", "Container Tag")
+	containerDeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch container status until it's ready or an error occurs")
 
-	_ = containerStopCmd.MarkFlagRequired("container")
+	_ = containerDeployCmd.MarkFlagRequired("container")
 }

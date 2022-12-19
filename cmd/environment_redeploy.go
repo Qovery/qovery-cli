@@ -8,9 +8,9 @@ import (
 	"os"
 )
 
-var environmentStartCmd = &cobra.Command{
-	Use:   "start",
-	Short: "Start an environment",
+var environmentRedeployCmd = &cobra.Command{
+	Use:   "redeploy",
+	Short: "Redeploy an environment",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -30,14 +30,14 @@ var environmentStartCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		_, _, err = client.EnvironmentActionsApi.DeployEnvironment(auth, envId).Execute()
+		_, _, err = client.EnvironmentActionsApi.RestartEnvironment(auth, envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
 
-		utils.Println("Environment is starting!")
+		utils.Println("Environment is redeploying!")
 
 		if watchFlag {
 			utils.WatchEnvironment(envId, qovery.STATEENUM_RUNNING, auth, client)
@@ -46,9 +46,9 @@ var environmentStartCmd = &cobra.Command{
 }
 
 func init() {
-	environmentCmd.AddCommand(environmentStartCmd)
-	environmentStartCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
-	environmentStartCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
-	environmentStartCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	environmentStartCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch environment status until it's ready or an error occurs")
+	environmentCmd.AddCommand(environmentRedeployCmd)
+	environmentRedeployCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	environmentRedeployCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	environmentRedeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	environmentRedeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch environment status until it's ready or an error occurs")
 }
