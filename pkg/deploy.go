@@ -48,9 +48,9 @@ func DeployAll(dryRunDisabled bool) {
 }
 
 func deploy(url string, method string, dryRunDisabled bool) *http.Response {
-	authToken, tokenErr := utils.GetAccessToken()
-	if tokenErr != nil {
-		utils.PrintlnError(tokenErr)
+	tokenType, token, err := utils.GetAccessToken()
+	if err != nil {
+		utils.PrintlnError(err)
 		os.Exit(0)
 	}
 
@@ -65,7 +65,7 @@ func deploy(url string, method string, dryRunDisabled bool) *http.Response {
 		log.Fatal(err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+strings.TrimSpace(string(authToken)))
+	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := http.DefaultClient.Do(req)

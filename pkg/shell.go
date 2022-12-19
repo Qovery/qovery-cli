@@ -71,12 +71,12 @@ func createWebsocketConn(req *ShellRequest) (*websocket.Conn, error) {
 		return nil, err
 	}
 
-	token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 
-	headers := http.Header{"Authorization": {fmt.Sprintf("Bearer %s", token)}}
+	headers := http.Header{"Authorization": {utils.GetAuthorizationHeaderValue(tokenType, token)}}
 	wsConn, _, err := websocket.DefaultDialer.Dial(wsURL.String(), headers)
 	if err != nil {
 		return nil, err

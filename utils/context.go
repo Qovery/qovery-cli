@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -27,6 +28,7 @@ type QoveryContext struct {
 	User                  Name         `json:"user"`
 }
 type Name string
+type AccessTokenType string
 type AccessToken string
 type RefreshToken string
 type Id string
@@ -197,34 +199,43 @@ func SetService(service *Service) error {
 	return StoreContext(context)
 }
 
-func GetAccessToken() (AccessToken, error) {
+func GetAuthorizationHeaderValue(tokenType AccessTokenType, token AccessToken) string {
+	return string(tokenType) + " " + strings.TrimSpace(string(token))
+}
+
+func GetAccessToken() (AccessTokenType, AccessToken, error) {
+	tokenType := os.Getenv("QOVERY_CLI_ACCESS_TOKEN_TYPE")
 	token := os.Getenv("QOVERY_CLI_ACCESS_TOKEN")
 
+	if tokenType == "" {
+		tokenType = "Bearer"
+	}
+
 	if token != "" {
-		return AccessToken(token), nil
+		return AccessTokenType("Token"), AccessToken(token), nil
 	}
 
 	context, err := CurrentContext()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	token = string(context.AccessToken)
 	if token == "" {
-		return "", errors.New("Access token has not been found. Please, sign in using 'qovery auth' command. ")
+		return "", "", errors.New("Access token has not been found. Please, sign in using 'qovery auth' command. ")
 	}
 
 	expired := context.AccessTokenExpiration.Before(time.Now())
 	if expired {
 		RefreshExpiredTokenSilently()
-		refreshed, err := GetAccessToken()
+		_, refreshed, err := GetAccessToken()
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		token = string(refreshed)
 	}
 
-	return AccessToken(token), nil
+	return AccessTokenType(tokenType), AccessToken(token), nil
 }
 
 func GetAccessTokenExpiration() (time.Time, error) {

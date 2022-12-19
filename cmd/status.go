@@ -1,12 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
-	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 	"os"
 )
 
@@ -15,7 +14,8 @@ var statusCmd = &cobra.Command{
 	Short: "Print the status of your application",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		token, err := utils.GetAccessToken()
+
+		tokenType, token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(0)
@@ -26,12 +26,11 @@ var statusCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-		client := qovery.NewAPIClient(qovery.NewConfiguration())
+		client := utils.GetQoveryClient(tokenType, token)
 
 		switch service.Type {
 		case utils.ApplicationType:
-			status, res, err := client.ApplicationMainCallsApi.GetApplicationStatus(auth, string(service.ID)).Execute()
+			status, res, err := client.ApplicationMainCallsApi.GetApplicationStatus(context.Background(), string(service.ID)).Execute()
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(0)
@@ -46,7 +45,7 @@ var statusCmd = &cobra.Command{
 				os.Exit(0)
 			}
 		case utils.ContainerType:
-			status, res, err := client.ContainerMainCallsApi.GetContainerStatus(auth, string(service.ID)).Execute()
+			status, res, err := client.ContainerMainCallsApi.GetContainerStatus(context.Background(), string(service.ID)).Execute()
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(0)

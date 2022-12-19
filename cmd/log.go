@@ -1,13 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	_ "fmt"
 	"github.com/olekukonko/tablewriter"
 	"github.com/qovery/qovery-cli/utils"
-	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 	"os"
 	"time"
 )
@@ -56,24 +55,24 @@ var logCmd = &cobra.Command{
 }
 
 func getLogs() [][]string {
-	token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)
 	}
+
 	service, err := utils.CurrentService()
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := utils.GetQoveryClient(tokenType, token)
 
 	var logRows = make([][]string, 0)
 	switch service.Type {
 	case utils.ApplicationType:
-		logs, res, err := client.ApplicationLogsApi.ListApplicationLog(auth, string(service.ID)).Execute()
+		logs, res, err := client.ApplicationLogsApi.ListApplicationLog(context.Background(), string(service.ID)).Execute()
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(0)
@@ -86,7 +85,7 @@ func getLogs() [][]string {
 			logRows = append(logRows, []string{log.CreatedAt.Format(time.StampMicro), log.Message})
 		}
 	case utils.ContainerType:
-		logs, res, err := client.ContainerLogsApi.ListContainerLog(auth, string(service.ID)).Execute()
+		logs, res, err := client.ContainerLogsApi.ListContainerLog(context.Background(), string(service.ID)).Execute()
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(0)

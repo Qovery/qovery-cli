@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/qovery/qovery-cli/utils"
-	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -15,23 +14,21 @@ var containerStopCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		token, err := utils.GetAccessToken()
+		tokenType, token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
 
-		auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-		client := qovery.NewAPIClient(qovery.NewConfiguration())
-
-		_, _, envId, err := getContextResourcesId(auth, client)
+		client := utils.GetQoveryClient(tokenType, token)
+		_, _, envId, err := getContextResourcesId(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
 
-		containers, _, err := client.ContainersApi.ListContainer(auth, envId).Execute()
+		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -46,7 +43,7 @@ var containerStopCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		_, _, err = client.ContainerActionsApi.StopContainer(auth, container.Id).Execute()
+		_, _, err = client.ContainerActionsApi.StopContainer(context.Background(), container.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -56,7 +53,7 @@ var containerStopCmd = &cobra.Command{
 		utils.Println("Container is stopping!")
 
 		if watchFlag {
-			utils.WatchContainer(container.Id, auth, client)
+			utils.WatchContainer(container.Id, client)
 		}
 	},
 }

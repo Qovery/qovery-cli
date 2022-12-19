@@ -34,16 +34,21 @@ type TokenInformation struct {
 
 const AdminUrl = "https://api-admin.qovery.com"
 
+func GetQoveryClient(tokenType AccessTokenType, token AccessToken) *qovery.APIClient {
+	conf := qovery.NewConfiguration()
+	conf.DefaultHeader["Authorization"] = GetAuthorizationHeaderValue(tokenType, token)
+	return qovery.NewAPIClient(conf)
+}
+
 func SelectOrganization() (*Organization, error) {
-	token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := GetQoveryClient(tokenType, token)
 
-	organizations, res, err := client.OrganizationMainCallsApi.ListOrganization(auth).Execute()
+	organizations, res, err := client.OrganizationMainCallsApi.ListOrganization(context.Background()).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -102,15 +107,14 @@ type Project struct {
 }
 
 func GetOrganizationById(id string) (*Organization, error) {
-	token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := GetQoveryClient(tokenType, token)
 
-	organization, res, err := client.OrganizationMainCallsApi.GetOrganization(auth, id).Execute()
+	organization, res, err := client.OrganizationMainCallsApi.GetOrganization(context.Background(), id).Execute()
 	if res.StatusCode >= 400 {
 		return nil, errors.New("Received " + res.Status + " response while getting organization " + id)
 	}
@@ -125,15 +129,14 @@ func GetOrganizationById(id string) (*Organization, error) {
 }
 
 func SelectProject(organizationID Id) (*Project, error) {
-	token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := GetQoveryClient(tokenType, token)
 
-	p, res, err := client.ProjectsApi.ListProject(auth, string(organizationID)).Execute()
+	p, res, err := client.ProjectsApi.ListProject(context.Background(), string(organizationID)).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -193,15 +196,14 @@ type Environment struct {
 }
 
 func GetProjectById(id string) (*Project, error) {
-	token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := GetQoveryClient(tokenType, token)
 
-	project, res, err := client.ProjectMainCallsApi.GetProject(auth, id).Execute()
+	project, res, err := client.ProjectMainCallsApi.GetProject(context.Background(), id).Execute()
 	if res.StatusCode >= 400 {
 		return nil, errors.New("Received " + res.Status + " response while getting project " + id)
 	}
@@ -216,15 +218,14 @@ func GetProjectById(id string) (*Project, error) {
 }
 
 func SelectEnvironment(projectID Id) (*Environment, error) {
-	token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := GetQoveryClient(tokenType, token)
 
-	e, res, err := client.EnvironmentsApi.ListEnvironment(auth, string(projectID)).Execute()
+	e, res, err := client.EnvironmentsApi.ListEnvironment(context.Background(), string(projectID)).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -280,15 +281,14 @@ func SelectAndSetEnvironment(projectID Id) (*Environment, error) {
 }
 
 func GetEnvironmentById(id string) (*Environment, error) {
-	token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := GetQoveryClient(tokenType, token)
 
-	environment, res, err := client.EnvironmentMainCallsApi.GetEnvironment(auth, id).Execute()
+	environment, res, err := client.EnvironmentMainCallsApi.GetEnvironment(context.Background(), id).Execute()
 	if res.StatusCode >= 400 {
 		return nil, errors.New("Received " + res.Status + " response while getting environment " + id)
 	}
@@ -322,15 +322,14 @@ type Application struct {
 }
 
 func SelectService(environment Id) (*Service, error) {
-	token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := GetQoveryClient(tokenType, token)
 
-	apps, res, err := client.ApplicationsApi.ListApplication(auth, string(environment)).Execute()
+	apps, res, err := client.ApplicationsApi.ListApplication(context.Background(), string(environment)).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -338,7 +337,7 @@ func SelectService(environment Id) (*Service, error) {
 		return nil, errors.New("Received " + res.Status + " response while listing services. ")
 	}
 
-	containers, res, err := client.ContainersApi.ListContainer(auth, string(environment)).Execute()
+	containers, res, err := client.ContainersApi.ListContainer(context.Background(), string(environment)).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -402,15 +401,14 @@ func SelectAndSetService(environment Id) (*Service, error) {
 }
 
 func GetApplicationById(id string) (*Application, error) {
-	token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := GetQoveryClient(tokenType, token)
 
-	application, res, err := client.ApplicationMainCallsApi.GetApplication(auth, id).Execute()
+	application, res, err := client.ApplicationMainCallsApi.GetApplication(context.Background(), id).Execute()
 	if res.StatusCode >= 400 {
 		return nil, errors.New("Received " + res.Status + " response while getting application " + id)
 	}
@@ -451,15 +449,14 @@ type Container struct {
 }
 
 func GetContainerById(id string) (*Container, error) {
-	token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := GetQoveryClient(tokenType, token)
 
-	container, res, err := client.ContainerMainCallsApi.GetContainer(auth, id).Execute()
+	container, res, err := client.ContainerMainCallsApi.GetContainer(context.Background(), id).Execute()
 	if res.StatusCode >= 400 {
 		return nil, errors.New("Received " + res.Status + " response while getting container " + id)
 	}
@@ -481,16 +478,15 @@ func CheckAdminUrl() {
 }
 
 func DeleteEnvironmentVariable(application Id, key string) error {
-	token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken()
 	if err != nil {
 		return err
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := GetQoveryClient(tokenType, token)
 
 	// TODO optimize this call by caching the result?
-	envVars, _, err := client.ApplicationEnvironmentVariableApi.ListApplicationEnvironmentVariable(auth, string(application)).Execute()
+	envVars, _, err := client.ApplicationEnvironmentVariableApi.ListApplicationEnvironmentVariable(context.Background(), string(application)).Execute()
 
 	if err != nil {
 		return err
@@ -508,7 +504,7 @@ func DeleteEnvironmentVariable(application Id, key string) error {
 		return nil
 	}
 
-	res, err := client.ApplicationEnvironmentVariableApi.DeleteApplicationEnvironmentVariable(auth, string(application), envVar.Id).Execute()
+	res, err := client.ApplicationEnvironmentVariableApi.DeleteApplicationEnvironmentVariable(context.Background(), string(application), envVar.Id).Execute()
 
 	if err != nil {
 		return err
@@ -522,15 +518,14 @@ func DeleteEnvironmentVariable(application Id, key string) error {
 }
 
 func AddEnvironmentVariable(application Id, key string, value string) error {
-	token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken()
 	if err != nil {
 		return err
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := GetQoveryClient(tokenType, token)
 
-	_, res, err := client.ApplicationEnvironmentVariableApi.CreateApplicationEnvironmentVariable(auth, string(application)).EnvironmentVariableRequest(
+	_, res, err := client.ApplicationEnvironmentVariableApi.CreateApplicationEnvironmentVariable(context.Background(), string(application)).EnvironmentVariableRequest(
 		qovery.EnvironmentVariableRequest{Key: key, Value: value},
 	).Execute()
 
@@ -546,16 +541,15 @@ func AddEnvironmentVariable(application Id, key string, value string) error {
 }
 
 func DeleteSecret(application Id, key string) error {
-	token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken()
 	if err != nil {
 		return err
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := GetQoveryClient(tokenType, token)
 
 	// TODO optimize this call by caching the result?
-	secrets, _, err := client.ApplicationSecretApi.ListApplicationSecrets(auth, string(application)).Execute()
+	secrets, _, err := client.ApplicationSecretApi.ListApplicationSecrets(context.Background(), string(application)).Execute()
 
 	if err != nil {
 		return err
@@ -573,7 +567,7 @@ func DeleteSecret(application Id, key string) error {
 		return nil
 	}
 
-	res, err := client.ApplicationSecretApi.DeleteApplicationSecret(auth, string(application), secret.Id).Execute()
+	res, err := client.ApplicationSecretApi.DeleteApplicationSecret(context.Background(), string(application), secret.Id).Execute()
 
 	if err != nil {
 		return err
@@ -587,15 +581,14 @@ func DeleteSecret(application Id, key string) error {
 }
 
 func AddSecret(application Id, key string, value string) error {
-	token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken()
 	if err != nil {
 		return err
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := GetQoveryClient(tokenType, token)
 
-	_, res, err := client.ApplicationSecretApi.CreateApplicationSecret(auth, string(application)).SecretRequest(
+	_, res, err := client.ApplicationSecretApi.CreateApplicationSecret(context.Background(), string(application)).SecretRequest(
 		qovery.SecretRequest{Key: key, Value: value},
 	).Execute()
 
@@ -754,15 +747,15 @@ func FindByDatabaseName(databases []qovery.Database, name string) *qovery.Databa
 	return nil
 }
 
-func WatchEnvironment(envId string, finalServiceState qovery.StateEnum, auth context.Context, client *qovery.APIClient) {
+func WatchEnvironment(envId string, finalServiceState qovery.StateEnum, client *qovery.APIClient) {
 	for {
-		status, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatus(auth, envId).Execute()
+		status, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatus(context.Background(), envId).Execute()
 
 		if err != nil {
 			return
 		}
 
-		statuses, _, _ := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(auth, envId).Execute()
+		statuses, _, _ := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
 
 		countStatuses := countStatus(statuses.Applications, finalServiceState) + countStatus(statuses.Databases, finalServiceState) +
 			countStatus(statuses.Jobs, finalServiceState) + countStatus(statuses.Containers, finalServiceState)
@@ -790,27 +783,45 @@ func WatchEnvironment(envId string, finalServiceState qovery.StateEnum, auth con
 	}
 }
 
-func WatchContainer(containerId string, auth context.Context, client *qovery.APIClient) {
+func WatchContainer(containerId string, client *qovery.APIClient) {
 	for {
-		status, _, err := client.ContainerMainCallsApi.GetContainerStatus(auth, containerId).Execute()
+		status, _, err := client.ContainerMainCallsApi.GetContainerStatus(context.Background(), containerId).Execute()
 
 		if err != nil {
 			return
 		}
 
-		// TODO make something more fancy here to display the status. Use UILIVE or something like that
-		log.Println(GetStatusTextWithColor(*status))
+		WatchStatus(status)
 
-		if status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DELETED ||
-			status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED {
+		time.Sleep(3 * time.Second)
+	}
+}
+
+func WatchApplication(containerId string, client *qovery.APIClient) {
+	for {
+		status, _, err := client.ContainerMainCallsApi.GetContainerStatus(context.Background(), containerId).Execute()
+
+		if err != nil {
 			return
 		}
 
-		if strings.HasSuffix(string(status.State), "ERROR") {
-			os.Exit(1)
-		}
+		WatchStatus(status)
 
 		time.Sleep(3 * time.Second)
+	}
+}
+
+func WatchStatus(status *qovery.Status) {
+	// TODO make something more fancy here to display the status. Use UILIVE or something like that
+	log.Println(GetStatusTextWithColor(*status))
+
+	if status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DELETED ||
+		status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED {
+		return
+	}
+
+	if strings.HasSuffix(string(status.State), "ERROR") {
+		os.Exit(1)
 	}
 }
 

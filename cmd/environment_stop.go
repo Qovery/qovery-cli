@@ -14,23 +14,21 @@ var environmentStopCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		token, err := utils.GetAccessToken()
+		tokenType, token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
 
-		auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-		client := qovery.NewAPIClient(qovery.NewConfiguration())
-
-		_, _, envId, err := getContextResourcesId(auth, client)
+		client := utils.GetQoveryClient(tokenType, token)
+		_, _, envId, err := getContextResourcesId(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
 
-		_, _, err = client.EnvironmentActionsApi.StopEnvironment(auth, envId).Execute()
+		_, _, err = client.EnvironmentActionsApi.StopEnvironment(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -40,7 +38,7 @@ var environmentStopCmd = &cobra.Command{
 		utils.Println("Environment is stopping!")
 
 		if watchFlag {
-			utils.WatchEnvironment(envId, qovery.STATEENUM_STOPPED, auth, client)
+			utils.WatchEnvironment(envId, qovery.STATEENUM_STOPPED, client)
 		}
 	},
 }

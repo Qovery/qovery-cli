@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"github.com/qovery/qovery-cli/utils"
-	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -14,30 +13,28 @@ var environmentListCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		token, err := utils.GetAccessToken()
+		tokenType, token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
 
-		auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-		client := qovery.NewAPIClient(qovery.NewConfiguration())
-
-		_, projectId, _, err := getContextResourcesId(auth, client)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-		}
-
-		environments, _, err := client.EnvironmentsApi.ListEnvironment(auth, projectId).Execute()
+		client := utils.GetQoveryClient(tokenType, token)
+		_, projectId, _, err := getContextResourcesId(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
 
-		statuses, _, err := client.EnvironmentsApi.GetProjectEnvironmentsStatus(auth, projectId).Execute()
+		environments, _, err := client.EnvironmentsApi.ListEnvironment(context.Background(), projectId).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		statuses, _, err := client.EnvironmentsApi.GetProjectEnvironmentsStatus(context.Background(), projectId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

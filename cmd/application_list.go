@@ -7,9 +7,9 @@ import (
 	"os"
 )
 
-var containerListCmd = &cobra.Command{
+var applicationListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List containers",
+	Short: "List applications",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -20,6 +20,7 @@ var containerListCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
+
 		_, _, envId, err := getContextResourcesId(client)
 
 		if err != nil {
@@ -27,7 +28,7 @@ var containerListCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
+		applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -43,9 +44,9 @@ var containerListCmd = &cobra.Command{
 
 		var data [][]string
 
-		for _, container := range containers.GetResults() {
-			data = append(data, []string{container.Name, "Container",
-				utils.GetStatus(statuses.GetContainers(), container.Id), container.UpdatedAt.String()})
+		for _, application := range applications.GetResults() {
+			data = append(data, []string{*application.Name, "Application",
+				utils.GetStatus(statuses.GetApplications(), application.Id), application.UpdatedAt.String()})
 		}
 
 		err = utils.PrintTable([]string{"Name", "Type", "Status", "Last Update"}, data)
@@ -58,8 +59,8 @@ var containerListCmd = &cobra.Command{
 }
 
 func init() {
-	containerCmd.AddCommand(containerListCmd)
-	containerListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
-	containerListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
-	containerListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	applicationCmd.AddCommand(applicationListCmd)
+	applicationListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	applicationListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	applicationListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 }

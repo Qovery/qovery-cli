@@ -19,16 +19,14 @@ var environmentCloneCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		token, err := utils.GetAccessToken()
+		tokenType, token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
 
-		auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-		client := qovery.NewAPIClient(qovery.NewConfiguration())
-
-		orgId, _, envId, err := getContextResourcesId(auth, client)
+		client := utils.GetQoveryClient(tokenType, token)
+		orgId, _, envId, err := getContextResourcesId(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -40,7 +38,7 @@ var environmentCloneCmd = &cobra.Command{
 		}
 
 		if clusterName != "" {
-			clusters, _, err := client.ClustersApi.ListOrganizationCluster(auth, orgId).Execute()
+			clusters, _, err := client.ClustersApi.ListOrganizationCluster(context.Background(), orgId).Execute()
 
 			if err == nil {
 				for _, c := range clusters.GetResults() {
@@ -63,7 +61,7 @@ var environmentCloneCmd = &cobra.Command{
 			}
 		}
 
-		_, _, err = client.EnvironmentActionsApi.CloneEnvironment(auth, envId).CloneRequest(req).Execute()
+		_, _, err = client.EnvironmentActionsApi.CloneEnvironment(context.Background(), envId).CloneRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
