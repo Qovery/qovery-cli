@@ -3,13 +3,12 @@ module github.com/qovery/qovery-cli
 go 1.19
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.3.5
+	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/containerd/console v1.0.3
 	github.com/fatih/color v1.13.0
 	github.com/getsentry/sentry-go v0.13.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/websocket v1.5.0
-	github.com/gosuri/uilive v0.0.4
 	github.com/hashicorp/vault/api v1.7.2
 	github.com/joho/godotenv v1.4.0
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0
