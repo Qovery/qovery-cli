@@ -7,7 +7,6 @@ import (
 )
 
 var databaseName string
-var databaseCommitId string
 
 var databaseCmd = &cobra.Command{
 	Use:   "database",

@@ -65,7 +65,6 @@ func init() {
 	databaseStopCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	databaseStopCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	databaseStopCmd.Flags().StringVarP(&databaseName, "database", "n", "", "Database Name")
-	databaseStopCmd.Flags().StringVarP(&databaseCommitId, "commit-id", "c", "", "Database Commit ID")
 	databaseStopCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch database status until it's ready or an error occurs")
 
 	_ = databaseStopCmd.MarkFlagRequired("database")
