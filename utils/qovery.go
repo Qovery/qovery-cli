@@ -797,9 +797,23 @@ func WatchContainer(containerId string, client *qovery.APIClient) {
 	}
 }
 
-func WatchApplication(containerId string, client *qovery.APIClient) {
+func WatchApplication(applicationId string, client *qovery.APIClient) {
 	for {
-		status, _, err := client.ContainerMainCallsApi.GetContainerStatus(context.Background(), containerId).Execute()
+		status, _, err := client.ApplicationMainCallsApi.GetApplicationStatus(context.Background(), applicationId).Execute()
+
+		if err != nil {
+			return
+		}
+
+		WatchStatus(status)
+
+		time.Sleep(3 * time.Second)
+	}
+}
+
+func WatchDatabase(databaseId string, client *qovery.APIClient) {
+	for {
+		status, _, err := client.DatabaseMainCallsApi.GetDatabaseStatus(context.Background(), databaseId).Execute()
 
 		if err != nil {
 			return
