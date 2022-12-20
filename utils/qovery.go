@@ -825,6 +825,20 @@ func WatchDatabase(databaseId string, client *qovery.APIClient) {
 	}
 }
 
+func WatchJob(jobId string, client *qovery.APIClient) {
+	for {
+		status, _, err := client.JobMainCallsApi.GetJobStatus(context.Background(), jobId).Execute()
+
+		if err != nil {
+			return
+		}
+
+		WatchStatus(status)
+
+		time.Sleep(3 * time.Second)
+	}
+}
+
 func WatchStatus(status *qovery.Status) {
 	// TODO make something more fancy here to display the status. Use UILIVE or something like that
 	log.Println(GetStatusTextWithColor(*status))
