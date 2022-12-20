@@ -7,3 +7,7 @@
 This repository is the code source of the Qovery CLI.
 
 See our complete documentation [here](https://docs.qovery.com) to get started with Qovery.
+
+## Authentication
+
+You can use `qovery auth` to authenticate with the CLI or use `QOVERY_CLI_ACCESS_TOKEN` environment variable to set your API token.

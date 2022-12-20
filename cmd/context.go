@@ -8,7 +8,7 @@ import (
 
 var contextCmd = &cobra.Command{
 	Use:   "context",
-	Short: "Manage Qovery CLI context",
+	Short: "Manage CLI context",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 		utils.PrintlnInfo("Current context:")

@@ -53,15 +53,27 @@ func PrintlnContext() error {
 	return nil
 }
 
-func DryRunPrint(dryRunDisbled bool) {
+func DryRunPrint(dryRunDisabled bool) {
 	green := color.New(color.FgGreen).SprintFunc()
 
 	message := green("enabled")
 
-	if dryRunDisbled {
+	if dryRunDisabled {
 		red := color.New(color.FgRed).SprintFunc()
 		message = red("disabled")
 	}
 
 	log.Infof("Dry run: %s", message)
+}
+
+func PrintTable(headers []string, data [][]string) error {
+	table := pterm.TableData{
+		headers,
+	}
+
+	for _, row := range data {
+		table = append(table, row)
+	}
+
+	return pterm.DefaultTable.WithHasHeader().WithData(table).Render()
 }

@@ -3,10 +3,10 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/context"
 
@@ -112,15 +112,15 @@ func shellRequestFromSelect() (*pkg.ShellRequest, error) {
 }
 
 func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequest, error) {
-	token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
-		return nil, err
+		utils.PrintlnError(err)
+		os.Exit(1)
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := utils.GetQoveryClient(tokenType, token)
 
-	e, res, err := client.EnvironmentMainCallsApi.GetEnvironment(auth, string(currentContext.EnvironmentId)).Execute()
+	e, res, err := client.EnvironmentMainCallsApi.GetEnvironment(context.Background(), string(currentContext.EnvironmentId)).Execute()
 	if err != nil {
 		return nil, err
 	}

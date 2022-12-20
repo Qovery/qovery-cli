@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"io"
 	"net/http"
-	"strings"
 )
 
 type TokenCreationResponseDto struct {
@@ -42,7 +41,7 @@ var tokenCmd = &cobra.Command{
 }
 
 func generateMachineToMachineAPIToken(tokenInformation *utils.TokenInformation) (string, error) {
-	token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
 		return "", err
 	}
@@ -67,7 +66,7 @@ func generateMachineToMachineAPIToken(tokenInformation *utils.TokenInformation) 
 		return "", err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+strings.TrimSpace(string(token)))
+	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := http.DefaultClient.Do(req)

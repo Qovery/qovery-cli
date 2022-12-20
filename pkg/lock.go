@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strings"
 	"text/tabwriter"
 	"time"
 
@@ -89,9 +88,9 @@ func UnockById(clusterId string) {
 }
 
 func listLockedClusters() *http.Response {
-	authToken, tokenErr := utils.GetAccessToken()
-	if tokenErr != nil {
-		utils.PrintlnError(tokenErr)
+	tokenType, token, err := utils.GetAccessToken()
+	if err != nil {
+		utils.PrintlnError(err)
 		os.Exit(0)
 	}
 
@@ -100,7 +99,7 @@ func listLockedClusters() *http.Response {
 	if err != nil {
 		log.Fatal(err)
 	}
-	req.Header.Set("Authorization", "Bearer "+strings.TrimSpace(string(authToken)))
+	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := http.DefaultClient.Do(req)
@@ -111,9 +110,9 @@ func listLockedClusters() *http.Response {
 }
 
 func updateLockById(clusterId string, reason string, method string) *http.Response {
-	authToken, tokenErr := utils.GetAccessToken()
-	if tokenErr != nil {
-		utils.PrintlnError(tokenErr)
+	tokenType, token, err := utils.GetAccessToken()
+	if err != nil {
+		utils.PrintlnError(err)
 		os.Exit(0)
 	}
 
@@ -131,7 +130,7 @@ func updateLockById(clusterId string, reason string, method string) *http.Respon
 	if err != nil {
 		log.Fatal(err)
 	}
-	req.Header.Set("Authorization", "Bearer "+strings.TrimSpace(string(authToken)))
+	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := http.DefaultClient.Do(req)
