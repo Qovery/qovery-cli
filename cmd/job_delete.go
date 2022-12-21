@@ -28,6 +28,12 @@ var jobDeleteCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		if !utils.IsEnvironmentInATerminalState(envId, client) {
+			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
+				"for the end of the current operation to run your command. Try again in a few moment", envId))
+			os.Exit(1)
+		}
+
 		jobs, _, err := client.JobsApi.ListJobs(context.Background(), envId).Execute()
 
 		if err != nil {

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
@@ -25,6 +26,12 @@ var environmentRedeployCmd = &cobra.Command{
 
 		if err != nil {
 			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		if !utils.IsEnvironmentInATerminalState(envId, client) {
+			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
+				"for the end of the current operation to run your command. Try again in a few moment", envId))
 			os.Exit(1)
 		}
 

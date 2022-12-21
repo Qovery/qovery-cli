@@ -933,7 +933,13 @@ func countStatus(statuses []qovery.Status, state qovery.StateEnum) int {
 	return count
 }
 
-func IsEnvironmentInATerminalState(status *qovery.Status) bool {
+func IsEnvironmentInATerminalState(envId string, client *qovery.APIClient) bool {
+	status, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatus(context.Background(), envId).Execute()
+
+	if err != nil {
+		return false
+	}
+
 	return status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DELETED ||
 		status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED
 }
