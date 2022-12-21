@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"os"
@@ -50,10 +51,10 @@ var databaseDeleteCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		utils.Println("Database is deleting!")
+		utils.Println(fmt.Sprintf("Deleting database %s in progress..", pterm.FgBlue.Sprintf(databaseName)))
 
 		if watchFlag {
-			utils.WatchDatabase(database.Id, client)
+			utils.WatchDatabase(database.Id, envId, client)
 		}
 	},
 }

@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
@@ -53,6 +54,8 @@ var applicationDeployCmd = &cobra.Command{
 			req.GitCommitId = applicationCommitId
 		}
 
+		// TODO support mono-repo use case
+
 		_, _, err = client.ApplicationActionsApi.DeployApplication(context.Background(), application.Id).DeployRequest(req).Execute()
 
 		if err != nil {
@@ -60,10 +63,10 @@ var applicationDeployCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		utils.Println("Application is deploying!")
+		utils.Println(fmt.Sprintf("Deploying application %s in progress..", pterm.FgBlue.Sprintf(applicationName)))
 
 		if watchFlag {
-			utils.WatchApplication(application.Id, client)
+			utils.WatchApplication(application.Id, envId, client)
 		}
 	},
 }

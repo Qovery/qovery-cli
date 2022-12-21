@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"os"
@@ -51,10 +52,10 @@ var applicationStopCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		utils.Println("Application is stopping!")
+		utils.Println(fmt.Sprintf("Stopping application %s in progress..", pterm.FgBlue.Sprintf(applicationName)))
 
 		if watchFlag {
-			utils.WatchApplication(application.Id, client)
+			utils.WatchApplication(application.Id, envId, client)
 		}
 	},
 }

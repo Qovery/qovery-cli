@@ -54,7 +54,7 @@ var jobDeployCmd = &cobra.Command{
 		utils.Println("Job is deploying!")
 
 		if watchFlag {
-			utils.WatchJob(job.Id, client)
+			utils.WatchJob(job.Id, envId, client)
 		}
 	},
 }

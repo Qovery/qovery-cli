@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"os"
@@ -51,10 +52,10 @@ var databaseStopCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		utils.Println("Database is stopping!")
+		utils.Println(fmt.Sprintf("Stopping database %s in progress..", pterm.FgBlue.Sprintf(databaseName)))
 
 		if watchFlag {
-			utils.WatchDatabase(database.Id, client)
+			utils.WatchDatabase(database.Id, envId, client)
 		}
 	},
 }

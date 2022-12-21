@@ -748,6 +748,10 @@ func FindByDatabaseName(databases []qovery.Database, name string) *qovery.Databa
 }
 
 func WatchEnvironment(envId string, finalServiceState qovery.StateEnum, client *qovery.APIClient) {
+	WatchEnvironmentWithOptions(envId, finalServiceState, client, false)
+}
+
+func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnum, client *qovery.APIClient, displaySimpleText bool) {
 	for {
 		status, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatus(context.Background(), envId).Execute()
 
@@ -757,18 +761,23 @@ func WatchEnvironment(envId string, finalServiceState qovery.StateEnum, client *
 
 		statuses, _, _ := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
 
-		countStatuses := countStatus(statuses.Applications, finalServiceState) + countStatus(statuses.Databases, finalServiceState) +
-			countStatus(statuses.Jobs, finalServiceState) + countStatus(statuses.Containers, finalServiceState)
+		if displaySimpleText {
+			// TODO make something more fancy here to display the status. Use UILIVE or something like that
+			log.Println(GetStatusTextWithColor(*status))
+		} else {
+			countStatuses := countStatus(statuses.Applications, finalServiceState) + countStatus(statuses.Databases, finalServiceState) +
+				countStatus(statuses.Jobs, finalServiceState) + countStatus(statuses.Containers, finalServiceState)
 
-		totalStatuses := len(statuses.Applications) + len(statuses.Databases) + len(statuses.Jobs) + len(statuses.Containers)
+			totalStatuses := len(statuses.Applications) + len(statuses.Databases) + len(statuses.Jobs) + len(statuses.Containers)
 
-		icon := "⏳"
-		if countStatuses > 0 {
-			icon = "✅"
+			icon := "⏳"
+			if countStatuses > 0 {
+				icon = "✅"
+			}
+
+			// TODO make something more fancy here to display the status. Use UILIVE or something like that
+			log.Println(GetStatusTextWithColor(*status) + " (" + strconv.Itoa(countStatuses) + "/" + strconv.Itoa(totalStatuses) + " services " + icon + " )")
 		}
-
-		// TODO make something more fancy here to display the status. Use UILIVE or something like that
-		log.Println(GetStatusTextWithColor(*status) + " (" + strconv.Itoa(countStatuses) + "/" + strconv.Itoa(totalStatuses) + " services " + icon + " )")
 
 		if status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DELETED ||
 			status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED {
@@ -783,74 +792,132 @@ func WatchEnvironment(envId string, finalServiceState qovery.StateEnum, client *
 	}
 }
 
-func WatchContainer(containerId string, client *qovery.APIClient) {
+func WatchContainer(containerId string, envId string, client *qovery.APIClient) {
+out:
 	for {
 		status, _, err := client.ContainerMainCallsApi.GetContainerStatus(context.Background(), containerId).Execute()
 
 		if err != nil {
-			return
+			break
 		}
 
-		WatchStatus(status)
+		switch WatchStatus(status) {
+		case Continue:
+		case Stop:
+			break out
+		case Err:
+			os.Exit(1)
+		}
 
 		time.Sleep(3 * time.Second)
 	}
+
+	log.Println("Check environment status..")
+
+	// check status of environment
+	WatchEnvironmentWithOptions(envId, "unused", client, true)
 }
 
-func WatchApplication(applicationId string, client *qovery.APIClient) {
+func WatchApplication(applicationId string, envId string, client *qovery.APIClient) {
+out:
 	for {
 		status, _, err := client.ApplicationMainCallsApi.GetApplicationStatus(context.Background(), applicationId).Execute()
 
 		if err != nil {
-			return
+			break
 		}
 
-		WatchStatus(status)
+		switch WatchStatus(status) {
+		case Continue:
+		case Stop:
+			break out
+		case Err:
+			os.Exit(1)
+		}
 
 		time.Sleep(3 * time.Second)
 	}
+
+	log.Println("Check environment status..")
+
+	// check status of environment
+	WatchEnvironmentWithOptions(envId, "unused", client, true)
 }
 
-func WatchDatabase(databaseId string, client *qovery.APIClient) {
+func WatchDatabase(databaseId string, envId string, client *qovery.APIClient) {
+out:
 	for {
 		status, _, err := client.DatabaseMainCallsApi.GetDatabaseStatus(context.Background(), databaseId).Execute()
 
 		if err != nil {
-			return
+			break
 		}
 
-		WatchStatus(status)
+		switch WatchStatus(status) {
+		case Continue:
+		case Stop:
+			break out
+		case Err:
+			os.Exit(1)
+		}
 
 		time.Sleep(3 * time.Second)
 	}
+
+	log.Println("Check environment status..")
+
+	// check status of environment
+	WatchEnvironmentWithOptions(envId, "unused", client, true)
 }
 
-func WatchJob(jobId string, client *qovery.APIClient) {
+func WatchJob(jobId string, envId string, client *qovery.APIClient) {
+out:
 	for {
 		status, _, err := client.JobMainCallsApi.GetJobStatus(context.Background(), jobId).Execute()
 
 		if err != nil {
-			return
+			break
 		}
 
-		WatchStatus(status)
+		switch WatchStatus(status) {
+		case Continue:
+		case Stop:
+			break out
+		case Err:
+			os.Exit(1)
+		}
 
 		time.Sleep(3 * time.Second)
 	}
+
+	log.Println("Check environment status..")
+
+	// check status of environment
+	WatchEnvironmentWithOptions(envId, "unused", client, true)
 }
 
-func WatchStatus(status *qovery.Status) {
+type Status int8
+
+const (
+	Continue Status = iota
+	Stop
+	Err
+)
+
+func WatchStatus(status *qovery.Status) Status {
 	// TODO make something more fancy here to display the status. Use UILIVE or something like that
 	log.Println(GetStatusTextWithColor(*status))
 
 	if status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DELETED ||
 		status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED {
-		return
+		return Stop
 	}
 
 	if strings.HasSuffix(string(status.State), "ERROR") {
-		os.Exit(1)
+		return Err
 	}
+
+	return Continue
 }
 
 func countStatus(statuses []qovery.Status, state qovery.StateEnum) int {
@@ -863,4 +930,9 @@ func countStatus(statuses []qovery.Status, state qovery.StateEnum) int {
 	}
 
 	return count
+}
+
+func IsEnvironmentInATerminalState(status *qovery.Status) bool {
+	return status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DELETED ||
+		status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED
 }

@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"os"
@@ -50,10 +51,10 @@ var containerDeleteCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		utils.Println("Container is deleting!")
+		utils.Println(fmt.Sprintf("Deleting container %s in progress..", pterm.FgBlue.Sprintf(containerName)))
 
 		if watchFlag {
-			utils.WatchContainer(container.Id, client)
+			utils.WatchContainer(container.Id, envId, client)
 		}
 	},
 }
