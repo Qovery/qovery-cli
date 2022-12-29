@@ -8,9 +8,9 @@ import (
 	"os"
 )
 
-var jobDeleteCmd = &cobra.Command{
+var cronjobDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Delete a job",
+	Short: "Delete a cronjob",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -34,18 +34,18 @@ var jobDeleteCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		jobs, _, err := client.JobsApi.ListJobs(context.Background(), envId).Execute()
+		cronjobs, err := ListCronjobs(envId, client)
 
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
 
-		job := utils.FindByJobName(jobs.GetResults(), jobName)
+		job := utils.FindByJobName(cronjobs, cronjobName)
 
 		if job == nil {
-			utils.PrintlnError(fmt.Errorf("job %s not found", jobName))
-			utils.PrintlnInfo("You can list all jobs with: qovery job list")
+			utils.PrintlnError(fmt.Errorf("job %s not found", cronjobName))
+			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 			os.Exit(1)
 		}
 
@@ -56,7 +56,7 @@ var jobDeleteCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		utils.Println("Job is deleting!")
+		utils.Println("Cronjob is deleting!")
 
 		if watchFlag {
 			utils.WatchJob(job.Id, envId, client)
@@ -65,12 +65,12 @@ var jobDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	jobCmd.AddCommand(jobDeleteCmd)
-	jobDeleteCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
-	jobDeleteCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
-	jobDeleteCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	jobDeleteCmd.Flags().StringVarP(&jobName, "job", "n", "", "Job Name")
-	jobDeleteCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch job status until it's ready or an error occurs")
+	cronjobCmd.AddCommand(cronjobDeleteCmd)
+	cronjobDeleteCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	cronjobDeleteCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	cronjobDeleteCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	cronjobDeleteCmd.Flags().StringVarP(&cronjobName, "cronjob", "n", "", "Cronjob Name")
+	cronjobDeleteCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch cronjob status until it's ready or an error occurs")
 
-	_ = jobDeleteCmd.MarkFlagRequired("job")
+	_ = cronjobDeleteCmd.MarkFlagRequired("cronjob")
 }

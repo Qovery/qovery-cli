@@ -7,9 +7,9 @@ import (
 	"os"
 )
 
-var jobListCmd = &cobra.Command{
+var lifecycleListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List jobs",
+	Short: "List lifecycle jobs",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -28,7 +28,7 @@ var jobListCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		jobs, _, err := client.JobsApi.ListJobs(context.Background(), envId).Execute()
+		lifecycles, err := ListLifecycleJobs(envId, client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -44,9 +44,9 @@ var jobListCmd = &cobra.Command{
 
 		var data [][]string
 
-		for _, job := range jobs.GetResults() {
-			data = append(data, []string{job.Name, "Job",
-				utils.GetStatus(statuses.GetJobs(), job.Id), job.UpdatedAt.String()})
+		for _, lifecycle := range lifecycles {
+			data = append(data, []string{lifecycle.Name, "Lifecycle",
+				utils.GetStatus(statuses.GetJobs(), lifecycle.Id), lifecycle.UpdatedAt.String()})
 		}
 
 		err = utils.PrintTable([]string{"Name", "Type", "Status", "Last Update"}, data)
@@ -59,8 +59,8 @@ var jobListCmd = &cobra.Command{
 }
 
 func init() {
-	jobCmd.AddCommand(jobListCmd)
-	jobListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
-	jobListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
-	jobListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	lifecycleCmd.AddCommand(lifecycleListCmd)
+	lifecycleListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	lifecycleListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	lifecycleListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 }

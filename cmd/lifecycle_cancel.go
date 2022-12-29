@@ -5,9 +5,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var jobCancelCmd = &cobra.Command{
+var lifecycleCancelCmd = &cobra.Command{
 	Use:   "cancel",
-	Short: "Cancel a job deployment",
+	Short: "Cancel a lifecycle job deployment",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -16,5 +16,5 @@ var jobCancelCmd = &cobra.Command{
 }
 
 func init() {
-	jobCmd.AddCommand(jobCancelCmd)
+	lifecycleCmd.AddCommand(lifecycleCancelCmd)
 }

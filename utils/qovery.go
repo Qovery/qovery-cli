@@ -309,6 +309,8 @@ type ServiceType string
 const (
 	ApplicationType ServiceType = "application"
 	ContainerType   ServiceType = "container"
+	DatabaseType    ServiceType = "database"
+	JobType         ServiceType = "job"
 )
 
 type Service struct {
@@ -346,6 +348,22 @@ func SelectService(environment Id) (*Service, error) {
 		return nil, errors.New("Received " + res.Status + " response while listing containers. ")
 	}
 
+	databases, res, err := client.DatabasesApi.ListDatabase(context.Background(), string(environment)).Execute()
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while listing containers. ")
+	}
+
+	jobs, res, err := client.JobsApi.ListJobs(context.Background(), string(environment)).Execute()
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while listing containers. ")
+	}
+
 	var servicesNames []string
 	var services = make(map[string]Service)
 
@@ -364,6 +382,24 @@ func SelectService(environment Id) (*Service, error) {
 			ID:   Id(container.Id),
 			Name: Name(container.Name),
 			Type: ContainerType,
+		}
+	}
+
+	for _, database := range databases.GetResults() {
+		servicesNames = append(servicesNames, database.Name)
+		services[database.Name] = Service{
+			ID:   Id(database.Id),
+			Name: Name(database.Name),
+			Type: DatabaseType,
+		}
+	}
+
+	for _, job := range jobs.GetResults() {
+		servicesNames = append(servicesNames, job.Name)
+		services[job.Name] = Service{
+			ID:   Id(job.Id),
+			Name: Name(job.Name),
+			Type: JobType,
 		}
 	}
 
