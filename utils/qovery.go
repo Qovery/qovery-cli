@@ -977,5 +977,6 @@ func IsEnvironmentInATerminalState(envId string, client *qovery.APIClient) bool 
 	}
 
 	return status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DELETED ||
-		status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED
+		status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED ||
+		strings.HasSuffix(string(status.State), "ERROR")
 }
