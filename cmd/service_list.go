@@ -136,7 +136,7 @@ func getContextResourcesId(qoveryAPIClient *qovery.APIClient) (string, string, s
 			return "", "", "", err
 		}
 
-		project := utils.FindByProjectName(projects.GetResults(), organizationName)
+		project := utils.FindByProjectName(projects.GetResults(), projectName)
 		if project != nil {
 			projectId = project.Id
 		}
