@@ -9,7 +9,6 @@ require (
 	github.com/getsentry/sentry-go v0.13.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/websocket v1.5.0
-	github.com/gosuri/uilive v0.0.4
 	github.com/hashicorp/vault/api v1.7.2
 	github.com/joho/godotenv v1.4.0
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0
@@ -24,7 +23,7 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/net v0.4.0
-	golang.org/x/sys v0.3.0
+	golang.org/x/sys v0.4.0
 )
 
 require (
