@@ -11,7 +11,7 @@ var (
 	parallelRun       int
 	providerErr       error
 	adminUpdateAllCmd = &cobra.Command{
-		Use:   "update_bulk",
+		Use:   "update-bulk",
 		Short: "Update an amount of clusters to a specific version based on cloud provider kind.",
 		Run: func(cmd *cobra.Command, args []string) {
 			updateAllClusters()
