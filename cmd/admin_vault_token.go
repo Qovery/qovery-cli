@@ -10,7 +10,7 @@ import (
 )
 
 var vaultTokenCmd = &cobra.Command{
-	Use:   "vault_token",
+	Use:   "vault-token",
 	Short: "Get Vault Token",
 	Run: func(cmd *cobra.Command, args []string) {
 		getAndShowVaultToken(args)

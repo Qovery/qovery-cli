@@ -47,6 +47,21 @@ func DeployAll(dryRunDisabled bool) {
 	}
 }
 
+func DeployFailedClusters() {
+	utils.CheckAdminUrl()
+
+	if utils.Validate("deployment") {
+		res := deploy(utils.AdminUrl+"/cluster/deployFailedClusters", http.MethodPost, true)
+
+		if !strings.Contains(res.Status, "200") {
+			result, _ := io.ReadAll(res.Body)
+			log.Errorf("Could not deploy clusters : %s. %s", res.Status, string(result))
+		} else {
+			fmt.Println("Clusters deploying.")
+		}
+	}
+}
+
 func deploy(url string, method string, dryRunDisabled bool) *http.Response {
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {

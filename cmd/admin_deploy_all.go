@@ -7,7 +7,7 @@ import (
 
 var (
 	adminDeployAllCmd = &cobra.Command{
-		Use:   "deploy_all",
+		Use:   "deploy-all",
 		Short: "Deploy all customers clusters",
 		Run: func(cmd *cobra.Command, args []string) {
 			deployAllClusters()
