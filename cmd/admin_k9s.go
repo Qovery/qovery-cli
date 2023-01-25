@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"os"
+	"os/exec"
+
 	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"os"
-	"os/exec"
 )
 
 var k9sCmd = &cobra.Command{
@@ -58,10 +59,12 @@ func checkEnv() {
 	if _, ok := os.LookupEnv("VAULT_ADDR"); !ok {
 		log.Error("You must set vault address env variable (VAULT_ADDR).")
 		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	if _, ok := os.LookupEnv("VAULT_TOKEN"); !ok {
 		log.Error("You must set vault token env variable (VAULT_TOKEN).")
 		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 }

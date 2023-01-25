@@ -3,10 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var cronjobDeployCmd = &cobra.Command{
@@ -19,6 +20,7 @@ var cronjobDeployCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -27,12 +29,14 @@ var cronjobDeployCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if !utils.IsEnvironmentInATerminalState(envId, client) {
 			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
 				"for the end of the current operation to run your command. Try again in a few moment", envId))
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		cronjobs, err := ListCronjobs(envId, client)
@@ -40,6 +44,7 @@ var cronjobDeployCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		cronjob := utils.FindByJobName(cronjobs, cronjobName)
@@ -48,6 +53,7 @@ var cronjobDeployCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		docker := cronjob.Source.Docker.Get()
@@ -74,6 +80,7 @@ var cronjobDeployCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println("Cronjob is deploying!")

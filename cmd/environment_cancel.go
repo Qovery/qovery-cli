@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"context"
+	"os"
+
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var environmentCancelCmd = &cobra.Command{
@@ -18,6 +19,7 @@ var environmentCancelCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -26,6 +28,7 @@ var environmentCancelCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		_, _, err = client.EnvironmentActionsApi.CancelEnvironmentDeployment(context.Background(), envId).Execute()
@@ -33,6 +36,7 @@ var environmentCancelCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println("Environment is canceling!")

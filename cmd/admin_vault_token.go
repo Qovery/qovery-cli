@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
 	"time"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 var vaultTokenCmd = &cobra.Command{
@@ -31,6 +32,7 @@ func getTokenFilePath() string {
 	if err != nil {
 		log.Error("Can't get home directory")
 		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 	return fmt.Sprintf("%s/.vault-token", homeDir)
 }
@@ -61,6 +63,7 @@ func getVaultToken(args []string) (string, string) {
 		if err != nil {
 			log.Error("error with Vault: " + err.Error())
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		err = os.WriteFile(tokenFilePath, []byte(secret), 0600)
@@ -68,6 +71,7 @@ func getVaultToken(args []string) (string, string) {
 			log.Error(fmt.Sprintf("error while writing token to vault token file (%s)", tokenFilePath))
 			log.Error(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 	}
 
@@ -75,6 +79,7 @@ func getVaultToken(args []string) (string, string) {
 	if err != nil {
 		log.Error(fmt.Sprintf("can't read file %s", tokenFilePath))
 		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	return tokenFilePath, string(vaultToken)
@@ -84,18 +89,21 @@ func checkVaultEnv() (string, string) {
 	if _, ok := os.LookupEnv("VAULT_ADDR"); !ok {
 		log.Error("You must set vault address env variable (VAULT_ADDR).")
 		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	ghToken, err := os.LookupEnv("VAULT_GH_TOKEN")
 	if !err {
 		log.Error("You must set your personal token env variable (VAULT_GH_TOKEN).")
 		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	vaultPath, e := exec.LookPath("vault")
 	if e != nil {
 		log.Error("vault binary is not found in your path")
 		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	return vaultPath, ghToken

@@ -1,9 +1,10 @@
 package utils
 
 import (
-	log "github.com/sirupsen/logrus"
 	"os"
 	"runtime"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func WriteInFile(clusterId string, fileName string, content []byte) string {
@@ -13,6 +14,7 @@ func WriteInFile(clusterId string, fileName string, content []byte) string {
 		if err != nil {
 			log.Error("Couldn't create folder : " + err.Error())
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 	}
 
