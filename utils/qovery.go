@@ -305,6 +305,56 @@ func GetEnvironmentById(id string) (*Environment, error) {
 	}, nil
 }
 
+type EnvironmentService struct {
+	ID   string
+	Type ServiceType
+}
+
+func GetEnvironmentServicesById(id string) ([]EnvironmentService, error) {
+	tokenType, token, err := GetAccessToken()
+	if err != nil {
+		return nil, err
+	}
+
+	client := GetQoveryClient(tokenType, token)
+
+	environmentServices, res, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), id).Execute()
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while getting environment services" + id)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	var services []EnvironmentService
+	for _, service := range environmentServices.Applications {
+		services = append(services, EnvironmentService{
+			ID:   service.Id,
+			Type: ApplicationType,
+		})
+	}
+	for _, service := range environmentServices.Containers {
+		services = append(services, EnvironmentService{
+			ID:   service.Id,
+			Type: ContainerType,
+		})
+	}
+	for _, service := range environmentServices.Jobs {
+		services = append(services, EnvironmentService{
+			ID:   service.Id,
+			Type: JobType,
+		})
+	}
+	for _, service := range environmentServices.Databases {
+		services = append(services, EnvironmentService{
+			ID:   service.Id,
+			Type: DatabaseType,
+		})
+	}
+
+	return services, nil
+}
+
 type ServiceType string
 
 const (
@@ -505,6 +555,33 @@ func GetContainerById(id string) (*Container, error) {
 	return &Container{
 		ID:   Id(container.Id),
 		Name: Name(container.GetName()),
+	}, nil
+}
+
+type Job struct {
+	ID   Id
+	Name Name
+}
+
+func GetJobById(id string) (*Job, error) {
+	tokenType, token, err := GetAccessToken()
+	if err != nil {
+		return nil, err
+	}
+
+	client := GetQoveryClient(tokenType, token)
+
+	job, res, err := client.JobMainCallsApi.GetJob(context.Background(), id).Execute()
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while getting job " + id)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &Job{
+		ID:   Id(job.Id),
+		Name: Name(job.GetName()),
 	}, nil
 }
 

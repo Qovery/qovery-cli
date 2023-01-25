@@ -141,6 +141,7 @@ func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequ
 func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 	var url = args[0]
 	url = strings.Replace(url, "https://console.qovery.com/platform/", "", 1)
+	url = strings.Replace(url, "https://new.console.qovery.com/", "", 1)
 	urlSplit := strings.Split(url, "/")
 
 	if len(urlSplit) < 8 {
@@ -165,33 +166,53 @@ func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 		return nil, err
 	}
 
-	var serviceType = urlSplit[6]
-	var service = &utils.Service{}
-	if serviceType == "applications" {
-		var applicationId = urlSplit[7]
-		applicationApi, err := utils.GetApplicationById(applicationId)
-		if err != nil {
-			return nil, err
-		}
-
-		service = &utils.Service{
-			ID:   applicationApi.ID,
-			Name: applicationApi.Name,
-			Type: utils.ApplicationType,
-		}
+	environmentServices, err := utils.GetEnvironmentServicesById(environmentId)
+	if err != nil {
+		return nil, err
 	}
 
-	if serviceType == "containers" {
-		var containerId = urlSplit[7]
-		containerApi, err := utils.GetContainerById(containerId)
-		if err != nil {
-			return nil, err
-		}
+	var service utils.Service
+	var serviceId = urlSplit[7]
+	for _, envService := range environmentServices {
+		if envService.ID == serviceId {
+			switch envService.Type {
 
-		service = &utils.Service{
-			ID:   containerApi.ID,
-			Name: containerApi.Name,
-			Type: utils.ContainerType,
+			case utils.ApplicationType:
+				applicationApi, err := utils.GetApplicationById(serviceId)
+				if err != nil {
+					return nil, err
+				}
+				service = utils.Service{
+					ID:   applicationApi.ID,
+					Name: applicationApi.Name,
+					Type: utils.ApplicationType,
+				}
+
+			case utils.ContainerType:
+				containerApi, err := utils.GetContainerById(serviceId)
+				if err != nil {
+					return nil, err
+				}
+				service = utils.Service{
+					ID:   containerApi.ID,
+					Name: containerApi.Name,
+					Type: utils.ContainerType,
+				}
+
+			case utils.JobType:
+				jobApi, err := utils.GetJobById(serviceId)
+				if err != nil {
+					return nil, err
+				}
+				service = utils.Service{
+					ID:   jobApi.ID,
+					Name: jobApi.Name,
+					Type: utils.JobType,
+				}
+
+			default:
+				return nil, errors.New("Service type `" + string(envService.Type) + "` is not supported for shell")
+			}
 		}
 	}
 
