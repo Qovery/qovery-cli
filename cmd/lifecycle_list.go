@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"context"
+	"os"
+
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var lifecycleListCmd = &cobra.Command{
@@ -17,6 +18,7 @@ var lifecycleListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -26,6 +28,7 @@ var lifecycleListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		lifecycles, err := ListLifecycleJobs(envId, client)
@@ -33,6 +36,7 @@ var lifecycleListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
@@ -40,6 +44,7 @@ var lifecycleListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		var data [][]string
@@ -54,6 +59,7 @@ var lifecycleListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 	},
 }

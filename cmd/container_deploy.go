@@ -3,11 +3,12 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var containerDeployCmd = &cobra.Command{
@@ -20,6 +21,7 @@ var containerDeployCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -28,12 +30,14 @@ var containerDeployCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if !utils.IsEnvironmentInATerminalState(envId, client) {
 			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
 				"for the end of the current operation to run your command. Try again in a few moment", envId))
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
@@ -41,6 +45,7 @@ var containerDeployCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		container := utils.FindByContainerName(containers.GetResults(), containerName)
@@ -49,6 +54,7 @@ var containerDeployCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("container %s not found", containerName))
 			utils.PrintlnInfo("You can list all containers with: qovery container list")
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		req := qovery.ContainerDeployRequest{
@@ -64,6 +70,7 @@ var containerDeployCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println(fmt.Sprintf("Deploying container %s in progress..", pterm.FgBlue.Sprintf(containerName)))

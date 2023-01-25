@@ -3,11 +3,12 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"github.com/pterm/pterm"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pterm/pterm"
 
 	"github.com/manifoldco/promptui"
 	"github.com/qovery/qovery-client-go"
@@ -511,6 +512,7 @@ func CheckAdminUrl() {
 	if _, ok := os.LookupEnv("ADMIN_URL"); !ok {
 		log.Error("You must set the Qovery admin root url (ADMIN_URL).")
 		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 }
 
@@ -823,6 +825,7 @@ func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnu
 
 		if strings.HasSuffix(string(status.State), "ERROR") {
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		time.Sleep(3 * time.Second)
@@ -844,6 +847,7 @@ out:
 			break out
 		case Err:
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		time.Sleep(3 * time.Second)
@@ -870,6 +874,7 @@ out:
 			break out
 		case Err:
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		time.Sleep(3 * time.Second)
@@ -896,6 +901,7 @@ out:
 			break out
 		case Err:
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		time.Sleep(3 * time.Second)
@@ -922,6 +928,7 @@ out:
 			break out
 		case Err:
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		time.Sleep(3 * time.Second)

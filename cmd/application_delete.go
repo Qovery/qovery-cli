@@ -3,10 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var applicationDeleteCmd = &cobra.Command{
@@ -19,6 +20,7 @@ var applicationDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -27,12 +29,14 @@ var applicationDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if !utils.IsEnvironmentInATerminalState(envId, client) {
 			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
 				"for the end of the current operation to run your command. Try again in a few moment", envId))
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
@@ -40,6 +44,7 @@ var applicationDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		application := utils.FindByApplicationName(applications.GetResults(), applicationName)
@@ -48,6 +53,7 @@ var applicationDeleteCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("application %s not found", applicationName))
 			utils.PrintlnInfo("You can list all applications with: qovery application list")
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		_, err = client.ApplicationMainCallsApi.DeleteApplication(context.Background(), application.Id).Execute()
@@ -55,6 +61,7 @@ var applicationDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println(fmt.Sprintf("Deleting application %s in progress..", pterm.FgBlue.Sprintf(applicationName)))

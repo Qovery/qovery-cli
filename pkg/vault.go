@@ -2,10 +2,11 @@ package pkg
 
 import (
 	b64 "encoding/base64"
+	"os"
+
 	"github.com/hashicorp/vault/api"
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
-	"os"
 )
 
 func connectToVault() *api.Client {
@@ -34,10 +35,12 @@ func GetVarsByClusterId(clusterID string) []utils.Var {
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 	if result == nil {
 		log.Error("Cluster information are not found")
 		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	var vaultVars []utils.Var
