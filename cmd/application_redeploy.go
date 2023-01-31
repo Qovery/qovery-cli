@@ -56,7 +56,7 @@ var applicationRedeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, _, err = client.ApplicationActionsApi.RestartApplication(context.Background(), application.Id).Execute()
+		_, _, err = client.ApplicationActionsApi.RedeployApplication(context.Background(), application.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

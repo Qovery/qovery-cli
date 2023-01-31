@@ -39,7 +39,7 @@ var environmentRedeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, _, err = client.EnvironmentActionsApi.RestartEnvironment(context.Background(), envId).Execute()
+		_, _, err = client.EnvironmentActionsApi.RedeployEnvironment(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

@@ -56,7 +56,7 @@ var containerRedeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, _, err = client.ContainerActionsApi.RestartContainer(context.Background(), container.Id).Execute()
+		_, _, err = client.ContainerActionsApi.RedeployContainer(context.Background(), container.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

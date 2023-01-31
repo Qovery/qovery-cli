@@ -372,6 +372,8 @@ github.com/qovery/qovery-client-go v0.0.0-20221213161607-589c44fbe39b h1:Trox05+
 github.com/qovery/qovery-client-go v0.0.0-20221213161607-589c44fbe39b/go.mod h1:7su0Zq+YniKNRSXNJsdrbR2/dGn7UHz3QJ2WpcxyP8k=
 github.com/qovery/qovery-client-go v0.0.0-20221228112344-91b1fa593325 h1:EkkGcyd2URYk3evcnaxKmhiq3zhI9MFvr2C+60oHRGo=
 github.com/qovery/qovery-client-go v0.0.0-20221228112344-91b1fa593325/go.mod h1:7su0Zq+YniKNRSXNJsdrbR2/dGn7UHz3QJ2WpcxyP8k=
+github.com/qovery/qovery-client-go v0.0.0-20230130130948-08c1f3d8c61f h1:caoMvDywSRizBl9uwoQWyloMWJQGP5H0j7dN61Pp1pI=
+github.com/qovery/qovery-client-go v0.0.0-20230130130948-08c1f3d8c61f/go.mod h1:7su0Zq+YniKNRSXNJsdrbR2/dGn7UHz3QJ2WpcxyP8k=
 github.com/rivo/uniseg v0.2.0 h1:S1pD9weZBuJdFmowNwbpi7BJ8TNftyUImj/0WQi72jY=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6LYCDYWNEvQ=
