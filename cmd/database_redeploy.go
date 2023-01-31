@@ -56,7 +56,7 @@ var databaseRedeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, _, err = client.DatabaseActionsApi.RestartDatabase(context.Background(), database.Id).Execute()
+		_, _, err = client.DatabaseActionsApi.RedeployDatabase(context.Background(), database.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

@@ -55,7 +55,7 @@ var lifecycleRedeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, _, err = client.JobActionsApi.RestartJob(context.Background(), lifecycle.Id).Execute()
+		_, _, err = client.JobActionsApi.RedeployJob(context.Background(), lifecycle.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
