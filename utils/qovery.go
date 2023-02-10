@@ -1064,3 +1064,34 @@ func IsEnvironmentInATerminalState(envId string, client *qovery.APIClient) bool 
 		status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED ||
 		status.State == qovery.STATEENUM_READY || strings.HasSuffix(string(status.State), "ERROR")
 }
+
+func GetServiceNameByIdAndType(client *qovery.APIClient, serviceId string, serviceType string) string {
+	switch serviceType {
+	case "APPLICATION":
+		application, _, err := client.ApplicationMainCallsApi.GetApplication(context.Background(), serviceId).Execute()
+		if err != nil {
+			return ""
+		}
+		return application.GetName()
+	case "DATABASE":
+		database, _, err := client.DatabaseMainCallsApi.GetDatabase(context.Background(), serviceId).Execute()
+		if err != nil {
+			return ""
+		}
+		return database.GetName()
+	case "CONTAINER":
+		container, _, err := client.ContainerMainCallsApi.GetContainer(context.Background(), serviceId).Execute()
+		if err != nil {
+			return ""
+		}
+		return container.GetName()
+	case "JOB":
+		job, _, err := client.JobMainCallsApi.GetJob(context.Background(), serviceId).Execute()
+		if err != nil {
+			return ""
+		}
+		return job.GetName()
+	default:
+		return "Unknown"
+	}
+}
