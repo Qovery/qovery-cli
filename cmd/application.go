@@ -9,6 +9,7 @@ import (
 var applicationName string
 var applicationCommitId string
 var applicationBranch string
+var targetApplicationName string
 
 var applicationCmd = &cobra.Command{
 	Use:   "application",

@@ -6,6 +6,8 @@ import (
 	"os"
 )
 
+var targetEnvironmentName string
+
 var environmentCmd = &cobra.Command{
 	Use:   "environment",
 	Short: "Manage environments",

@@ -11,6 +11,8 @@ import (
 var cronjobName string
 var cronjobCommitId string
 
+var targetCronjobName string
+
 var cronjobCmd = &cobra.Command{
 	Use:   "cronjob",
 	Short: "Manage cronjobs",

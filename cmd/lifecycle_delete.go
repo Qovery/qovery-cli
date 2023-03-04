@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/pterm/pterm"
 	"os"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -63,7 +64,7 @@ var lifecycleDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println("Lifecycle job is deleting!")
+		utils.Println(fmt.Sprintf("Deleting lifecycle job %s in progress..", pterm.FgBlue.Sprintf(lifecycleName)))
 
 		if watchFlag {
 			utils.WatchJob(lifecycle.Id, envId, client)
