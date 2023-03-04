@@ -33,13 +33,6 @@ var applicationUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if !utils.IsEnvironmentInATerminalState(envId, client) {
-			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
-				"for the end of the current operation to run your command. Try again in a few moment", envId))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
 		applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
 
 		if err != nil {
