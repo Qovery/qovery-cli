@@ -73,7 +73,7 @@ var environmentStageMoveCmd = &cobra.Command{
 			req.Description = desc
 		}
 
-		_, err = client.DeploymentStageMainCallsApi.AttachServiceToDeploymentStage(context.Background(), stage.GetId(), service.GetServiceId()).Execute()
+		_, _, err = client.DeploymentStageMainCallsApi.AttachServiceToDeploymentStage(context.Background(), stage.GetId(), service.GetServiceId()).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

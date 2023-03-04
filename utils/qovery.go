@@ -1095,3 +1095,15 @@ func GetServiceNameByIdAndType(client *qovery.APIClient, serviceId string, servi
 		return "Unknown"
 	}
 }
+
+func GetDeploymentStageId(client *qovery.APIClient, serviceId string) string {
+	sourceDeploymentStage, _, err := client.DeploymentStageMainCallsApi.GetServiceDeploymentStage(context.Background(), serviceId).Execute()
+
+	if err != nil {
+		PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	return sourceDeploymentStage.Id
+}

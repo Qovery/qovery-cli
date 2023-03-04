@@ -136,7 +136,7 @@ var applicationCloneCmd = &cobra.Command{
 			Entrypoint:          application.Entrypoint,
 		}
 
-		_, res, err := client.ApplicationsApi.CreateApplication(context.Background(), targetEnvironment.Id).ApplicationRequest(req).Execute()
+		createdService, res, err := client.ApplicationsApi.CreateApplication(context.Background(), targetEnvironment.Id).ApplicationRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -147,6 +147,16 @@ var applicationCloneCmd = &cobra.Command{
 			}
 
 			utils.PrintlnError(fmt.Errorf("unable to clone application %s", string(bodyBytes)))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		deploymentStageId := utils.GetDeploymentStageId(client, application.Id)
+
+		_, _, err = client.DeploymentStageMainCallsApi.AttachServiceToDeploymentStage(context.Background(), deploymentStageId, createdService.Id).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}

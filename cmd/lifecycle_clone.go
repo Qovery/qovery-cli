@@ -138,7 +138,7 @@ var lifecycleCloneCmd = &cobra.Command{
 			Schedule:           &schedule,
 		}
 
-		_, res, err := client.JobsApi.CreateJob(context.Background(), targetEnvironment.Id).JobRequest(req).Execute()
+		createdService, res, err := client.JobsApi.CreateJob(context.Background(), targetEnvironment.Id).JobRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -149,6 +149,16 @@ var lifecycleCloneCmd = &cobra.Command{
 			}
 
 			utils.PrintlnError(fmt.Errorf("unable to clone job %s", string(bodyBytes)))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		deploymentStageId := utils.GetDeploymentStageId(client, job.Id)
+
+		_, _, err = client.DeploymentStageMainCallsApi.AttachServiceToDeploymentStage(context.Background(), deploymentStageId, createdService.Id).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
