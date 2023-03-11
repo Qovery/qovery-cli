@@ -81,7 +81,7 @@ var applicationEnvListCmd = &cobra.Command{
 			envVarLines.Add(utils.FromSecretToEnvVarLineOutput(secret))
 		}
 
-		err = utils.PrintTable(envVarLines.Header(prettyPrint), envVarLines.Lines(showValues, prettyPrint))
+		err = utils.PrintTable(envVarLines.Header(utils.PrettyPrint), envVarLines.Lines(utils.ShowValues, utils.PrettyPrint))
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -97,8 +97,8 @@ func init() {
 	applicationEnvListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	applicationEnvListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	applicationEnvListCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
-	applicationEnvListCmd.Flags().BoolVarP(&showValues, "show-values", "", false, "Show env var values")
-	applicationEnvListCmd.Flags().BoolVarP(&prettyPrint, "pretty-print", "", false, "Pretty print output")
+	applicationEnvListCmd.Flags().BoolVarP(&utils.ShowValues, "show-values", "", false, "Show env var values")
+	applicationEnvListCmd.Flags().BoolVarP(&utils.PrettyPrint, "pretty-print", "", false, "Pretty print output")
 
 	_ = applicationEnvListCmd.MarkFlagRequired("application")
 }

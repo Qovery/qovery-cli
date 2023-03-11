@@ -1,9 +1,19 @@
 package utils
 
 import (
+	"context"
+	"errors"
 	"github.com/qovery/qovery-client-go"
+	"strings"
 	"time"
 )
+
+var ShowValues bool
+var PrettyPrint bool
+var IsSecret bool
+var Scope string
+var Key string
+var Value string
 
 type EnvVarLines struct {
 	lines map[string][]EnvVarLineOutput
@@ -147,4 +157,116 @@ func FromSecretToEnvVarLineOutput(secret qovery.Secret) EnvVarLineOutput {
 		AliasParentKey:    aliasParentKey,
 		OverrideParentKey: overrideParentKey,
 	}
+}
+
+func CreateEnvironmentVariable(
+	client *qovery.APIClient,
+	projectId string,
+	environmentId string,
+	serviceId string,
+	key string,
+	value string,
+	scope string,
+) error {
+	req := qovery.EnvironmentVariableRequest{
+		Key:       key,
+		Value:     value,
+		MountPath: qovery.NullableString{},
+	}
+
+	switch strings.ToUpper(scope) {
+	case "PROJECT":
+		_, _, err := client.ProjectEnvironmentVariableApi.CreateProjectEnvironmentVariable(
+			context.Background(),
+			projectId,
+		).EnvironmentVariableRequest(req).Execute()
+
+		return err
+	case "ENVIRONMENT":
+		_, _, err := client.EnvironmentVariableApi.CreateEnvironmentEnvironmentVariable(
+			context.Background(),
+			environmentId,
+		).EnvironmentVariableRequest(req).Execute()
+
+		return err
+	case "APPLICATION":
+		_, _, err := client.ApplicationEnvironmentVariableApi.CreateApplicationEnvironmentVariable(
+			context.Background(),
+			serviceId,
+		).EnvironmentVariableRequest(req).Execute()
+
+		return err
+	case "JOB":
+		_, _, err := client.JobEnvironmentVariableApi.CreateJobEnvironmentVariable(
+			context.Background(),
+			serviceId,
+		).EnvironmentVariableRequest(req).Execute()
+
+		return err
+	case "CONTAINER":
+		_, _, err := client.ContainerEnvironmentVariableApi.CreateContainerEnvironmentVariable(
+			context.Background(),
+			serviceId,
+		).EnvironmentVariableRequest(req).Execute()
+
+		return err
+	}
+
+	return errors.New("invalid scope")
+}
+
+func CreateSecret(
+	client *qovery.APIClient,
+	projectId string,
+	environmentId string,
+	serviceId string,
+	key string,
+	value string,
+	scope string,
+) error {
+	req := qovery.SecretRequest{
+		Key:       key,
+		Value:     value,
+		MountPath: qovery.NullableString{},
+	}
+
+	switch strings.ToUpper(scope) {
+	case "PROJECT":
+		_, _, err := client.ProjectSecretApi.CreateProjectSecret(
+			context.Background(),
+			projectId,
+		).SecretRequest(req).Execute()
+
+		return err
+	case "ENVIRONMENT":
+		_, _, err := client.EnvironmentSecretApi.CreateEnvironmentSecret(
+			context.Background(),
+			environmentId,
+		).SecretRequest(req).Execute()
+
+		return err
+	case "APPLICATION":
+		_, _, err := client.ApplicationSecretApi.CreateApplicationSecret(
+			context.Background(),
+			serviceId,
+		).SecretRequest(req).Execute()
+
+		return err
+	case "JOB":
+		_, _, err := client.JobSecretApi.CreateJobSecret(
+			context.Background(),
+			serviceId,
+		).SecretRequest(req).Execute()
+
+		return err
+	case "CONTAINER":
+		_, _, err := client.ContainerSecretApi.CreateContainerSecret(
+			context.Background(),
+			serviceId,
+		).SecretRequest(req).Execute()
+
+		return err
+	}
+
+	return errors.New("invalid scope")
 }
