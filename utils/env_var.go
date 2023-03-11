@@ -3,6 +3,8 @@ package utils
 import (
 	"context"
 	"errors"
+	"fmt"
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-client-go"
 	"strings"
 	"time"
@@ -269,4 +271,251 @@ func CreateSecret(
 	}
 
 	return errors.New("invalid scope")
+}
+
+func FindEnvironmentVariableByKey(key string, envVars []qovery.EnvironmentVariable) *qovery.EnvironmentVariable {
+	for _, envVar := range envVars {
+		if envVar.Key == key {
+			return &envVar
+		}
+	}
+
+	return nil
+}
+
+func FindSecretByKey(key string, secrets []qovery.Secret) *qovery.Secret {
+	for _, secret := range secrets {
+		if secret.Key == key {
+			return &secret
+		}
+	}
+
+	return nil
+}
+
+func ListEnvironmentVariables(
+	client *qovery.APIClient,
+	serviceId string,
+	serviceType ServiceType,
+) ([]qovery.EnvironmentVariable, error) {
+	var res *qovery.EnvironmentVariableResponseList
+
+	switch serviceType {
+	case ApplicationType:
+		r, _, err := client.ApplicationEnvironmentVariableApi.ListApplicationEnvironmentVariable(context.Background(), serviceId).Execute()
+		if err != nil {
+			return nil, err
+		}
+
+		res = r
+	case ContainerType:
+		r, _, err := client.ContainerEnvironmentVariableApi.ListContainerEnvironmentVariable(context.Background(), serviceId).Execute()
+		if err != nil {
+			return nil, err
+		}
+
+		res = r
+	case JobType:
+		r, _, err := client.JobEnvironmentVariableApi.ListJobEnvironmentVariable(context.Background(), serviceId).Execute()
+		if err != nil {
+			return nil, err
+		}
+
+		res = r
+	}
+
+	if res == nil {
+		return nil, errors.New("invalid service type")
+	}
+
+	return res.Results, nil
+}
+
+func ListSecrets(
+	client *qovery.APIClient,
+	serviceId string,
+	serviceType ServiceType,
+) ([]qovery.Secret, error) {
+	var res *qovery.SecretResponseList
+
+	switch serviceType {
+	case ApplicationType:
+		r, _, err := client.ApplicationSecretApi.ListApplicationSecrets(context.Background(), serviceId).Execute()
+		if err != nil {
+			return nil, err
+		}
+
+		res = r
+	case ContainerType:
+		r, _, err := client.ContainerSecretApi.ListContainerSecrets(context.Background(), serviceId).Execute()
+		if err != nil {
+			return nil, err
+		}
+
+		res = r
+	case JobType:
+		r, _, err := client.JobSecretApi.ListJobSecrets(context.Background(), serviceId).Execute()
+		if err != nil {
+			return nil, err
+		}
+
+		res = r
+	}
+
+	if res == nil {
+		return nil, errors.New("invalid service type")
+	}
+
+	return res.Results, nil
+}
+
+func DeleteEnvironmentVariableByKey(
+	client *qovery.APIClient,
+	projectId string,
+	environmentId string,
+	serviceId string,
+	serviceType ServiceType,
+	key string,
+) error {
+	envVars, err := ListEnvironmentVariables(client, serviceId, serviceType)
+	if err != nil {
+		return err
+	}
+
+	envVar := FindEnvironmentVariableByKey(key, envVars)
+
+	if envVar == nil {
+		return errors.New(fmt.Sprintf("Environment variable %s not found", pterm.FgRed.Sprintf(key)))
+	}
+
+	switch string(envVar.Scope) {
+	case "PROJECT":
+		_, err := client.ProjectEnvironmentVariableApi.DeleteProjectEnvironmentVariable(
+			context.Background(),
+			projectId,
+			envVar.Id,
+		).Execute()
+
+		return err
+	case "ENVIRONMENT":
+		_, err := client.EnvironmentVariableApi.DeleteEnvironmentEnvironmentVariable(
+			context.Background(),
+			environmentId,
+			envVar.Id,
+		).Execute()
+
+		return err
+	case "APPLICATION":
+		_, err := client.ApplicationEnvironmentVariableApi.DeleteApplicationEnvironmentVariable(
+			context.Background(),
+			serviceId,
+			envVar.Id,
+		).Execute()
+
+		return err
+	case "JOB":
+		_, err := client.JobEnvironmentVariableApi.DeleteJobEnvironmentVariable(
+			context.Background(),
+			serviceId,
+			envVar.Id,
+		).Execute()
+
+		return err
+	case "CONTAINER":
+		_, err := client.ContainerEnvironmentVariableApi.DeleteContainerEnvironmentVariable(
+			context.Background(),
+			serviceId,
+			envVar.Id,
+		).Execute()
+
+		return err
+	}
+
+	return errors.New("invalid scope")
+}
+
+func DeleteSecretByKey(
+	client *qovery.APIClient,
+	projectId string,
+	environmentId string,
+	serviceId string,
+	serviceType ServiceType,
+	key string,
+) error {
+	secrets, err := ListSecrets(client, serviceId, serviceType)
+	if err != nil {
+		return err
+	}
+
+	secret := FindSecretByKey(key, secrets)
+
+	if secret == nil {
+		return errors.New(fmt.Sprintf("Secret %s not found", pterm.FgRed.Sprintf(key)))
+	}
+
+	switch string(secret.Scope) {
+	case "PROJECT":
+		_, err := client.ProjectSecretApi.DeleteProjectSecret(
+			context.Background(),
+			projectId,
+			secret.Id,
+		).Execute()
+
+		return err
+	case "ENVIRONMENT":
+		_, err := client.EnvironmentVariableApi.DeleteEnvironmentEnvironmentVariable(
+			context.Background(),
+			environmentId,
+			secret.Id,
+		).Execute()
+
+		return err
+	case "APPLICATION":
+		_, err := client.ApplicationSecretApi.DeleteApplicationSecret(
+			context.Background(),
+			serviceId,
+			secret.Id,
+		).Execute()
+
+		return err
+	case "JOB":
+		_, err := client.JobSecretApi.DeleteJobSecret(
+			context.Background(),
+			serviceId,
+			secret.Id,
+		).Execute()
+
+		return err
+	case "CONTAINER":
+		_, err := client.ContainerSecretApi.DeleteContainerSecret(
+			context.Background(),
+			serviceId,
+			secret.Id,
+		).Execute()
+
+		return err
+	}
+
+	return errors.New("invalid scope")
+}
+
+func DeleteByKey(
+	client *qovery.APIClient,
+	projectId string,
+	environmentId string,
+	serviceId string,
+	serviceType ServiceType,
+	key string,
+) error {
+	err := DeleteEnvironmentVariableByKey(client, projectId, environmentId, serviceId, serviceType, key)
+	if err == nil {
+		return nil
+	}
+
+	err = DeleteSecretByKey(client, projectId, environmentId, serviceId, serviceType, key)
+	if err == nil {
+		return nil
+	}
+
+	return errors.New(fmt.Sprintf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key)))
 }

@@ -80,8 +80,8 @@ func init() {
 	applicationEnvCreateCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	applicationEnvCreateCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	applicationEnvCreateCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
-	applicationEnvCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable key")
-	applicationEnvCreateCmd.Flags().StringVarP(&utils.Value, "value", "v", "", "Environment variable value")
+	applicationEnvCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable or secret key")
+	applicationEnvCreateCmd.Flags().StringVarP(&utils.Value, "value", "v", "", "Environment variable or secret value")
 	applicationEnvCreateCmd.Flags().StringVarP(&utils.Scope, "scope", "", "APPLICATION", "Scope of this env var <PROJECT|ENVIRONMENT|APPLICATION>")
 	applicationEnvCreateCmd.Flags().BoolVarP(&utils.IsSecret, "secret", "", false, "This environment variable is a secret")
 
