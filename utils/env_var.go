@@ -14,6 +14,7 @@ var ShowValues bool
 var PrettyPrint bool
 var IsSecret bool
 var Scope string
+var Alias string
 var Key string
 var Value string
 
@@ -515,6 +516,156 @@ func DeleteByKey(
 	err = DeleteSecretByKey(client, projectId, environmentId, serviceId, serviceType, key)
 	if err == nil {
 		return nil
+	}
+
+	return errors.New(fmt.Sprintf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key)))
+}
+
+func CreateEnvironmentVariableAlias(
+	client *qovery.APIClient,
+	projectId string,
+	environmentId string,
+	serviceId string,
+	parentEnvironmentVariableId string,
+	alias string,
+	scope string,
+) error {
+	key := *qovery.NewKey(alias)
+
+	switch strings.ToUpper(scope) {
+	case "PROJECT":
+		_, _, err := client.ProjectEnvironmentVariableApi.CreateProjectEnvironmentVariableAlias(
+			context.Background(),
+			projectId,
+			parentEnvironmentVariableId,
+		).Key(key).Execute()
+
+		return err
+	case "ENVIRONMENT":
+		_, _, err := client.EnvironmentVariableApi.CreateEnvironmentEnvironmentVariableAlias(
+			context.Background(),
+			environmentId,
+			parentEnvironmentVariableId,
+		).Key(key).Execute()
+
+		return err
+	case "APPLICATION":
+		_, _, err := client.ApplicationEnvironmentVariableApi.CreateApplicationEnvironmentVariableAlias(
+			context.Background(),
+			serviceId,
+			parentEnvironmentVariableId,
+		).Key(key).Execute()
+
+		return err
+	case "JOB":
+		_, _, err := client.JobEnvironmentVariableApi.CreateJobEnvironmentVariableAlias(
+			context.Background(),
+			serviceId,
+			parentEnvironmentVariableId,
+		).Key(key).Execute()
+
+		return err
+	case "CONTAINER":
+		_, _, err := client.ContainerEnvironmentVariableApi.CreateContainerEnvironmentVariableAlias(
+			context.Background(),
+			serviceId,
+			parentEnvironmentVariableId,
+		).Key(key).Execute()
+
+		return err
+	}
+
+	return errors.New("invalid scope")
+}
+
+func CreateSecretAlias(
+	client *qovery.APIClient,
+	projectId string,
+	environmentId string,
+	serviceId string,
+	parentSecretId string,
+	alias string,
+	scope string,
+) error {
+	key := *qovery.NewKey(alias)
+
+	switch strings.ToUpper(scope) {
+	case "PROJECT":
+		_, _, err := client.ProjectSecretApi.CreateProjectSecretAlias(
+			context.Background(),
+			projectId,
+			parentSecretId,
+		).Key(key).Execute()
+
+		return err
+	case "ENVIRONMENT":
+		_, _, err := client.EnvironmentSecretApi.CreateEnvironmentSecretAlias(
+			context.Background(),
+			environmentId,
+			parentSecretId,
+		).Key(key).Execute()
+
+		return err
+	case "APPLICATION":
+		_, _, err := client.ApplicationSecretApi.CreateApplicationSecretAlias(
+			context.Background(),
+			serviceId,
+			parentSecretId,
+		).Key(key).Execute()
+
+		return err
+	case "JOB":
+		_, _, err := client.JobSecretApi.CreateJobSecretAlias(
+			context.Background(),
+			serviceId,
+			parentSecretId,
+		).Key(key).Execute()
+
+		return err
+	case "CONTAINER":
+		_, _, err := client.ContainerSecretApi.CreateContainerSecretAlias(
+			context.Background(),
+			serviceId,
+			parentSecretId,
+		).Key(key).Execute()
+
+		return err
+	}
+
+	return errors.New("invalid scope")
+}
+
+func CreateAlias(
+	client *qovery.APIClient,
+	projectId string,
+	environmentId string,
+	serviceId string,
+	serviceType ServiceType,
+	key string,
+	alias string,
+	scope string,
+) error {
+	envVars, err := ListEnvironmentVariables(client, serviceId, serviceType)
+	if err != nil {
+		return err
+	}
+
+	envVar := FindEnvironmentVariableByKey(key, envVars)
+
+	if envVar != nil {
+		// create alias for environment variable
+		return CreateEnvironmentVariableAlias(client, projectId, environmentId, serviceId, envVar.Id, alias, scope)
+	}
+
+	secrets, err := ListSecrets(client, serviceId, serviceType)
+	if err != nil {
+		return err
+	}
+
+	secret := FindSecretByKey(key, secrets)
+	if secret != nil {
+		// create alias for secret
+		return CreateSecretAlias(client, projectId, environmentId, serviceId, secret.Id, alias, scope)
 	}
 
 	return errors.New(fmt.Sprintf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key)))
