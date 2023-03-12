@@ -518,7 +518,7 @@ func DeleteByKey(
 		return nil
 	}
 
-	return errors.New(fmt.Sprintf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key)))
+	return fmt.Errorf("environment variable or secret %s not found", pterm.FgRed.Sprintf(key))
 }
 
 func CreateEnvironmentVariableAlias(
@@ -668,7 +668,7 @@ func CreateAlias(
 		return CreateSecretAlias(client, projectId, environmentId, serviceId, secret.Id, alias, scope)
 	}
 
-	return errors.New(fmt.Sprintf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key)))
+	return fmt.Errorf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key))
 }
 
 func CreateEnvironmentVariableOverride(
@@ -816,5 +816,5 @@ func CreateOverride(
 		return CreateSecretOverride(client, projectId, environmentId, serviceId, secret.Id, value, scope)
 	}
 
-	return errors.New(fmt.Sprintf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key)))
+	return fmt.Errorf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key))
 }
