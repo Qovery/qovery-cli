@@ -670,3 +670,151 @@ func CreateAlias(
 
 	return errors.New(fmt.Sprintf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key)))
 }
+
+func CreateEnvironmentVariableOverride(
+	client *qovery.APIClient,
+	projectId string,
+	environmentId string,
+	serviceId string,
+	parentEnvironmentVariableId string,
+	value string,
+	scope string,
+) error {
+	v := *qovery.NewValue(value)
+
+	switch strings.ToUpper(scope) {
+	case "PROJECT":
+		_, _, err := client.ProjectEnvironmentVariableApi.CreateProjectEnvironmentVariableOverride(
+			context.Background(),
+			projectId,
+			parentEnvironmentVariableId,
+		).Value(v).Execute()
+
+		return err
+	case "ENVIRONMENT":
+		_, _, err := client.EnvironmentVariableApi.CreateEnvironmentEnvironmentVariableOverride(
+			context.Background(),
+			environmentId,
+			parentEnvironmentVariableId,
+		).Value(v).Execute()
+
+		return err
+	case "APPLICATION":
+		_, _, err := client.ApplicationEnvironmentVariableApi.CreateApplicationEnvironmentVariableOverride(
+			context.Background(),
+			serviceId,
+			parentEnvironmentVariableId,
+		).Value(v).Execute()
+
+		return err
+	case "JOB":
+		_, _, err := client.JobEnvironmentVariableApi.CreateJobEnvironmentVariableOverride(
+			context.Background(),
+			serviceId,
+			parentEnvironmentVariableId,
+		).Value(v).Execute()
+
+		return err
+	case "CONTAINER":
+		_, _, err := client.ContainerEnvironmentVariableApi.CreateContainerEnvironmentVariableOverride(
+			context.Background(),
+			serviceId,
+			parentEnvironmentVariableId,
+		).Value(v).Execute()
+
+		return err
+	}
+
+	return errors.New("invalid scope")
+}
+
+func CreateSecretOverride(
+	client *qovery.APIClient,
+	projectId string,
+	environmentId string,
+	serviceId string,
+	parentSecretId string,
+	value string,
+	scope string,
+) error {
+	v := *qovery.NewValue(value)
+
+	switch strings.ToUpper(scope) {
+	case "PROJECT":
+		_, _, err := client.ProjectSecretApi.CreateProjectSecretOverride(
+			context.Background(),
+			projectId,
+			parentSecretId,
+		).Value(v).Execute()
+
+		return err
+	case "ENVIRONMENT":
+		_, _, err := client.EnvironmentSecretApi.CreateEnvironmentSecretOverride(
+			context.Background(),
+			environmentId,
+			parentSecretId,
+		).Value(v).Execute()
+
+		return err
+	case "APPLICATION":
+		_, _, err := client.ApplicationSecretApi.CreateApplicationSecretOverride(
+			context.Background(),
+			serviceId,
+			parentSecretId,
+		).Value(v).Execute()
+
+		return err
+	case "JOB":
+		_, _, err := client.JobSecretApi.CreateJobSecretOverride(
+			context.Background(),
+			serviceId,
+			parentSecretId,
+		).Value(v).Execute()
+
+		return err
+	case "CONTAINER":
+		_, _, err := client.ContainerSecretApi.CreateContainerSecretOverride(
+			context.Background(),
+			serviceId,
+			parentSecretId,
+		).Value(v).Execute()
+
+		return err
+	}
+
+	return errors.New("invalid scope")
+}
+
+func CreateOverride(
+	client *qovery.APIClient,
+	projectId string,
+	environmentId string,
+	serviceId string,
+	serviceType ServiceType,
+	key string,
+	value string,
+	scope string,
+) error {
+	envVars, err := ListEnvironmentVariables(client, serviceId, serviceType)
+	if err != nil {
+		return err
+	}
+
+	envVar := FindEnvironmentVariableByKey(key, envVars)
+
+	if envVar != nil {
+		return CreateEnvironmentVariableOverride(client, projectId, environmentId, serviceId, envVar.Id, value, scope)
+	}
+
+	secrets, err := ListSecrets(client, serviceId, serviceType)
+	if err != nil {
+		return err
+	}
+
+	secret := FindSecretByKey(key, secrets)
+	if secret != nil {
+		return CreateSecretOverride(client, projectId, environmentId, serviceId, secret.Id, value, scope)
+	}
+
+	return errors.New(fmt.Sprintf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key)))
+}
