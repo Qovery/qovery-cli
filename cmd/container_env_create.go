@@ -50,7 +50,7 @@ var containerEnvCreateCmd = &cobra.Command{
 		}
 
 		if utils.IsSecret {
-			err = utils.CreateSecret(client, projectId, envId, container.Id, utils.Key, utils.Value, utils.Scope)
+			err = utils.CreateSecret(client, projectId, envId, container.Id, utils.Key, utils.Value, utils.ContainerScope)
 
 			if err != nil {
 				utils.PrintlnError(err)
@@ -62,7 +62,7 @@ var containerEnvCreateCmd = &cobra.Command{
 			return
 		}
 
-		err = utils.CreateEnvironmentVariable(client, projectId, envId, container.Id, utils.Key, utils.Value, utils.Scope)
+		err = utils.CreateEnvironmentVariable(client, projectId, envId, container.Id, utils.Key, utils.Value, utils.ContainerScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -82,7 +82,7 @@ func init() {
 	containerEnvCreateCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
 	containerEnvCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable or secret key")
 	containerEnvCreateCmd.Flags().StringVarP(&utils.Value, "value", "v", "", "Environment variable or secret value")
-	containerEnvCreateCmd.Flags().StringVarP(&utils.Scope, "scope", "", "CONTAINER", "Scope of this env var <PROJECT|ENVIRONMENT|CONTAINER>")
+	containerEnvCreateCmd.Flags().StringVarP(&utils.ContainerScope, "scope", "", "CONTAINER", "Scope of this env var <PROJECT|ENVIRONMENT|CONTAINER>")
 	containerEnvCreateCmd.Flags().BoolVarP(&utils.IsSecret, "secret", "", false, "This environment variable is a secret")
 
 	_ = containerEnvCreateCmd.MarkFlagRequired("key")

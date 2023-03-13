@@ -49,7 +49,7 @@ var lifecycleEnvAliasCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateAlias(client, projectId, envId, lifecycle.Id, utils.JobType, utils.Key, utils.Alias, utils.Scope)
+		err = utils.CreateAlias(client, projectId, envId, lifecycle.Id, utils.JobType, utils.Key, utils.Alias, utils.JobScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -69,7 +69,7 @@ func init() {
 	lifecycleEnvAliasCreateCmd.Flags().StringVarP(&lifecycleName, "lifecycle", "n", "", "Lifecycle Name")
 	lifecycleEnvAliasCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable or secret key")
 	lifecycleEnvAliasCreateCmd.Flags().StringVarP(&utils.Alias, "alias", "", "", "Environment variable or secret alias")
-	lifecycleEnvAliasCreateCmd.Flags().StringVarP(&utils.Scope, "scope", "", "JOB", "Scope of this alias <PROJECT|ENVIRONMENT|JOB>")
+	lifecycleEnvAliasCreateCmd.Flags().StringVarP(&utils.JobScope, "scope", "", "JOB", "Scope of this alias <PROJECT|ENVIRONMENT|JOB>")
 
 	_ = lifecycleEnvAliasCreateCmd.MarkFlagRequired("key")
 	_ = lifecycleEnvAliasCreateCmd.MarkFlagRequired("alias")

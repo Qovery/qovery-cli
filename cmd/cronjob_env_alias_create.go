@@ -49,7 +49,7 @@ var cronjobEnvAliasCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateAlias(client, projectId, envId, cronjob.Id, utils.JobType, utils.Key, utils.Alias, utils.Scope)
+		err = utils.CreateAlias(client, projectId, envId, cronjob.Id, utils.JobType, utils.Key, utils.Alias, utils.JobScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -69,7 +69,7 @@ func init() {
 	cronjobEnvAliasCreateCmd.Flags().StringVarP(&cronjobName, "cronjob", "n", "", "Cronjob Name")
 	cronjobEnvAliasCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable or secret key")
 	cronjobEnvAliasCreateCmd.Flags().StringVarP(&utils.Alias, "alias", "", "", "Environment variable or secret alias")
-	cronjobEnvAliasCreateCmd.Flags().StringVarP(&utils.Scope, "scope", "", "JOB", "Scope of this alias <PROJECT|ENVIRONMENT|JOB>")
+	cronjobEnvAliasCreateCmd.Flags().StringVarP(&utils.JobScope, "scope", "", "JOB", "Scope of this alias <PROJECT|ENVIRONMENT|JOB>")
 
 	_ = cronjobEnvAliasCreateCmd.MarkFlagRequired("key")
 	_ = cronjobEnvAliasCreateCmd.MarkFlagRequired("alias")

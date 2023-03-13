@@ -49,7 +49,7 @@ var containerEnvOverrideCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateOverride(client, projectId, envId, container.Id, utils.ContainerType, utils.Key, utils.Value, utils.Scope)
+		err = utils.CreateOverride(client, projectId, envId, container.Id, utils.ContainerType, utils.Key, utils.Value, utils.ContainerScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -69,7 +69,7 @@ func init() {
 	containerEnvOverrideCreateCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
 	containerEnvOverrideCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable or secret key")
 	containerEnvOverrideCreateCmd.Flags().StringVarP(&utils.Value, "value", "", "", "Environment variable or secret value")
-	containerEnvOverrideCreateCmd.Flags().StringVarP(&utils.Scope, "scope", "", "CONTAINER", "Scope of this alias <PROJECT|ENVIRONMENT|CONTAINER>")
+	containerEnvOverrideCreateCmd.Flags().StringVarP(&utils.ContainerScope, "scope", "", "CONTAINER", "Scope of this alias <PROJECT|ENVIRONMENT|CONTAINER>")
 
 	_ = containerEnvOverrideCreateCmd.MarkFlagRequired("key")
 	_ = containerEnvOverrideCreateCmd.MarkFlagRequired("value")

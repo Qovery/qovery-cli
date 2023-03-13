@@ -50,7 +50,7 @@ var cronjobEnvCreateCmd = &cobra.Command{
 		}
 
 		if utils.IsSecret {
-			err = utils.CreateSecret(client, projectId, envId, cronjob.Id, utils.Key, utils.Value, utils.Scope)
+			err = utils.CreateSecret(client, projectId, envId, cronjob.Id, utils.Key, utils.Value, utils.JobScope)
 
 			if err != nil {
 				utils.PrintlnError(err)
@@ -62,7 +62,7 @@ var cronjobEnvCreateCmd = &cobra.Command{
 			return
 		}
 
-		err = utils.CreateEnvironmentVariable(client, projectId, envId, cronjob.Id, utils.Key, utils.Value, utils.Scope)
+		err = utils.CreateEnvironmentVariable(client, projectId, envId, cronjob.Id, utils.Key, utils.Value, utils.JobScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -82,7 +82,7 @@ func init() {
 	cronjobEnvCreateCmd.Flags().StringVarP(&cronjobName, "cronjob", "n", "", "Cronjob Name")
 	cronjobEnvCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable or secret key")
 	cronjobEnvCreateCmd.Flags().StringVarP(&utils.Value, "value", "v", "", "Environment variable or secret value")
-	cronjobEnvCreateCmd.Flags().StringVarP(&utils.Scope, "scope", "", "JOB", "Scope of this env var <PROJECT|ENVIRONMENT|JOB>")
+	cronjobEnvCreateCmd.Flags().StringVarP(&utils.JobScope, "scope", "", "JOB", "Scope of this env var <PROJECT|ENVIRONMENT|JOB>")
 	cronjobEnvCreateCmd.Flags().BoolVarP(&utils.IsSecret, "secret", "", false, "This environment variable is a secret")
 
 	_ = cronjobEnvCreateCmd.MarkFlagRequired("key")

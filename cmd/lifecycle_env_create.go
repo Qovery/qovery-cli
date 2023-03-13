@@ -50,7 +50,7 @@ var lifecycleEnvCreateCmd = &cobra.Command{
 		}
 
 		if utils.IsSecret {
-			err = utils.CreateSecret(client, projectId, envId, lifecycle.Id, utils.Key, utils.Value, utils.Scope)
+			err = utils.CreateSecret(client, projectId, envId, lifecycle.Id, utils.Key, utils.Value, utils.JobScope)
 
 			if err != nil {
 				utils.PrintlnError(err)
@@ -62,7 +62,7 @@ var lifecycleEnvCreateCmd = &cobra.Command{
 			return
 		}
 
-		err = utils.CreateEnvironmentVariable(client, projectId, envId, lifecycle.Id, utils.Key, utils.Value, utils.Scope)
+		err = utils.CreateEnvironmentVariable(client, projectId, envId, lifecycle.Id, utils.Key, utils.Value, utils.JobScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -82,7 +82,7 @@ func init() {
 	lifecycleEnvCreateCmd.Flags().StringVarP(&lifecycleName, "lifecycle", "n", "", "Lifecycle Name")
 	lifecycleEnvCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable or secret key")
 	lifecycleEnvCreateCmd.Flags().StringVarP(&utils.Value, "value", "v", "", "Environment variable or secret value")
-	lifecycleEnvCreateCmd.Flags().StringVarP(&utils.Scope, "scope", "", "JOB", "Scope of this env var <PROJECT|ENVIRONMENT|JOB>")
+	lifecycleEnvCreateCmd.Flags().StringVarP(&utils.JobScope, "scope", "", "JOB", "Scope of this env var <PROJECT|ENVIRONMENT|JOB>")
 	lifecycleEnvCreateCmd.Flags().BoolVarP(&utils.IsSecret, "secret", "", false, "This environment variable is a secret")
 
 	_ = lifecycleEnvCreateCmd.MarkFlagRequired("key")

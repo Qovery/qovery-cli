@@ -50,7 +50,7 @@ var applicationEnvCreateCmd = &cobra.Command{
 		}
 
 		if utils.IsSecret {
-			err = utils.CreateSecret(client, projectId, envId, application.Id, utils.Key, utils.Value, utils.Scope)
+			err = utils.CreateSecret(client, projectId, envId, application.Id, utils.Key, utils.Value, utils.ApplicationScope)
 
 			if err != nil {
 				utils.PrintlnError(err)
@@ -62,7 +62,7 @@ var applicationEnvCreateCmd = &cobra.Command{
 			return
 		}
 
-		err = utils.CreateEnvironmentVariable(client, projectId, envId, application.Id, utils.Key, utils.Value, utils.Scope)
+		err = utils.CreateEnvironmentVariable(client, projectId, envId, application.Id, utils.Key, utils.Value, utils.ApplicationScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -82,7 +82,7 @@ func init() {
 	applicationEnvCreateCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
 	applicationEnvCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable or secret key")
 	applicationEnvCreateCmd.Flags().StringVarP(&utils.Value, "value", "v", "", "Environment variable or secret value")
-	applicationEnvCreateCmd.Flags().StringVarP(&utils.Scope, "scope", "", "APPLICATION", "Scope of this env var <PROJECT|ENVIRONMENT|APPLICATION>")
+	applicationEnvCreateCmd.Flags().StringVarP(&utils.ApplicationScope, "scope", "", "APPLICATION", "Scope of this env var <PROJECT|ENVIRONMENT|APPLICATION>")
 	applicationEnvCreateCmd.Flags().BoolVarP(&utils.IsSecret, "secret", "", false, "This environment variable is a secret")
 
 	_ = applicationEnvCreateCmd.MarkFlagRequired("key")

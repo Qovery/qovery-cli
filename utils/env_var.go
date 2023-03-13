@@ -13,7 +13,9 @@ import (
 var ShowValues bool
 var PrettyPrint bool
 var IsSecret bool
-var Scope string
+var ApplicationScope string
+var JobScope string
+var ContainerScope string
 var Alias string
 var Key string
 var Value string

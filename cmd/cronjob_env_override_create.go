@@ -49,7 +49,7 @@ var cronjobEnvOverrideCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateOverride(client, projectId, envId, cronjob.Id, utils.JobType, utils.Key, utils.Value, utils.Scope)
+		err = utils.CreateOverride(client, projectId, envId, cronjob.Id, utils.JobType, utils.Key, utils.Value, utils.JobScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -69,7 +69,7 @@ func init() {
 	cronjobEnvOverrideCreateCmd.Flags().StringVarP(&cronjobName, "cronjob", "n", "", "Cronjob Name")
 	cronjobEnvOverrideCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable or secret key")
 	cronjobEnvOverrideCreateCmd.Flags().StringVarP(&utils.Value, "value", "", "", "Environment variable or secret value")
-	cronjobEnvOverrideCreateCmd.Flags().StringVarP(&utils.Scope, "scope", "", "JOB", "Scope of this alias <PROJECT|ENVIRONMENT|JOB>")
+	cronjobEnvOverrideCreateCmd.Flags().StringVarP(&utils.JobScope, "scope", "", "JOB", "Scope of this alias <PROJECT|ENVIRONMENT|JOB>")
 
 	_ = cronjobEnvOverrideCreateCmd.MarkFlagRequired("key")
 	_ = cronjobEnvOverrideCreateCmd.MarkFlagRequired("value")

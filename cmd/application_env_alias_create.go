@@ -49,7 +49,7 @@ var applicationEnvAliasCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateAlias(client, projectId, envId, application.Id, utils.ApplicationType, utils.Key, utils.Alias, utils.Scope)
+		err = utils.CreateAlias(client, projectId, envId, application.Id, utils.ApplicationType, utils.Key, utils.Alias, utils.ApplicationScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -69,7 +69,7 @@ func init() {
 	applicationEnvAliasCreateCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
 	applicationEnvAliasCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable or secret key")
 	applicationEnvAliasCreateCmd.Flags().StringVarP(&utils.Alias, "alias", "", "", "Environment variable or secret alias")
-	applicationEnvAliasCreateCmd.Flags().StringVarP(&utils.Scope, "scope", "", "APPLICATION", "Scope of this alias <PROJECT|ENVIRONMENT|APPLICATION>")
+	applicationEnvAliasCreateCmd.Flags().StringVarP(&utils.ApplicationScope, "scope", "", "APPLICATION", "Scope of this alias <PROJECT|ENVIRONMENT|APPLICATION>")
 
 	_ = applicationEnvAliasCreateCmd.MarkFlagRequired("key")
 	_ = applicationEnvAliasCreateCmd.MarkFlagRequired("alias")
