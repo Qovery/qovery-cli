@@ -20,13 +20,26 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: 1.20
 
       - name: Check out source code
         uses: actions/checkout@v3
 
+      - name: Debug
+        run: |
+          pwd
+          env
+          echo ${GOPATH}
+          echo ${GOROOT}
+          ls
+          find .
+        env:
+          GOPATH: /home/runner/work/qovery-cli/qovery-cli:/home/runner/work/qovery-cli/qovery-cli/cmd
+
       - name: Build
         run: go build .
+        env:
+          GOPATH: /home/runner/work/qovery-cli/qovery-cli:/home/runner/work/qovery-cli/qovery-cli/cmd
 
   lint:
     runs-on: ubuntu-latest
@@ -34,7 +47,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: 1.20
 
       - name: Check out source code
         uses: actions/checkout@v3
@@ -44,6 +57,3 @@ jobs:
         with:
           version: latest
           args: --timeout 5m
-
-
-
