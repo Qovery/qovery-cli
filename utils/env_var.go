@@ -386,7 +386,7 @@ func DeleteEnvironmentVariableByKey(
 	envVar := FindEnvironmentVariableByKey(key, envVars)
 
 	if envVar == nil {
-		return errors.New(fmt.Sprintf("Environment variable %s not found", pterm.FgRed.Sprintf(key)))
+		return fmt.Errorf("environment variable %s not found", pterm.FgRed.Sprintf(key))
 	}
 
 	switch string(envVar.Scope) {
@@ -451,7 +451,7 @@ func DeleteSecretByKey(
 	secret := FindSecretByKey(key, secrets)
 
 	if secret == nil {
-		return errors.New(fmt.Sprintf("Secret %s not found", pterm.FgRed.Sprintf(key)))
+		return fmt.Errorf("secret %s not found", pterm.FgRed.Sprintf(key))
 	}
 
 	switch string(secret.Scope) {
