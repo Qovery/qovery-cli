@@ -6,7 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/appscode/go-querystring v0.0.0-20170504095604-0126cfb3f1dc
 	github.com/containerd/console v1.0.3
-	github.com/fatih/color v1.14.1
+	github.com/fatih/color v1.15.0
 	github.com/getsentry/sentry-go v0.19.0
 	github.com/go-errors/errors v1.4.2
 	github.com/golang-jwt/jwt v3.2.2+incompatible
