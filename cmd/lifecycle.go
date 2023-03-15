@@ -10,6 +10,7 @@ import (
 
 var lifecycleName string
 var lifecycleCommitId string
+var lifecycleTag string
 var targetLifecycleName string
 
 var lifecycleCmd = &cobra.Command{

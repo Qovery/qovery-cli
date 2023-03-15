@@ -23,6 +23,12 @@ var lifecycleDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if lifecycleTag != "" && lifecycleCommitId != "" {
+			utils.PrintlnError(fmt.Errorf("you can't use --tag and --commit-id at the same time"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getContextResourcesId(client)
 
@@ -73,6 +79,10 @@ var lifecycleDeployCmd = &cobra.Command{
 			req = qovery.JobDeployRequest{
 				ImageTag: image.Tag,
 			}
+
+			if lifecycleTag != "" {
+				req.ImageTag = &lifecycleTag
+			}
 		}
 
 		_, _, err = client.JobActionsApi.DeployJob(context.Background(), lifecycle.Id).JobDeployRequest(req).Execute()
@@ -98,6 +108,7 @@ func init() {
 	lifecycleDeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	lifecycleDeployCmd.Flags().StringVarP(&lifecycleName, "lifecycle", "n", "", "Lifecycle Job Name")
 	lifecycleDeployCmd.Flags().StringVarP(&lifecycleCommitId, "commit-id", "c", "", "Lifecycle Commit ID")
+	lifecycleDeployCmd.Flags().StringVarP(&lifecycleTag, "tag", "t", "", "Lifecycle Tag")
 	lifecycleDeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch lifecycle status until it's ready or an error occurs")
 
 	_ = lifecycleDeployCmd.MarkFlagRequired("lifecycle")
