@@ -10,6 +10,7 @@ import (
 
 var cronjobName string
 var cronjobCommitId string
+var cronjobTag string
 
 var targetCronjobName string
 

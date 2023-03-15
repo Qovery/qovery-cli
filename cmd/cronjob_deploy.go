@@ -23,6 +23,12 @@ var cronjobDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if cronjobTag != "" && cronjobCommitId != "" {
+			utils.PrintlnError(fmt.Errorf("you can't use --tag and --commit-id at the same time"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getContextResourcesId(client)
 
@@ -73,6 +79,10 @@ var cronjobDeployCmd = &cobra.Command{
 			req = qovery.JobDeployRequest{
 				ImageTag: image.Tag,
 			}
+
+			if cronjobTag != "" {
+				req.ImageTag = &cronjobTag
+			}
 		}
 
 		_, _, err = client.JobActionsApi.DeployJob(context.Background(), cronjob.Id).JobDeployRequest(req).Execute()
@@ -98,6 +108,7 @@ func init() {
 	cronjobDeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	cronjobDeployCmd.Flags().StringVarP(&cronjobName, "cronjob", "n", "", "Cronjob Name")
 	cronjobDeployCmd.Flags().StringVarP(&cronjobCommitId, "commit-id", "c", "", "Lifecycle Commit ID")
+	cronjobDeployCmd.Flags().StringVarP(&cronjobTag, "tag", "t", "", "Lifecycle Tag")
 	cronjobDeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch cronjob status until it's ready or an error occurs")
 
 	_ = cronjobDeployCmd.MarkFlagRequired("cronjob")
