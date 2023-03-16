@@ -143,6 +143,4 @@ func init() {
 	cronjobDeployCmd.Flags().StringVarP(&cronjobCommitId, "commit-id", "c", "", "Lifecycle Commit ID")
 	cronjobDeployCmd.Flags().StringVarP(&cronjobTag, "tag", "t", "", "Lifecycle Tag")
 	cronjobDeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch cronjob status until it's ready or an error occurs")
-
-	_ = cronjobDeployCmd.MarkFlagRequired("cronjob")
 }
