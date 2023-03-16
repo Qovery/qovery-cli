@@ -24,6 +24,12 @@ var containerDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if containerName != "" && containerNames != "" {
+			utils.PrintlnError(fmt.Errorf("you can't use --container and --containers at the same time"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getContextResourcesId(client)
 
@@ -38,6 +44,25 @@ var containerDeployCmd = &cobra.Command{
 				"for the end of the current operation to run your command. Try again in a few moment", envId))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if containerNames != "" {
+			// deploy multiple services
+			err := utils.DeployContainers(client, envId, containerNames, containerTag)
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			utils.Println(fmt.Sprintf("Deploying containers %s in progress..", pterm.FgBlue.Sprintf(containerNames)))
+
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			}
+
+			return
 		}
 
 		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
@@ -87,8 +112,7 @@ func init() {
 	containerDeployCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	containerDeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	containerDeployCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
+	containerDeployCmd.Flags().StringVarP(&containerNames, "containers", "", "", "Container Names (comma separated) (ex: --containers \"container1,container2\")")
 	containerDeployCmd.Flags().StringVarP(&containerTag, "tag", "t", "", "Container Tag")
 	containerDeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch container status until it's ready or an error occurs")
-
-	_ = containerDeployCmd.MarkFlagRequired("container")
 }

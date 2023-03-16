@@ -9,6 +9,7 @@ import (
 )
 
 var lifecycleName string
+var lifecycleNames string
 var lifecycleCommitId string
 var lifecycleTag string
 var targetLifecycleName string

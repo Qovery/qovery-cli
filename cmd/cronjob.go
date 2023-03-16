@@ -9,6 +9,7 @@ import (
 )
 
 var cronjobName string
+var cronjobNames string
 var cronjobCommitId string
 var cronjobTag string
 

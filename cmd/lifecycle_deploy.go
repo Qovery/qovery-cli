@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/pterm/pterm"
 	"os"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -19,6 +20,12 @@ var lifecycleDeployCmd = &cobra.Command{
 		tokenType, token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if lifecycleName != "" && lifecycleNames != "" {
+			utils.PrintlnError(fmt.Errorf("you can't use --lifecycle and --lifecycles at the same time"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -43,6 +50,25 @@ var lifecycleDeployCmd = &cobra.Command{
 				"for the end of the current operation to run your command. Try again in a few moment", envId))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if lifecycleNames != "" {
+			// deploy multiple services
+			err := utils.DeployJobs(client, envId, lifecycleNames, lifecycleCommitId, lifecycleTag)
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			utils.Println(fmt.Sprintf("Deploying lifecycles %s in progress..", pterm.FgBlue.Sprintf(lifecycleNames)))
+
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			}
+
+			return
 		}
 
 		lifecycles, err := ListLifecycleJobs(envId, client)
@@ -107,6 +133,7 @@ func init() {
 	lifecycleDeployCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	lifecycleDeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	lifecycleDeployCmd.Flags().StringVarP(&lifecycleName, "lifecycle", "n", "", "Lifecycle Job Name")
+	lifecycleDeployCmd.Flags().StringVarP(&lifecycleNames, "lifecycles", "", "", "Lifecycle Job Names")
 	lifecycleDeployCmd.Flags().StringVarP(&lifecycleCommitId, "commit-id", "c", "", "Lifecycle Commit ID")
 	lifecycleDeployCmd.Flags().StringVarP(&lifecycleTag, "tag", "t", "", "Lifecycle Tag")
 	lifecycleDeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch lifecycle status until it's ready or an error occurs")
