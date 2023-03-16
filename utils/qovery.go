@@ -1107,3 +1107,158 @@ func GetDeploymentStageId(client *qovery.APIClient, serviceId string) string {
 
 	return sourceDeploymentStage.Id
 }
+
+func DeployApplications(client *qovery.APIClient, envId string, applicationNames string, commitId string) error {
+	if applicationNames == "" {
+		return nil
+	}
+
+	var applicationsToDeploy []qovery.DeployAllRequestApplicationsInner
+
+	applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	for _, applicationName := range strings.Split(applicationNames, ",") {
+		trimmedApplicationName := strings.TrimSpace(applicationName)
+		application := FindByApplicationName(applications.GetResults(), trimmedApplicationName)
+
+		if application == nil {
+			return fmt.Errorf("application %s not found", trimmedApplicationName)
+		}
+
+		// if commitId is not set, use the deployed commit id
+		applicationCommitId := application.GitRepository.DeployedCommitId
+		if commitId != "" {
+			// commitId is set, use it
+			applicationCommitId = &commitId
+		}
+
+		applicationsToDeploy = append(applicationsToDeploy, qovery.DeployAllRequestApplicationsInner{
+			ApplicationId: application.Id,
+			GitCommitId:   *applicationCommitId,
+		})
+	}
+
+	req := qovery.DeployAllRequest{
+		Applications: applicationsToDeploy,
+		Databases:    nil,
+		Containers:   nil,
+		Jobs:         nil,
+	}
+
+	return deployAllServices(client, envId, req)
+}
+
+func DeployContainers(client *qovery.APIClient, envId string, containerNames string, tag string) error {
+	if containerNames == "" {
+		return nil
+	}
+
+	var containersToDeploy []qovery.DeployAllRequestContainersInner
+
+	containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	for _, containerName := range strings.Split(containerNames, ",") {
+		trimmedContainerName := strings.TrimSpace(containerName)
+		container := FindByContainerName(containers.GetResults(), trimmedContainerName)
+
+		if container == nil {
+			return fmt.Errorf("container %s not found", trimmedContainerName)
+		}
+
+		// if tag is not set, use the deployed commit id
+		containerTag := container.Tag
+		if tag != "" {
+			// tag is set, use it
+			containerTag = tag
+		}
+
+		containersToDeploy = append(containersToDeploy, qovery.DeployAllRequestContainersInner{
+			Id:       container.Id,
+			ImageTag: containerTag,
+		})
+	}
+
+	req := qovery.DeployAllRequest{
+		Applications: nil,
+		Databases:    nil,
+		Containers:   containersToDeploy,
+		Jobs:         nil,
+	}
+
+	return deployAllServices(client, envId, req)
+}
+
+func DeployJobs(client *qovery.APIClient, envId string, jobNames string, commitId string, tag string) error {
+	if jobNames == "" {
+		return nil
+	}
+
+	var jobsToDeploy []qovery.DeployAllRequestJobsInner
+
+	jobs, _, err := client.JobsApi.ListJobs(context.Background(), envId).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	for _, applicationName := range strings.Split(jobNames, ",") {
+		trimmedJobName := strings.TrimSpace(applicationName)
+		job := FindByJobName(jobs.GetResults(), trimmedJobName)
+
+		if job == nil {
+			return fmt.Errorf("job %s not found", trimmedJobName)
+		}
+
+		docker := job.Source.Docker.Get()
+		image := job.Source.Image.Get()
+
+		var mCommitId *string
+		var mTag *string
+
+		if docker != nil {
+			mCommitId = docker.GitRepository.DeployedCommitId
+			if commitId != "" {
+				mCommitId = &commitId
+			}
+
+		} else {
+			mTag = image.Tag
+
+			if tag != "" {
+				mTag = &tag
+			}
+		}
+
+		jobsToDeploy = append(jobsToDeploy, qovery.DeployAllRequestJobsInner{
+			Id:          &job.Id,
+			ImageTag:    mTag,
+			GitCommitId: mCommitId,
+		})
+	}
+
+	req := qovery.DeployAllRequest{
+		Applications: nil,
+		Databases:    nil,
+		Containers:   nil,
+		Jobs:         jobsToDeploy,
+	}
+
+	return deployAllServices(client, envId, req)
+}
+
+func deployAllServices(client *qovery.APIClient, envId string, req qovery.DeployAllRequest) error {
+	_, _, err := client.EnvironmentActionsApi.DeployAllServices(context.Background(), envId).DeployAllRequest(req).Execute()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

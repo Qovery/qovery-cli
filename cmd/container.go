@@ -7,6 +7,7 @@ import (
 )
 
 var containerName string
+var containerNames string
 var containerTag string
 
 var targetContainerName string

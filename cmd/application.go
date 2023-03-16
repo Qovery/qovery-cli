@@ -7,6 +7,7 @@ import (
 )
 
 var applicationName string
+var applicationNames string
 var applicationCommitId string
 var applicationBranch string
 var targetApplicationName string

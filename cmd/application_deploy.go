@@ -3,12 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
-
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var applicationDeployCmd = &cobra.Command{
@@ -20,6 +19,12 @@ var applicationDeployCmd = &cobra.Command{
 		tokenType, token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if applicationName != "" && applicationNames != "" {
+			utils.PrintlnError(fmt.Errorf("you can't use --application and --applications at the same time"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -38,6 +43,25 @@ var applicationDeployCmd = &cobra.Command{
 				"for the end of the current operation to run your command. Try again in a few moment", envId))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if applicationNames != "" {
+			// deploy multiple services
+			err := utils.DeployApplications(client, envId, applicationNames, applicationCommitId)
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			utils.Println(fmt.Sprintf("Deploying applications %s in progress..", pterm.FgBlue.Sprintf(applicationNames)))
+
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			}
+
+			return
 		}
 
 		applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
@@ -65,8 +89,6 @@ var applicationDeployCmd = &cobra.Command{
 			req.GitCommitId = applicationCommitId
 		}
 
-		// TODO support mono-repo use case
-
 		_, _, err = client.ApplicationActionsApi.DeployApplication(context.Background(), application.Id).DeployRequest(req).Execute()
 
 		if err != nil {
@@ -89,8 +111,7 @@ func init() {
 	applicationDeployCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	applicationDeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	applicationDeployCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
+	applicationDeployCmd.Flags().StringVarP(&applicationNames, "applications", "", "", "Application Names (comma separated) Example: --applications \"app1,app2,app3\"")
 	applicationDeployCmd.Flags().StringVarP(&applicationCommitId, "commit-id", "c", "", "Application Commit ID")
 	applicationDeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch application status until it's ready or an error occurs")
-
-	_ = applicationDeployCmd.MarkFlagRequired("application")
 }
