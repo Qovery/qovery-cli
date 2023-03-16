@@ -24,6 +24,12 @@ var containerDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if containerName == "" && containerNames == "" {
+			utils.PrintlnError(fmt.Errorf("use neither --cronjob \"<container name>\" nor --cronjobs \"<container1 name>, <container2 name>\""))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		if containerName != "" && containerNames != "" {
 			utils.PrintlnError(fmt.Errorf("you can't use --container and --containers at the same time"))
 			os.Exit(1)

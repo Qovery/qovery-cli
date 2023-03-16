@@ -24,6 +24,12 @@ var lifecycleDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if lifecycleName == "" && lifecycleNames == "" {
+			utils.PrintlnError(fmt.Errorf("use neither --lifecycle \"<container name>\" nor --lifecycles \"<container1 name>, <container2 name>\""))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		if lifecycleName != "" && lifecycleNames != "" {
 			utils.PrintlnError(fmt.Errorf("you can't use --lifecycle and --lifecycles at the same time"))
 			os.Exit(1)

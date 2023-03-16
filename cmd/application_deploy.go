@@ -23,6 +23,12 @@ var applicationDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if applicationName == "" && applicationNames == "" {
+			utils.PrintlnError(fmt.Errorf("use neither --application \"<app name>\" nor --applications \"<app1 name>, <app2 name>\""))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		if applicationName != "" && applicationNames != "" {
 			utils.PrintlnError(fmt.Errorf("you can't use --application and --applications at the same time"))
 			os.Exit(1)

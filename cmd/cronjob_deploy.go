@@ -24,6 +24,12 @@ var cronjobDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if cronjobName == "" && cronjobNames == "" {
+			utils.PrintlnError(fmt.Errorf("use neither --cronjob \"<cronjob name>\" nor --cronjobs \"<cron1 name>, <cron2 name>\""))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		if cronjobName != "" && cronjobNames != "" {
 			utils.PrintlnError(fmt.Errorf("you can't use --cronjob and --cronjobs at the same time"))
 			os.Exit(1)
