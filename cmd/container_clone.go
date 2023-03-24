@@ -149,6 +149,23 @@ var containerCloneCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		// clone advanced settings
+		settings, _, err := client.ContainerConfigurationApi.GetContainerAdvancedSettings(context.Background(), container.Id).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		_, _, err = client.ContainerConfigurationApi.EditContainerAdvancedSettings(context.Background(), createdService.Id).ContainerAdvancedSettings(settings).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		utils.Println(fmt.Sprintf("Container %s cloned!", pterm.FgBlue.Sprintf(containerName)))
 	},
 }

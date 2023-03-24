@@ -163,6 +163,23 @@ var lifecycleCloneCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		// clone advanced settings
+		settings, _, err := client.JobConfigurationApi.GetJobAdvancedSettings(context.Background(), job.Id).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		_, _, err = client.JobConfigurationApi.EditJobAdvancedSettings(context.Background(), createdService.Id).JobAdvancedSettings(*settings).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		utils.Println(fmt.Sprintf("Lifecycle %s cloned!", pterm.FgBlue.Sprintf(lifecycleName)))
 	},
 }

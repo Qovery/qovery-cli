@@ -161,6 +161,23 @@ var applicationCloneCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		// clone advanced settings
+		settings, _, err := client.ApplicationConfigurationApi.GetAdvancedSettings(context.Background(), application.Id).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		_, _, err = client.ApplicationConfigurationApi.EditAdvancedSettings(context.Background(), createdService.Id).ApplicationAdvancedSettings(*settings).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		utils.Println(fmt.Sprintf("Application %s cloned!", pterm.FgBlue.Sprintf(applicationName)))
 	},
 }
