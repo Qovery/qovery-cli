@@ -11,6 +11,7 @@ var applicationNames string
 var applicationCommitId string
 var applicationBranch string
 var targetApplicationName string
+var applicationCustomDomain string
 
 var applicationCmd = &cobra.Command{
 	Use:   "application",

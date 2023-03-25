@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 )
 
-var containerEnvListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List container environment variables",
+var containerDomainDeleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete container custom domain",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -23,7 +24,6 @@ var containerEnvListCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-
 		_, _, envId, err := getContextResourcesId(client)
 
 		if err != nil {
@@ -49,10 +49,7 @@ var containerEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		envVars, _, err := client.ContainerEnvironmentVariableApi.ListContainerEnvironmentVariable(
-			context.Background(),
-			container.Id,
-		).Execute()
+		customDomains, _, err := client.ContainerCustomDomainApi.ListContainerCustomDomain(context.Background(), container.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -60,10 +57,14 @@ var containerEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		secrets, _, err := client.ContainerSecretApi.ListContainerSecrets(
-			context.Background(),
-			container.Id,
-		).Execute()
+		customDomain := utils.FindByCustomDomainName(customDomains.GetResults(), containerCustomDomain)
+		if customDomain == nil {
+			utils.PrintlnError(fmt.Errorf("custom domain %s does not exist", containerCustomDomain))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		_, err = client.ContainerCustomDomainApi.DeleteContainerCustomDomain(context.Background(), container.Id, customDomain.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -71,34 +72,18 @@ var containerEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		envVarLines := utils.NewEnvVarLines()
-
-		for _, envVar := range envVars.GetResults() {
-			envVarLines.Add(utils.FromEnvironmentVariableToEnvVarLineOutput(envVar))
-		}
-
-		for _, secret := range secrets.GetResults() {
-			envVarLines.Add(utils.FromSecretToEnvVarLineOutput(secret))
-		}
-
-		err = utils.PrintTable(envVarLines.Header(utils.PrettyPrint), envVarLines.Lines(utils.ShowValues, utils.PrettyPrint))
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		utils.Println(fmt.Sprintf("Custom domain %s has been deleted", pterm.FgBlue.Sprintf(containerCustomDomain)))
 	},
 }
 
 func init() {
-	containerEnvCmd.AddCommand(containerEnvListCmd)
-	containerEnvListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
-	containerEnvListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
-	containerEnvListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	containerEnvListCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
-	containerEnvListCmd.Flags().BoolVarP(&utils.ShowValues, "show-values", "", false, "Show env var values")
-	containerEnvListCmd.Flags().BoolVarP(&utils.PrettyPrint, "pretty-print", "", false, "Pretty print output")
+	containerDomainCmd.AddCommand(containerDomainDeleteCmd)
+	containerDomainDeleteCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	containerDomainDeleteCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	containerDomainDeleteCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	containerDomainDeleteCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
+	containerDomainDeleteCmd.Flags().StringVarP(&containerCustomDomain, "domain", "", "", "Custom Domain <subdomain.domain.tld>")
 
-	_ = containerEnvListCmd.MarkFlagRequired("container")
+	_ = containerDomainDeleteCmd.MarkFlagRequired("container")
+	_ = containerDomainDeleteCmd.MarkFlagRequired("domain")
 }

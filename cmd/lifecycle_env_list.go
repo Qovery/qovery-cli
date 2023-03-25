@@ -43,8 +43,8 @@ var lifecycleEnvListCmd = &cobra.Command{
 		lifecycle := utils.FindByJobName(lifecycles.GetResults(), lifecycleName)
 
 		if lifecycle == nil {
-			utils.PrintlnError(fmt.Errorf("envVar %s not found", lifecycleName))
-			utils.PrintlnInfo("You can list all lifecycles with: qovery envVar list")
+			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
+			utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}

@@ -3,15 +3,17 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/qovery/qovery-client-go"
 	"os"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 )
 
-var applicationEnvListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List application environment variables",
+var applicationDomainCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create application custom domain",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -23,7 +25,6 @@ var applicationEnvListCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-
 		_, _, envId, err := getContextResourcesId(client)
 
 		if err != nil {
@@ -49,10 +50,7 @@ var applicationEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		envVars, _, err := client.ApplicationEnvironmentVariableApi.ListApplicationEnvironmentVariable(
-			context.Background(),
-			application.Id,
-		).Execute()
+		customDomains, _, err := client.CustomDomainApi.ListApplicationCustomDomain(context.Background(), application.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -60,10 +58,18 @@ var applicationEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		secrets, _, err := client.ApplicationSecretApi.ListApplicationSecrets(
-			context.Background(),
-			application.Id,
-		).Execute()
+		customDomain := utils.FindByCustomDomainName(customDomains.GetResults(), applicationCustomDomain)
+		if customDomain != nil {
+			utils.PrintlnError(fmt.Errorf("custom domain %s already exists", applicationCustomDomain))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		req := qovery.CustomDomainRequest{
+			Domain: applicationCustomDomain,
+		}
+
+		_, _, err = client.CustomDomainApi.CreateApplicationCustomDomain(context.Background(), application.Id).CustomDomainRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -71,34 +77,18 @@ var applicationEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		envVarLines := utils.NewEnvVarLines()
-
-		for _, envVar := range envVars.GetResults() {
-			envVarLines.Add(utils.FromEnvironmentVariableToEnvVarLineOutput(envVar))
-		}
-
-		for _, secret := range secrets.GetResults() {
-			envVarLines.Add(utils.FromSecretToEnvVarLineOutput(secret))
-		}
-
-		err = utils.PrintTable(envVarLines.Header(utils.PrettyPrint), envVarLines.Lines(utils.ShowValues, utils.PrettyPrint))
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		utils.Println(fmt.Sprintf("Custom domain %s has been created", pterm.FgBlue.Sprintf(applicationCustomDomain)))
 	},
 }
 
 func init() {
-	applicationEnvCmd.AddCommand(applicationEnvListCmd)
-	applicationEnvListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
-	applicationEnvListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
-	applicationEnvListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	applicationEnvListCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
-	applicationEnvListCmd.Flags().BoolVarP(&utils.ShowValues, "show-values", "", false, "Show env var values")
-	applicationEnvListCmd.Flags().BoolVarP(&utils.PrettyPrint, "pretty-print", "", false, "Pretty print output")
+	applicationDomainCmd.AddCommand(applicationDomainCreateCmd)
+	applicationDomainCreateCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	applicationDomainCreateCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	applicationDomainCreateCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	applicationDomainCreateCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
+	applicationDomainCreateCmd.Flags().StringVarP(&applicationCustomDomain, "domain", "", "", "Custom Domain <subdomain.domain.tld>")
 
-	_ = applicationEnvListCmd.MarkFlagRequired("application")
+	_ = applicationDomainCreateCmd.MarkFlagRequired("application")
+	_ = applicationDomainCreateCmd.MarkFlagRequired("domain")
 }

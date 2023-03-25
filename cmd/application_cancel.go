@@ -12,6 +12,9 @@ var applicationCancelCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		utils.PrintlnInfo("Use: 'qovery environment cancel' to cancel this deployment")
+
+		// TODO make app cancel working and add --watch arg
+		// TODO provide a way to cancel a deployment per service
 	},
 }
 

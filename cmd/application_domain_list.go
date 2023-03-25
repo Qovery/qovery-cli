@@ -4,14 +4,15 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 )
 
-var applicationEnvListCmd = &cobra.Command{
+var applicationDomainListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List application environment variables",
+	Short: "List application domains",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -49,10 +50,7 @@ var applicationEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		envVars, _, err := client.ApplicationEnvironmentVariableApi.ListApplicationEnvironmentVariable(
-			context.Background(),
-			application.Id,
-		).Execute()
+		customDomains, _, err := client.CustomDomainApi.ListApplicationCustomDomain(context.Background(), application.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -60,10 +58,20 @@ var applicationEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		secrets, _, err := client.ApplicationSecretApi.ListApplicationSecrets(
-			context.Background(),
-			application.Id,
-		).Execute()
+		customDomainsSet := make(map[string]bool)
+		var data [][]string
+
+		for _, customDomain := range customDomains.GetResults() {
+			customDomainsSet[customDomain.Domain] = true
+
+			data = append(data, []string{
+				"CUSTOM_DOMAIN",
+				customDomain.Domain,
+				*customDomain.ValidationDomain,
+			})
+		}
+
+		links, _, err := client.ApplicationMainCallsApi.ListApplicationLinks(context.Background(), application.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -71,17 +79,20 @@ var applicationEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		envVarLines := utils.NewEnvVarLines()
-
-		for _, envVar := range envVars.GetResults() {
-			envVarLines.Add(utils.FromEnvironmentVariableToEnvVarLineOutput(envVar))
+		for _, link := range links.GetResults() {
+			if link.Url != nil {
+				domain := strings.ReplaceAll(*link.Url, "https://", "")
+				if customDomainsSet[domain] == false {
+					data = append(data, []string{
+						"BUILT_IN_DOMAIN",
+						domain,
+						"N/A",
+					})
+				}
+			}
 		}
 
-		for _, secret := range secrets.GetResults() {
-			envVarLines.Add(utils.FromSecretToEnvVarLineOutput(secret))
-		}
-
-		err = utils.PrintTable(envVarLines.Header(utils.PrettyPrint), envVarLines.Lines(utils.ShowValues, utils.PrettyPrint))
+		err = utils.PrintTable([]string{"Type", "Domain", "Validation Domain"}, data)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -92,13 +103,11 @@ var applicationEnvListCmd = &cobra.Command{
 }
 
 func init() {
-	applicationEnvCmd.AddCommand(applicationEnvListCmd)
-	applicationEnvListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
-	applicationEnvListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
-	applicationEnvListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	applicationEnvListCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
-	applicationEnvListCmd.Flags().BoolVarP(&utils.ShowValues, "show-values", "", false, "Show env var values")
-	applicationEnvListCmd.Flags().BoolVarP(&utils.PrettyPrint, "pretty-print", "", false, "Pretty print output")
+	applicationDomainCmd.AddCommand(applicationDomainListCmd)
+	applicationDomainListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	applicationDomainListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	applicationDomainListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	applicationDomainListCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
 
-	_ = applicationEnvListCmd.MarkFlagRequired("application")
+	_ = applicationDomainListCmd.MarkFlagRequired("application")
 }

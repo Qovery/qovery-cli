@@ -863,6 +863,16 @@ func FindByDatabaseName(databases []qovery.Database, name string) *qovery.Databa
 	return nil
 }
 
+func FindByCustomDomainName(customDomains []qovery.CustomDomain, name string) *qovery.CustomDomain {
+	for _, d := range customDomains {
+		if d.Domain == name {
+			return &d
+		}
+	}
+
+	return nil
+}
+
 func WatchEnvironment(envId string, finalServiceState qovery.StateEnum, client *qovery.APIClient) {
 	WatchEnvironmentWithOptions(envId, finalServiceState, client, false)
 }

@@ -9,8 +9,8 @@ import (
 var containerName string
 var containerNames string
 var containerTag string
-
 var targetContainerName string
+var containerCustomDomain string
 
 var containerCmd = &cobra.Command{
 	Use:   "container",
