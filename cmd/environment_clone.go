@@ -10,10 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var newEnvironmentName string
-var clusterName string
-var environmentType string
-
 var environmentCloneCmd = &cobra.Command{
 	Use:   "clone",
 	Short: "Clone an environment",

@@ -7,6 +7,9 @@ import (
 )
 
 var targetEnvironmentName string
+var newEnvironmentName string
+var clusterName string
+var environmentType string
 
 var environmentCmd = &cobra.Command{
 	Use:   "environment",
