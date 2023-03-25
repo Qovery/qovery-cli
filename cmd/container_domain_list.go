@@ -82,7 +82,7 @@ var containerDomainListCmd = &cobra.Command{
 		for _, link := range links.GetResults() {
 			if link.Url != nil {
 				domain := strings.ReplaceAll(*link.Url, "https://", "")
-				if customDomainsSet[domain] == false {
+				if !customDomainsSet[domain] {
 					data = append(data, []string{
 						"BUILT_IN_DOMAIN",
 						domain,
