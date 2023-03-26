@@ -1070,9 +1070,7 @@ func IsEnvironmentInATerminalState(envId string, client *qovery.APIClient) bool 
 		return false
 	}
 
-	return status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DELETED ||
-		status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED ||
-		status.State == qovery.STATEENUM_READY || strings.HasSuffix(string(status.State), "ERROR")
+	return isTerminalState(status.State)
 }
 
 func GetServiceNameByIdAndType(client *qovery.APIClient, serviceId string, serviceType string) string {
@@ -1271,4 +1269,94 @@ func deployAllServices(client *qovery.APIClient, envId string, req qovery.Deploy
 	}
 
 	return nil
+}
+
+func CancelEnvironmentDeployment(client *qovery.APIClient, envId string, watchFlag bool) error {
+	_, _, err := client.EnvironmentActionsApi.CancelEnvironmentDeployment(context.Background(), envId).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	if watchFlag {
+		WatchEnvironmentWithOptions(envId, qovery.STATEENUM_CANCELED, client, true)
+	}
+
+	return nil
+}
+
+func isTerminalState(state qovery.StateEnum) bool {
+	return state == qovery.STATEENUM_RUNNING || state == qovery.STATEENUM_DELETED ||
+		state == qovery.STATEENUM_STOPPED || state == qovery.STATEENUM_CANCELED ||
+		state == qovery.STATEENUM_READY || strings.HasSuffix(string(state), "ERROR")
+}
+
+func CancelServiceDeployment(client *qovery.APIClient, envId string, serviceId string, serviceType ServiceType, watchFlag bool) (string, error) {
+	statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
+
+	if err != nil {
+		return "", err
+	}
+
+	envStatus := statuses.GetEnvironment()
+
+	if isTerminalState(envStatus.State) {
+		// if the environment is in a terminal state, there is nothing to cancel
+		return "there is no deployment in progress. Nothing to cancel", nil
+	}
+
+	// cancel deployment if the targeted service is a non-terminal state
+	switch serviceType {
+	case ApplicationType:
+		for _, application := range statuses.GetApplications() {
+			if application.Id == serviceId && !isTerminalState(application.State) {
+				err := CancelEnvironmentDeployment(client, envId, watchFlag)
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		}
+	case DatabaseType:
+		for _, database := range statuses.GetDatabases() {
+			if database.Id == serviceId && !isTerminalState(database.State) {
+				err := CancelEnvironmentDeployment(client, envId, watchFlag)
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		}
+	case ContainerType:
+		for _, container := range statuses.GetContainers() {
+			if container.Id == serviceId && !isTerminalState(container.State) {
+				err := CancelEnvironmentDeployment(client, envId, watchFlag)
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		}
+	case JobType:
+		for _, job := range statuses.GetJobs() {
+			if job.Id == serviceId && !isTerminalState(job.State) {
+				err := CancelEnvironmentDeployment(client, envId, watchFlag)
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		}
+	}
+
+	PrintlnInfo("wait...")
+
+	// sleep here to avoid too many requests
+	time.Sleep(5 * time.Second)
+
+	return CancelServiceDeployment(client, envId, serviceId, serviceType, watchFlag)
 }

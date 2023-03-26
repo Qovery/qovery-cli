@@ -18,7 +18,7 @@ func PrintlnError(err error) {
 }
 
 func PrintlnInfo(info string) {
-	fmt.Printf("%v: %v\n", color.CyanString("Qovery"), info)
+	fmt.Printf("%v: %v\n", color.CyanString("Info"), info)
 }
 
 func Println(text string) {
