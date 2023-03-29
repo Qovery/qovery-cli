@@ -18,7 +18,7 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/posthog/posthog-go v0.0.0-20221221115252-24dfed35d71a
 	github.com/pterm/pterm v0.12.55
-	github.com/qovery/qovery-client-go v0.0.0-20230308152917-dad89a1d1a4b
+	github.com/qovery/qovery-client-go v0.0.0-20230327084153-a6e8c00ebc32
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
@@ -71,6 +71,6 @@ require (
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.29.0 // indirect
+	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 )
