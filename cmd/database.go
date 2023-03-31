@@ -7,7 +7,7 @@ import (
 )
 
 var databaseName string
-
+var showCredentials bool
 var databaseCmd = &cobra.Command{
 	Use:   "database",
 	Short: "Manage databases",
