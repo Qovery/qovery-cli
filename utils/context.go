@@ -208,6 +208,14 @@ func GetAccessToken() (AccessTokenType, AccessToken, error) {
 	token := os.Getenv("QOVERY_CLI_ACCESS_TOKEN")
 
 	if tokenType == "" {
+		tokenType = os.Getenv("Q_CLI_ACCESS_TOKEN_TYPE")
+	}
+
+	if token == "" {
+		token = os.Getenv("Q_CLI_ACCESS_TOKEN")
+	}
+
+	if tokenType == "" {
 		tokenType = "Bearer"
 	}
 

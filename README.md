@@ -10,4 +10,4 @@ See our complete documentation [here](https://docs.qovery.com) to get started wi
 
 ## Authentication
 
-You can use `qovery auth` to authenticate with the CLI or use `QOVERY_CLI_ACCESS_TOKEN` environment variable to set your API token.
+You can use `qovery auth` to authenticate with the CLI or use `Q_CLI_ACCESS_TOKEN` (or `QOVERY_CLI_ACCESS_TOKEN`) environment variable to set your API token.
