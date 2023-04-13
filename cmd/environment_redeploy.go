@@ -50,7 +50,7 @@ var environmentRedeployCmd = &cobra.Command{
 		utils.Println("Environment is redeploying!")
 
 		if watchFlag {
-			utils.WatchEnvironment(envId, qovery.STATEENUM_RUNNING, client)
+			utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
 		}
 	},
 }

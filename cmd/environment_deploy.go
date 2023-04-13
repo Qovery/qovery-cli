@@ -50,7 +50,7 @@ var environmentDeployCmd = &cobra.Command{
 		utils.Println("Environment is deploying!")
 
 		if watchFlag {
-			utils.WatchEnvironment(envId, qovery.STATEENUM_RUNNING, client)
+			utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
 		}
 	},
 }
