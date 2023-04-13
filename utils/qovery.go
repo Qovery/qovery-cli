@@ -772,7 +772,7 @@ func GetStatus(statuses []qovery.Status, serviceId string) string {
 func GetStatusTextWithColor(s qovery.Status) string {
 	var statusMsg string
 
-	if s.State == qovery.STATEENUM_RUNNING {
+	if s.State == qovery.STATEENUM_DEPLOYED || s.State == qovery.STATEENUM_RUNNING {
 		statusMsg = pterm.FgGreen.Sprintf(string(s.State))
 	} else if strings.HasSuffix(string(s.State), "ERROR") {
 		statusMsg = pterm.FgRed.Sprintf(string(s.State))
@@ -905,7 +905,7 @@ func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnu
 			log.Println(GetStatusTextWithColor(*status) + " (" + strconv.Itoa(countStatuses) + "/" + strconv.Itoa(totalStatuses) + " services " + icon + " )")
 		}
 
-		if status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DELETED ||
+		if status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DEPLOYED || status.State == qovery.STATEENUM_DELETED ||
 			status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED {
 			return
 		}
@@ -1039,7 +1039,7 @@ func WatchStatus(status *qovery.Status) Status {
 	// TODO make something more fancy here to display the status. Use UILIVE or something like that
 	log.Println(GetStatusTextWithColor(*status))
 
-	if status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DELETED ||
+	if status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DEPLOYED || status.State == qovery.STATEENUM_DELETED ||
 		status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED {
 		return Stop
 	}
@@ -1286,7 +1286,7 @@ func CancelEnvironmentDeployment(client *qovery.APIClient, envId string, watchFl
 }
 
 func isTerminalState(state qovery.StateEnum) bool {
-	return state == qovery.STATEENUM_RUNNING || state == qovery.STATEENUM_DELETED ||
+	return state == qovery.STATEENUM_RUNNING || state == qovery.STATEENUM_DEPLOYED || state == qovery.STATEENUM_DELETED ||
 		state == qovery.STATEENUM_STOPPED || state == qovery.STATEENUM_CANCELED ||
 		state == qovery.STATEENUM_READY || strings.HasSuffix(string(state), "ERROR")
 }
