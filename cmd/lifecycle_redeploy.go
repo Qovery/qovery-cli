@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
+	"github.com/pterm/pterm"
 	"os"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -31,13 +31,6 @@ var lifecycleRedeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if !utils.IsEnvironmentInATerminalState(envId, client) {
-			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
-				"for the end of the current operation to run your command. Try again in a few moment", envId))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
 		lifecycles, err := ListLifecycleJobs(envId, client)
 
 		if err != nil {
@@ -55,7 +48,7 @@ var lifecycleRedeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, _, err = client.JobActionsApi.RedeployJob(context.Background(), lifecycle.Id).Execute()
+		msg, err := utils.RedeployService(client, envId, lifecycle.Id, utils.JobType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -63,10 +56,15 @@ var lifecycleRedeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println("Lifecycle is redeploying!")
+		if msg != "" {
+			utils.PrintlnInfo(msg)
+			return
+		}
 
 		if watchFlag {
-			utils.WatchJob(lifecycle.Id, envId, client)
+			utils.Println(fmt.Sprintf("Lifecycle %s redeployed!", pterm.FgBlue.Sprintf(lifecycleName)))
+		} else {
+			utils.Println(fmt.Sprintf("Redeploying lifecycle %s in progress..", pterm.FgBlue.Sprintf(lifecycleName)))
 		}
 	},
 }

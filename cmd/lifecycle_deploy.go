@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"github.com/pterm/pterm"
 	"os"
+	"time"
 
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
@@ -51,14 +51,17 @@ var lifecycleDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if !utils.IsEnvironmentInATerminalState(envId, client) {
-			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
-				"for the end of the current operation to run your command. Try again in a few moment", envId))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
 		if lifecycleNames != "" {
+			// wait until service is ready
+			for {
+				if utils.IsEnvironmentInATerminalState(envId, client) {
+					break
+				}
+
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				time.Sleep(5 * time.Second)
+			}
+
 			// deploy multiple services
 			err := utils.DeployJobs(client, envId, lifecycleNames, lifecycleCommitId, lifecycleTag)
 
@@ -117,7 +120,7 @@ var lifecycleDeployCmd = &cobra.Command{
 			}
 		}
 
-		_, _, err = client.JobActionsApi.DeployJob(context.Background(), lifecycle.Id).JobDeployRequest(req).Execute()
+		msg, err := utils.DeployService(client, envId, lifecycle.Id, utils.JobType, req, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -125,10 +128,15 @@ var lifecycleDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println("Lifecycle job is deploying!")
+		if msg != "" {
+			utils.PrintlnInfo(msg)
+			return
+		}
 
 		if watchFlag {
-			utils.WatchJob(lifecycle.Id, envId, client)
+			utils.Println(fmt.Sprintf("Lifecycle %s deployed!", pterm.FgBlue.Sprintf(lifecycleName)))
+		} else {
+			utils.Println(fmt.Sprintf("Deploying lifecycle %s in progress..", pterm.FgBlue.Sprintf(lifecycleName)))
 		}
 	},
 }

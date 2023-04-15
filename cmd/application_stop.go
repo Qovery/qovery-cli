@@ -32,13 +32,6 @@ var applicationStopCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if !utils.IsEnvironmentInATerminalState(envId, client) {
-			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
-				"for the end of the current operation to run your command. Try again in a few moment", envId))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
 		applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
 
 		if err != nil {
@@ -56,7 +49,7 @@ var applicationStopCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, _, err = client.ApplicationActionsApi.StopApplication(context.Background(), application.Id).Execute()
+		msg, err := utils.StopService(client, envId, application.Id, utils.ApplicationType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -64,10 +57,15 @@ var applicationStopCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Stopping application %s in progress..", pterm.FgBlue.Sprintf(applicationName)))
+		if msg != "" {
+			utils.PrintlnInfo(msg)
+			return
+		}
 
 		if watchFlag {
-			utils.WatchApplication(application.Id, envId, client)
+			utils.Println(fmt.Sprintf("Application %s stopped!", pterm.FgBlue.Sprintf(applicationName)))
+		} else {
+			utils.Println(fmt.Sprintf("Stopping application %s in progress..", pterm.FgBlue.Sprintf(applicationName)))
 		}
 	},
 }
