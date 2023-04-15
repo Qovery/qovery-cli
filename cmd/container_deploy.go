@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
@@ -45,14 +46,17 @@ var containerDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if !utils.IsEnvironmentInATerminalState(envId, client) {
-			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
-				"for the end of the current operation to run your command. Try again in a few moment", envId))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
 		if containerNames != "" {
+			// wait until service is ready
+			for {
+				if utils.IsEnvironmentInATerminalState(envId, client) {
+					break
+				}
+
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				time.Sleep(5 * time.Second)
+			}
+
 			// deploy multiple services
 			err := utils.DeployContainers(client, envId, containerNames, containerTag)
 
@@ -96,7 +100,7 @@ var containerDeployCmd = &cobra.Command{
 			req.ImageTag = containerTag
 		}
 
-		_, _, err = client.ContainerActionsApi.DeployContainer(context.Background(), container.Id).ContainerDeployRequest(req).Execute()
+		msg, err := utils.DeployService(client, envId, container.Id, utils.ContainerType, req, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -104,10 +108,15 @@ var containerDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Deploying container %s in progress..", pterm.FgBlue.Sprintf(containerName)))
+		if msg != "" {
+			utils.PrintlnInfo(msg)
+			return
+		}
 
 		if watchFlag {
-			utils.WatchContainer(container.Id, envId, client)
+			utils.Println(fmt.Sprintf("Container %s deployed!", pterm.FgBlue.Sprintf(containerName)))
+		} else {
+			utils.Println(fmt.Sprintf("Deploying container %s in progress..", pterm.FgBlue.Sprintf(containerName)))
 		}
 	},
 }

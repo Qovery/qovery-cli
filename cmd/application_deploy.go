@@ -8,6 +8,7 @@ import (
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 	"os"
+	"time"
 )
 
 var applicationDeployCmd = &cobra.Command{
@@ -44,14 +45,17 @@ var applicationDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if !utils.IsEnvironmentInATerminalState(envId, client) {
-			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
-				"for the end of the current operation to run your command. Try again in a few moment", envId))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
 		if applicationNames != "" {
+			// wait until service is ready
+			for {
+				if utils.IsEnvironmentInATerminalState(envId, client) {
+					break
+				}
+
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				time.Sleep(5 * time.Second)
+			}
+
 			// deploy multiple services
 			err := utils.DeployApplications(client, envId, applicationNames, applicationCommitId)
 
@@ -95,7 +99,7 @@ var applicationDeployCmd = &cobra.Command{
 			req.GitCommitId = applicationCommitId
 		}
 
-		_, _, err = client.ApplicationActionsApi.DeployApplication(context.Background(), application.Id).DeployRequest(req).Execute()
+		msg, err := utils.DeployService(client, envId, application.Id, utils.ApplicationType, req, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -103,10 +107,15 @@ var applicationDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Deploying application %s in progress..", pterm.FgBlue.Sprintf(applicationName)))
+		if msg != "" {
+			utils.PrintlnInfo(msg)
+			return
+		}
 
 		if watchFlag {
-			utils.WatchApplication(application.Id, envId, client)
+			utils.Println(fmt.Sprintf("Application %s deployed!", pterm.FgBlue.Sprintf(applicationName)))
+		} else {
+			utils.Println(fmt.Sprintf("Deploying application %s in progress..", pterm.FgBlue.Sprintf(applicationName)))
 		}
 	},
 }

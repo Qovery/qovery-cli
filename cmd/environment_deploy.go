@@ -3,7 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/pterm/pterm"
 	"os"
+	"time"
 
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
@@ -32,11 +34,14 @@ var environmentDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if !utils.IsEnvironmentInATerminalState(envId, client) {
-			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
-				"for the end of the current operation to run your command. Try again in a few moment", environmentName))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		// wait until service is ready
+		for {
+			if utils.IsEnvironmentInATerminalState(envId, client) {
+				break
+			}
+
+			utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+			time.Sleep(5 * time.Second)
 		}
 
 		_, _, err = client.EnvironmentActionsApi.DeployEnvironment(context.Background(), envId).Execute()

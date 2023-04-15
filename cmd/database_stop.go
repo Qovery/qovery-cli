@@ -32,13 +32,6 @@ var databaseStopCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if !utils.IsEnvironmentInATerminalState(envId, client) {
-			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
-				"for the end of the current operation to run your command. Try again in a few moment", envId))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
 		databases, _, err := client.DatabasesApi.ListDatabase(context.Background(), envId).Execute()
 
 		if err != nil {
@@ -56,7 +49,7 @@ var databaseStopCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, _, err = client.DatabaseActionsApi.StopDatabase(context.Background(), database.Id).Execute()
+		msg, err := utils.StopService(client, envId, database.Id, utils.DatabaseType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -64,10 +57,15 @@ var databaseStopCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Stopping database %s in progress..", pterm.FgBlue.Sprintf(databaseName)))
+		if msg != "" {
+			utils.PrintlnInfo(msg)
+			return
+		}
 
 		if watchFlag {
-			utils.WatchDatabase(database.Id, envId, client)
+			utils.Println(fmt.Sprintf("Database %s stopped!", pterm.FgBlue.Sprintf(databaseName)))
+		} else {
+			utils.Println(fmt.Sprintf("Stopping database %s in progress..", pterm.FgBlue.Sprintf(databaseName)))
 		}
 	},
 }
