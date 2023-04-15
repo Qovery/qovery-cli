@@ -32,13 +32,6 @@ var containerDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if !utils.IsEnvironmentInATerminalState(envId, client) {
-			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
-				"for the end of the current operation to run your command. Try again in a few moment", envId))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
 		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
 
 		if err != nil {
@@ -56,7 +49,7 @@ var containerDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, err = client.ContainerMainCallsApi.DeleteContainer(context.Background(), container.Id).Execute()
+		msg, err := utils.DeleteService(client, envId, container.Id, utils.ContainerType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -64,10 +57,15 @@ var containerDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Deleting container %s in progress..", pterm.FgBlue.Sprintf(containerName)))
+		if msg != "" {
+			utils.PrintlnInfo(msg)
+			return
+		}
 
 		if watchFlag {
-			utils.WatchContainer(container.Id, envId, client)
+			utils.Println(fmt.Sprintf("Container %s deleted!", pterm.FgBlue.Sprintf(containerName)))
+		} else {
+			utils.Println(fmt.Sprintf("Deleting container %s in progress..", pterm.FgBlue.Sprintf(containerName)))
 		}
 	},
 }

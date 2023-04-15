@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"github.com/pterm/pterm"
 	"os"
@@ -32,13 +31,6 @@ var cronjobDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if !utils.IsEnvironmentInATerminalState(envId, client) {
-			utils.PrintlnError(fmt.Errorf("environment id '%s' is not in a terminal state. The request is not queued and you must wait "+
-				"for the end of the current operation to run your command. Try again in a few moment", envId))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
 		cronjobs, err := ListCronjobs(envId, client)
 
 		if err != nil {
@@ -56,7 +48,7 @@ var cronjobDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, err = client.JobMainCallsApi.DeleteJob(context.Background(), job.Id).Execute()
+		msg, err := utils.DeleteService(client, envId, job.Id, utils.JobType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -64,10 +56,15 @@ var cronjobDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Deleting cronjob %s in progress..", pterm.FgBlue.Sprintf(cronjobName)))
+		if msg != "" {
+			utils.PrintlnInfo(msg)
+			return
+		}
 
 		if watchFlag {
-			utils.WatchJob(job.Id, envId, client)
+			utils.Println(fmt.Sprintf("Cronjob %s deleted!", pterm.FgBlue.Sprintf(cronjobName)))
+		} else {
+			utils.Println(fmt.Sprintf("Deleting cronjob %s in progress..", pterm.FgBlue.Sprintf(cronjobName)))
 		}
 	},
 }
