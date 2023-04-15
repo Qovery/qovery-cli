@@ -1353,7 +1353,7 @@ func CancelServiceDeployment(client *qovery.APIClient, envId string, serviceId s
 		}
 	}
 
-	PrintlnInfo("wait...")
+	PrintlnInfo("waiting for previous deployment to be completed...")
 
 	// sleep here to avoid too many requests
 	time.Sleep(5 * time.Second)
@@ -1433,7 +1433,7 @@ func DeleteService(client *qovery.APIClient, envId string, serviceId string, ser
 		}
 	}
 
-	PrintlnInfo("wait...")
+	PrintlnInfo("waiting for previous deployment to be completed...")
 
 	// sleep here to avoid too many requests
 	time.Sleep(5 * time.Second)
@@ -1516,7 +1516,7 @@ func DeployService(client *qovery.APIClient, envId string, serviceId string, ser
 		}
 	}
 
-	PrintlnInfo("wait...")
+	PrintlnInfo("waiting for previous deployment to be completed...")
 
 	// sleep here to avoid too many requests
 	time.Sleep(5 * time.Second)
@@ -1596,7 +1596,7 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 		}
 	}
 
-	PrintlnInfo("wait...")
+	PrintlnInfo("waiting for previous deployment to be completed...")
 
 	// sleep here to avoid too many requests
 	time.Sleep(5 * time.Second)
@@ -1676,7 +1676,7 @@ func StopService(client *qovery.APIClient, envId string, serviceId string, servi
 		}
 	}
 
-	PrintlnInfo("wait...")
+	PrintlnInfo("waiting for previous deployment to be completed...")
 
 	// sleep here to avoid too many requests
 	time.Sleep(5 * time.Second)
