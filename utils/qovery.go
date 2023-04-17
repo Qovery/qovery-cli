@@ -762,32 +762,40 @@ func GetStatus(statuses []qovery.Status, serviceId string) string {
 
 	for _, s := range statuses {
 		if serviceId == s.Id {
-			return GetStatusTextWithColor(s)
+			return GetStatusTextWithColor(s.State)
 		}
 	}
 
 	return status
 }
 
-func GetStatusTextWithColor(s qovery.Status) string {
-	var statusMsg string
+func GetEnvironmentStatus(statuses []qovery.EnvironmentStatus, serviceId string) string {
+	status := "Unknown"
 
-	if s.State == qovery.STATEENUM_DEPLOYED || s.State == qovery.STATEENUM_RUNNING {
-		statusMsg = pterm.FgGreen.Sprintf(string(s.State))
-	} else if strings.HasSuffix(string(s.State), "ERROR") {
-		statusMsg = pterm.FgRed.Sprintf(string(s.State))
-	} else if strings.HasSuffix(string(s.State), "ING") {
-		statusMsg = pterm.FgLightBlue.Sprintf(string(s.State))
-	} else if strings.HasSuffix(string(s.State), "QUEUED") {
-		statusMsg = pterm.FgLightYellow.Sprintf(string(s.State))
-	} else if s.State == qovery.STATEENUM_READY {
-		statusMsg = pterm.FgYellow.Sprintf(string(s.State))
-	} else {
-		statusMsg = string(s.State)
+	for _, s := range statuses {
+		if serviceId == s.Id {
+			return GetStatusTextWithColor(s.State)
+		}
 	}
 
-	if s.Message != nil && *s.Message != "" {
-		statusMsg += " (" + *s.Message + ")"
+	return status
+}
+
+func GetStatusTextWithColor(s qovery.StateEnum) string {
+	var statusMsg string
+
+	if s == qovery.STATEENUM_DEPLOYED {
+		statusMsg = pterm.FgGreen.Sprintf(string(s))
+	} else if strings.HasSuffix(string(s), "ERROR") {
+		statusMsg = pterm.FgRed.Sprintf(string(s))
+	} else if strings.HasSuffix(string(s), "ING") {
+		statusMsg = pterm.FgLightBlue.Sprintf(string(s))
+	} else if strings.HasSuffix(string(s), "QUEUED") {
+		statusMsg = pterm.FgLightYellow.Sprintf(string(s))
+	} else if s == qovery.STATEENUM_READY {
+		statusMsg = pterm.FgYellow.Sprintf(string(s))
+	} else {
+		statusMsg = string(s)
 	}
 
 	return statusMsg
@@ -889,7 +897,7 @@ func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnu
 
 		if displaySimpleText {
 			// TODO make something more fancy here to display the status. Use UILIVE or something like that
-			log.Println(GetStatusTextWithColor(*status))
+			log.Println(GetStatusTextWithColor(status.State))
 		} else {
 			countStatuses := countStatus(statuses.Applications, finalServiceState) + countStatus(statuses.Databases, finalServiceState) +
 				countStatus(statuses.Jobs, finalServiceState) + countStatus(statuses.Containers, finalServiceState)
@@ -902,10 +910,10 @@ func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnu
 			}
 
 			// TODO make something more fancy here to display the status. Use UILIVE or something like that
-			log.Println(GetStatusTextWithColor(*status) + " (" + strconv.Itoa(countStatuses) + "/" + strconv.Itoa(totalStatuses) + " services " + icon + " )")
+			log.Println(GetStatusTextWithColor(status.State) + " (" + strconv.Itoa(countStatuses) + "/" + strconv.Itoa(totalStatuses) + " services " + icon + " )")
 		}
 
-		if status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DEPLOYED || status.State == qovery.STATEENUM_DELETED ||
+		if status.State == qovery.STATEENUM_DEPLOYED || status.State == qovery.STATEENUM_DELETED ||
 			status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED {
 			return
 		}
@@ -1037,9 +1045,9 @@ const (
 
 func WatchStatus(status *qovery.Status) Status {
 	// TODO make something more fancy here to display the status. Use UILIVE or something like that
-	log.Println(GetStatusTextWithColor(*status))
+	log.Println(GetStatusTextWithColor(status.State))
 
-	if status.State == qovery.STATEENUM_RUNNING || status.State == qovery.STATEENUM_DEPLOYED || status.State == qovery.STATEENUM_DELETED ||
+	if status.State == qovery.STATEENUM_DEPLOYED || status.State == qovery.STATEENUM_DELETED ||
 		status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED {
 		return Stop
 	}
@@ -1286,7 +1294,7 @@ func CancelEnvironmentDeployment(client *qovery.APIClient, envId string, watchFl
 }
 
 func isTerminalState(state qovery.StateEnum) bool {
-	return state == qovery.STATEENUM_RUNNING || state == qovery.STATEENUM_DEPLOYED || state == qovery.STATEENUM_DELETED ||
+	return state == qovery.STATEENUM_DEPLOYED || state == qovery.STATEENUM_DELETED ||
 		state == qovery.STATEENUM_STOPPED || state == qovery.STATEENUM_CANCELED ||
 		state == qovery.STATEENUM_READY || strings.HasSuffix(string(state), "ERROR")
 }

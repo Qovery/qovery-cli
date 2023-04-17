@@ -50,7 +50,7 @@ var environmentListCmd = &cobra.Command{
 
 		for _, env := range environments.GetResults() {
 			data = append(data, []string{env.GetName(), *env.ClusterName, string(env.Mode),
-				utils.GetStatus(statuses.GetResults(), env.Id), env.UpdatedAt.String()})
+				utils.GetEnvironmentStatus(statuses.GetResults(), env.Id), env.UpdatedAt.String()})
 		}
 
 		err = utils.PrintTable([]string{"Name", "Cluster", "Type", "Status", "Last Update"}, data)
