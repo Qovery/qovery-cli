@@ -887,20 +887,20 @@ func WatchEnvironment(envId string, finalServiceState qovery.StateEnum, client *
 
 func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnum, client *qovery.APIClient, displaySimpleText bool) {
 	for {
-		status, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatus(context.Background(), envId).Execute()
+		statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
 
 		if err != nil {
 			return
 		}
 
-		statuses, _, _ := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
-
 		if displaySimpleText {
 			// TODO make something more fancy here to display the status. Use UILIVE or something like that
-			log.Println(GetStatusTextWithColor(status.State))
+			log.Println(GetStatusTextWithColor(statuses.Environment.LastDeploymentState))
 		} else {
-			countStatuses := countStatus(statuses.Applications, finalServiceState) + countStatus(statuses.Databases, finalServiceState) +
-				countStatus(statuses.Jobs, finalServiceState) + countStatus(statuses.Containers, finalServiceState)
+			countStatuses := countStatus(statuses.Applications, finalServiceState) +
+				countStatus(statuses.Databases, finalServiceState) +
+				countStatus(statuses.Jobs, finalServiceState) +
+				countStatus(statuses.Containers, finalServiceState)
 
 			totalStatuses := len(statuses.Applications) + len(statuses.Databases) + len(statuses.Jobs) + len(statuses.Containers)
 
@@ -910,15 +910,17 @@ func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnu
 			}
 
 			// TODO make something more fancy here to display the status. Use UILIVE or something like that
-			log.Println(GetStatusTextWithColor(status.State) + " (" + strconv.Itoa(countStatuses) + "/" + strconv.Itoa(totalStatuses) + " services " + icon + " )")
+			log.Println(GetStatusTextWithColor(statuses.Environment.LastDeploymentState) + " (" + strconv.Itoa(countStatuses) + "/" + strconv.Itoa(totalStatuses) + " services " + icon + " )")
 		}
 
-		if status.State == qovery.STATEENUM_DEPLOYED || status.State == qovery.STATEENUM_DELETED ||
-			status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED {
+		if statuses.Environment.LastDeploymentState == qovery.STATEENUM_DEPLOYED ||
+			statuses.Environment.LastDeploymentState == qovery.STATEENUM_DELETED ||
+			statuses.Environment.LastDeploymentState == qovery.STATEENUM_STOPPED ||
+			statuses.Environment.LastDeploymentState == qovery.STATEENUM_CANCELED {
 			return
 		}
 
-		if strings.HasSuffix(string(status.State), "ERROR") {
+		if strings.HasSuffix(string(statuses.Environment.LastDeploymentState), "ERROR") {
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -1078,7 +1080,7 @@ func IsEnvironmentInATerminalState(envId string, client *qovery.APIClient) bool 
 		return false
 	}
 
-	return isTerminalState(status.State)
+	return isTerminalState(status.LastDeploymentState)
 }
 
 func GetServiceNameByIdAndType(client *qovery.APIClient, serviceId string, serviceType string) string {
