@@ -2,9 +2,8 @@ name: Build and Deploy to ECR
 
 on:
   push:
-    branches: [ feat/* ]
-    #tags:
-     # - '*'
+    tags:
+      - '*'
 
 #on:
 #  workflow_run:
@@ -29,14 +28,11 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-      - name: Get ref tag
-        id: vars
-        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
-      - name: Build, tag, and push image to Amazon ECR
+      - name: Build, Tag, and push image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: qovery-cli
-          IMAGE_TAG: ${{ steps.vars.outputs.tag }}
+          IMAGE_TAG: ${{ github.ref_name }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
