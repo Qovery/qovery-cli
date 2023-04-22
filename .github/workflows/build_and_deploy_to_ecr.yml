@@ -6,6 +6,12 @@ on:
     #tags:
      # - '*'
 
+#on:
+#  workflow_run:
+#    workflows: ["CI build"]
+#    types:
+#      - completed
+
 jobs:
   build:
     name: Build Image
