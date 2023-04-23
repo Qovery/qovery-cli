@@ -1,15 +1,9 @@
-name: Build and Deploy to ECR
+name: Build and Deploy Container
 
 on:
   push:
     tags:
       - '*'
-
-#on:
-#  workflow_run:
-#    workflows: ["CI build"]
-#    types:
-#      - completed
 
 jobs:
   build-linux:
