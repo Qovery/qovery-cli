@@ -5,51 +5,51 @@ on:
     tags:
 
 jobs:
-  qovery:
+  release-and-packages:
     runs-on: ubuntu-20.04
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      -
-        name: Fetch tags
+      # tag/version check
+      - name: Fetch tags
         run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+      - name: Set tag
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
       - name: Ensure tag match the current version
         run: |
-            if [ "v$(grep '// ci-version-check' pkg/version.go | sed -r 's/.+return\s"(.+)".+/\1/')" != "$(git tag | sort --version-sort | tail -1)" ] ; then
-                echo "Tag version do not match application version"
-                exit 1
-            fi
-      -
-        name: Set up Go
+          if [ "v$(grep '// ci-version-check' pkg/version.go | sed -r 's/.+return\s"(.+)".+/\1/')" != "$(git describe --tags --abbrev=0)" ] ; then
+              echo "Tag version do not match application version"
+              exit 1
+          fi
+      # build + lint
+      - name: Set up Go
         uses: actions/setup-go@master
         with:
           go-version: 1.19.x
-      -
-        name: golangci-lint
+      - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
           version: latest
           args: --timeout 5m
-      -
-        name: Run GoReleaser
+      # release new version on GitHub + Mac
+      - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v1
         with:
           version: latest
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
-      -
-        name: Prepare AUR package
+      # archlinux
+      - name: Prepare AUR package
         run: |
           version=$(awk -F'"' '/ci-version-check/{print $2}' pkg/version.go)
           md5version=$(curl -sL https://github.com/Qovery/qovery-cli/archive/v${version}.tar.gz --output - | md5sum | awk '{ print $1 }')
           sed -i "s/pkgver=tbd/pkgver=$version/" PKGBUILD
           echo "md5sums=('${md5version}')" >> PKGBUILD
-      -
-        name: Publish AUR package
+      - name: Publish AUR package
         uses: KSXGitHub/github-actions-deploy-aur@v2.2.4
         with:
           pkgname: qovery-cli
@@ -59,4 +59,44 @@ jobs:
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
           commit_message: Update AUR package
           ssh_keyscan_types: rsa,dsa,ecdsa,ed25519
-          force_push: 'true'
+          force_push: "true"
+  # GitHub action usage
+  container:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      # tag/version check
+      - name: Fetch tags
+        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+      - name: Set tag
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+      - name: Ensure tag match the current version
+        run: |
+          if [ "v$(grep '// ci-version-check' pkg/version.go | sed -r 's/.+return\s"(.+)".+/\1/')" != "$(git describe --tags --abbrev=0)" ] ; then
+              echo "Tag version do not match application version"
+              exit 1
+          fi
+      # docker
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+      - name: Build, Tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: public.ecr.aws/r3m4q3r9
+          ECR_REPOSITORY: qovery-cli
+          IMAGE_TAG: ${{ steps.vars.outputs.tag }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
