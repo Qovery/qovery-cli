@@ -33,7 +33,8 @@ var environmentCloneCmd = &cobra.Command{
 		}
 
 		req := qovery.CloneRequest{
-			Name: newEnvironmentName,
+			Name:                newEnvironmentName,
+			ApplyDeploymentRule: &applyDeploymentRule,
 		}
 
 		if clusterName != "" {
@@ -80,6 +81,7 @@ func init() {
 	environmentCloneCmd.Flags().StringVarP(&newEnvironmentName, "new-environment-name", "n", "", "New Environment Name")
 	environmentCloneCmd.Flags().StringVarP(&clusterName, "cluster", "c", "", "Cluster Name where to clone the environment")
 	environmentCloneCmd.Flags().StringVarP(&environmentType, "environment-type", "t", "", "Environment type for the new environment (DEVELOPMENT|STAGING|PRODUCTION)")
+	environmentCloneCmd.Flags().BoolVarP(&applyDeploymentRule, "apply-deployment-rule", "", false, "Enable applying deployment rules on the new environment instead of having a pristine clone. Default: false")
 
 	_ = environmentCloneCmd.MarkFlagRequired("new-environment-name")
 }
