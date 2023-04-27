@@ -18,7 +18,7 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/posthog/posthog-go v0.0.0-20221221115252-24dfed35d71a
 	github.com/pterm/pterm v0.12.55
-	github.com/qovery/qovery-client-go v0.0.0-20230419070849-fed02719e51f
+	github.com/qovery/qovery-client-go v0.0.0-20230427143744-bbf2d2b31fbb
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
