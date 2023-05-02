@@ -140,7 +140,7 @@ func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequ
 
 func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 	var url = args[0]
-	url = strings.Replace(url, "https://console.qovery.com/platform/", "", 1)
+	url = strings.Replace(url, "https://console.qovery.com/", "", 1)
 	url = strings.Replace(url, "https://new.console.qovery.com/", "", 1)
 	urlSplit := strings.Split(url, "/")
 
