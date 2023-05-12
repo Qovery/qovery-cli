@@ -107,11 +107,21 @@ var serviceListCmd = &cobra.Command{
 
 func getOrganizationProjectEnvironmentContextResourcesIds(qoveryAPIClient *qovery.APIClient) (string, string, string, error) {
 	organizationId, err := getOrganizationContextResourceId(qoveryAPIClient, organizationName)
-	projectId, err := getProjectContextResourceId(qoveryAPIClient, projectName, organizationId)
-	environmentId, err := getEnvironmentContextResourceId(qoveryAPIClient, environmentName, projectId)
 
 	if err != nil {
 		return "", "", "", err
+	}
+
+	projectId, err := getProjectContextResourceId(qoveryAPIClient, projectName, organizationId)
+
+	if err != nil {
+		return organizationId, "", "", err
+	}
+
+	environmentId, err := getEnvironmentContextResourceId(qoveryAPIClient, environmentName, projectId)
+
+	if err != nil {
+		return organizationId, projectId, "", err
 	}
 
 	return organizationId, projectId, environmentId, nil
@@ -119,10 +129,15 @@ func getOrganizationProjectEnvironmentContextResourcesIds(qoveryAPIClient *qover
 
 func getOrganizationProjectContextResourcesIds(qoveryAPIClient *qovery.APIClient) (string, string, error) {
 	organizationId, err := getOrganizationContextResourceId(qoveryAPIClient, organizationName)
-	projectId, err := getProjectContextResourceId(qoveryAPIClient, projectName, organizationId)
 
 	if err != nil {
 		return "", "", err
+	}
+
+	projectId, err := getProjectContextResourceId(qoveryAPIClient, projectName, organizationId)
+
+	if err != nil {
+		return organizationId, "", err
 	}
 
 	return organizationId, projectId, nil
