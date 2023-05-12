@@ -29,7 +29,7 @@ var serviceListCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getContextResourcesId(client)
+		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -105,74 +105,133 @@ var serviceListCmd = &cobra.Command{
 	},
 }
 
-func getContextResourcesId(qoveryAPIClient *qovery.APIClient) (string, string, string, error) {
+func getOrganizationProjectEnvironmentContextResourcesIds(qoveryAPIClient *qovery.APIClient) (string, string, string, error) {
+	organizationId, err := getOrganizationContextResourceId(qoveryAPIClient, organizationName)
+
+	if err != nil {
+		return "", "", "", err
+	}
+
+	projectId, err := getProjectContextResourceId(qoveryAPIClient, projectName, organizationId)
+
+	if err != nil {
+		return organizationId, "", "", err
+	}
+
+	environmentId, err := getEnvironmentContextResourceId(qoveryAPIClient, environmentName, projectId)
+
+	if err != nil {
+		return organizationId, projectId, "", err
+	}
+
+	return organizationId, projectId, environmentId, nil
+}
+
+func getOrganizationProjectContextResourcesIds(qoveryAPIClient *qovery.APIClient) (string, string, error) {
+	organizationId, err := getOrganizationContextResourceId(qoveryAPIClient, organizationName)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	projectId, err := getProjectContextResourceId(qoveryAPIClient, projectName, organizationId)
+
+	if err != nil {
+		return organizationId, "", err
+	}
+
+	return organizationId, projectId, nil
+}
+
+func getOrganizationContextResourceId(qoveryAPIClient *qovery.APIClient, organizationName string) (string, error) {
 	var organizationId string
-	var projectId string
-	var environmentId string
 
 	if strings.TrimSpace(organizationName) == "" {
 		id, _, err := utils.CurrentOrganization()
 		if err != nil {
-			return "", "", "", err
+			return "", err
 		}
 
-		organizationId = string(id)
-	} else {
-		organizations, _, err := qoveryAPIClient.OrganizationMainCallsApi.ListOrganization(context.Background()).Execute()
-
-		if err != nil {
-			return "", "", "", err
-		}
-
-		organization := utils.FindByOrganizationName(organizations.GetResults(), organizationName)
-		if organization != nil {
-			organizationId = organization.Id
-		}
+		return string(id), nil
 	}
+
+	// find organization by name
+	organizations, _, err := qoveryAPIClient.OrganizationMainCallsApi.ListOrganization(context.Background()).Execute()
+
+	if err != nil {
+		return "", err
+	}
+
+	organization := utils.FindByOrganizationName(organizations.GetResults(), organizationName)
+	if organization != nil {
+		organizationId = organization.Id
+	}
+
+	return organizationId, nil
+}
+
+func getProjectContextResourceId(qoveryAPIClient *qovery.APIClient, projectName string, organizationId string) (string, error) {
+	var projectId string
 
 	if strings.TrimSpace(projectName) == "" {
 		id, _, err := utils.CurrentProject()
 		if err != nil {
-			return "", "", "", err
+			return "", err
 		}
 
-		projectId = string(id)
-	} else {
-		// find project id by name
-		projects, _, err := qoveryAPIClient.ProjectsApi.ListProject(context.Background(), organizationId).Execute()
-
-		if err != nil {
-			return "", "", "", err
-		}
-
-		project := utils.FindByProjectName(projects.GetResults(), projectName)
-		if project != nil {
-			projectId = project.Id
-		}
+		return string(id), nil
 	}
+
+	if strings.TrimSpace(organizationId) == "" {
+		// avoid making a call to the API if the organization id is not set
+		return "", nil
+	}
+
+	// find project id by name
+	projects, _, err := qoveryAPIClient.ProjectsApi.ListProject(context.Background(), organizationId).Execute()
+
+	if err != nil {
+		return "", err
+	}
+
+	project := utils.FindByProjectName(projects.GetResults(), projectName)
+	if project != nil {
+		projectId = project.Id
+	}
+
+	return projectId, nil
+}
+
+func getEnvironmentContextResourceId(qoveryAPIClient *qovery.APIClient, environmentName string, projectId string) (string, error) {
+	var environmentId string
 
 	if strings.TrimSpace(environmentName) == "" {
 		id, _, err := utils.CurrentEnvironment()
 		if err != nil {
-			return "", "", "", err
+			return "", err
 		}
 
-		environmentId = string(id)
-	} else {
-		// find environment id by name
-		environments, _, err := qoveryAPIClient.EnvironmentsApi.ListEnvironment(context.Background(), projectId).Execute()
-
-		if err != nil {
-			return "", "", "", err
-		}
-
-		environment := utils.FindByEnvironmentName(environments.GetResults(), environmentName)
-		if environment != nil {
-			environmentId = environment.Id
-		}
+		return string(id), nil
 	}
 
-	return organizationId, projectId, environmentId, nil
+	if strings.TrimSpace(projectId) == "" {
+		// avoid making a call to the API if the project id is not set
+		return "", nil
+	}
+
+	// find environment id by name
+	environments, _, err := qoveryAPIClient.EnvironmentsApi.ListEnvironment(context.Background(), projectId).Execute()
+
+	if err != nil {
+		return "", err
+	}
+
+	environment := utils.FindByEnvironmentName(environments.GetResults(), environmentName)
+	if environment != nil {
+		environmentId = environment.Id
+	}
+
+	return environmentId, nil
 }
 
 func init() {
