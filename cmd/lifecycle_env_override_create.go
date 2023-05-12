@@ -24,7 +24,7 @@ var lifecycleEnvOverrideCreateCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, projectId, envId, err := getContextResourcesId(client)
+		_, projectId, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)

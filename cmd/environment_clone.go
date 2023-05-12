@@ -24,7 +24,7 @@ var environmentCloneCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		orgId, _, envId, err := getContextResourcesId(client)
+		orgId, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)

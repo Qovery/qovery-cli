@@ -22,7 +22,7 @@ var environmentListCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, projectId, _, err := getContextResourcesId(client)
+		_, projectId, err := getOrganizationProjectContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)

@@ -38,7 +38,7 @@ var containerDeployCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getContextResourcesId(client)
+		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)

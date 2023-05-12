@@ -22,7 +22,7 @@ var environmentStageCreateCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, environmentId, err := getContextResourcesId(client)
+		_, _, environmentId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
