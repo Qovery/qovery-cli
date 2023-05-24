@@ -136,6 +136,7 @@ var cronjobCloneCmd = &cobra.Command{
 			Port:               job.Port,
 			Source:             &source,
 			Schedule:           &schedule,
+			Healthchecks:       job.Healthchecks,
 		}
 
 		createdService, res, err := client.JobsApi.CreateJob(context.Background(), targetEnvironment.Id).JobRequest(req).Execute()

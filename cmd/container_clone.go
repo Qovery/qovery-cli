@@ -122,6 +122,7 @@ var containerCloneCmd = &cobra.Command{
 			MinRunningInstances: &container.MinRunningInstances,
 			MaxRunningInstances: &container.MaxRunningInstances,
 			AutoPreview:         &container.AutoPreview,
+			Healthchecks:        container.Healthchecks,
 		}
 
 		createdService, res, err := client.ContainersApi.CreateContainer(context.Background(), targetEnvironment.Id).ContainerRequest(req).Execute()

@@ -130,7 +130,7 @@ var applicationCloneCmd = &cobra.Command{
 			Memory:              application.Memory,
 			MinRunningInstances: application.MinRunningInstances,
 			MaxRunningInstances: application.MaxRunningInstances,
-			Healthcheck:         application.Healthcheck,
+			Healthchecks:        application.Healthchecks,
 			AutoPreview:         application.AutoPreview,
 			Arguments:           application.Arguments,
 			Entrypoint:          application.Entrypoint,

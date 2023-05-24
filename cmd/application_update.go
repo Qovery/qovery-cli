@@ -74,7 +74,7 @@ var applicationUpdateCmd = &cobra.Command{
 			Memory:              application.Memory,
 			MinRunningInstances: application.MinRunningInstances,
 			MaxRunningInstances: application.MaxRunningInstances,
-			Healthcheck:         application.Healthcheck,
+			Healthchecks:        application.Healthchecks,
 			AutoPreview:         application.AutoPreview,
 			Ports:               application.Ports,
 			Storage:             storage,
