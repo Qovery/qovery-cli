@@ -18,12 +18,12 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/posthog/posthog-go v0.0.0-20221221115252-24dfed35d71a
 	github.com/pterm/pterm v0.12.55
-	github.com/qovery/qovery-client-go v0.0.0-20230427143744-bbf2d2b31fbb
+	github.com/qovery/qovery-client-go v0.0.0-20230524084508-c8269a0ccdb1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
-	golang.org/x/net v0.9.0
-	golang.org/x/sys v0.7.0
+	golang.org/x/net v0.10.0
+	golang.org/x/sys v0.8.0
 )
 
 require (
@@ -66,8 +66,8 @@ require (
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
 	golang.org/x/crypto v0.7.0 // indirect
-	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/term v0.7.0 // indirect
+	golang.org/x/oauth2 v0.8.0 // indirect
+	golang.org/x/term v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
