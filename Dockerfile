@@ -1,4 +1,4 @@
-FROM golang:1.19
+FROM golang:1.19 as builder
 
 # Set the working directory within the container
 WORKDIR /app
@@ -12,11 +12,18 @@ RUN go mod download
 # Copy the source code to the container's working directory
 COPY . .
 
-# make the exec.sh file executable
-RUN chmod +x ./docker/exec.sh
-
 # Build the Go application
 RUN go build -o qovery
+
+FROM debian:bookworm-slim as runner
+
+WORKDIR /app
+
+# make the exec.sh file executable
+COPY docker/ docker
+RUN chmod +x ./docker/exec.sh
+
+COPY --from=builder /app/qovery /app/qovery
 
 # Add the /app directory to the PATH environment variable
 ENV PATH="/app:${PATH}"
