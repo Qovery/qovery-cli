@@ -17,6 +17,12 @@ RUN go build -o qovery
 
 FROM debian:bookworm-slim as runner
 
+RUN apt-get update && \
+    apt-get -y upgrade && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists
+
 WORKDIR /app
 
 # make the exec.sh file executable
