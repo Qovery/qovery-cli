@@ -49,11 +49,11 @@ var environmentListCmd = &cobra.Command{
 		var data [][]string
 
 		for _, env := range environments.GetResults() {
-			data = append(data, []string{env.GetName(), *env.ClusterName, string(env.Mode),
+			data = append(data, []string{env.Id, env.GetName(), *env.ClusterName, string(env.Mode),
 				utils.GetEnvironmentStatus(statuses.GetResults(), env.Id), env.UpdatedAt.String()})
 		}
 
-		err = utils.PrintTable([]string{"Name", "Cluster", "Type", "Status", "Last Update"}, data)
+		err = utils.PrintTable([]string{"Id", "Name", "Cluster", "Type", "Status", "Last Update"}, data)
 
 		if err != nil {
 			utils.PrintlnError(err)
