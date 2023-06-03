@@ -49,11 +49,11 @@ var cronjobListCmd = &cobra.Command{
 		var data [][]string
 
 		for _, cronjob := range cronjobs {
-			data = append(data, []string{cronjob.Name, "Cronjob",
+			data = append(data, []string{cronjob.Id, cronjob.Name, "Cronjob",
 				utils.GetStatus(statuses.GetJobs(), cronjob.Id), cronjob.UpdatedAt.String()})
 		}
 
-		err = utils.PrintTable([]string{"Name", "Type", "Status", "Last Update"}, data)
+		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Last Update"}, data)
 
 		if err != nil {
 			utils.PrintlnError(err)

@@ -50,11 +50,11 @@ var lifecycleListCmd = &cobra.Command{
 		var data [][]string
 
 		for _, lifecycle := range lifecycles {
-			data = append(data, []string{lifecycle.Name, "Lifecycle",
+			data = append(data, []string{lifecycle.Id, lifecycle.Name, "Lifecycle",
 				utils.GetStatus(statuses.GetJobs(), lifecycle.Id), lifecycle.UpdatedAt.String()})
 		}
 
-		err = utils.PrintTable([]string{"Name", "Type", "Status", "Last Update"}, data)
+		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Last Update"}, data)
 
 		if err != nil {
 			utils.PrintlnError(err)

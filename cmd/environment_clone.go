@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"context"
+	"github.com/go-errors/errors"
+	"io"
 	"os"
 	"strings"
 
@@ -61,9 +63,15 @@ var environmentCloneCmd = &cobra.Command{
 			}
 		}
 
-		_, _, err = client.EnvironmentActionsApi.CloneEnvironment(context.Background(), envId).CloneRequest(req).Execute()
+		_, res, err := client.EnvironmentActionsApi.CloneEnvironment(context.Background(), envId).CloneRequest(req).Execute()
 
 		if err != nil {
+			// print http body error message
+			if !strings.Contains(res.Status, "200") {
+				result, _ := io.ReadAll(res.Body)
+				utils.PrintlnError(errors.Errorf("status code: %s ; body: %s", res.Status, string(result)))
+			}
+
 			utils.PrintlnError(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011

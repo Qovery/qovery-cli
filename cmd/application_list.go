@@ -50,11 +50,11 @@ var applicationListCmd = &cobra.Command{
 		var data [][]string
 
 		for _, application := range applications.GetResults() {
-			data = append(data, []string{*application.Name, "Application",
+			data = append(data, []string{application.Id, *application.Name, "Application",
 				utils.GetStatus(statuses.GetApplications(), application.Id), application.UpdatedAt.String()})
 		}
 
-		err = utils.PrintTable([]string{"Name", "Type", "Status", "Last Update"}, data)
+		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Last Update"}, data)
 
 		if err != nil {
 			utils.PrintlnError(err)
