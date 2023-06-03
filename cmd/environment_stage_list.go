@@ -51,6 +51,7 @@ var environmentStageListCmd = &cobra.Command{
 			var data [][]string
 			for _, service := range stage.GetServices() {
 				data = append(data, []string{
+					service.Id,
 					service.GetServiceType(),
 					utils.GetServiceNameByIdAndType(client, service.GetServiceId(), service.GetServiceType()),
 				})
@@ -59,7 +60,7 @@ var environmentStageListCmd = &cobra.Command{
 			if len(stage.GetServices()) == 0 {
 				utils.Println("<no service>")
 			} else {
-				err = utils.PrintTable([]string{"Type", "Name"}, data)
+				err = utils.PrintTable([]string{"Id", "Type", "Name"}, data)
 			}
 
 			utils.Println("")

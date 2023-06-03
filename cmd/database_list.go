@@ -71,11 +71,11 @@ var databaseListCmd = &cobra.Command{
 				password = res.Password
 			}
 
-			data = append(data, []string{database.Name, "Database",
+			data = append(data, []string{database.Id, database.Name, "Database",
 				utils.GetStatus(statuses.GetDatabases(), database.Id), res.Host, strconv.Itoa(int(res.Port)), login, password, database.UpdatedAt.String()})
 		}
 
-		err = utils.PrintTable([]string{"Name", "Type", "Status", "Host", "Port", "Login", "Password", "Last Update"}, data)
+		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Host", "Port", "Login", "Password", "Last Update"}, data)
 
 		if err != nil {
 			utils.PrintlnError(err)

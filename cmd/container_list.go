@@ -2,10 +2,9 @@ package cmd
 
 import (
 	"context"
-	"os"
-
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var containerListCmd = &cobra.Command{
@@ -49,11 +48,11 @@ var containerListCmd = &cobra.Command{
 		var data [][]string
 
 		for _, container := range containers.GetResults() {
-			data = append(data, []string{container.Name, "Container",
+			data = append(data, []string{container.Id, container.Name, "Container",
 				utils.GetStatus(statuses.GetContainers(), container.Id), container.UpdatedAt.String()})
 		}
 
-		err = utils.PrintTable([]string{"Name", "Type", "Status", "Last Update"}, data)
+		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Last Update"}, data)
 
 		if err != nil {
 			utils.PrintlnError(err)

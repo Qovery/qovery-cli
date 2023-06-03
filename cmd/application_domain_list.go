@@ -65,6 +65,7 @@ var applicationDomainListCmd = &cobra.Command{
 			customDomainsSet[customDomain.Domain] = true
 
 			data = append(data, []string{
+				customDomain.Id,
 				"CUSTOM_DOMAIN",
 				customDomain.Domain,
 				*customDomain.ValidationDomain,
@@ -84,6 +85,7 @@ var applicationDomainListCmd = &cobra.Command{
 				domain := strings.ReplaceAll(*link.Url, "https://", "")
 				if !customDomainsSet[domain] {
 					data = append(data, []string{
+						"N/A",
 						"BUILT_IN_DOMAIN",
 						domain,
 						"N/A",
@@ -92,7 +94,7 @@ var applicationDomainListCmd = &cobra.Command{
 			}
 		}
 
-		err = utils.PrintTable([]string{"Type", "Domain", "Validation Domain"}, data)
+		err = utils.PrintTable([]string{"Id", "Type", "Domain", "Validation Domain"}, data)
 
 		if err != nil {
 			utils.PrintlnError(err)
