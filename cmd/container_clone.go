@@ -3,9 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/go-errors/errors"
 	"github.com/pterm/pterm"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
@@ -26,7 +28,7 @@ var containerCloneCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		organizationId, projectId, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -34,140 +36,69 @@ var containerCloneCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
+		container, err := getContainerContextResource(client, containerName, envId)
 
 		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		container := utils.FindByContainerName(containers.GetResults(), containerName)
-
-		if container == nil {
 			utils.PrintlnError(fmt.Errorf("container %s not found", containerName))
 			utils.PrintlnInfo("You can list all containers with: qovery container list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		sourceEnvironment, _, err := client.EnvironmentMainCallsApi.GetEnvironment(context.Background(), envId).Execute()
+		targetProjectId := projectId // use same project as the source project
+		if targetProjectName != "" {
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			targetProjectId, err = getProjectContextResourceId(client, targetProjectName, organizationId)
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
 		}
 
-		environments, _, err := client.EnvironmentsApi.ListEnvironment(context.Background(), sourceEnvironment.Project.Id).Execute()
+		targetEnvironmentId := envId // use same env as the source env
+		if targetEnvironmentName != "" {
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+			targetEnvironmentId, err = getEnvironmentContextResourceId(client, targetEnvironmentName, targetProjectId)
 
-		if targetEnvironmentName == "" {
-			// use same env name as the source env
-			targetEnvironmentName = sourceEnvironment.Name
-		}
-
-		targetEnvironment := utils.FindByEnvironmentName(environments.GetResults(), targetEnvironmentName)
-
-		if targetEnvironment == nil {
-			utils.PrintlnError(fmt.Errorf("environment %s not found", targetEnvironmentName))
-			utils.PrintlnInfo("You can list all environments with: qovery environment list")
-			os.Exit(1)
-		}
-
-		var storage []qovery.ServiceStorageRequestStorageInner
-
-		for _, s := range container.Storage {
-			storage = append(storage, qovery.ServiceStorageRequestStorageInner{
-				Type:       s.Type,
-				Size:       s.Size,
-				MountPoint: s.MountPoint,
-			})
-		}
-
-		var ports []qovery.ServicePortRequestPortsInner
-
-		for _, p := range container.Ports {
-			ports = append(ports, qovery.ServicePortRequestPortsInner{
-				Name:               p.Name,
-				InternalPort:       p.InternalPort,
-				ExternalPort:       p.ExternalPort,
-				PubliclyAccessible: p.PubliclyAccessible,
-				IsDefault:          p.IsDefault,
-				Protocol:           &p.Protocol,
-			})
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
 		}
 
 		if targetContainerName == "" {
+			// use same container name as the source container
 			targetContainerName = container.Name
 		}
 
-		req := qovery.ContainerRequest{
-			Storage:             storage,
-			Ports:               ports,
-			Name:                targetContainerName,
-			Description:         container.Description,
-			RegistryId:          container.Registry.Id,
-			ImageName:           container.ImageName,
-			Tag:                 container.Tag,
-			Arguments:           container.Arguments,
-			Entrypoint:          container.Entrypoint,
-			Cpu:                 &container.Cpu,
-			Memory:              &container.Memory,
-			MinRunningInstances: &container.MinRunningInstances,
-			MaxRunningInstances: &container.MaxRunningInstances,
-			AutoPreview:         &container.AutoPreview,
-			Healthchecks:        container.Healthchecks,
+		req := qovery.CloneContainerRequest{
+			Name:          targetContainerName,
+			EnvironmentId: targetEnvironmentId,
 		}
 
-		createdService, res, err := client.ContainersApi.CreateContainer(context.Background(), targetEnvironment.Id).ContainerRequest(req).Execute()
+		clonedService, res, err := client.ContainersApi.CloneContainer(context.Background(), container.Id).CloneContainerRequest(req).Execute()
 
 		if err != nil {
-			utils.PrintlnError(err)
-
-			bodyBytes, err := io.ReadAll(res.Body)
-			if err != nil {
-				return
+			// print http body error message
+			if !strings.Contains(res.Status, "200") {
+				result, _ := io.ReadAll(res.Body)
+				utils.PrintlnError(errors.Errorf("status code: %s ; body: %s", res.Status, string(result)))
 			}
 
-			utils.PrintlnError(fmt.Errorf("unable to clone container %s", string(bodyBytes)))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		deploymentStageId := utils.GetDeploymentStageId(client, container.Id)
-
-		_, _, err = client.DeploymentStageMainCallsApi.AttachServiceToDeploymentStage(context.Background(), deploymentStageId, createdService.Id).Execute()
-
-		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		// clone advanced settings
-		settings, _, err := client.ContainerConfigurationApi.GetContainerAdvancedSettings(context.Background(), container.Id).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		name := ""
+		if clonedService != nil {
+			name = clonedService.Name
 		}
 
-		_, _, err = client.ContainerConfigurationApi.EditContainerAdvancedSettings(context.Background(), createdService.Id).ContainerAdvancedSettings(*settings).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		utils.Println(fmt.Sprintf("Container %s cloned!", pterm.FgBlue.Sprintf(containerName)))
+		utils.Println(fmt.Sprintf("Container %s cloned!", pterm.FgBlue.Sprintf(name)))
 	},
 }
 
@@ -177,6 +108,7 @@ func init() {
 	containerCloneCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	containerCloneCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	containerCloneCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
+	containerCloneCmd.Flags().StringVarP(&targetProjectName, "target-project", "", "", "Target Project Name")
 	containerCloneCmd.Flags().StringVarP(&targetEnvironmentName, "target-environment", "", "", "Target Environment Name")
 	containerCloneCmd.Flags().StringVarP(&targetContainerName, "target-container-name", "", "", "Target Container Name")
 
