@@ -234,6 +234,24 @@ func getEnvironmentContextResourceId(qoveryAPIClient *qovery.APIClient, environm
 	return environmentId, nil
 }
 
+func getApplicationContextResource(qoveryAPIClient *qovery.APIClient, applicationName string, environmentId string) (*qovery.Application, error) {
+	if strings.TrimSpace(environmentId) == "" {
+		// avoid making a call to the API if the environment id is not set
+		return nil, nil
+	}
+
+	// find applications id by name
+	applications, _, err := qoveryAPIClient.ApplicationsApi.ListApplication(context.Background(), environmentId).Execute()
+
+	if err != nil {
+		return nil, err
+	}
+
+	application := utils.FindByApplicationName(applications.GetResults(), applicationName)
+
+	return application, nil
+}
+
 func init() {
 	serviceCmd.AddCommand(serviceListCmd)
 	serviceListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")

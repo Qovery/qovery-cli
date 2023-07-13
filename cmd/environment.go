@@ -11,6 +11,7 @@ var newEnvironmentName string
 var clusterName string
 var environmentType string
 var applyDeploymentRule bool
+var targetProjectName string
 
 var environmentCmd = &cobra.Command{
 	Use:   "environment",
