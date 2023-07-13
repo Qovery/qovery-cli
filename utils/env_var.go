@@ -131,7 +131,7 @@ func FromEnvironmentVariableToEnvVarLineOutput(envVar qovery.EnvironmentVariable
 
 	return EnvVarLineOutput{
 		Key:               envVar.Key,
-		Value:             &envVar.Value,
+		Value:             envVar.Value,
 		UpdatedAt:         envVar.UpdatedAt,
 		Service:           envVar.ServiceName,
 		Scope:             string(envVar.Scope),
@@ -175,7 +175,7 @@ func CreateEnvironmentVariable(
 ) error {
 	req := qovery.EnvironmentVariableRequest{
 		Key:       key,
-		Value:     value,
+		Value:     &value,
 		MountPath: qovery.NullableString{},
 	}
 
@@ -679,10 +679,13 @@ func CreateEnvironmentVariableOverride(
 	environmentId string,
 	serviceId string,
 	parentEnvironmentVariableId string,
-	value string,
+	value *string,
 	scope string,
 ) error {
-	v := *qovery.NewValue(value)
+	v := *qovery.NewValue()
+	if value != nil {
+		v.SetValue(*value)
+	}
 
 	switch strings.ToUpper(scope) {
 	case "PROJECT":
@@ -736,10 +739,13 @@ func CreateSecretOverride(
 	environmentId string,
 	serviceId string,
 	parentSecretId string,
-	value string,
+	value *string,
 	scope string,
 ) error {
-	v := *qovery.NewValue(value)
+	v := *qovery.NewValue()
+	if value != nil {
+		v.SetValue(*value)
+	}
 
 	switch strings.ToUpper(scope) {
 	case "PROJECT":
@@ -794,7 +800,7 @@ func CreateOverride(
 	serviceId string,
 	serviceType ServiceType,
 	key string,
-	value string,
+	value *string,
 	scope string,
 ) error {
 	envVars, err := ListEnvironmentVariables(client, serviceId, serviceType)

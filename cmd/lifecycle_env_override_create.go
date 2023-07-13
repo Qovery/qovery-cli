@@ -49,7 +49,7 @@ var lifecycleEnvOverrideCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateOverride(client, projectId, envId, lifecycle.Id, utils.JobType, utils.Key, utils.Value, utils.JobScope)
+		err = utils.CreateOverride(client, projectId, envId, lifecycle.Id, utils.JobType, utils.Key, &utils.Value, utils.JobScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -72,6 +72,5 @@ func init() {
 	lifecycleEnvOverrideCreateCmd.Flags().StringVarP(&utils.JobScope, "scope", "", "JOB", "Scope of this alias <PROJECT|ENVIRONMENT|JOB>")
 
 	_ = lifecycleEnvOverrideCreateCmd.MarkFlagRequired("key")
-	_ = lifecycleEnvOverrideCreateCmd.MarkFlagRequired("value")
 	_ = lifecycleEnvOverrideCreateCmd.MarkFlagRequired("lifecycle")
 }

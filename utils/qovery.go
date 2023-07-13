@@ -642,7 +642,7 @@ func AddEnvironmentVariable(application Id, key string, value string) error {
 	client := GetQoveryClient(tokenType, token)
 
 	_, res, err := client.ApplicationEnvironmentVariableApi.CreateApplicationEnvironmentVariable(context.Background(), string(application)).EnvironmentVariableRequest(
-		qovery.EnvironmentVariableRequest{Key: key, Value: value},
+		qovery.EnvironmentVariableRequest{Key: key, Value: &value},
 	).Execute()
 
 	if err != nil {

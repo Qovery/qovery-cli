@@ -49,7 +49,7 @@ var applicationEnvOverrideCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateOverride(client, projectId, envId, application.Id, utils.ApplicationType, utils.Key, utils.Value, utils.ApplicationScope)
+		err = utils.CreateOverride(client, projectId, envId, application.Id, utils.ApplicationType, utils.Key, &utils.Value, utils.ApplicationScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -72,6 +72,5 @@ func init() {
 	applicationEnvOverrideCreateCmd.Flags().StringVarP(&utils.ApplicationScope, "scope", "", "APPLICATION", "Scope of this alias <PROJECT|ENVIRONMENT|APPLICATION>")
 
 	_ = applicationEnvOverrideCreateCmd.MarkFlagRequired("key")
-	_ = applicationEnvOverrideCreateCmd.MarkFlagRequired("value")
 	_ = applicationEnvOverrideCreateCmd.MarkFlagRequired("application")
 }
