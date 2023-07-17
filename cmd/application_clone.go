@@ -3,8 +3,10 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/go-errors/errors"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
@@ -26,7 +28,7 @@ var applicationCloneCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		organizationId, projectId, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -34,151 +36,69 @@ var applicationCloneCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
+		application, err := getApplicationContextResource(client, applicationName, envId)
 
 		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		application := utils.FindByApplicationName(applications.GetResults(), applicationName)
-
-		if application == nil {
 			utils.PrintlnError(fmt.Errorf("application %s not found", applicationName))
 			utils.PrintlnInfo("You can list all applications with: qovery application list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		sourceEnvironment, _, err := client.EnvironmentMainCallsApi.GetEnvironment(context.Background(), envId).Execute()
+		targetProjectId := projectId // use same project as the source project
+		if targetProjectName != "" {
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			targetProjectId, err = getProjectContextResourceId(client, targetProjectName, organizationId)
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
 		}
 
-		environments, _, err := client.EnvironmentsApi.ListEnvironment(context.Background(), sourceEnvironment.Project.Id).Execute()
+		targetEnvironmentId := envId // use same env as the source env
+		if targetEnvironmentName != "" {
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+			targetEnvironmentId, err = getEnvironmentContextResourceId(client, targetEnvironmentName, targetProjectId)
 
-		if targetEnvironmentName == "" {
-			// use same env name as the source env
-			targetEnvironmentName = sourceEnvironment.Name
-		}
-
-		targetEnvironment := utils.FindByEnvironmentName(environments.GetResults(), targetEnvironmentName)
-
-		if targetEnvironment == nil {
-			utils.PrintlnError(fmt.Errorf("environment %s not found", targetEnvironmentName))
-			utils.PrintlnInfo("You can list all environments with: qovery environment list")
-			os.Exit(1)
-		}
-
-		var storage []qovery.ServiceStorageRequestStorageInner
-
-		for _, s := range application.Storage {
-			storage = append(storage, qovery.ServiceStorageRequestStorageInner{
-				Type:       s.Type,
-				Size:       s.Size,
-				MountPoint: s.MountPoint,
-			})
-		}
-
-		var ports []qovery.ServicePortRequestPortsInner
-
-		for _, p := range application.Ports {
-			ports = append(ports, qovery.ServicePortRequestPortsInner{
-				Name:               p.Name,
-				InternalPort:       p.InternalPort,
-				ExternalPort:       p.ExternalPort,
-				PubliclyAccessible: p.PubliclyAccessible,
-				IsDefault:          p.IsDefault,
-				Protocol:           &p.Protocol,
-			})
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
 		}
 
 		if targetApplicationName == "" {
+			// use same app name as the source app
 			targetApplicationName = *application.Name
 		}
 
-		var gitRepository qovery.ApplicationGitRepositoryRequest
-
-		if application.GitRepository != nil {
-			gitRepository = qovery.ApplicationGitRepositoryRequest{
-				Url:      *application.GitRepository.Url,
-				Branch:   application.GitRepository.Branch,
-				RootPath: application.GitRepository.RootPath,
-			}
+		req := qovery.CloneApplicationRequest{
+			Name:          targetApplicationName,
+			EnvironmentId: targetEnvironmentId,
 		}
 
-		req := qovery.ApplicationRequest{
-			Storage:             storage,
-			Ports:               ports,
-			Name:                targetApplicationName,
-			Description:         application.Description,
-			GitRepository:       gitRepository,
-			BuildMode:           application.BuildMode,
-			DockerfilePath:      application.DockerfilePath,
-			BuildpackLanguage:   application.BuildpackLanguage,
-			Cpu:                 application.Cpu,
-			Memory:              application.Memory,
-			MinRunningInstances: application.MinRunningInstances,
-			MaxRunningInstances: application.MaxRunningInstances,
-			Healthchecks:        application.Healthchecks,
-			AutoPreview:         application.AutoPreview,
-			Arguments:           application.Arguments,
-			Entrypoint:          application.Entrypoint,
-		}
-
-		createdService, res, err := client.ApplicationsApi.CreateApplication(context.Background(), targetEnvironment.Id).ApplicationRequest(req).Execute()
+		clonedService, res, err := client.ApplicationsApi.CloneApplication(context.Background(), application.Id).CloneApplicationRequest(req).Execute()
 
 		if err != nil {
-			utils.PrintlnError(err)
-
-			bodyBytes, err := io.ReadAll(res.Body)
-			if err != nil {
-				return
+			// print http body error message
+			if !strings.Contains(res.Status, "200") {
+				result, _ := io.ReadAll(res.Body)
+				utils.PrintlnError(errors.Errorf("status code: %s ; body: %s", res.Status, string(result)))
 			}
 
-			utils.PrintlnError(fmt.Errorf("unable to clone application %s", string(bodyBytes)))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		deploymentStageId := utils.GetDeploymentStageId(client, application.Id)
-
-		_, _, err = client.DeploymentStageMainCallsApi.AttachServiceToDeploymentStage(context.Background(), deploymentStageId, createdService.Id).Execute()
-
-		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		// clone advanced settings
-		settings, _, err := client.ApplicationConfigurationApi.GetAdvancedSettings(context.Background(), application.Id).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		name := ""
+		if clonedService != nil {
+			name = *clonedService.Name
 		}
 
-		_, _, err = client.ApplicationConfigurationApi.EditAdvancedSettings(context.Background(), createdService.Id).ApplicationAdvancedSettings(*settings).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		utils.Println(fmt.Sprintf("Application %s cloned!", pterm.FgBlue.Sprintf(applicationName)))
+		utils.Println(fmt.Sprintf("Application %s cloned!", pterm.FgBlue.Sprintf(name)))
 	},
 }
 
@@ -188,6 +108,7 @@ func init() {
 	applicationCloneCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	applicationCloneCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	applicationCloneCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
+	applicationCloneCmd.Flags().StringVarP(&targetProjectName, "target-project", "", "", "Target Project Name")
 	applicationCloneCmd.Flags().StringVarP(&targetEnvironmentName, "target-environment", "", "", "Target Environment Name")
 	applicationCloneCmd.Flags().StringVarP(&targetApplicationName, "target-application-name", "", "", "Target Application Name")
 
