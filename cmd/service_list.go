@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"os"
 	"strings"
 
@@ -249,7 +250,55 @@ func getApplicationContextResource(qoveryAPIClient *qovery.APIClient, applicatio
 
 	application := utils.FindByApplicationName(applications.GetResults(), applicationName)
 
+	if application == nil {
+		return nil, errors.New("application not found")
+	}
+
 	return application, nil
+}
+
+func getContainerContextResource(qoveryAPIClient *qovery.APIClient, containerName string, environmentId string) (*qovery.ContainerResponse, error) {
+	if strings.TrimSpace(environmentId) == "" {
+		// avoid making a call to the API if the environment id is not set
+		return nil, nil
+	}
+
+	// find containers id by name
+	containers, _, err := qoveryAPIClient.ContainersApi.ListContainer(context.Background(), environmentId).Execute()
+
+	if err != nil {
+		return nil, err
+	}
+
+	container := utils.FindByContainerName(containers.GetResults(), containerName)
+
+	if container == nil {
+		return nil, errors.New("container not found")
+	}
+
+	return container, nil
+}
+
+func getJobContextResource(qoveryAPIClient *qovery.APIClient, jobName string, environmentId string) (*qovery.JobResponse, error) {
+	if strings.TrimSpace(environmentId) == "" {
+		// avoid making a call to the API if the environment id is not set
+		return nil, nil
+	}
+
+	// find jobs id by name
+	jobs, _, err := qoveryAPIClient.JobsApi.ListJobs(context.Background(), environmentId).Execute()
+
+	if err != nil {
+		return nil, err
+	}
+
+	job := utils.FindByJobName(jobs.GetResults(), jobName)
+
+	if job == nil {
+		return nil, errors.New("job not found")
+	}
+
+	return job, nil
 }
 
 func init() {
