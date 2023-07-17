@@ -7,7 +7,6 @@ import (
 	"github.com/pterm/pterm"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
@@ -83,7 +82,7 @@ var containerCloneCmd = &cobra.Command{
 
 		if err != nil {
 			// print http body error message
-			if !strings.Contains(res.Status, "200") {
+			if res.StatusCode != 200 {
 				result, _ := io.ReadAll(res.Body)
 				utils.PrintlnError(errors.Errorf("status code: %s ; body: %s", res.Status, string(result)))
 			}
