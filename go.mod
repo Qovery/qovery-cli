@@ -17,6 +17,7 @@ require (
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
+	github.com/pkg/errors v0.9.1
 	github.com/posthog/posthog-go v0.0.0-20221221115252-24dfed35d71a
 	github.com/pterm/pterm v0.12.55
 	github.com/qovery/qovery-client-go v0.0.0-20230713092123-f49e1c39d25c

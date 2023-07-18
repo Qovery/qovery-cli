@@ -8,6 +8,7 @@ import (
 
 var containerName string
 var containerNames string
+var containerImageName string
 var containerTag string
 var targetContainerName string
 var containerCustomDomain string

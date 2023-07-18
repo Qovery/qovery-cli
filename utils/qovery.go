@@ -1469,6 +1469,8 @@ func DeployService(client *qovery.APIClient, envId string, serviceId string, ser
 						return "", err
 					}
 
+					// get current deployment id
+
 					if watchFlag {
 						WatchApplication(serviceId, envId, client)
 					}
