@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"context"
-	"errors"
+	"github.com/go-errors/errors"
 	"os"
 	"strings"
 
@@ -145,8 +145,6 @@ func getOrganizationProjectContextResourcesIds(qoveryAPIClient *qovery.APIClient
 }
 
 func getOrganizationContextResourceId(qoveryAPIClient *qovery.APIClient, organizationName string) (string, error) {
-	var organizationId string
-
 	if strings.TrimSpace(organizationName) == "" {
 		id, _, err := utils.CurrentOrganization()
 		if err != nil {
@@ -164,16 +162,14 @@ func getOrganizationContextResourceId(qoveryAPIClient *qovery.APIClient, organiz
 	}
 
 	organization := utils.FindByOrganizationName(organizations.GetResults(), organizationName)
-	if organization != nil {
-		organizationId = organization.Id
+	if organization == nil {
+		return "", errors.Errorf("organization %s not found", organizationName)
 	}
 
-	return organizationId, nil
+	return organization.Id, nil
 }
 
 func getProjectContextResourceId(qoveryAPIClient *qovery.APIClient, projectName string, organizationId string) (string, error) {
-	var projectId string
-
 	if strings.TrimSpace(projectName) == "" {
 		id, _, err := utils.CurrentProject()
 		if err != nil {
@@ -196,16 +192,14 @@ func getProjectContextResourceId(qoveryAPIClient *qovery.APIClient, projectName 
 	}
 
 	project := utils.FindByProjectName(projects.GetResults(), projectName)
-	if project != nil {
-		projectId = project.Id
+	if project == nil {
+		return "", errors.Errorf("project %s not found", projectName)
 	}
 
-	return projectId, nil
+	return project.Id, nil
 }
 
 func getEnvironmentContextResourceId(qoveryAPIClient *qovery.APIClient, environmentName string, projectId string) (string, error) {
-	var environmentId string
-
 	if strings.TrimSpace(environmentName) == "" {
 		id, _, err := utils.CurrentEnvironment()
 		if err != nil {
@@ -228,11 +222,11 @@ func getEnvironmentContextResourceId(qoveryAPIClient *qovery.APIClient, environm
 	}
 
 	environment := utils.FindByEnvironmentName(environments.GetResults(), environmentName)
-	if environment != nil {
-		environmentId = environment.Id
+	if environment == nil {
+		return "", errors.Errorf("environment %s not found", environmentName)
 	}
 
-	return environmentId, nil
+	return environment.Id, nil
 }
 
 func getApplicationContextResource(qoveryAPIClient *qovery.APIClient, applicationName string, environmentId string) (*qovery.Application, error) {
@@ -251,7 +245,7 @@ func getApplicationContextResource(qoveryAPIClient *qovery.APIClient, applicatio
 	application := utils.FindByApplicationName(applications.GetResults(), applicationName)
 
 	if application == nil {
-		return nil, errors.New("application not found")
+		return nil, errors.Errorf("application %s not found", applicationName)
 	}
 
 	return application, nil
@@ -273,7 +267,7 @@ func getContainerContextResource(qoveryAPIClient *qovery.APIClient, containerNam
 	container := utils.FindByContainerName(containers.GetResults(), containerName)
 
 	if container == nil {
-		return nil, errors.New("container not found")
+		return nil, errors.Errorf("container %s not found", containerName)
 	}
 
 	return container, nil
@@ -295,7 +289,7 @@ func getJobContextResource(qoveryAPIClient *qovery.APIClient, jobName string, en
 	job := utils.FindByJobName(jobs.GetResults(), jobName)
 
 	if job == nil {
-		return nil, errors.New("job not found")
+		return nil, errors.Errorf("job %s not found", jobName)
 	}
 
 	return job, nil
