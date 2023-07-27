@@ -90,3 +90,17 @@ func deploy(url string, method string, dryRunDisabled bool) *http.Response {
 
 	return res
 }
+
+func ForceFailedDeploymentsToInternalErrorStatus() {
+	utils.CheckAdminUrl()
+
+	if utils.Validate("force deployment status") {
+		res := deploy(utils.AdminUrl+"/deployment/forceFailedDeploymentsToInternalErrorStatus", http.MethodPost, true)
+		if !strings.Contains(res.Status, "200") {
+			result, _ := io.ReadAll(res.Body)
+			log.Errorf("Could not force the deployments status : %s. %s", res.Status, string(result))
+		} else {
+			fmt.Println("INTERNAL_ERROR status forced")
+		}
+	}
+}
