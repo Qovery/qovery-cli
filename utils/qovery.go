@@ -705,7 +705,7 @@ func AddSecret(application Id, key string, value string) error {
 	client := GetQoveryClient(tokenType, token)
 
 	_, res, err := client.ApplicationSecretApi.CreateApplicationSecret(context.Background(), string(application)).SecretRequest(
-		qovery.SecretRequest{Key: key, Value: value},
+		qovery.SecretRequest{Key: key, Value: &value},
 	).Execute()
 
 	if err != nil {
@@ -1156,7 +1156,7 @@ func DeployApplications(client *qovery.APIClient, envId string, applicationNames
 
 		applicationsToDeploy = append(applicationsToDeploy, qovery.DeployAllRequestApplicationsInner{
 			ApplicationId: application.Id,
-			GitCommitId:   *applicationCommitId,
+			GitCommitId:   applicationCommitId,
 		})
 	}
 
@@ -1200,7 +1200,7 @@ func DeployContainers(client *qovery.APIClient, envId string, containerNames str
 
 		containersToDeploy = append(containersToDeploy, qovery.DeployAllRequestContainersInner{
 			Id:       container.Id,
-			ImageTag: containerTag,
+			ImageTag: &containerTag,
 		})
 	}
 

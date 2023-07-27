@@ -231,7 +231,7 @@ func CreateSecret(
 ) error {
 	req := qovery.SecretRequest{
 		Key:       key,
-		Value:     value,
+		Value:     &value,
 		MountPath: qovery.NullableString{},
 	}
 
