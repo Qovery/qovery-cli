@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	_ "fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
@@ -64,30 +63,6 @@ func getLogs() string {
 
 	//return logRows
 	return ""
-}
-
-func setupTable(header bool) *tablewriter.Table {
-	table := tablewriter.NewWriter(os.Stdout)
-
-	if header {
-		table.SetHeader([]string{"TIME", "MESSAGE"})
-	}
-
-	table.SetBorder(false)
-	table.SetHeaderLine(false)
-	table.SetColumnSeparator("")
-	table.SetAutoWrapText(true)
-	table.SetRowLine(false)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetColWidth(160)
-	table.SetBorders(tablewriter.Border{
-		Left:   false,
-		Right:  false,
-		Top:    false,
-		Bottom: false,
-	})
-
-	return table
 }
 
 func init() {
