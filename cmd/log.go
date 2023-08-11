@@ -5,101 +5,65 @@ import (
 	"errors"
 	_ "fmt"
 	"github.com/olekukonko/tablewriter"
+	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"os"
-	"time"
 )
 
-var follow bool
+var rawFormat bool
 
 var logCmd = &cobra.Command{
 	Use:   "log",
 	Short: "Print your application logs",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		var logs = getLogs()
-
-		table := setupTable(true)
-		table.AppendBulk(logs)
-		table.Render()
-
-		if len(logs) <= 0 {
-			utils.PrintlnInfo("No logs found. ")
-			os.Exit(0)
-		}
-
-		var lastRenderedLogs = logs
-
-		for follow {
-			table := setupTable(false)
-
-			lastLogDateString := lastRenderedLogs[len(lastRenderedLogs)-1][0]
-			lastLogDate, _ := time.Parse(time.StampMicro, lastLogDateString)
-			var newLogs = getLogs()
-
-			if len(newLogs) > 0 {
-				for _, newLog := range newLogs {
-					newLogDate, _ := time.Parse(time.StampMicro, newLog[0])
-					if lastLogDate.Before(newLogDate) {
-						table.Append(newLog)
-					}
-				}
-				table.Render()
-				lastRenderedLogs = newLogs
-			}
-
-			time.Sleep(time.Second * 5)
-		}
+		getLogs()
 	},
 }
 
-func getLogs() [][]string {
-	tokenType, token, err := utils.GetAccessToken()
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(0)
-	}
-
+func getLogs() string {
 	service, err := utils.CurrentService()
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)
 	}
+	orga, _, _ := utils.CurrentOrganization()
+	project, _, _ := utils.CurrentProject()
+	env, _, _ := utils.CurrentEnvironment()
 
+	tokenType, token, err := utils.GetAccessToken()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
 	client := utils.GetQoveryClient(tokenType, token)
-
-	var logRows = make([][]string, 0)
-	switch service.Type {
-	case utils.ApplicationType:
-		logs, res, err := client.ApplicationLogsApi.ListApplicationLog(context.Background(), string(service.ID)).Execute()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(0)
-		}
-		if res.StatusCode >= 400 {
-			utils.PrintlnError(errors.New("Received " + res.Status + " response while getting application logs "))
-		}
-
-		for _, log := range logs.GetResults() {
-			logRows = append(logRows, []string{log.CreatedAt.Format(time.StampMicro), log.Message})
-		}
-	case utils.ContainerType:
-		logs, res, err := client.ContainerLogsApi.ListContainerLog(context.Background(), string(service.ID)).Execute()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(0)
-		}
-		if res.StatusCode >= 400 {
-			utils.PrintlnError(errors.New("Received " + res.Status + " response while getting container logs"))
-		}
-
-		for _, log := range logs.GetResults() {
-			logRows = append(logRows, []string{log.CreatedAt.Format(time.StampMicro), log.Message})
-		}
+	e, res, err := client.EnvironmentMainCallsApi.GetEnvironment(context.Background(), string(env)).Execute()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+	if res.StatusCode >= 400 {
+		utils.PrintlnError(errors.New("Received " + res.Status + " response while fetching environment. "))
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
-	return logRows
+	req := pkg.LogRequest{
+		ServiceID:      service.ID,
+		OrganizationID: orga,
+		ProjectID:      project,
+		EnvironmentID:  env,
+		ClusterID:      utils.Id(e.ClusterId),
+		RawFormat:      rawFormat,
+	}
+
+	pkg.ExecLog(&req)
+
+	//return logRows
+	return ""
 }
 
 func setupTable(header bool) *tablewriter.Table {
@@ -128,5 +92,5 @@ func setupTable(header bool) *tablewriter.Table {
 
 func init() {
 	rootCmd.AddCommand(logCmd)
-	logCmd.Flags().BoolVarP(&follow, "follow", "f", false, "Follow application logs")
+	logCmd.Flags().BoolVarP(&rawFormat, "raw", "r", false, "display logs in raw format (json)")
 }
