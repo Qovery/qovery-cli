@@ -68,7 +68,7 @@ var clusterDeployCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			for true {
+			for {
 				status, _, err := client.ClustersApi.GetClusterStatus(context.Background(), orgId, cluster.Id).Execute()
 				if err != nil {
 					utils.PrintlnError(err)
