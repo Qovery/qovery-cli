@@ -82,7 +82,7 @@ var serviceListCmd = &cobra.Command{
 
 		if markdownFlag {
 			markdown := getMarkdownOutput(*client, orgId, projectId, envId, apps.GetResults(), containers.GetResults(), jobs.GetResults(), databases.GetResults())
-			println(markdown)
+			fmt.Print(markdown)
 			return
 		}
 
