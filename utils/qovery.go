@@ -1722,17 +1722,19 @@ func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
 		}
 	}
 
-	var sourceDockerGitRepository qovery.ApplicationGitRepositoryRequest
-	if docker != nil && docker.GitRepository != nil {
-		sourceDockerGitRepository = qovery.ApplicationGitRepositoryRequest{
+	var sourceDocker qovery.JobRequestAllOfSourceDocker
+
+	if docker != nil {
+		sourceDockerGitRepository := qovery.ApplicationGitRepositoryRequest{
 			Url:      *docker.GitRepository.Url,
 			Branch:   docker.GitRepository.Branch,
 			RootPath: docker.GitRepository.RootPath,
 		}
-	}
-	sourceDocker := qovery.JobRequestAllOfSourceDocker{
-		DockerfilePath: docker.DockerfilePath,
-		GitRepository:  &sourceDockerGitRepository,
+
+		sourceDocker = qovery.JobRequestAllOfSourceDocker{
+			DockerfilePath: docker.DockerfilePath,
+			GitRepository:  &sourceDockerGitRepository,
+		}
 	}
 
 	source := qovery.JobRequestAllOfSource{
