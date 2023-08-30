@@ -12,6 +12,7 @@ var lifecycleName string
 var lifecycleNames string
 var lifecycleCommitId string
 var lifecycleTag string
+var lifecycleBranch string
 var targetLifecycleName string
 
 var lifecycleCmd = &cobra.Command{

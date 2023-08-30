@@ -11,6 +11,7 @@ import (
 var cronjobName string
 var cronjobNames string
 var cronjobCommitId string
+var cronjobBranch string
 var cronjobTag string
 
 var targetCronjobName string

@@ -148,7 +148,7 @@ func init() {
 	cronjobDeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	cronjobDeployCmd.Flags().StringVarP(&cronjobName, "cronjob", "n", "", "Cronjob Name")
 	cronjobDeployCmd.Flags().StringVarP(&cronjobNames, "cronjobs", "", "", "Cronjob Names (comma separated) (ex: --cronjobs \"cron1,cron2\")")
-	cronjobDeployCmd.Flags().StringVarP(&cronjobCommitId, "commit-id", "c", "", "Lifecycle Commit ID")
-	cronjobDeployCmd.Flags().StringVarP(&cronjobTag, "tag", "t", "", "Lifecycle Tag")
+	cronjobDeployCmd.Flags().StringVarP(&cronjobCommitId, "commit-id", "c", "", "Cronjob Commit ID")
+	cronjobDeployCmd.Flags().StringVarP(&cronjobTag, "tag", "t", "", "Cronjob Tag")
 	cronjobDeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch cronjob status until it's ready or an error occurs")
 }

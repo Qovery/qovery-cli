@@ -1707,3 +1707,81 @@ func StopService(client *qovery.APIClient, envId string, serviceId string, servi
 
 	return StopService(client, envId, serviceId, serviceType, watchFlag)
 }
+
+func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
+	docker := job.Source.Docker.Get()
+	image := job.Source.Image.Get()
+
+	var sourceImage qovery.JobRequestAllOfSourceImage
+
+	if image != nil {
+		sourceImage = qovery.JobRequestAllOfSourceImage{
+			ImageName:  image.ImageName,
+			Tag:        image.Tag,
+			RegistryId: image.RegistryId,
+		}
+	}
+
+	var sourceDockerGitRepository qovery.ApplicationGitRepositoryRequest
+	if docker != nil && docker.GitRepository != nil {
+		sourceDockerGitRepository = qovery.ApplicationGitRepositoryRequest{
+			Url:      *docker.GitRepository.Url,
+			Branch:   docker.GitRepository.Branch,
+			RootPath: docker.GitRepository.RootPath,
+		}
+	}
+	sourceDocker := qovery.JobRequestAllOfSourceDocker{
+		DockerfilePath: docker.DockerfilePath,
+		GitRepository:  &sourceDockerGitRepository,
+	}
+
+	source := qovery.JobRequestAllOfSource{
+		Image:  qovery.NullableJobRequestAllOfSourceImage{},
+		Docker: qovery.NullableJobRequestAllOfSourceDocker{},
+	}
+
+	source.Image.Set(&sourceImage)
+	source.Docker.Set(&sourceDocker)
+
+	var schedule qovery.JobRequestAllOfSchedule
+
+	if job.Schedule != nil {
+		var scheduleCronjob qovery.JobRequestAllOfScheduleCronjob
+
+		if job.Schedule.Cronjob != nil {
+			scheduleCronjob = qovery.JobRequestAllOfScheduleCronjob{
+				Arguments:   job.Schedule.Cronjob.Arguments,
+				Entrypoint:  job.Schedule.Cronjob.Entrypoint,
+				ScheduledAt: job.Schedule.Cronjob.ScheduledAt,
+			}
+
+			schedule = qovery.JobRequestAllOfSchedule{
+				OnStart:  nil,
+				OnStop:   nil,
+				OnDelete: nil,
+				Cronjob:  &scheduleCronjob,
+			}
+		} else {
+			schedule = qovery.JobRequestAllOfSchedule{
+				OnStart:  job.Schedule.OnStart,
+				OnStop:   job.Schedule.OnStop,
+				OnDelete: job.Schedule.OnDelete,
+				Cronjob:  nil,
+			}
+		}
+	}
+
+	return qovery.JobRequest{
+		Name:               job.Name,
+		Description:        job.Description,
+		Cpu:                Int32(job.Cpu),
+		Memory:             Int32(job.Memory),
+		MaxNbRestart:       job.MaxNbRestart,
+		MaxDurationSeconds: job.MaxDurationSeconds,
+		AutoPreview:        Bool(job.AutoPreview),
+		Port:               job.Port,
+		Source:             &source,
+		Healthchecks:       job.Healthchecks,
+		Schedule:           &schedule,
+	}
+}
