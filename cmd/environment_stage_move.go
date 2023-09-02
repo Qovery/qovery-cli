@@ -137,8 +137,8 @@ func init() {
 	environmentStageMoveCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
 	environmentStageMoveCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	environmentStageMoveCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	environmentStageMoveCmd.Flags().StringVarP(&serviceName, "name", "n", "", "Service Name")
-	environmentStageMoveCmd.Flags().StringVarP(&stageName, "stage", "s", "", "Target Stage Name")
+	environmentStageMoveCmd.Flags().StringVarP(&serviceName, "name", "n", "", "ServiceLevel Name")
+	environmentStageMoveCmd.Flags().StringVarP(&stageName, "stage", "s", "", "Target StageLevel Name")
 
 	_ = environmentStageMoveCmd.MarkFlagRequired("name")
 	_ = environmentStageMoveCmd.MarkFlagRequired("stage")

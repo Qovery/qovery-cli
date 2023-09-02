@@ -1787,3 +1787,21 @@ func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
 		Schedule:           &schedule,
 	}
 }
+
+func GetDuration(startTime time.Time, endTime time.Time) string {
+	duration := endTime.Sub(startTime)
+
+	if duration.Minutes() < 1 {
+		return fmt.Sprintf("%d seconds", int(duration.Seconds()))
+	}
+
+	if duration.Minutes() < 2 {
+		return fmt.Sprintf("%d minute and %d seconds", int(duration.Minutes()), int(duration.Seconds())%60)
+	}
+
+	if duration.Minutes() > 0 && duration.Seconds() == 0 {
+		return fmt.Sprintf("%d minutes", int(duration.Minutes()))
+	}
+
+	return fmt.Sprintf("%d minutes and %d seconds", int(duration.Minutes()), int(duration.Seconds())%60)
+}

@@ -49,7 +49,7 @@ var environmentStageCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println("Stage created successfully")
+		utils.Println("StageLevel created successfully")
 	},
 }
 
@@ -58,8 +58,8 @@ func init() {
 	environmentStageCreateCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
 	environmentStageCreateCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	environmentStageCreateCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	environmentStageCreateCmd.Flags().StringVarP(&stageName, "name", "n", "", "Stage Name")
-	environmentStageCreateCmd.Flags().StringVarP(&stageDescription, "description", "d", "", "Stage Description")
+	environmentStageCreateCmd.Flags().StringVarP(&stageName, "name", "n", "", "StageLevel Name")
+	environmentStageCreateCmd.Flags().StringVarP(&stageDescription, "description", "d", "", "StageLevel Description")
 
 	_ = environmentStageCreateCmd.MarkFlagRequired("name")
 }
