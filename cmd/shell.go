@@ -211,7 +211,7 @@ func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 				}
 
 			default:
-				return nil, errors.New("Service type `" + string(envService.Type) + "` is not supported for shell")
+				return nil, errors.New("ServiceLevel type `" + string(envService.Type) + "` is not supported for shell")
 			}
 		}
 	}
@@ -220,7 +220,7 @@ func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 		{"Organization", string(organization.Name)},
 		{"Project", string(project.Name)},
 		{"Environment", string(environment.Name)},
-		{"Service", string(service.Name)},
+		{"ServiceLevel", string(service.Name)},
 		{"ServiceType", string(service.Type)},
 	}).Render()
 

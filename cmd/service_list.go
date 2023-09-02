@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var id string
 var organizationName string
 var projectName string
 var environmentName string
@@ -320,7 +321,7 @@ Click on the links below to access the different services:
 `, env.Name, fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s", orgId, projectId, envId))
 
 	body := `
-| Service | Logs | Preview URL |
+| ServiceLevel | Logs | Preview URL |
 |---------|------|-------------|`
 
 	footer := `

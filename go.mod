@@ -15,7 +15,6 @@ require (
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
 	github.com/posthog/posthog-go v0.0.0-20221221115252-24dfed35d71a
@@ -24,6 +23,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
+	github.com/xlab/treeprint v1.2.0
 	golang.org/x/net v0.11.0
 	golang.org/x/sys v0.9.0
 )

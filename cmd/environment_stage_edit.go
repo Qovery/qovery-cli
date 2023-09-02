@@ -65,7 +65,7 @@ var environmentStageEditCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println("Stage updated successfully")
+		utils.Println("StageLevel updated successfully")
 	},
 }
 
@@ -74,9 +74,9 @@ func init() {
 	environmentStageEditCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
 	environmentStageEditCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	environmentStageEditCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	environmentStageEditCmd.Flags().StringVarP(&stageName, "name", "n", "", "Stage Name")
-	environmentStageEditCmd.Flags().StringVarP(&newStageName, "new-name", "", "", "New Stage Name")
-	environmentStageEditCmd.Flags().StringVarP(&stageDescription, "new-description", "", "", "New Stage Description")
+	environmentStageEditCmd.Flags().StringVarP(&stageName, "name", "n", "", "StageLevel Name")
+	environmentStageEditCmd.Flags().StringVarP(&newStageName, "new-name", "", "", "New StageLevel Name")
+	environmentStageEditCmd.Flags().StringVarP(&stageDescription, "new-description", "", "", "New StageLevel Description")
 
 	_ = environmentStageEditCmd.MarkFlagRequired("name")
 	_ = environmentStageEditCmd.MarkFlagRequired("new-name")

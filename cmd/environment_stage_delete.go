@@ -55,7 +55,7 @@ var environmentStageDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println("Stage deleted successfully")
+		utils.Println("StageLevel deleted successfully")
 	},
 }
 
@@ -74,7 +74,7 @@ func init() {
 	environmentStageDeleteCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
 	environmentStageDeleteCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	environmentStageDeleteCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	environmentStageDeleteCmd.Flags().StringVarP(&stageName, "name", "n", "", "Stage Name")
+	environmentStageDeleteCmd.Flags().StringVarP(&stageName, "name", "n", "", "StageLevel Name")
 
 	_ = environmentStageDeleteCmd.MarkFlagRequired("name")
 
