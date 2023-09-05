@@ -61,6 +61,7 @@ var applicationUpdateCmd = &cobra.Command{
 		}
 
 		req := qovery.ApplicationEditRequest{
+			Storage:     storage,
 			Name:        application.Name,
 			Description: application.Description.Get(),
 			GitRepository: &qovery.ApplicationGitRepositoryRequest{
@@ -70,6 +71,7 @@ var applicationUpdateCmd = &cobra.Command{
 			},
 			BuildMode:           application.BuildMode,
 			DockerfilePath:      application.DockerfilePath.Get(),
+			BuildpackLanguage:   application.BuildpackLanguage,
 			Cpu:                 application.Cpu,
 			Memory:              application.Memory,
 			MinRunningInstances: application.MinRunningInstances,
@@ -77,7 +79,8 @@ var applicationUpdateCmd = &cobra.Command{
 			Healthchecks:        application.Healthchecks,
 			AutoPreview:         application.AutoPreview,
 			Ports:               application.Ports,
-			Storage:             storage,
+			Arguments:           application.Arguments,
+			Entrypoint:          application.Entrypoint,
 		}
 
 		if applicationBranch != "" {

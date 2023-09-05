@@ -84,19 +84,21 @@ var containerUpdateCmd = &cobra.Command{
 		}
 
 		req := qovery.ContainerRequest{
+			Storage:             storage,
+			Ports:               ports,
 			Name:                container.Name,
 			Description:         container.Description,
+			RegistryId:          container.Registry.Id,
 			ImageName:           imageName,
 			Tag:                 tag,
-			RegistryId:          container.Registry.Id,
+			Arguments:           container.Arguments,
+			Entrypoint:          container.Entrypoint,
 			Cpu:                 utils.Int32(container.Cpu),
 			Memory:              utils.Int32(container.Memory),
 			MinRunningInstances: utils.Int32(container.MinRunningInstances),
 			MaxRunningInstances: utils.Int32(container.MaxRunningInstances),
 			Healthchecks:        container.Healthchecks,
 			AutoPreview:         utils.Bool(container.AutoPreview),
-			Ports:               ports,
-			Storage:             storage,
 		}
 
 		_, res, err := client.ContainerMainCallsApi.EditContainer(context.Background(), container.Id).ContainerRequest(req).Execute()
