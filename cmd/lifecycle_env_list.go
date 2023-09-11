@@ -72,13 +72,23 @@ var lifecycleEnvListCmd = &cobra.Command{
 		}
 
 		envVarLines := utils.NewEnvVarLines()
+		var variables []utils.EnvVarLineOutput
 
 		for _, envVar := range envVars.GetResults() {
-			envVarLines.Add(utils.FromEnvironmentVariableToEnvVarLineOutput(envVar))
+			s := utils.FromEnvironmentVariableToEnvVarLineOutput(envVar)
+			variables = append(variables, s)
+			envVarLines.Add(s)
 		}
 
 		for _, secret := range secrets.GetResults() {
-			envVarLines.Add(utils.FromSecretToEnvVarLineOutput(secret))
+			s := utils.FromSecretToEnvVarLineOutput(secret)
+			variables = append(variables, s)
+			envVarLines.Add(s)
+		}
+
+		if jsonFlag {
+			utils.Println(utils.GetEnvVarJsonOutput(variables))
+			return
 		}
 
 		err = utils.PrintTable(envVarLines.Header(utils.PrettyPrint), envVarLines.Lines(utils.ShowValues, utils.PrettyPrint))
@@ -99,6 +109,7 @@ func init() {
 	lifecycleEnvListCmd.Flags().StringVarP(&lifecycleName, "lifecycle", "n", "", "Lifecycle Name")
 	lifecycleEnvListCmd.Flags().BoolVarP(&utils.ShowValues, "show-values", "", false, "Show env var values")
 	lifecycleEnvListCmd.Flags().BoolVarP(&utils.PrettyPrint, "pretty-print", "", false, "Pretty print output")
+	lifecycleEnvListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
 
 	_ = lifecycleEnvListCmd.MarkFlagRequired("lifecycle")
 }

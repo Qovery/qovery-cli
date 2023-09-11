@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/qovery/qovery-client-go"
 	"os"
 	"strings"
 
@@ -80,6 +82,11 @@ var containerDomainListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if jsonFlag {
+			utils.Println(getContainerDomainJsonOutput(links.GetResults(), customDomains.GetResults()))
+			return
+		}
+
 		for _, link := range links.GetResults() {
 			if link.Url != nil {
 				domain := strings.ReplaceAll(*link.Url, "https://", "")
@@ -104,12 +111,47 @@ var containerDomainListCmd = &cobra.Command{
 	},
 }
 
+func getContainerDomainJsonOutput(links []qovery.Link, domains []qovery.CustomDomain) string {
+	var results []interface{}
+
+	for _, link := range links {
+		if link.Url != nil {
+			results = append(results, map[string]interface{}{
+				"id":                nil,
+				"type":              "BUILT_IN_DOMAIN",
+				"domain":            strings.ReplaceAll(*link.Url, "https://", ""),
+				"validation_domain": nil,
+			})
+		}
+	}
+
+	for _, domain := range domains {
+		results = append(results, map[string]interface{}{
+			"id":                domain.Id,
+			"type":              "CUSTOM_DOMAIN",
+			"domain":            domain.Domain,
+			"validation_domain": *domain.ValidationDomain,
+		})
+	}
+
+	j, err := json.Marshal(results)
+
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	return string(j)
+}
+
 func init() {
 	containerDomainCmd.AddCommand(containerDomainListCmd)
 	containerDomainListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
 	containerDomainListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	containerDomainListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	containerDomainListCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
+	containerDomainListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
 
 	_ = containerDomainListCmd.MarkFlagRequired("container")
 }

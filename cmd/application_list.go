@@ -51,7 +51,7 @@ var applicationListCmd = &cobra.Command{
 
 		for _, application := range applications.GetResults() {
 			data = append(data, []string{application.Id, *application.Name, "Application",
-				utils.GetStatus(statuses.GetApplications(), application.Id), application.UpdatedAt.String()})
+				utils.FindStatusTextWithColor(statuses.GetApplications(), application.Id), application.UpdatedAt.String()})
 		}
 
 		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Last Update"}, data)

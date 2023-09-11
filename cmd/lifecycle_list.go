@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"github.com/qovery/qovery-client-go"
 	"os"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -47,11 +50,16 @@ var lifecycleListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if jsonFlag {
+			fmt.Print(getLifecycleJsonOutput(statuses.GetJobs(), lifecycles))
+			return
+		}
+
 		var data [][]string
 
 		for _, lifecycle := range lifecycles {
 			data = append(data, []string{lifecycle.Id, lifecycle.Name, "Lifecycle",
-				utils.GetStatus(statuses.GetJobs(), lifecycle.Id), lifecycle.UpdatedAt.String()})
+				utils.FindStatusTextWithColor(statuses.GetJobs(), lifecycle.Id), lifecycle.UpdatedAt.String()})
 		}
 
 		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Last Update"}, data)
@@ -64,9 +72,36 @@ var lifecycleListCmd = &cobra.Command{
 	},
 }
 
+func getLifecycleJsonOutput(statuses []qovery.Status, lifecycles []qovery.JobResponse) string {
+	var results []interface{}
+
+	for _, lifecycle := range lifecycles {
+		if lifecycle.Schedule.Cronjob == nil {
+			results = append(results, map[string]interface{}{
+				"id":         lifecycle.Id,
+				"name":       lifecycle.Name,
+				"type":       "Lifecycle",
+				"status":     utils.FindStatus(statuses, lifecycle.Id),
+				"updated_at": utils.ToIso8601(lifecycle.UpdatedAt),
+			})
+		}
+	}
+
+	j, err := json.Marshal(results)
+
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	return string(j)
+}
+
 func init() {
 	lifecycleCmd.AddCommand(lifecycleListCmd)
 	lifecycleListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
 	lifecycleListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	lifecycleListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	lifecycleListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
 }

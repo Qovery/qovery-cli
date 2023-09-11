@@ -2,10 +2,12 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-client-go"
+	"os"
 	"strings"
 	"time"
 )
@@ -78,8 +80,10 @@ func (e EnvVarLines) Lines(showValues bool, prettyPrint bool) [][]string {
 }
 
 type EnvVarLineOutput struct {
+	Id                string
 	Key               string
 	Value             *string
+	CreatedAt         time.Time
 	UpdatedAt         *time.Time
 	Service           *string
 	Scope             string
@@ -130,8 +134,10 @@ func FromEnvironmentVariableToEnvVarLineOutput(envVar qovery.EnvironmentVariable
 	}
 
 	return EnvVarLineOutput{
+		Id:                envVar.Id,
 		Key:               envVar.Key,
 		Value:             envVar.Value,
+		CreatedAt:         envVar.CreatedAt,
 		UpdatedAt:         envVar.UpdatedAt,
 		Service:           envVar.ServiceName,
 		Scope:             string(envVar.Scope),
@@ -153,8 +159,10 @@ func FromSecretToEnvVarLineOutput(secret qovery.Secret) EnvVarLineOutput {
 	}
 
 	return EnvVarLineOutput{
+		Id:                secret.Id,
 		Key:               secret.Key,
 		Value:             nil,
+		CreatedAt:         secret.CreatedAt,
 		UpdatedAt:         secret.UpdatedAt,
 		Service:           secret.ServiceName,
 		Scope:             string(secret.Scope),
@@ -825,4 +833,34 @@ func CreateOverride(
 	}
 
 	return fmt.Errorf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key))
+}
+
+func GetEnvVarJsonOutput(variables []EnvVarLineOutput) string {
+	var results []interface{}
+
+	for _, v := range variables {
+		// TODO improve this
+
+		results = append(results, map[string]interface{}{
+			"id":                    v.Id,
+			"created_at":            ToIso8601(&v.CreatedAt),
+			"updated_at":            ToIso8601(v.UpdatedAt),
+			"key":                   v.Key,
+			"value":                 v.Value,
+			"service_name":          v.Service,
+			"scope":                 v.Scope,
+			"alias_parent_key":      v.AliasParentKey,
+			"override_parent_value": v.OverrideParentKey,
+		})
+	}
+
+	j, err := json.Marshal(results)
+
+	if err != nil {
+		PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	return string(j)
 }

@@ -49,7 +49,7 @@ var containerListCmd = &cobra.Command{
 
 		for _, container := range containers.GetResults() {
 			data = append(data, []string{container.Id, container.Name, "Container",
-				utils.GetStatus(statuses.GetContainers(), container.Id), container.UpdatedAt.String()})
+				utils.FindStatusTextWithColor(statuses.GetContainers(), container.Id), container.UpdatedAt.String()})
 		}
 
 		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Last Update"}, data)

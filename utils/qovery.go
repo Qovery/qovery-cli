@@ -757,7 +757,19 @@ func SelectTokenInformation() (*TokenInformation, error) {
 	}, nil
 }
 
-func GetStatus(statuses []qovery.Status, serviceId string) string {
+func FindStatus(statuses []qovery.Status, serviceId string) string {
+	status := "Unknown"
+
+	for _, s := range statuses {
+		if serviceId == s.Id {
+			return string(s.State)
+		}
+	}
+
+	return status
+}
+
+func FindStatusTextWithColor(statuses []qovery.Status, serviceId string) string {
 	status := "Unknown"
 
 	for _, s := range statuses {
@@ -770,6 +782,18 @@ func GetStatus(statuses []qovery.Status, serviceId string) string {
 }
 
 func GetEnvironmentStatus(statuses []qovery.EnvironmentStatus, serviceId string) string {
+	status := "Unknown"
+
+	for _, s := range statuses {
+		if serviceId == s.Id {
+			return string(s.State)
+		}
+	}
+
+	return status
+}
+
+func GetEnvironmentStatusWithColor(statuses []qovery.EnvironmentStatus, serviceId string) string {
 	status := "Unknown"
 
 	for _, s := range statuses {

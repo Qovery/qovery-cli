@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/go-errors/errors"
 	"os"
@@ -18,6 +19,7 @@ var projectName string
 var environmentName string
 var watchFlag bool
 var markdownFlag bool
+var jsonFlag bool
 
 var serviceListCmd = &cobra.Command{
 	Use:   "list",
@@ -87,22 +89,33 @@ var serviceListCmd = &cobra.Command{
 			return
 		}
 
+		if jsonFlag {
+			j := getServiceJsonOutput(*statuses, apps.GetResults(), containers.GetResults(), jobs.GetResults(), databases.GetResults())
+			fmt.Print(j)
+			return
+		}
+
 		var data [][]string
 
 		for _, app := range apps.GetResults() {
-			data = append(data, []string{app.GetName(), "Application", utils.GetStatus(statuses.GetApplications(), app.Id)})
+			data = append(data, []string{app.GetName(), "Application", utils.FindStatusTextWithColor(statuses.GetApplications(), app.Id)})
 		}
 
 		for _, container := range containers.GetResults() {
-			data = append(data, []string{container.Name, "Container", utils.GetStatus(statuses.GetContainers(), container.Id)})
+			data = append(data, []string{container.Name, "Container", utils.FindStatusTextWithColor(statuses.GetContainers(), container.Id)})
 		}
 
 		for _, job := range jobs.GetResults() {
-			data = append(data, []string{job.Name, "Job", utils.GetStatus(statuses.GetJobs(), job.Id)})
+			jobType := "Lifecycle"
+			if job.Schedule.Cronjob != nil {
+				jobType = "Cronjob"
+			}
+
+			data = append(data, []string{job.Name, jobType, utils.FindStatusTextWithColor(statuses.GetJobs(), job.Id)})
 		}
 
 		for _, database := range databases.GetResults() {
-			data = append(data, []string{database.Name, "Database", utils.GetStatus(statuses.GetDatabases(), database.Id)})
+			data = append(data, []string{database.Name, "Database", utils.FindStatusTextWithColor(statuses.GetDatabases(), database.Id)})
 		}
 
 		err = utils.PrintTable([]string{"Name", "Type", "Status"}, data)
@@ -304,6 +317,69 @@ func getJobContextResource(qoveryAPIClient *qovery.APIClient, jobName string, en
 	return job, nil
 }
 
+func getServiceJsonOutput(statuses qovery.GetEnvironmentStatuses200Response, apps []qovery.Application, containers []qovery.ContainerResponse, jobs []qovery.JobResponse, databases []qovery.Database) string {
+	var results []interface{}
+
+	for _, app := range apps {
+		m := map[string]interface{}{
+			"id":     app.Id,
+			"name":   app.Name,
+			"type":   "application",
+			"status": utils.FindStatus(statuses.GetApplications(), app.Id),
+		}
+
+		results = append(results, m)
+	}
+
+	for _, container := range containers {
+		m := map[string]interface{}{
+			"id":     container.Id,
+			"name":   container.Name,
+			"type":   "container",
+			"status": utils.FindStatus(statuses.GetContainers(), container.Id),
+		}
+
+		results = append(results, m)
+	}
+
+	for _, job := range jobs {
+		jobType := "lifecycle"
+		if job.Schedule.Cronjob != nil {
+			jobType = "cronjob"
+		}
+
+		m := map[string]interface{}{
+			"id":     job.Id,
+			"name":   job.Name,
+			"type":   jobType,
+			"status": utils.FindStatus(statuses.GetJobs(), job.Id),
+		}
+
+		results = append(results, m)
+	}
+
+	for _, db := range databases {
+		m := map[string]interface{}{
+			"id":     db.Id,
+			"name":   db.Name,
+			"type":   "database",
+			"status": utils.FindStatus(statuses.GetDatabases(), db.Id),
+		}
+
+		results = append(results, m)
+	}
+
+	j, err := json.Marshal(results)
+
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	return string(j)
+}
+
 func getMarkdownOutput(client qovery.APIClient, orgId string, projectId string, envId string, apps []qovery.Application, containers []qovery.ContainerResponse, jobs []qovery.JobResponse, databases []qovery.Database) string {
 	env, _, err := client.EnvironmentMainCallsApi.GetEnvironment(context.Background(), envId).Execute()
 	if err != nil {
@@ -321,7 +397,7 @@ Click on the links below to access the different services:
 `, env.Name, fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s", orgId, projectId, envId))
 
 	body := `
-| ServiceLevel | Logs | Preview URL |
+| Service | Logs | Preview URL |
 |---------|------|-------------|`
 
 	footer := `
@@ -415,4 +491,5 @@ func init() {
 	serviceListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	serviceListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	serviceListCmd.Flags().BoolVarP(&markdownFlag, "markdown", "", false, "Markdown output")
+	serviceListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
 }

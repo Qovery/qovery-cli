@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"github.com/qovery/qovery-client-go"
 	"os"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -46,11 +49,16 @@ var cronjobListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if jsonFlag {
+			fmt.Print(getCronjobJsonOutput(statuses.GetJobs(), cronjobs))
+			return
+		}
+
 		var data [][]string
 
 		for _, cronjob := range cronjobs {
 			data = append(data, []string{cronjob.Id, cronjob.Name, "Cronjob",
-				utils.GetStatus(statuses.GetJobs(), cronjob.Id), cronjob.UpdatedAt.String()})
+				utils.FindStatusTextWithColor(statuses.GetJobs(), cronjob.Id), cronjob.UpdatedAt.String()})
 		}
 
 		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Last Update"}, data)
@@ -63,9 +71,36 @@ var cronjobListCmd = &cobra.Command{
 	},
 }
 
+func getCronjobJsonOutput(statuses []qovery.Status, cronjobs []qovery.JobResponse) string {
+	var results []interface{}
+
+	for _, cronjob := range cronjobs {
+		if cronjob.Schedule.Cronjob != nil {
+			results = append(results, map[string]interface{}{
+				"id":         cronjob.Id,
+				"name":       cronjob.Name,
+				"type":       "Cronjob",
+				"status":     utils.FindStatus(statuses, cronjob.Id),
+				"updated_at": utils.ToIso8601(cronjob.UpdatedAt),
+			})
+		}
+	}
+
+	j, err := json.Marshal(results)
+
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	return string(j)
+}
+
 func init() {
 	cronjobCmd.AddCommand(cronjobListCmd)
 	cronjobListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
 	cronjobListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	cronjobListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	cronjobListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
 }
