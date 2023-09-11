@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/pterm/pterm"
+	"github.com/qovery/qovery-client-go"
 	"os"
 	"strconv"
 
@@ -40,6 +42,11 @@ var environmentStageListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if jsonFlag {
+			utils.Println(getEnvironmentStageJsonOutput(*client, stages.GetResults()))
+			return
+		}
+
 		for _, stage := range stages.GetResults() {
 			pterm.DefaultSection.WithBottomPadding(0).Println("deployment stage " + strconv.Itoa(int(stage.GetDeploymentOrder()+1)) + ": \"" + stage.GetName() + "\"")
 			if stage.GetDescription() != "" {
@@ -74,9 +81,44 @@ var environmentStageListCmd = &cobra.Command{
 	},
 }
 
+func getEnvironmentStageJsonOutput(client qovery.APIClient, stages []qovery.DeploymentStageResponse) string {
+	var results []interface{}
+
+	for idx, stage := range stages {
+		var services []interface{}
+
+		for _, service := range stage.Services {
+			services = append(services, map[string]interface{}{
+				"id":   service.ServiceId,
+				"type": service.ServiceType,
+				"name": utils.GetServiceNameByIdAndType(&client, service.GetServiceId(), service.GetServiceType()),
+			})
+		}
+
+		results = append(results, map[string]interface{}{
+			"stage_order":       idx + 1,
+			"stage_id":          stage.Id,
+			"stage_name":        stage.Name,
+			"stage_description": stage.Description,
+			"services":          services,
+		})
+	}
+
+	j, err := json.Marshal(results)
+
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	return string(j)
+}
+
 func init() {
 	environmentStageCmd.AddCommand(environmentStageListCmd)
 	environmentStageListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
 	environmentStageListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	environmentStageListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	environmentStageListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
 }
