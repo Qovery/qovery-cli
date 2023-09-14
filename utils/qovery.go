@@ -1334,7 +1334,8 @@ func CancelEnvironmentDeployment(client *qovery.APIClient, envId string, watchFl
 func IsTerminalState(state qovery.StateEnum) bool {
 	return state == qovery.STATEENUM_DEPLOYED || state == qovery.STATEENUM_DELETED ||
 		state == qovery.STATEENUM_STOPPED || state == qovery.STATEENUM_CANCELED ||
-		state == qovery.STATEENUM_READY || strings.HasSuffix(string(state), "ERROR")
+		state == qovery.STATEENUM_READY || state == qovery.STATEENUM_RESTARTED ||
+		strings.HasSuffix(string(state), "ERROR")
 }
 
 func CancelServiceDeployment(client *qovery.APIClient, envId string, serviceId string, serviceType ServiceType, watchFlag bool) (string, error) {
