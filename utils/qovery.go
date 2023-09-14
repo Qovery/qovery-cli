@@ -808,7 +808,7 @@ func GetEnvironmentStatusWithColor(statuses []qovery.EnvironmentStatus, serviceI
 func GetStatusTextWithColor(s qovery.StateEnum) string {
 	var statusMsg string
 
-	if s == qovery.STATEENUM_DEPLOYED {
+	if s == qovery.STATEENUM_DEPLOYED || s == qovery.STATEENUM_RESTARTED {
 		statusMsg = pterm.FgGreen.Sprintf(string(s))
 	} else if strings.HasSuffix(string(s), "ERROR") {
 		statusMsg = pterm.FgRed.Sprintf(string(s))
@@ -950,6 +950,7 @@ func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnu
 		}
 
 		if statuses.Environment.LastDeploymentState == qovery.STATEENUM_DEPLOYED ||
+			statuses.Environment.LastDeploymentState == qovery.STATEENUM_RESTARTED ||
 			statuses.Environment.LastDeploymentState == qovery.STATEENUM_DELETED ||
 			statuses.Environment.LastDeploymentState == qovery.STATEENUM_STOPPED ||
 			statuses.Environment.LastDeploymentState == qovery.STATEENUM_CANCELED {
@@ -1086,7 +1087,8 @@ func WatchStatus(status *qovery.Status) Status {
 	log.Println(GetStatusTextWithColor(status.State))
 
 	if status.State == qovery.STATEENUM_DEPLOYED || status.State == qovery.STATEENUM_DELETED ||
-		status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED {
+		status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED ||
+		status.State == qovery.STATEENUM_RESTARTED {
 		return Stop
 	}
 
