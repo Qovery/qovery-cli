@@ -317,7 +317,7 @@ func getJobContextResource(qoveryAPIClient *qovery.APIClient, jobName string, en
 	return job, nil
 }
 
-func getServiceJsonOutput(statuses qovery.GetEnvironmentStatuses200Response, apps []qovery.Application, containers []qovery.ContainerResponse, jobs []qovery.JobResponse, databases []qovery.Database) string {
+func getServiceJsonOutput(statuses qovery.EnvironmentStatuses, apps []qovery.Application, containers []qovery.ContainerResponse, jobs []qovery.JobResponse, databases []qovery.Database) string {
 	var results []interface{}
 
 	for _, app := range apps {
