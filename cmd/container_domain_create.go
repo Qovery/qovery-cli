@@ -3,8 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/qovery/qovery-client-go"
 	"os"
+
+	"github.com/qovery/qovery-client-go"
 
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
@@ -41,10 +42,10 @@ var containerDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		container := utils.FindByContainerName(containers.GetResults(), applicationName)
+		container := utils.FindByContainerName(containers.GetResults(), containerName)
 
 		if container == nil {
-			utils.PrintlnError(fmt.Errorf("container %s not found", applicationName))
+			utils.PrintlnError(fmt.Errorf("container %s not found", containerName))
 			utils.PrintlnInfo("You can list all containers with: qovery container list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
@@ -58,15 +59,15 @@ var containerDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		customDomain := utils.FindByCustomDomainName(customDomains.GetResults(), applicationCustomDomain)
+		customDomain := utils.FindByCustomDomainName(customDomains.GetResults(), containerCustomDomain)
 		if customDomain != nil {
-			utils.PrintlnError(fmt.Errorf("custom domain %s already exists", applicationCustomDomain))
+			utils.PrintlnError(fmt.Errorf("custom domain %s already exists", containerCustomDomain))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		req := qovery.CustomDomainRequest{
-			Domain: applicationCustomDomain,
+			Domain: containerCustomDomain,
 		}
 
 		_, _, err = client.ContainerCustomDomainApi.CreateContainerCustomDomain(context.Background(), container.Id).CustomDomainRequest(req).Execute()
@@ -77,7 +78,7 @@ var containerDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Custom domain %s has been created", pterm.FgBlue.Sprintf(applicationCustomDomain)))
+		utils.Println(fmt.Sprintf("Custom domain %s has been created", pterm.FgBlue.Sprintf(containerCustomDomain)))
 	},
 }
 
