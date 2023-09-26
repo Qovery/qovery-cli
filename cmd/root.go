@@ -24,7 +24,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().BoolVarP(&variable.Verbose, "verbose", "v", false, "Verbose output")
+	rootCmd.PersistentFlags().BoolVarP(&variable.Verbose, "verbose", "", false, "Verbose output")
 }
 
 func initConfig() {
