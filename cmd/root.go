@@ -4,6 +4,7 @@ import (
 	"github.com/getsentry/sentry-go"
 	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
+	"github.com/qovery/qovery-cli/variable"
 	"github.com/spf13/cobra"
 	"os"
 	"time"
@@ -23,6 +24,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().BoolVarP(&variable.Verbose, "verbose", "v", false, "Verbose output")
 }
 
 func initConfig() {

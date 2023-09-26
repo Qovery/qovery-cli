@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"github.com/qovery/qovery-cli/variable"
 	"os"
 	"strconv"
 	"strings"
@@ -39,6 +40,7 @@ func GetQoveryClient(tokenType AccessTokenType, token AccessToken) *qovery.APICl
 	conf := qovery.NewConfiguration()
 	conf.UserAgent = "Qovery CLI"
 	conf.DefaultHeader["Authorization"] = GetAuthorizationHeaderValue(tokenType, token)
+	conf.Debug = variable.Verbose
 	return qovery.NewAPIClient(conf)
 }
 
