@@ -835,6 +835,94 @@ func CreateOverride(
 	return fmt.Errorf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key))
 }
 
+func insertAtIndex(src string, insert string, index int) string {
+	// Convert to rune slice if you expect to be working with Unicode
+	srcRunes := []rune(src)
+
+	// Handle index out of range cases
+	if index < 0 || index > len(srcRunes) {
+		return src
+	}
+
+	// Create a new rune slice that consists of the original string
+	// with the new string inserted at the index
+	newRunes := make([]rune, len(srcRunes)+len([]rune(insert)))
+	copy(newRunes, srcRunes[:index])
+	copy(newRunes[index:], []rune(insert))
+	copy(newRunes[index+len([]rune(insert)):], srcRunes[index:])
+
+	// Convert the rune slice back to a string and return it
+	return string(newRunes)
+}
+
+func getInterpolatedValue(value *string, variables []EnvVarLineOutput) *string {
+	if value == nil {
+		return nil
+	}
+
+	if !strings.Contains(*value, "{{") {
+		return value
+	}
+
+	runes := []rune(*value)
+
+	startIndex := -1
+	endIndex := -1
+
+	// let's found the startIndex and endIndex with "hello_${world}" -> startIndex = 6, endIndex = 11
+	foundFirstFirstDelimiter := false
+	foundFirstLastDelimiter := false
+	for idx, char := range runes {
+		if char == '{' && !foundFirstFirstDelimiter {
+			foundFirstFirstDelimiter = true
+		} else if char == '{' {
+			startIndex = idx - 1 // 2 chars -> {{
+		} else if startIndex > -1 && char == '}' && !foundFirstLastDelimiter {
+			foundFirstLastDelimiter = true
+		} else if startIndex > -1 && char == '}' {
+			endIndex = idx
+			break // we can stop here and interpolate the value
+		}
+	}
+
+	if startIndex == -1 || endIndex == -1 {
+		return value
+	}
+
+	// extract key from {{key}}
+	keyToInterpolate := string(runes[startIndex+2 : endIndex-1])
+
+	// remove ${{key}} from value
+	valueWithoutInterpolation := string(runes[:startIndex]) + string(runes[endIndex+1:])
+
+	finalValue := *value
+
+FirstLoop:
+	for _, v := range variables {
+		if v.Key == keyToInterpolate {
+			if v.AliasParentKey != nil {
+				// where v is an Alias, we should interpolate the value of the parent key
+				for _, x := range variables {
+					if v.AliasParentKey != nil && *v.AliasParentKey == x.Key {
+						finalValue = insertAtIndex(valueWithoutInterpolation, *x.Value, startIndex)
+						continue FirstLoop
+					}
+				}
+			}
+
+			// work only if the key is a secret or an environment variable
+			finalValue = insertAtIndex(valueWithoutInterpolation, *v.Value, startIndex)
+			break
+		}
+	}
+
+	if strings.Contains(finalValue, "{{") && finalValue != *value {
+		return getInterpolatedValue(&finalValue, variables)
+	}
+
+	return &finalValue
+}
+
 func GetEnvVarJsonOutput(variables []EnvVarLineOutput) string {
 	var results []interface{}
 
@@ -847,6 +935,7 @@ func GetEnvVarJsonOutput(variables []EnvVarLineOutput) string {
 			"updated_at":            ToIso8601(v.UpdatedAt),
 			"key":                   v.Key,
 			"value":                 v.Value,
+			"interpolated_value":    getInterpolatedValue(v.Value, variables),
 			"service_name":          v.Service,
 			"scope":                 v.Scope,
 			"alias_parent_key":      v.AliasParentKey,
