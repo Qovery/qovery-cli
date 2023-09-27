@@ -30,8 +30,14 @@ type Organization struct {
 
 type TokenInformation struct {
 	Organization *Organization
+	Role         *Role
 	Name         string
 	Description  string
+}
+
+type Role struct {
+	ID   string
+	Name Name
 }
 
 const AdminUrl = "https://api-admin.qovery.com"
@@ -42,6 +48,53 @@ func GetQoveryClient(tokenType AccessTokenType, token AccessToken) *qovery.APICl
 	conf.DefaultHeader["Authorization"] = GetAuthorizationHeaderValue(tokenType, token)
 	conf.Debug = variable.Verbose
 	return qovery.NewAPIClient(conf)
+}
+
+func SelectRole(organization *Organization) (*Role, error) {
+    tokenType, token, err := GetAccessToken()
+    if err != nil {
+        return nil, err
+    }
+
+    client := GetQoveryClient(tokenType, token)
+
+	roles, res, err :=  client.OrganizationMainCallsApi.ListOrganizationAvailableRoles(context.Background(), string(organization.ID)).Execute()
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while listing organizations. ")
+	}
+
+	var roleNames []string
+	var rolesIds = make(map[string]string)
+
+	for _, role := range roles.GetResults() {
+		roleNames = append(roleNames, *role.Name)
+		rolesIds[*role.Name] = *role.Id
+	}
+
+	if len(roleNames) < 1 {
+		return nil, errors.New("No role found.")
+	}
+
+	fmt.Println("Roles:")
+	prompt := promptui.Select{
+		Items: roleNames,
+		Searcher: func(input string, index int) bool {
+			return strings.Contains(strings.ToLower(roleNames[index]), strings.ToLower(input))
+		},
+	}
+	_, selectedRole, err := prompt.Run()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Role{
+		ID:   rolesIds[selectedRole],
+		Name: Name(selectedRole),
+	}, nil
+
 }
 
 func SelectOrganization() (*Organization, error) {
@@ -728,6 +781,12 @@ func SelectTokenInformation() (*TokenInformation, error) {
 		return nil, err
 	}
 
+	PrintlnInfo("Select Role")
+	role, err := SelectRole(organization)
+	if err != nil {
+		return nil, err
+	}
+
 	fmt.Println("Choose a token name")
 	promptName := promptui.Prompt{
 		Label: "Token name",
@@ -754,6 +813,7 @@ func SelectTokenInformation() (*TokenInformation, error) {
 
 	return &TokenInformation{
 		organization,
+		role,
 		name,
 		description,
 	}, nil
