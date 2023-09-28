@@ -1,13 +1,11 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"errors"
 	"github.com/qovery/qovery-cli/utils"
+	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"io"
-	"net/http"
 )
 
 type TokenCreationResponseDto struct {
@@ -46,47 +44,26 @@ func generateMachineToMachineAPIToken(tokenInformation *utils.TokenInformation) 
 		return "", err
 	}
 
-	requestBody, err := json.Marshal(map[string]string{
-		"name":        tokenInformation.Name,
-		"description": tokenInformation.Description,
-		"scope":       "ADMIN",
-	})
+	roleId := qovery.NullableString{}
+	roleId.Set(&tokenInformation.Role.ID)
 
+	req := qovery.OrganizationApiTokenCreateRequest{
+		Name:        tokenInformation.Name,
+		Description: &tokenInformation.Description,
+		Scope:       qovery.NullableOrganizationApiTokenScope{},
+		RoleId:      roleId,
+	}
+
+	client := utils.GetQoveryClient(tokenType, token)
+	createdToken, res, err := client.OrganizationApiTokenApi.CreateOrganizationApiToken(context.Background(), string(tokenInformation.Organization.ID)).OrganizationApiTokenCreateRequest(req).Execute()
 	if err != nil {
 		return "", err
 	}
-
-	// apiToken endpoint is not yet exposed in the OpenAPI spec at the moment. It's planned officially for Q3 2022
-	req, err := http.NewRequest(
-		http.MethodPost,
-		string("https://api.qovery.com/organization/"+tokenInformation.Organization.ID+"/apiToken"),
-		bytes.NewBuffer(requestBody),
-	)
-	if err != nil {
-		return "", err
-	}
-
-	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
-	req.Header.Set("Content-Type", "application/json")
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-
 	if res.StatusCode >= 400 {
 		return "", errors.New("Received " + res.Status + " response while fetching environment. ")
 	}
 
-	jsonResponse, _ := io.ReadAll(res.Body)
-	var tokenCreationResponseDto TokenCreationResponseDto
-
-	err = json.Unmarshal(jsonResponse, &tokenCreationResponseDto)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenCreationResponseDto.Token, nil
+	return *createdToken.Token, nil
 }
 
 func init() {
