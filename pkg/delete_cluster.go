@@ -1,6 +1,8 @@
 package pkg
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -43,3 +45,37 @@ func DeleteClusterUnDeployedInError() {
 		}
 	}
 }
+
+func DeleteOldClustersWithInvalidCredentials(ageInDay int, dryRunDisabled bool) {
+	utils.CheckAdminUrl()
+
+	if utils.Validate("delete") {
+
+		params := map[string]interface{}{
+			"last_update_in_days": ageInDay,
+			"dry_run":            !dryRunDisabled,
+		}
+
+		requestBody, err := json.Marshal(params)
+		if err != nil {
+			log.Errorf("Could not create body for the request")
+			return
+		}
+
+		res := deleteWithBody(utils.AdminUrl+"/cluster/deleteOldClustersWithInvalidCredentials", http.MethodPost, true, bytes.NewBuffer(requestBody))
+
+		if !strings.Contains(res.Status, "200") {
+			result, _ := io.ReadAll(res.Body)
+			log.Errorf("Could not delete all clusters with invalid credentials : %s. %s", res.Status, string(result))
+		} else {
+			result, _ := io.ReadAll(res.Body)
+			if dryRunDisabled {
+				fmt.Println("Clusters deleted: " + string(result))
+			} else {
+				fmt.Println("Clusters that will be deleted: " + string(result))
+			}
+		}
+	}
+}
+
+
