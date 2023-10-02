@@ -29,6 +29,10 @@ func DeleteOrganizationByClusterId(clusterId string, dryRunDisabled bool) {
 }
 
 func delete(url string, method string, dryRunDisabled bool) *http.Response {
+	return deleteWithBody(url, method, dryRunDisabled, nil)
+}
+
+func deleteWithBody(url string, method string, dryRunDisabled bool, body io.Reader) *http.Response {
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
 		utils.PrintlnError(err)
@@ -39,7 +43,7 @@ func delete(url string, method string, dryRunDisabled bool) *http.Response {
 		return nil
 	}
 
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		log.Fatal(err)
 	}
