@@ -3,20 +3,18 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/qovery/qovery-client-go"
 	"os"
 	"strconv"
-
-	"github.com/qovery/qovery-client-go"
 
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 )
 
-
-var containerDomainCreateCmd = &cobra.Command{
-	Use:   "create",
-	Short: "Create container custom domain",
+var containerDomainEditCmd = &cobra.Command{
+	Use:   "edit",
+	Short: "Edit container custom domain",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -62,8 +60,8 @@ var containerDomainCreateCmd = &cobra.Command{
 		}
 
 		customDomain := utils.FindByCustomDomainName(customDomains.GetResults(), containerCustomDomain)
-		if customDomain != nil {
-			utils.PrintlnError(fmt.Errorf("custom domain %s already exists", containerCustomDomain))
+		if customDomain == nil {
+			utils.PrintlnError(fmt.Errorf("custom domain %s does not exist", containerCustomDomain))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -74,7 +72,7 @@ var containerDomainCreateCmd = &cobra.Command{
 			GenerateCertificate: &generateCertificate,
 		}
 
-		createdDomain, _, err := client.ContainerCustomDomainApi.CreateContainerCustomDomain(context.Background(), container.Id).CustomDomainRequest(req).Execute()
+		editedDomain, _, err := client.ContainerCustomDomainApi.EditContainerCustomDomain(context.Background(), container.Id, customDomain.Id).CustomDomainRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -82,19 +80,19 @@ var containerDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Custom domain %s has been created (generate certificate: %s)", pterm.FgBlue.Sprintf(createdDomain.Domain),  pterm.FgBlue.Sprintf(strconv.FormatBool(*createdDomain.GenerateCertificate))))
+		utils.Println(fmt.Sprintf("Custom domain %s has been edited (generate certificate: %s)", pterm.FgBlue.Sprintf(editedDomain.Domain),  pterm.FgBlue.Sprintf(strconv.FormatBool(*editedDomain.GenerateCertificate))))
 	},
 }
 
 func init() {
-	containerDomainCmd.AddCommand(containerDomainCreateCmd)
-	containerDomainCreateCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
-	containerDomainCreateCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
-	containerDomainCreateCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	containerDomainCreateCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
-	containerDomainCreateCmd.Flags().StringVarP(&containerCustomDomain, "domain", "", "", "Custom Domain <subdomain.domain.tld>")
-	containerDomainCreateCmd.Flags().BoolVarP(&doNotGenerateCertificate, "do-not-generate-certificate", "", false, "Do Not Generate Certificate")
+	containerDomainCmd.AddCommand(containerDomainEditCmd)
+	containerDomainEditCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	containerDomainEditCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	containerDomainEditCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	containerDomainEditCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
+	containerDomainEditCmd.Flags().StringVarP(&containerCustomDomain, "domain", "", "", "Custom Domain <subdomain.domain.tld>")
+	containerDomainEditCmd.Flags().BoolVarP(&doNotGenerateCertificate, "do-not-generate-certificate", "", false, "Do Not Generate Certificate")
 
-	_ = containerDomainCreateCmd.MarkFlagRequired("container")
-	_ = containerDomainCreateCmd.MarkFlagRequired("domain")
+	_ = containerDomainEditCmd.MarkFlagRequired("container")
+	_ = containerDomainEditCmd.MarkFlagRequired("domain")
 }
