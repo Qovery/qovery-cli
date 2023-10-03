@@ -1428,7 +1428,7 @@ func IsTerminalClusterState(state qovery.ClusterStateEnum) bool {
 	return state == qovery.CLUSTERSTATEENUM_DEPLOYED || state == qovery.CLUSTERSTATEENUM_DELETED ||
 		state == qovery.CLUSTERSTATEENUM_STOPPED || state == qovery.CLUSTERSTATEENUM_CANCELED ||
 		state == qovery.CLUSTERSTATEENUM_READY || state == qovery.CLUSTERSTATEENUM_RESTARTED ||
-		strings.HasSuffix(string(state), "ERROR")
+		state == qovery.CLUSTERSTATEENUM_INVALID_CREDENTIALS || strings.HasSuffix(string(state), "ERROR")
 }
 
 func CancelServiceDeployment(client *qovery.APIClient, envId string, serviceId string, serviceType ServiceType, watchFlag bool) (string, error) {
