@@ -65,11 +65,11 @@ var clusterStopCmd = &cobra.Command{
 					utils.PrintlnError(err)
 				}
 
-				if utils.IsTerminalState(*status.Status) {
+				if utils.IsTerminalClusterState(*status.Status) {
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Cluster status: %s", utils.GetStatusTextWithColor(status.GetStatus())))
+				utils.Println(fmt.Sprintf("Cluster status: %s", utils.GetClusterStatusTextWithColor(status.GetStatus())))
 
 				// sleep here to avoid too many requests
 				time.Sleep(5 * time.Second)

@@ -88,7 +88,7 @@ var containerUpdateCmd = &cobra.Command{
 			Ports:               ports,
 			Name:                container.Name,
 			Description:         container.Description,
-			RegistryId:          container.Registry.Id,
+			RegistryId:          *container.Registry.Id,
 			ImageName:           imageName,
 			Tag:                 tag,
 			Arguments:           container.Arguments,

@@ -889,6 +889,28 @@ func GetStatusTextWithColor(s qovery.StateEnum) string {
 	return statusMsg
 }
 
+func GetClusterStatusTextWithColor(s qovery.ClusterStateEnum) string {
+	var statusMsg string
+
+	if s == qovery.CLUSTERSTATEENUM_DEPLOYED || s == qovery.CLUSTERSTATEENUM_RESTARTED {
+		statusMsg = pterm.FgGreen.Sprintf(string(s))
+	} else if strings.HasSuffix(string(s), "ERROR") || s == qovery.CLUSTERSTATEENUM_INVALID_CREDENTIALS {
+		statusMsg = pterm.FgRed.Sprintf(string(s))
+	} else if strings.HasSuffix(string(s), "ING") {
+		statusMsg = pterm.FgLightBlue.Sprintf(string(s))
+	} else if strings.HasSuffix(string(s), "QUEUED") {
+		statusMsg = pterm.FgLightYellow.Sprintf(string(s))
+	} else if s == qovery.CLUSTERSTATEENUM_READY {
+		statusMsg = pterm.FgYellow.Sprintf(string(s))
+	} else if s == qovery.CLUSTERSTATEENUM_STOPPED {
+		statusMsg = pterm.FgYellow.Sprintf(string(s))
+	} else {
+		statusMsg = string(s)
+	}
+
+	return statusMsg
+}
+
 func FindByOrganizationName(organizations []qovery.Organization, name string) *qovery.Organization {
 	for _, o := range organizations {
 		if o.Name == name {
@@ -1400,6 +1422,13 @@ func IsTerminalState(state qovery.StateEnum) bool {
 		state == qovery.STATEENUM_STOPPED || state == qovery.STATEENUM_CANCELED ||
 		state == qovery.STATEENUM_READY || state == qovery.STATEENUM_RESTARTED ||
 		strings.HasSuffix(string(state), "ERROR")
+}
+
+func IsTerminalClusterState(state qovery.ClusterStateEnum) bool {
+	return state == qovery.CLUSTERSTATEENUM_DEPLOYED || state == qovery.CLUSTERSTATEENUM_DELETED ||
+		state == qovery.CLUSTERSTATEENUM_STOPPED || state == qovery.CLUSTERSTATEENUM_CANCELED ||
+		state == qovery.CLUSTERSTATEENUM_READY || state == qovery.CLUSTERSTATEENUM_RESTARTED ||
+		state == qovery.CLUSTERSTATEENUM_INVALID_CREDENTIALS || strings.HasSuffix(string(state), "ERROR")
 }
 
 func CancelServiceDeployment(client *qovery.APIClient, envId string, serviceId string, serviceType ServiceType, watchFlag bool) (string, error) {

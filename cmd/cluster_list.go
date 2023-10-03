@@ -50,7 +50,7 @@ var clusterListCmd = &cobra.Command{
 
 		for _, cluster := range clusters.GetResults() {
 			data = append(data, []string{cluster.Id, cluster.Name, "cluster",
-				utils.GetStatusTextWithColor(*cluster.Status), cluster.UpdatedAt.String()})
+				utils.GetClusterStatusTextWithColor(*cluster.Status), cluster.UpdatedAt.String()})
 		}
 
 		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Last Update"}, data)
