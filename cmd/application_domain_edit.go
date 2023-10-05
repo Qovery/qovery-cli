@@ -12,11 +12,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var doNotGenerateCertificate bool
-
-var applicationDomainCreateCmd = &cobra.Command{
-	Use:   "create",
-	Short: "Create application custom domain",
+var applicationDomainEditCmd = &cobra.Command{
+	Use:   "edit",
+	Short: "Edit application custom domain",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -62,8 +60,8 @@ var applicationDomainCreateCmd = &cobra.Command{
 		}
 
 		customDomain := utils.FindByCustomDomainName(customDomains.GetResults(), applicationCustomDomain)
-		if customDomain != nil {
-			utils.PrintlnError(fmt.Errorf("custom domain %s already exists", applicationCustomDomain))
+		if customDomain == nil {
+			utils.PrintlnError(fmt.Errorf("custom domain %s does not exist", applicationCustomDomain))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -74,7 +72,7 @@ var applicationDomainCreateCmd = &cobra.Command{
 			GenerateCertificate: &generateCertificate,
 		}
 
-		createdDomain, _, err := client.CustomDomainApi.CreateApplicationCustomDomain(context.Background(), application.Id).CustomDomainRequest(req).Execute()
+		editedDomain, _, err := client.CustomDomainApi.EditCustomDomain(context.Background(), application.Id, customDomain.Id).CustomDomainRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -82,19 +80,19 @@ var applicationDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Custom domain %s has been created (generate certificate: %s)", pterm.FgBlue.Sprintf(createdDomain.Domain),  pterm.FgBlue.Sprintf(strconv.FormatBool(*createdDomain.GenerateCertificate))))
+		utils.Println(fmt.Sprintf("Custom domain %s has been edited (generate certificate: %s)", pterm.FgBlue.Sprintf(editedDomain.Domain),  pterm.FgBlue.Sprintf(strconv.FormatBool(*editedDomain.GenerateCertificate))))
 	},
 }
 
 func init() {
-	applicationDomainCmd.AddCommand(applicationDomainCreateCmd)
-	applicationDomainCreateCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
-	applicationDomainCreateCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
-	applicationDomainCreateCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	applicationDomainCreateCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
-	applicationDomainCreateCmd.Flags().StringVarP(&applicationCustomDomain, "domain", "", "", "Custom Domain <subdomain.domain.tld>")
-	applicationDomainCreateCmd.Flags().BoolVarP(&doNotGenerateCertificate, "do-not-generate-certificate", "", false, "Do Not Generate Certificate")
+	applicationDomainCmd.AddCommand(applicationDomainEditCmd)
+	applicationDomainEditCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	applicationDomainEditCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	applicationDomainEditCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	applicationDomainEditCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
+	applicationDomainEditCmd.Flags().StringVarP(&applicationCustomDomain, "domain", "", "", "Custom Domain <subdomain.domain.tld>")
+	applicationDomainEditCmd.Flags().BoolVarP(&doNotGenerateCertificate, "do-not-generate-certificate", "", false, "Do Not Generate Certificate")
 
-	_ = applicationDomainCreateCmd.MarkFlagRequired("application")
-	_ = applicationDomainCreateCmd.MarkFlagRequired("domain")
+	_ = applicationDomainEditCmd.MarkFlagRequired("application")
+	_ = applicationDomainEditCmd.MarkFlagRequired("domain")
 }
