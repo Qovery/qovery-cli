@@ -7,9 +7,10 @@ import (
 	"time"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var containerDeployCmd = &cobra.Command{
@@ -26,7 +27,7 @@ var containerDeployCmd = &cobra.Command{
 		}
 
 		if containerName == "" && containerNames == "" {
-			utils.PrintlnError(fmt.Errorf("use neither --cronjob \"<container name>\" nor --cronjobs \"<container1 name>, <container2 name>\""))
+			utils.PrintlnError(fmt.Errorf("use either --cronjob \"<container name>\" or --cronjobs \"<container1 name>, <container2 name>\" but not both at the same time"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}

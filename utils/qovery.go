@@ -3,11 +3,12 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"github.com/qovery/qovery-cli/variable"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/qovery/qovery-cli/variable"
 
 	"github.com/pterm/pterm"
 
@@ -51,14 +52,14 @@ func GetQoveryClient(tokenType AccessTokenType, token AccessToken) *qovery.APICl
 }
 
 func SelectRole(organization *Organization) (*Role, error) {
-    tokenType, token, err := GetAccessToken()
-    if err != nil {
-        return nil, err
-    }
+	tokenType, token, err := GetAccessToken()
+	if err != nil {
+		return nil, err
+	}
 
-    client := GetQoveryClient(tokenType, token)
+	client := GetQoveryClient(tokenType, token)
 
-	roles, res, err :=  client.OrganizationMainCallsApi.ListOrganizationAvailableRoles(context.Background(), string(organization.ID)).Execute()
+	roles, res, err := client.OrganizationMainCallsApi.ListOrganizationAvailableRoles(context.Background(), string(organization.ID)).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -1581,6 +1582,108 @@ func DeleteService(client *qovery.APIClient, envId string, serviceId string, ser
 	return DeleteService(client, envId, serviceId, serviceType, watchFlag)
 }
 
+func DeleteServices(client *qovery.APIClient, envId string, serviceIds []string, serviceType ServiceType) (string, error) {
+	statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
+
+	if err != nil {
+		return "", err
+	}
+
+	cannotDelete := false
+	serviceIdsSet := map[string]struct{}{}
+	for _, value := range serviceIds {
+		serviceIdsSet[value] = struct{}{}
+	}
+
+	if IsTerminalState(statuses.GetEnvironment().State) {
+		switch serviceType {
+		case ApplicationType:
+			for _, application := range statuses.GetApplications() {
+				if _, ok := serviceIdsSet[application.Id]; ok && !IsTerminalState(application.State) {
+					cannotDelete = true
+				}
+			}
+			if !cannotDelete {
+				_, err := client.EnvironmentActionsApi.
+					DeleteSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						ApplicationIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		case DatabaseType:
+			for _, database := range statuses.GetDatabases() {
+				if _, ok := serviceIdsSet[database.Id]; ok && !IsTerminalState(database.State) {
+					cannotDelete = true
+				}
+			}
+			if !cannotDelete {
+				_, err := client.EnvironmentActionsApi.
+					DeleteSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						DatabaseIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		case ContainerType:
+			for _, container := range statuses.GetContainers() {
+				if _, ok := serviceIdsSet[container.Id]; ok && !IsTerminalState(container.State) {
+					cannotDelete = true
+				}
+			}
+			if !cannotDelete {
+				_, err := client.EnvironmentActionsApi.
+					DeleteSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						ContainerIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		case JobType:
+			for _, job := range statuses.GetJobs() {
+				if _, ok := serviceIdsSet[job.Id]; ok && !IsTerminalState(job.State) {
+					cannotDelete = true
+				}
+			}
+			if !cannotDelete {
+				_, err := client.EnvironmentActionsApi.
+					DeleteSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						JobIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		}
+	}
+
+	PrintlnInfo("waiting for previous deployment to be completed...")
+
+	// sleep here to avoid too many requests
+	time.Sleep(5 * time.Second)
+
+	return DeleteServices(client, envId, serviceIds, serviceType)
+}
+
 func DeployService(client *qovery.APIClient, envId string, serviceId string, serviceType ServiceType, request interface{}, watchFlag bool) (string, error) {
 	statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
 
@@ -1746,7 +1849,7 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 	return RedeployService(client, envId, serviceId, serviceType, watchFlag)
 }
 
-func StopService(client *qovery.APIClient, envId string, serviceId string, serviceType ServiceType, watchFlag bool) (string, error) {
+func StopService(client *qovery.APIClient, envId string, serviceIds string, serviceType ServiceType, watchFlag bool) (string, error) {
 	statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
 
 	if err != nil {
@@ -1757,14 +1860,14 @@ func StopService(client *qovery.APIClient, envId string, serviceId string, servi
 		switch serviceType {
 		case ApplicationType:
 			for _, application := range statuses.GetApplications() {
-				if application.Id == serviceId && IsTerminalState(application.State) {
-					_, _, err := client.ApplicationActionsApi.StopApplication(context.Background(), serviceId).Execute()
+				if application.Id == serviceIds && IsTerminalState(application.State) {
+					_, _, err := client.ApplicationActionsApi.StopApplication(context.Background(), serviceIds).Execute()
 					if err != nil {
 						return "", err
 					}
 
 					if watchFlag {
-						WatchApplication(serviceId, envId, client)
+						WatchApplication(serviceIds, envId, client)
 					}
 
 					return "", nil
@@ -1772,14 +1875,14 @@ func StopService(client *qovery.APIClient, envId string, serviceId string, servi
 			}
 		case DatabaseType:
 			for _, database := range statuses.GetDatabases() {
-				if database.Id == serviceId && IsTerminalState(database.State) {
-					_, _, err := client.DatabaseActionsApi.StopDatabase(context.Background(), serviceId).Execute()
+				if database.Id == serviceIds && IsTerminalState(database.State) {
+					_, _, err := client.DatabaseActionsApi.StopDatabase(context.Background(), serviceIds).Execute()
 					if err != nil {
 						return "", err
 					}
 
 					if watchFlag {
-						WatchDatabase(serviceId, envId, client)
+						WatchDatabase(serviceIds, envId, client)
 					}
 
 					return "", nil
@@ -1787,14 +1890,14 @@ func StopService(client *qovery.APIClient, envId string, serviceId string, servi
 			}
 		case ContainerType:
 			for _, container := range statuses.GetContainers() {
-				if container.Id == serviceId && IsTerminalState(container.State) {
-					_, _, err := client.ContainerActionsApi.StopContainer(context.Background(), serviceId).Execute()
+				if container.Id == serviceIds && IsTerminalState(container.State) {
+					_, _, err := client.ContainerActionsApi.StopContainer(context.Background(), serviceIds).Execute()
 					if err != nil {
 						return "", err
 					}
 
 					if watchFlag {
-						WatchContainer(serviceId, envId, client)
+						WatchContainer(serviceIds, envId, client)
 					}
 
 					return "", nil
@@ -1802,14 +1905,14 @@ func StopService(client *qovery.APIClient, envId string, serviceId string, servi
 			}
 		case JobType:
 			for _, job := range statuses.GetJobs() {
-				if job.Id == serviceId && IsTerminalState(job.State) {
-					_, _, err := client.JobActionsApi.StopJob(context.Background(), serviceId).Execute()
+				if job.Id == serviceIds && IsTerminalState(job.State) {
+					_, _, err := client.JobActionsApi.StopJob(context.Background(), serviceIds).Execute()
 					if err != nil {
 						return "", err
 					}
 
 					if watchFlag {
-						WatchJob(serviceId, envId, client)
+						WatchJob(serviceIds, envId, client)
 					}
 
 					return "", nil
@@ -1823,7 +1926,109 @@ func StopService(client *qovery.APIClient, envId string, serviceId string, servi
 	// sleep here to avoid too many requests
 	time.Sleep(5 * time.Second)
 
-	return StopService(client, envId, serviceId, serviceType, watchFlag)
+	return StopService(client, envId, serviceIds, serviceType, watchFlag)
+}
+
+func StopServices(client *qovery.APIClient, envId string, serviceIds []string, serviceType ServiceType) (string, error) {
+	statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
+
+	if err != nil {
+		return "", err
+	}
+
+	cannotStop := false
+	serviceIdsSet := map[string]struct{}{}
+	for _, value := range serviceIds {
+		serviceIdsSet[value] = struct{}{}
+	}
+
+	if IsTerminalState(statuses.GetEnvironment().State) {
+		switch serviceType {
+		case ApplicationType:
+			for _, application := range statuses.GetApplications() {
+				if _, ok := serviceIdsSet[application.Id]; ok && !IsTerminalState(application.State) {
+					cannotStop = true
+				}
+			}
+			if !cannotStop {
+				_, err := client.EnvironmentActionsApi.
+					StopSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						ApplicationIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		case DatabaseType:
+			for _, database := range statuses.GetDatabases() {
+				if _, ok := serviceIdsSet[database.Id]; ok && !IsTerminalState(database.State) {
+					cannotStop = true
+				}
+			}
+			if !cannotStop {
+				_, err := client.EnvironmentActionsApi.
+					StopSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						DatabaseIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		case ContainerType:
+			for _, container := range statuses.GetContainers() {
+				if _, ok := serviceIdsSet[container.Id]; ok && !IsTerminalState(container.State) {
+					cannotStop = true
+				}
+			}
+			if !cannotStop {
+				_, err := client.EnvironmentActionsApi.
+					StopSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						ContainerIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		case JobType:
+			for _, job := range statuses.GetJobs() {
+				if _, ok := serviceIdsSet[job.Id]; ok && !IsTerminalState(job.State) {
+					cannotStop = true
+				}
+			}
+			if !cannotStop {
+				_, err := client.EnvironmentActionsApi.
+					StopSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						JobIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		}
+	}
+
+	PrintlnInfo("waiting for previous deployment to be completed...")
+
+	// sleep here to avoid too many requests
+	time.Sleep(5 * time.Second)
+
+	return StopServices(client, envId, serviceIds, serviceType)
 }
 
 func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {

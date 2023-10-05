@@ -3,12 +3,14 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
-	"github.com/qovery/qovery-client-go"
-	"github.com/spf13/cobra"
 	"os"
 	"time"
+
+	"github.com/pterm/pterm"
+	"github.com/qovery/qovery-client-go"
+	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var applicationDeployCmd = &cobra.Command{
@@ -25,7 +27,7 @@ var applicationDeployCmd = &cobra.Command{
 		}
 
 		if applicationName == "" && applicationNames == "" {
-			utils.PrintlnError(fmt.Errorf("use neither --application \"<app name>\" nor --applications \"<app1 name>, <app2 name>\""))
+			utils.PrintlnError(fmt.Errorf("use either --application \"<app name>\" or --applications \"<app1 name>, <app2 name>\" but not both at the same time"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}

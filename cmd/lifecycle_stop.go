@@ -2,11 +2,15 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/pterm/pterm"
 	"os"
+	"strings"
+	"time"
+
+	"github.com/pterm/pterm"
+
+	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/utils"
-	"github.com/spf13/cobra"
 )
 
 var lifecycleStopCmd = &cobra.Command{
@@ -22,6 +26,18 @@ var lifecycleStopCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if lifecycleName == "" && lifecycleNames == "" {
+			utils.PrintlnError(fmt.Errorf("use either --lifecycle \"<lifecycle name>\" or --lifecycles \"<lifecycle1 name>, <lifecycle2 name>\" but not both at the same time"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if lifecycleName != "" && lifecycleNames != "" {
+			utils.PrintlnError(fmt.Errorf("you can't use --lifecycle and --lifecycles at the same time"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
@@ -29,6 +45,49 @@ var lifecycleStopCmd = &cobra.Command{
 			utils.PrintlnError(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if lifecycleNames != "" {
+			// wait until service is ready
+			for {
+				if utils.IsEnvironmentInATerminalState(envId, client) {
+					break
+				}
+
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				time.Sleep(5 * time.Second)
+			}
+
+			lifecycles, err := ListLifecycleJobs(envId, client)
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			var serviceIds []string
+			for _, lifecycleName := range strings.Split(lifecycleNames, ",") {
+				trimmedLifecycleName := strings.TrimSpace(lifecycleName)
+				serviceIds = append(serviceIds, utils.FindByJobName(lifecycles, trimmedLifecycleName).Id)
+			}
+
+			// stop multiple services
+			_, err = utils.StopServices(client, envId, serviceIds, utils.JobType)
+
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			} else {
+				utils.Println(fmt.Sprintf("Stopping lifecycle jobs %s in progress..", pterm.FgBlue.Sprintf(lifecycleNames)))
+			}
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			return
 		}
 
 		lifecycles, err := ListLifecycleJobs(envId, client)
@@ -75,7 +134,6 @@ func init() {
 	lifecycleStopCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	lifecycleStopCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	lifecycleStopCmd.Flags().StringVarP(&lifecycleName, "lifecycle", "n", "", "Lifecycle Name")
+	lifecycleStopCmd.Flags().StringVarP(&lifecycleNames, "lifecycles", "", "", "Lifecycle Job Names (comma separated) (ex: --lifecycles \"lifecycle1,lifecycle2\")")
 	lifecycleStopCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch lifecycle status until it's ready or an error occurs")
-
-	_ = lifecycleStopCmd.MarkFlagRequired("lifecycle")
 }

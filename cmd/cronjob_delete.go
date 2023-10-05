@@ -2,11 +2,15 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/pterm/pterm"
 	"os"
+	"strings"
+	"time"
+
+	"github.com/pterm/pterm"
+
+	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/utils"
-	"github.com/spf13/cobra"
 )
 
 var cronjobDeleteCmd = &cobra.Command{
@@ -22,6 +26,18 @@ var cronjobDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if cronjobName == "" && cronjobNames == "" {
+			utils.PrintlnError(fmt.Errorf("use either --cronjob \"<cronjob name>\" or --cronjobs \"<cronjob1 name>, <cronjob2 name>\" but not both at the same time"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if cronjobName != "" && cronjobNames != "" {
+			utils.PrintlnError(fmt.Errorf("you can't use --cronjob and --cronjobs at the same time"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
@@ -29,6 +45,48 @@ var cronjobDeleteCmd = &cobra.Command{
 			utils.PrintlnError(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if cronjobNames != "" {
+			// wait until service is ready
+			for {
+				if utils.IsEnvironmentInATerminalState(envId, client) {
+					break
+				}
+
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				time.Sleep(5 * time.Second)
+			}
+
+			cronjobs, err := ListCronjobs(envId, client)
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			var serviceIds []string
+			for _, cronjobName := range strings.Split(cronjobNames, ",") {
+				trimmedCronjobName := strings.TrimSpace(cronjobName)
+				serviceIds = append(serviceIds, utils.FindByJobName(cronjobs, trimmedCronjobName).Id)
+			}
+
+			_, err = utils.DeleteServices(client, envId, serviceIds, utils.JobType)
+
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			} else {
+				utils.Println(fmt.Sprintf("Deleting cronjobs %s in progress..", pterm.FgBlue.Sprintf(cronjobNames)))
+			}
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			return
 		}
 
 		cronjobs, err := ListCronjobs(envId, client)
@@ -75,7 +133,6 @@ func init() {
 	cronjobDeleteCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	cronjobDeleteCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	cronjobDeleteCmd.Flags().StringVarP(&cronjobName, "cronjob", "n", "", "Cronjob Name")
+	cronjobDeleteCmd.Flags().StringVarP(&cronjobNames, "cronjobs", "", "", "Cronjob Names (comma separated) (ex: --cronjobs \"cron1,cron2\")")
 	cronjobDeleteCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch cronjob status until it's ready or an error occurs")
-
-	_ = cronjobDeleteCmd.MarkFlagRequired("cronjob")
 }
