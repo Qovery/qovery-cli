@@ -71,7 +71,7 @@ var applicationDomainCreateCmd = &cobra.Command{
 		generateCertificate := !doNotGenerateCertificate
 		req := qovery.CustomDomainRequest{
 			Domain: applicationCustomDomain,
-			GenerateCertificate: &generateCertificate,
+			GenerateCertificate: generateCertificate,
 		}
 
 		createdDomain, _, err := client.CustomDomainApi.CreateApplicationCustomDomain(context.Background(), application.Id).CustomDomainRequest(req).Execute()
@@ -82,7 +82,7 @@ var applicationDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Custom domain %s has been created (generate certificate: %s)", pterm.FgBlue.Sprintf(createdDomain.Domain),  pterm.FgBlue.Sprintf(strconv.FormatBool(*createdDomain.GenerateCertificate))))
+		utils.Println(fmt.Sprintf("Custom domain %s has been created (generate certificate: %s)", pterm.FgBlue.Sprintf(createdDomain.Domain),  pterm.FgBlue.Sprintf(strconv.FormatBool(createdDomain.GenerateCertificate))))
 	},
 }
 

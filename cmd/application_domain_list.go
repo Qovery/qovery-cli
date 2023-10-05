@@ -80,17 +80,12 @@ var applicationDomainListCmd = &cobra.Command{
 		for _, customDomain := range customDomains.GetResults() {
 			customDomainsSet[customDomain.Domain] = true
 
-			generateCertificate := "N/A"
-			if customDomain.GenerateCertificate != nil {
-				generateCertificate = strconv.FormatBool(*customDomain.GenerateCertificate)
-			}
-
 			data = append(data, []string{
 				customDomain.Id,
 				"CUSTOM_DOMAIN",
 				customDomain.Domain,
 				*customDomain.ValidationDomain,
-				generateCertificate,
+				strconv.FormatBool(customDomain.GenerateCertificate),
 			})
 		}
 
