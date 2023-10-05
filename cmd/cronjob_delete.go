@@ -27,7 +27,7 @@ var cronjobDeleteCmd = &cobra.Command{
 		}
 
 		if cronjobName == "" && cronjobNames == "" {
-			utils.PrintlnError(fmt.Errorf("use neither --cronjob \"<cronjob name>\" nor --cronjobs \"<cronjob1 name>, <cronjob2 name>\""))
+			utils.PrintlnError(fmt.Errorf("use either --cronjob \"<cronjob name>\" or --cronjobs \"<cronjob1 name>, <cronjob2 name>\" but not both at the same time"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}

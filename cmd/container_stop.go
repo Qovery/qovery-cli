@@ -27,7 +27,7 @@ var containerStopCmd = &cobra.Command{
 		}
 
 		if containerName == "" && containerNames == "" {
-			utils.PrintlnError(fmt.Errorf("use neither --container \"<container name>\" nor --containers \"<container1 name>, <container2 name>\""))
+			utils.PrintlnError(fmt.Errorf("use either --container \"<container name>\" or --containers \"<container1 name>, <container2 name>\" but not both at the same time"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}

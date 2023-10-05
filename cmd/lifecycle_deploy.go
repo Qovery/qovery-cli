@@ -2,13 +2,15 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/pterm/pterm"
 	"os"
 	"time"
 
-	"github.com/qovery/qovery-cli/utils"
+	"github.com/pterm/pterm"
+
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var lifecycleDeployCmd = &cobra.Command{
@@ -25,7 +27,7 @@ var lifecycleDeployCmd = &cobra.Command{
 		}
 
 		if lifecycleName == "" && lifecycleNames == "" {
-			utils.PrintlnError(fmt.Errorf("use neither --lifecycle \"<container name>\" nor --lifecycles \"<container1 name>, <container2 name>\""))
+			utils.PrintlnError(fmt.Errorf("use either --lifecycle \"<container name>\" or --lifecycles \"<container1 name>, <container2 name>\" but not both at the same time"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}

@@ -27,7 +27,7 @@ var databaseDeleteCmd = &cobra.Command{
 		}
 
 		if databaseName == "" && databaseNames == "" {
-			utils.PrintlnError(fmt.Errorf("use neither --database \"<database name>\" nor --databases \"<database1 name>, <database2 name>\""))
+			utils.PrintlnError(fmt.Errorf("use either --database \"<database name>\" or --databases \"<database1 name>, <database2 name>\" but not both at the same time"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
