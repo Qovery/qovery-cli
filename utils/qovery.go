@@ -1582,6 +1582,108 @@ func DeleteService(client *qovery.APIClient, envId string, serviceId string, ser
 	return DeleteService(client, envId, serviceId, serviceType, watchFlag)
 }
 
+func DeleteServices(client *qovery.APIClient, envId string, serviceIds []string, serviceType ServiceType) (string, error) {
+	statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
+
+	if err != nil {
+		return "", err
+	}
+
+	cannotDelete := false
+	serviceIdsSet := map[string]struct{}{}
+	for _, value := range serviceIds {
+		serviceIdsSet[value] = struct{}{}
+	}
+
+	if IsTerminalState(statuses.GetEnvironment().State) {
+		switch serviceType {
+		case ApplicationType:
+			for _, application := range statuses.GetApplications() {
+				if _, ok := serviceIdsSet[application.Id]; ok && !IsTerminalState(application.State) {
+					cannotDelete = true
+				}
+			}
+			if !cannotDelete {
+				_, err := client.EnvironmentActionsApi.
+					DeleteSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						ApplicationIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		case DatabaseType:
+			for _, database := range statuses.GetDatabases() {
+				if _, ok := serviceIdsSet[database.Id]; ok && !IsTerminalState(database.State) {
+					cannotDelete = true
+				}
+			}
+			if !cannotDelete {
+				_, err := client.EnvironmentActionsApi.
+					DeleteSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						DatabaseIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		case ContainerType:
+			for _, container := range statuses.GetContainers() {
+				if _, ok := serviceIdsSet[container.Id]; ok && !IsTerminalState(container.State) {
+					cannotDelete = true
+				}
+			}
+			if !cannotDelete {
+				_, err := client.EnvironmentActionsApi.
+					DeleteSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						ContainerIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		case JobType:
+			for _, job := range statuses.GetJobs() {
+				if _, ok := serviceIdsSet[job.Id]; ok && !IsTerminalState(job.State) {
+					cannotDelete = true
+				}
+			}
+			if !cannotDelete {
+				_, err := client.EnvironmentActionsApi.
+					DeleteSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						JobIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		}
+	}
+
+	PrintlnInfo("waiting for previous deployment to be completed...")
+
+	// sleep here to avoid too many requests
+	time.Sleep(5 * time.Second)
+
+	return DeleteServices(client, envId, serviceIds, serviceType)
+}
+
 func DeployService(client *qovery.APIClient, envId string, serviceId string, serviceType ServiceType, request interface{}, watchFlag bool) (string, error) {
 	statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
 

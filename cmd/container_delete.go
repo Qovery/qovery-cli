@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var containerDeleteCmd = &cobra.Command{
@@ -23,6 +26,18 @@ var containerDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if containerName == "" && containerNames == "" {
+			utils.PrintlnError(fmt.Errorf("use neither --container \"<container name>\" nor --containers \"<container1 name>, <container2 name>\""))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if containerName != "" && containerNames != "" {
+			utils.PrintlnError(fmt.Errorf("you can't use --container and --containers at the same time"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
@@ -30,6 +45,48 @@ var containerDeleteCmd = &cobra.Command{
 			utils.PrintlnError(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if containerNames != "" {
+			// wait until service is ready
+			for {
+				if utils.IsEnvironmentInATerminalState(envId, client) {
+					break
+				}
+
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				time.Sleep(5 * time.Second)
+			}
+
+			containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			var serviceIds []string
+			for _, containerName := range strings.Split(containerNames, ",") {
+				trimmedContainerName := strings.TrimSpace(containerName)
+				serviceIds = append(serviceIds, utils.FindByContainerName(containers.GetResults(), trimmedContainerName).Id)
+			}
+
+			_, err = utils.DeleteServices(client, envId, serviceIds, utils.ContainerType)
+
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			} else {
+				utils.Println(fmt.Sprintf("Deleting containers %s in progress..", pterm.FgBlue.Sprintf(containerNames)))
+			}
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			return
 		}
 
 		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
@@ -76,7 +133,6 @@ func init() {
 	containerDeleteCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	containerDeleteCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	containerDeleteCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
+	containerDeleteCmd.Flags().StringVarP(&containerNames, "containers", "", "", "Container Names (comma separated) (ex: --containers \"container1,container2\")")
 	containerDeleteCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch container status until it's ready or an error occurs")
-
-	_ = containerDeleteCmd.MarkFlagRequired("container")
 }
