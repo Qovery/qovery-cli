@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var databaseStopCmd = &cobra.Command{
@@ -23,6 +26,18 @@ var databaseStopCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if databaseName == "" && databaseNames == "" {
+			utils.PrintlnError(fmt.Errorf("use neither --database \"<database name>\" nor --databases \"<database1 name>, <database2 name>\""))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if databaseName != "" && databaseNames != "" {
+			utils.PrintlnError(fmt.Errorf("you can't use --database and --databases at the same time"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
@@ -30,6 +45,49 @@ var databaseStopCmd = &cobra.Command{
 			utils.PrintlnError(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if databaseNames != "" {
+			// wait until service is ready
+			for {
+				if utils.IsEnvironmentInATerminalState(envId, client) {
+					break
+				}
+
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				time.Sleep(5 * time.Second)
+			}
+
+			databases, _, err := client.DatabasesApi.ListDatabase(context.Background(), envId).Execute()
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			var serviceIds []string
+			for _, databaseName := range strings.Split(databaseNames, ",") {
+				trimmedDatabaseName := strings.TrimSpace(databaseName)
+				serviceIds = append(serviceIds, utils.FindByDatabaseName(databases.GetResults(), trimmedDatabaseName).Id)
+			}
+
+			// stop multiple services
+			_, err = utils.StopServices(client, envId, serviceIds, utils.DatabaseType)
+
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			} else {
+				utils.Println(fmt.Sprintf("Stopping databases %s in progress..", pterm.FgBlue.Sprintf(databaseNames)))
+			}
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			return
 		}
 
 		databases, _, err := client.DatabasesApi.ListDatabase(context.Background(), envId).Execute()
@@ -76,7 +134,6 @@ func init() {
 	databaseStopCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	databaseStopCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	databaseStopCmd.Flags().StringVarP(&databaseName, "database", "n", "", "Database Name")
+	databaseStopCmd.Flags().StringVarP(&databaseNames, "databases", "", "", "Database Names (comma separated) Example: --databases \"db1,db2\"")
 	databaseStopCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch database status until it's ready or an error occurs")
-
-	_ = databaseStopCmd.MarkFlagRequired("database")
 }

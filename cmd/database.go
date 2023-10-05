@@ -1,12 +1,15 @@
 package cmd
 
 import (
-	"github.com/qovery/qovery-cli/utils"
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var databaseName string
+var databaseNames string
 var showCredentials bool
 var databaseCmd = &cobra.Command{
 	Use:   "database",
