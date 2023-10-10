@@ -2,13 +2,15 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
-	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 	"io"
 	"os"
+
+	"github.com/pkg/errors"
+	"github.com/pterm/pterm"
+	"github.com/spf13/cobra"
+	"golang.org/x/net/context"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var lifecycleUpdateCmd = &cobra.Command{
@@ -24,14 +26,14 @@ var lifecycleUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if lifecycleTag != "" && lifecycleBranch != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --tag and --branch at the same time"))
+		if (lifecycleTag != "" || lifecycleImageName != "") && lifecycleBranch != "" {
+			utils.PrintlnError(fmt.Errorf("you can't use --tag or --image-name with --branch at the same time"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if lifecycleTag == "" && lifecycleBranch == "" {
-			utils.PrintlnError(fmt.Errorf("you must use --tag or --branch"))
+		if lifecycleTag == "" && lifecycleImageName == "" && lifecycleBranch == "" {
+			utils.PrintlnError(fmt.Errorf("you must use --tag or --image-name or --branch"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -65,14 +67,14 @@ var lifecycleUpdateCmd = &cobra.Command{
 		docker := lifecycle.Source.Docker.Get()
 		image := lifecycle.Source.Image.Get()
 
-		if docker != nil && lifecycleTag != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --tag with a lifecycle targetting a Dockerfile. Use --branch instead"))
+		if docker != nil && (lifecycleTag != "" || lifecycleImageName != "") {
+			utils.PrintlnError(fmt.Errorf("you can't use --tag or --image-name with a lifecycle targetting a Dockerfile. Use --branch instead"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if image != nil && lifecycleBranch != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --branch with a lifecycle targetting an image. Use --tag instead"))
+			utils.PrintlnError(fmt.Errorf("you can't use --branch with a lifecycle targetting an image. Use --tag and/or --image-name instead"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -83,7 +85,12 @@ var lifecycleUpdateCmd = &cobra.Command{
 			req.Source.Docker.Get().GitRepository.Branch = &lifecycleBranch
 			req.Source.Image.Set(nil)
 		} else {
-			req.Source.Image.Get().Tag = &lifecycleTag
+			if lifecycleTag != "" {
+				req.Source.Image.Get().Tag = &lifecycleTag
+			}
+			if lifecycleImageName != "" {
+				req.Source.Image.Get().ImageName = &lifecycleImageName
+			}
 			req.Source.Docker.Set(nil)
 		}
 
@@ -108,4 +115,5 @@ func init() {
 	lifecycleUpdateCmd.Flags().StringVarP(&lifecycleName, "lifecycle", "n", "", "Lifecycle Name")
 	lifecycleUpdateCmd.Flags().StringVarP(&lifecycleBranch, "branch", "b", "", "Lifecycle Branch")
 	lifecycleUpdateCmd.Flags().StringVarP(&lifecycleTag, "tag", "t", "", "Lifecycle Tag")
+	lifecycleUpdateCmd.Flags().StringVarP(&lifecycleImageName, "image-name", "", "", "Lifecycle Image Name")
 }

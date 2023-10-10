@@ -2,13 +2,15 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
-	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 	"io"
 	"os"
+
+	"github.com/pkg/errors"
+	"github.com/pterm/pterm"
+	"github.com/spf13/cobra"
+	"golang.org/x/net/context"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var cronjobUpdateCmd = &cobra.Command{
@@ -24,14 +26,14 @@ var cronjobUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if cronjobTag != "" && cronjobBranch != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --tag and --branch at the same time"))
+		if (cronjobTag != "" || cronjobImageName != "") && cronjobBranch != "" {
+			utils.PrintlnError(fmt.Errorf("you can't use --tag or --image-name with --branch at the same time"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if cronjobTag == "" && cronjobBranch == "" {
-			utils.PrintlnError(fmt.Errorf("you must use --tag or --branch"))
+		if cronjobTag == "" && cronjobImageName == "" && cronjobBranch == "" {
+			utils.PrintlnError(fmt.Errorf("you must use --tag or --image-name or --branch"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -65,14 +67,14 @@ var cronjobUpdateCmd = &cobra.Command{
 		docker := cronjob.Source.Docker.Get()
 		image := cronjob.Source.Image.Get()
 
-		if docker != nil && cronjobTag != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --tag with a cronjob targetting a Dockerfile. Use --branch instead"))
+		if docker != nil && (cronjobTag != "" || cronjobImageName != "") {
+			utils.PrintlnError(fmt.Errorf("you can't use --tag or --image-name with a cronjob targetting a Dockerfile. Use --branch instead"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if image != nil && cronjobBranch != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --branch with a cronjob targetting an image. Use --tag instead"))
+			utils.PrintlnError(fmt.Errorf("you can't use --branch with a cronjob targetting an image. Use --tag and/or --image-name instead"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -83,7 +85,12 @@ var cronjobUpdateCmd = &cobra.Command{
 			req.Source.Docker.Get().GitRepository.Branch = &cronjobBranch
 			req.Source.Image.Set(nil)
 		} else {
-			req.Source.Image.Get().Tag = &cronjobTag
+			if cronjobTag != "" {
+				req.Source.Image.Get().Tag = &cronjobTag
+			}
+			if cronjobImageName != "" {
+				req.Source.Image.Get().ImageName = &cronjobImageName
+			}
 			req.Source.Docker.Set(nil)
 		}
 
@@ -108,4 +115,5 @@ func init() {
 	cronjobUpdateCmd.Flags().StringVarP(&cronjobName, "cronjob", "n", "", "Cronjob Name")
 	cronjobUpdateCmd.Flags().StringVarP(&cronjobBranch, "branch", "b", "", "Cronjob Branch")
 	cronjobUpdateCmd.Flags().StringVarP(&cronjobTag, "tag", "t", "", "Cronjob Tag")
+	cronjobUpdateCmd.Flags().StringVarP(&cronjobImageName, "image-name", "", "", "Cronjob Image Name")
 }
