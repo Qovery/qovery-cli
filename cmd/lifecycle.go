@@ -2,16 +2,19 @@ package cmd
 
 import (
 	"context"
-	"github.com/qovery/qovery-cli/utils"
+	"os"
+
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"os"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var lifecycleName string
 var lifecycleNames string
 var lifecycleCommitId string
 var lifecycleTag string
+var lifecycleImageName string
 var lifecycleBranch string
 var targetLifecycleName string
 

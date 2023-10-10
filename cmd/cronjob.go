@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"context"
-	"github.com/qovery/qovery-cli/utils"
+	"os"
+
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"os"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var cronjobName string
@@ -13,6 +15,7 @@ var cronjobNames string
 var cronjobCommitId string
 var cronjobBranch string
 var cronjobTag string
+var cronjobImageName string
 
 var targetCronjobName string
 
