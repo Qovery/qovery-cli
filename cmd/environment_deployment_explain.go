@@ -83,15 +83,27 @@ var environmentDeploymentExplainCmd = &cobra.Command{
 			mLevel = MessageLevel
 		}
 
+		environmentStatusesWithStages , _, err:=  client.EnvironmentMainCallsAPI.GetEnvironmentStatusesWithStages(context.Background(), environmentId).Execute()
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+
 		tree := treeprint.New()
-		envBranch := tree.AddBranch(fmt.Sprintf("Environment: %s [duration: %s]", environment.Name, getDurationFromLogs(logs)))
+		envBranch := tree.AddBranch(fmt.Sprintf("Environment: %s [duration: %s]", environment.Name, getDuration(environmentStatusesWithStages.Environment.TotalDeploymentDurationInSeconds)))
 
 		branchByStage := make(map[string]treeprint.Tree)
 
+
 		for stageIdx, stage := range getStagesFromLogs(logs) {
-			stageStartTime, stageEndTime := getStartTimeAndEndTimeByStage(stage, logs)
-			branch := envBranch.AddBranch(fmt.Sprintf("Stage %d: %s [duration: %s]", stageIdx+1, stage, utils.GetDuration(stageStartTime, stageEndTime)))
+			metricsStage := findStage(environmentStatusesWithStages.Stages, stage)
+
+			branch := envBranch.AddBranch(fmt.Sprintf("Stage %d: %s [duration: %s]", stageIdx+1, stage, getDuration(metricsStage.Stage.Steps.TotalDurationSec)))
 			branchByStage[stage] = branch
+
+
 
 			if mLevel >= ServiceLevel {
 				for _, service := range getServicesFromLogsByStage(stage, logs) {
@@ -146,21 +158,23 @@ var environmentDeploymentExplainCmd = &cobra.Command{
 	},
 }
 
-func getDurationFromLogs(logs []qovery.EnvironmentLogs) string {
-	var startTime time.Time
-	var endTime time.Time
+func getDuration(seconds qovery.NullableInt32) string {
+	if seconds.IsSet() {
+		duration := time.Duration(*seconds.Get()) * time.Second
 
-	for _, log := range logs {
-		if startTime.IsZero() || startTime.After(log.Timestamp) {
-			startTime = log.Timestamp
-		}
-
-		if endTime.IsZero() || endTime.Before(log.Timestamp) {
-			endTime = log.Timestamp
-		}
+		return fmt.Sprintf("%d minutes and %d seconds", int(duration.Minutes()), int(duration.Seconds())%60)
 	}
 
-	return utils.GetDuration(startTime, endTime)
+	return "_"
+}
+
+func findStage(stages []qovery.DeploymentStageWithServicesStatuses, stageName string) *qovery.DeploymentStageWithServicesStatuses {
+	for _, stage := range stages {
+		if stage.Stage.Name == stageName {
+			return &stage
+		}
+	}
+	return nil
 }
 
 func getStagesFromLogs(logs []qovery.EnvironmentLogs) []string {
@@ -176,25 +190,6 @@ func getStagesFromLogs(logs []qovery.EnvironmentLogs) []string {
 	}
 
 	return stagesList
-}
-
-func getStartTimeAndEndTimeByStage(stage string, logs []qovery.EnvironmentLogs) (time.Time, time.Time) {
-	var startTime time.Time
-	var endTime time.Time
-
-	for _, log := range logs {
-		if log.Details.Stage.GetName() == stage {
-			if startTime.IsZero() || startTime.After(log.Timestamp) {
-				startTime = log.Timestamp
-			}
-
-			if endTime.IsZero() || endTime.Before(log.Timestamp) {
-				endTime = log.Timestamp
-			}
-		}
-	}
-
-	return startTime, endTime
 }
 
 func getStartTimeAndEndTimeByServiceAndStage(service string, stage string, logs []qovery.EnvironmentLogs) (time.Time, time.Time) {
@@ -280,6 +275,7 @@ func filterLogsByServiceAndStep(service string, step string, logs []qovery.Envir
 
 	return filteredLogs
 }
+
 
 func init() {
 	environmentDeploymentCmd.AddCommand(environmentDeploymentExplainCmd)
