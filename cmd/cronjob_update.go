@@ -64,8 +64,8 @@ var cronjobUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		docker := cronjob.Source.Docker.Get()
-		image := cronjob.Source.Image.Get()
+		docker := cronjob.Source.JobResponseAllOfSourceOneOf1.Docker
+		image := cronjob.Source.JobResponseAllOfSourceOneOf.Image
 
 		if docker != nil && (cronjobTag != "" || cronjobImageName != "") {
 			utils.PrintlnError(fmt.Errorf("you can't use --tag or --image-name with a cronjob targetting a Dockerfile. Use --branch instead"))
@@ -94,7 +94,7 @@ var cronjobUpdateCmd = &cobra.Command{
 			req.Source.Docker.Set(nil)
 		}
 
-		_, res, err := client.JobMainCallsApi.EditJob(context.Background(), cronjob.Id).JobRequest(req).Execute()
+		_, res, err := client.JobMainCallsAPI.EditJob(context.Background(), cronjob.Id).JobRequest(req).Execute()
 
 		if err != nil {
 			result, _ := io.ReadAll(res.Body)

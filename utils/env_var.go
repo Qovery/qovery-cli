@@ -189,35 +189,35 @@ func CreateEnvironmentVariable(
 
 	switch strings.ToUpper(scope) {
 	case "PROJECT":
-		_, _, err := client.ProjectEnvironmentVariableApi.CreateProjectEnvironmentVariable(
+		_, _, err := client.ProjectEnvironmentVariableAPI.CreateProjectEnvironmentVariable(
 			context.Background(),
 			projectId,
 		).EnvironmentVariableRequest(req).Execute()
 
 		return err
 	case "ENVIRONMENT":
-		_, _, err := client.EnvironmentVariableApi.CreateEnvironmentEnvironmentVariable(
+		_, _, err := client.EnvironmentVariableAPI.CreateEnvironmentEnvironmentVariable(
 			context.Background(),
 			environmentId,
 		).EnvironmentVariableRequest(req).Execute()
 
 		return err
 	case "APPLICATION":
-		_, _, err := client.ApplicationEnvironmentVariableApi.CreateApplicationEnvironmentVariable(
+		_, _, err := client.ApplicationEnvironmentVariableAPI.CreateApplicationEnvironmentVariable(
 			context.Background(),
 			serviceId,
 		).EnvironmentVariableRequest(req).Execute()
 
 		return err
 	case "JOB":
-		_, _, err := client.JobEnvironmentVariableApi.CreateJobEnvironmentVariable(
+		_, _, err := client.JobEnvironmentVariableAPI.CreateJobEnvironmentVariable(
 			context.Background(),
 			serviceId,
 		).EnvironmentVariableRequest(req).Execute()
 
 		return err
 	case "CONTAINER":
-		_, _, err := client.ContainerEnvironmentVariableApi.CreateContainerEnvironmentVariable(
+		_, _, err := client.ContainerEnvironmentVariableAPI.CreateContainerEnvironmentVariable(
 			context.Background(),
 			serviceId,
 		).EnvironmentVariableRequest(req).Execute()
@@ -245,35 +245,35 @@ func CreateSecret(
 
 	switch strings.ToUpper(scope) {
 	case "PROJECT":
-		_, _, err := client.ProjectSecretApi.CreateProjectSecret(
+		_, _, err := client.ProjectSecretAPI.CreateProjectSecret(
 			context.Background(),
 			projectId,
 		).SecretRequest(req).Execute()
 
 		return err
 	case "ENVIRONMENT":
-		_, _, err := client.EnvironmentSecretApi.CreateEnvironmentSecret(
+		_, _, err := client.EnvironmentSecretAPI.CreateEnvironmentSecret(
 			context.Background(),
 			environmentId,
 		).SecretRequest(req).Execute()
 
 		return err
 	case "APPLICATION":
-		_, _, err := client.ApplicationSecretApi.CreateApplicationSecret(
+		_, _, err := client.ApplicationSecretAPI.CreateApplicationSecret(
 			context.Background(),
 			serviceId,
 		).SecretRequest(req).Execute()
 
 		return err
 	case "JOB":
-		_, _, err := client.JobSecretApi.CreateJobSecret(
+		_, _, err := client.JobSecretAPI.CreateJobSecret(
 			context.Background(),
 			serviceId,
 		).SecretRequest(req).Execute()
 
 		return err
 	case "CONTAINER":
-		_, _, err := client.ContainerSecretApi.CreateContainerSecret(
+		_, _, err := client.ContainerSecretAPI.CreateContainerSecret(
 			context.Background(),
 			serviceId,
 		).SecretRequest(req).Execute()
@@ -313,21 +313,21 @@ func ListEnvironmentVariables(
 
 	switch serviceType {
 	case ApplicationType:
-		r, _, err := client.ApplicationEnvironmentVariableApi.ListApplicationEnvironmentVariable(context.Background(), serviceId).Execute()
+		r, _, err := client.ApplicationEnvironmentVariableAPI.ListApplicationEnvironmentVariable(context.Background(), serviceId).Execute()
 		if err != nil {
 			return nil, err
 		}
 
 		res = r
 	case ContainerType:
-		r, _, err := client.ContainerEnvironmentVariableApi.ListContainerEnvironmentVariable(context.Background(), serviceId).Execute()
+		r, _, err := client.ContainerEnvironmentVariableAPI.ListContainerEnvironmentVariable(context.Background(), serviceId).Execute()
 		if err != nil {
 			return nil, err
 		}
 
 		res = r
 	case JobType:
-		r, _, err := client.JobEnvironmentVariableApi.ListJobEnvironmentVariable(context.Background(), serviceId).Execute()
+		r, _, err := client.JobEnvironmentVariableAPI.ListJobEnvironmentVariable(context.Background(), serviceId).Execute()
 		if err != nil {
 			return nil, err
 		}
@@ -351,21 +351,21 @@ func ListSecrets(
 
 	switch serviceType {
 	case ApplicationType:
-		r, _, err := client.ApplicationSecretApi.ListApplicationSecrets(context.Background(), serviceId).Execute()
+		r, _, err := client.ApplicationSecretAPI.ListApplicationSecrets(context.Background(), serviceId).Execute()
 		if err != nil {
 			return nil, err
 		}
 
 		res = r
 	case ContainerType:
-		r, _, err := client.ContainerSecretApi.ListContainerSecrets(context.Background(), serviceId).Execute()
+		r, _, err := client.ContainerSecretAPI.ListContainerSecrets(context.Background(), serviceId).Execute()
 		if err != nil {
 			return nil, err
 		}
 
 		res = r
 	case JobType:
-		r, _, err := client.JobSecretApi.ListJobSecrets(context.Background(), serviceId).Execute()
+		r, _, err := client.JobSecretAPI.ListJobSecrets(context.Background(), serviceId).Execute()
 		if err != nil {
 			return nil, err
 		}
@@ -401,7 +401,7 @@ func DeleteEnvironmentVariableByKey(
 
 	switch string(envVar.Scope) {
 	case "PROJECT":
-		_, err := client.ProjectEnvironmentVariableApi.DeleteProjectEnvironmentVariable(
+		_, err := client.ProjectEnvironmentVariableAPI.DeleteProjectEnvironmentVariable(
 			context.Background(),
 			projectId,
 			envVar.Id,
@@ -409,7 +409,7 @@ func DeleteEnvironmentVariableByKey(
 
 		return err
 	case "ENVIRONMENT":
-		_, err := client.EnvironmentVariableApi.DeleteEnvironmentEnvironmentVariable(
+		_, err := client.EnvironmentVariableAPI.DeleteEnvironmentEnvironmentVariable(
 			context.Background(),
 			environmentId,
 			envVar.Id,
@@ -417,7 +417,7 @@ func DeleteEnvironmentVariableByKey(
 
 		return err
 	case "APPLICATION":
-		_, err := client.ApplicationEnvironmentVariableApi.DeleteApplicationEnvironmentVariable(
+		_, err := client.ApplicationEnvironmentVariableAPI.DeleteApplicationEnvironmentVariable(
 			context.Background(),
 			serviceId,
 			envVar.Id,
@@ -425,7 +425,7 @@ func DeleteEnvironmentVariableByKey(
 
 		return err
 	case "JOB":
-		_, err := client.JobEnvironmentVariableApi.DeleteJobEnvironmentVariable(
+		_, err := client.JobEnvironmentVariableAPI.DeleteJobEnvironmentVariable(
 			context.Background(),
 			serviceId,
 			envVar.Id,
@@ -433,7 +433,7 @@ func DeleteEnvironmentVariableByKey(
 
 		return err
 	case "CONTAINER":
-		_, err := client.ContainerEnvironmentVariableApi.DeleteContainerEnvironmentVariable(
+		_, err := client.ContainerEnvironmentVariableAPI.DeleteContainerEnvironmentVariable(
 			context.Background(),
 			serviceId,
 			envVar.Id,
@@ -466,7 +466,7 @@ func DeleteSecretByKey(
 
 	switch string(secret.Scope) {
 	case "PROJECT":
-		_, err := client.ProjectSecretApi.DeleteProjectSecret(
+		_, err := client.ProjectSecretAPI.DeleteProjectSecret(
 			context.Background(),
 			projectId,
 			secret.Id,
@@ -474,7 +474,7 @@ func DeleteSecretByKey(
 
 		return err
 	case "ENVIRONMENT":
-		_, err := client.EnvironmentVariableApi.DeleteEnvironmentEnvironmentVariable(
+		_, err := client.EnvironmentVariableAPI.DeleteEnvironmentEnvironmentVariable(
 			context.Background(),
 			environmentId,
 			secret.Id,
@@ -482,7 +482,7 @@ func DeleteSecretByKey(
 
 		return err
 	case "APPLICATION":
-		_, err := client.ApplicationSecretApi.DeleteApplicationSecret(
+		_, err := client.ApplicationSecretAPI.DeleteApplicationSecret(
 			context.Background(),
 			serviceId,
 			secret.Id,
@@ -490,7 +490,7 @@ func DeleteSecretByKey(
 
 		return err
 	case "JOB":
-		_, err := client.JobSecretApi.DeleteJobSecret(
+		_, err := client.JobSecretAPI.DeleteJobSecret(
 			context.Background(),
 			serviceId,
 			secret.Id,
@@ -498,7 +498,7 @@ func DeleteSecretByKey(
 
 		return err
 	case "CONTAINER":
-		_, err := client.ContainerSecretApi.DeleteContainerSecret(
+		_, err := client.ContainerSecretAPI.DeleteContainerSecret(
 			context.Background(),
 			serviceId,
 			secret.Id,
@@ -544,7 +544,7 @@ func CreateEnvironmentVariableAlias(
 
 	switch strings.ToUpper(scope) {
 	case "PROJECT":
-		_, _, err := client.ProjectEnvironmentVariableApi.CreateProjectEnvironmentVariableAlias(
+		_, _, err := client.ProjectEnvironmentVariableAPI.CreateProjectEnvironmentVariableAlias(
 			context.Background(),
 			projectId,
 			parentEnvironmentVariableId,
@@ -552,7 +552,7 @@ func CreateEnvironmentVariableAlias(
 
 		return err
 	case "ENVIRONMENT":
-		_, _, err := client.EnvironmentVariableApi.CreateEnvironmentEnvironmentVariableAlias(
+		_, _, err := client.EnvironmentVariableAPI.CreateEnvironmentEnvironmentVariableAlias(
 			context.Background(),
 			environmentId,
 			parentEnvironmentVariableId,
@@ -560,7 +560,7 @@ func CreateEnvironmentVariableAlias(
 
 		return err
 	case "APPLICATION":
-		_, _, err := client.ApplicationEnvironmentVariableApi.CreateApplicationEnvironmentVariableAlias(
+		_, _, err := client.ApplicationEnvironmentVariableAPI.CreateApplicationEnvironmentVariableAlias(
 			context.Background(),
 			serviceId,
 			parentEnvironmentVariableId,
@@ -568,7 +568,7 @@ func CreateEnvironmentVariableAlias(
 
 		return err
 	case "JOB":
-		_, _, err := client.JobEnvironmentVariableApi.CreateJobEnvironmentVariableAlias(
+		_, _, err := client.JobEnvironmentVariableAPI.CreateJobEnvironmentVariableAlias(
 			context.Background(),
 			serviceId,
 			parentEnvironmentVariableId,
@@ -576,7 +576,7 @@ func CreateEnvironmentVariableAlias(
 
 		return err
 	case "CONTAINER":
-		_, _, err := client.ContainerEnvironmentVariableApi.CreateContainerEnvironmentVariableAlias(
+		_, _, err := client.ContainerEnvironmentVariableAPI.CreateContainerEnvironmentVariableAlias(
 			context.Background(),
 			serviceId,
 			parentEnvironmentVariableId,
@@ -601,7 +601,7 @@ func CreateSecretAlias(
 
 	switch strings.ToUpper(scope) {
 	case "PROJECT":
-		_, _, err := client.ProjectSecretApi.CreateProjectSecretAlias(
+		_, _, err := client.ProjectSecretAPI.CreateProjectSecretAlias(
 			context.Background(),
 			projectId,
 			parentSecretId,
@@ -609,7 +609,7 @@ func CreateSecretAlias(
 
 		return err
 	case "ENVIRONMENT":
-		_, _, err := client.EnvironmentSecretApi.CreateEnvironmentSecretAlias(
+		_, _, err := client.EnvironmentSecretAPI.CreateEnvironmentSecretAlias(
 			context.Background(),
 			environmentId,
 			parentSecretId,
@@ -617,7 +617,7 @@ func CreateSecretAlias(
 
 		return err
 	case "APPLICATION":
-		_, _, err := client.ApplicationSecretApi.CreateApplicationSecretAlias(
+		_, _, err := client.ApplicationSecretAPI.CreateApplicationSecretAlias(
 			context.Background(),
 			serviceId,
 			parentSecretId,
@@ -625,7 +625,7 @@ func CreateSecretAlias(
 
 		return err
 	case "JOB":
-		_, _, err := client.JobSecretApi.CreateJobSecretAlias(
+		_, _, err := client.JobSecretAPI.CreateJobSecretAlias(
 			context.Background(),
 			serviceId,
 			parentSecretId,
@@ -633,7 +633,7 @@ func CreateSecretAlias(
 
 		return err
 	case "CONTAINER":
-		_, _, err := client.ContainerSecretApi.CreateContainerSecretAlias(
+		_, _, err := client.ContainerSecretAPI.CreateContainerSecretAlias(
 			context.Background(),
 			serviceId,
 			parentSecretId,
@@ -697,7 +697,7 @@ func CreateEnvironmentVariableOverride(
 
 	switch strings.ToUpper(scope) {
 	case "PROJECT":
-		_, _, err := client.ProjectEnvironmentVariableApi.CreateProjectEnvironmentVariableOverride(
+		_, _, err := client.ProjectEnvironmentVariableAPI.CreateProjectEnvironmentVariableOverride(
 			context.Background(),
 			projectId,
 			parentEnvironmentVariableId,
@@ -705,7 +705,7 @@ func CreateEnvironmentVariableOverride(
 
 		return err
 	case "ENVIRONMENT":
-		_, _, err := client.EnvironmentVariableApi.CreateEnvironmentEnvironmentVariableOverride(
+		_, _, err := client.EnvironmentVariableAPI.CreateEnvironmentEnvironmentVariableOverride(
 			context.Background(),
 			environmentId,
 			parentEnvironmentVariableId,
@@ -713,7 +713,7 @@ func CreateEnvironmentVariableOverride(
 
 		return err
 	case "APPLICATION":
-		_, _, err := client.ApplicationEnvironmentVariableApi.CreateApplicationEnvironmentVariableOverride(
+		_, _, err := client.ApplicationEnvironmentVariableAPI.CreateApplicationEnvironmentVariableOverride(
 			context.Background(),
 			serviceId,
 			parentEnvironmentVariableId,
@@ -721,7 +721,7 @@ func CreateEnvironmentVariableOverride(
 
 		return err
 	case "JOB":
-		_, _, err := client.JobEnvironmentVariableApi.CreateJobEnvironmentVariableOverride(
+		_, _, err := client.JobEnvironmentVariableAPI.CreateJobEnvironmentVariableOverride(
 			context.Background(),
 			serviceId,
 			parentEnvironmentVariableId,
@@ -729,7 +729,7 @@ func CreateEnvironmentVariableOverride(
 
 		return err
 	case "CONTAINER":
-		_, _, err := client.ContainerEnvironmentVariableApi.CreateContainerEnvironmentVariableOverride(
+		_, _, err := client.ContainerEnvironmentVariableAPI.CreateContainerEnvironmentVariableOverride(
 			context.Background(),
 			serviceId,
 			parentEnvironmentVariableId,
@@ -757,7 +757,7 @@ func CreateSecretOverride(
 
 	switch strings.ToUpper(scope) {
 	case "PROJECT":
-		_, _, err := client.ProjectSecretApi.CreateProjectSecretOverride(
+		_, _, err := client.ProjectSecretAPI.CreateProjectSecretOverride(
 			context.Background(),
 			projectId,
 			parentSecretId,
@@ -765,7 +765,7 @@ func CreateSecretOverride(
 
 		return err
 	case "ENVIRONMENT":
-		_, _, err := client.EnvironmentSecretApi.CreateEnvironmentSecretOverride(
+		_, _, err := client.EnvironmentSecretAPI.CreateEnvironmentSecretOverride(
 			context.Background(),
 			environmentId,
 			parentSecretId,
@@ -773,7 +773,7 @@ func CreateSecretOverride(
 
 		return err
 	case "APPLICATION":
-		_, _, err := client.ApplicationSecretApi.CreateApplicationSecretOverride(
+		_, _, err := client.ApplicationSecretAPI.CreateApplicationSecretOverride(
 			context.Background(),
 			serviceId,
 			parentSecretId,
@@ -781,7 +781,7 @@ func CreateSecretOverride(
 
 		return err
 	case "JOB":
-		_, _, err := client.JobSecretApi.CreateJobSecretOverride(
+		_, _, err := client.JobSecretAPI.CreateJobSecretOverride(
 			context.Background(),
 			serviceId,
 			parentSecretId,
@@ -789,7 +789,7 @@ func CreateSecretOverride(
 
 		return err
 	case "CONTAINER":
-		_, _, err := client.ContainerSecretApi.CreateContainerSecretOverride(
+		_, _, err := client.ContainerSecretAPI.CreateContainerSecretOverride(
 			context.Background(),
 			serviceId,
 			parentSecretId,

@@ -99,8 +99,8 @@ var cronjobDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		docker := cronjob.Source.Docker.Get()
-		image := cronjob.Source.Image.Get()
+		docker := cronjob.Source.JobResponseAllOfSourceOneOf1.Docker
+		image := cronjob.Source.JobResponseAllOfSourceOneOf.Image
 
 		var req qovery.JobDeployRequest
 
@@ -114,7 +114,7 @@ var cronjobDeployCmd = &cobra.Command{
 			}
 		} else {
 			req = qovery.JobDeployRequest{
-				ImageTag: image.Tag,
+				ImageTag: &image.Tag,
 			}
 
 			if cronjobTag != "" {

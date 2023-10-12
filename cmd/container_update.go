@@ -34,7 +34,7 @@ var containerUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
+		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -101,7 +101,7 @@ var containerUpdateCmd = &cobra.Command{
 			AutoPreview:         utils.Bool(container.AutoPreview),
 		}
 
-		_, res, err := client.ContainerMainCallsApi.EditContainer(context.Background(), container.Id).ContainerRequest(req).Execute()
+		_, res, err := client.ContainerMainCallsAPI.EditContainer(context.Background(), container.Id).ContainerRequest(req).Execute()
 
 		if err != nil {
 			// print http body error message

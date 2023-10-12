@@ -32,7 +32,7 @@ var containerEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
+		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -49,7 +49,7 @@ var containerEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		envVars, _, err := client.ContainerEnvironmentVariableApi.ListContainerEnvironmentVariable(
+		envVars, _, err := client.ContainerEnvironmentVariableAPI.ListContainerEnvironmentVariable(
 			context.Background(),
 			container.Id,
 		).Execute()
@@ -60,7 +60,7 @@ var containerEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		secrets, _, err := client.ContainerSecretApi.ListContainerSecrets(
+		secrets, _, err := client.ContainerSecretAPI.ListContainerSecrets(
 			context.Background(),
 			container.Id,
 		).Execute()

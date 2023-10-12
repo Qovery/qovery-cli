@@ -38,7 +38,7 @@ func getLogs() string {
 		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 	client := utils.GetQoveryClient(tokenType, token)
-	e, res, err := client.EnvironmentMainCallsApi.GetEnvironment(context.Background(), string(env)).Execute()
+	e, res, err := client.EnvironmentMainCallsAPI.GetEnvironment(context.Background(), string(env)).Execute()
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)

@@ -36,7 +36,7 @@ var applicationDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
+		applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -53,7 +53,7 @@ var applicationDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		customDomains, _, err := client.CustomDomainApi.ListApplicationCustomDomain(context.Background(), application.Id).Execute()
+		customDomains, _, err := client.CustomDomainAPI.ListApplicationCustomDomain(context.Background(), application.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -74,7 +74,7 @@ var applicationDomainCreateCmd = &cobra.Command{
 			GenerateCertificate: generateCertificate,
 		}
 
-		createdDomain, _, err := client.CustomDomainApi.CreateApplicationCustomDomain(context.Background(), application.Id).CustomDomainRequest(req).Execute()
+		createdDomain, _, err := client.CustomDomainAPI.CreateApplicationCustomDomain(context.Background(), application.Id).CustomDomainRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

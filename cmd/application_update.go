@@ -33,7 +33,7 @@ var applicationUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
+		applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -87,7 +87,7 @@ var applicationUpdateCmd = &cobra.Command{
 			req.GitRepository.Branch = &applicationBranch
 		}
 
-		_, _, err = client.ApplicationMainCallsApi.EditApplication(context.Background(), application.Id).ApplicationEditRequest(req).Execute()
+		_, _, err = client.ApplicationMainCallsAPI.EditApplication(context.Background(), application.Id).ApplicationEditRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

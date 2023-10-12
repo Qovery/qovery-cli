@@ -33,7 +33,7 @@ var clusterStopCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		clusters, _, err := client.ClustersApi.ListOrganizationCluster(context.Background(), orgId).Execute()
+		clusters, _, err := client.ClustersAPI.ListOrganizationCluster(context.Background(), orgId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -50,7 +50,7 @@ var clusterStopCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, _, err = client.ClustersApi.StopCluster(context.Background(), orgId, cluster.Id).Execute()
+		_, _, err = client.ClustersAPI.StopCluster(context.Background(), orgId, cluster.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -60,7 +60,7 @@ var clusterStopCmd = &cobra.Command{
 
 		if watchFlag {
 			for {
-				status, _, err := client.ClustersApi.GetClusterStatus(context.Background(), orgId, cluster.Id).Execute()
+				status, _, err := client.ClustersAPI.GetClusterStatus(context.Background(), orgId, cluster.Id).Execute()
 				if err != nil {
 					utils.PrintlnError(err)
 				}

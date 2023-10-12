@@ -34,7 +34,7 @@ var databaseListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		databases, _, err := client.DatabasesApi.ListDatabase(context.Background(), envId).Execute()
+		databases, _, err := client.DatabasesAPI.ListDatabase(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -42,7 +42,7 @@ var databaseListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
+		statuses, _, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -58,7 +58,7 @@ var databaseListCmd = &cobra.Command{
 		var data [][]string
 
 		for _, database := range databases.GetResults() {
-			res, _, err := client.DatabaseMainCallsApi.GetDatabaseMasterCredentials(context.Background(), database.Id).Execute()
+			res, _, err := client.DatabaseMainCallsAPI.GetDatabaseMasterCredentials(context.Background(), database.Id).Execute()
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
@@ -96,7 +96,7 @@ func getDatabaseJsonOutput(client qovery.APIClient, statuses []qovery.Status, da
 	var results []interface{}
 
 	for _, database := range databases {
-		res, _, err := client.DatabaseMainCallsApi.GetDatabaseMasterCredentials(context.Background(), database.Id).Execute()
+		res, _, err := client.DatabaseMainCallsAPI.GetDatabaseMasterCredentials(context.Background(), database.Id).Execute()
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)

@@ -58,7 +58,7 @@ var containerDeleteCmd = &cobra.Command{
 				time.Sleep(5 * time.Second)
 			}
 
-			containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
+			containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
 
 			if err != nil {
 				utils.PrintlnError(err)
@@ -89,7 +89,7 @@ var containerDeleteCmd = &cobra.Command{
 			return
 		}
 
-		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
+		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

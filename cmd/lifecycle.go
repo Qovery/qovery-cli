@@ -36,7 +36,7 @@ func init() {
 }
 
 func ListLifecycleJobs(envId string, client *qovery.APIClient) ([]qovery.JobResponse, error) {
-	jobs, _, err := client.JobsApi.ListJobs(context.Background(), envId).Execute()
+	jobs, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
 
 	if err != nil {
 		return nil, err

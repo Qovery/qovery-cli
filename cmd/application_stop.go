@@ -58,7 +58,7 @@ var applicationStopCmd = &cobra.Command{
 				time.Sleep(5 * time.Second)
 			}
 
-			applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
+			applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
 
 			if err != nil {
 				utils.PrintlnError(err)
@@ -90,7 +90,7 @@ var applicationStopCmd = &cobra.Command{
 			return
 		}
 
-		applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
+		applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

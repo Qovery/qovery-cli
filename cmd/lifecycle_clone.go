@@ -78,7 +78,7 @@ var lifecycleCloneCmd = &cobra.Command{
 			EnvironmentId: targetEnvironmentId,
 		}
 
-		clonedService, res, err := client.JobsApi.CloneJob(context.Background(), job.Id).CloneJobRequest(req).Execute()
+		clonedService, res, err := client.JobsAPI.CloneJob(context.Background(), job.Id).CloneJobRequest(req).Execute()
 
 		if err != nil {
 			// print http body error message

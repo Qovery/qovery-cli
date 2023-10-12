@@ -64,8 +64,8 @@ var lifecycleUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		docker := lifecycle.Source.Docker.Get()
-		image := lifecycle.Source.Image.Get()
+		docker := lifecycle.Source.JobResponseAllOfSourceOneOf1.Docker
+	image := lifecycle.Source.JobResponseAllOfSourceOneOf.Image
 
 		if docker != nil && (lifecycleTag != "" || lifecycleImageName != "") {
 			utils.PrintlnError(fmt.Errorf("you can't use --tag or --image-name with a lifecycle targetting a Dockerfile. Use --branch instead"))
@@ -94,7 +94,7 @@ var lifecycleUpdateCmd = &cobra.Command{
 			req.Source.Docker.Set(nil)
 		}
 
-		_, res, err := client.JobMainCallsApi.EditJob(context.Background(), lifecycle.Id).JobRequest(req).Execute()
+		_, res, err := client.JobMainCallsAPI.EditJob(context.Background(), lifecycle.Id).JobRequest(req).Execute()
 
 		if err != nil {
 			result, _ := io.ReadAll(res.Body)

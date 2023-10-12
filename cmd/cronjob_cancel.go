@@ -31,7 +31,7 @@ var cronjobCancelCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		cronjobs, _, err := client.JobsApi.ListJobs(context.Background(), envId).Execute()
+		cronjobs, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

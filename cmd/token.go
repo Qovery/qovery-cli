@@ -55,7 +55,7 @@ func generateMachineToMachineAPIToken(tokenInformation *utils.TokenInformation) 
 	}
 
 	client := utils.GetQoveryClient(tokenType, token)
-	createdToken, res, err := client.OrganizationApiTokenApi.CreateOrganizationApiToken(context.Background(), string(tokenInformation.Organization.ID)).OrganizationApiTokenCreateRequest(req).Execute()
+	createdToken, res, err := client.OrganizationApiTokenAPI.CreateOrganizationApiToken(context.Background(), string(tokenInformation.Organization.ID)).OrganizationApiTokenCreateRequest(req).Execute()
 	if err != nil {
 		return "", err
 	}

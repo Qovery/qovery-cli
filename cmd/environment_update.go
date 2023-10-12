@@ -33,7 +33,7 @@ var environmentUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		environments, _, err := client.EnvironmentsApi.ListEnvironment(context.Background(), projectId).Execute()
+		environments, _, err := client.EnvironmentsAPI.ListEnvironment(context.Background(), projectId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -65,7 +65,7 @@ var environmentUpdateCmd = &cobra.Command{
 			req.Mode = &m
 		}
 
-		_, _, err = client.EnvironmentMainCallsApi.EditEnvironment(context.Background(), env.Id).EnvironmentEditRequest(req).Execute()
+		_, _, err = client.EnvironmentMainCallsAPI.EditEnvironment(context.Background(), env.Id).EnvironmentEditRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

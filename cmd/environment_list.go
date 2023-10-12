@@ -32,7 +32,7 @@ var environmentListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		environments, _, err := client.EnvironmentsApi.ListEnvironment(context.Background(), projectId).Execute()
+		environments, _, err := client.EnvironmentsAPI.ListEnvironment(context.Background(), projectId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -40,7 +40,7 @@ var environmentListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		statuses, _, err := client.EnvironmentsApi.GetProjectEnvironmentsStatus(context.Background(), projectId).Execute()
+		statuses, _, err := client.EnvironmentsAPI.GetProjectEnvironmentsStatus(context.Background(), projectId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

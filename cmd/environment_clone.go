@@ -40,7 +40,7 @@ var environmentCloneCmd = &cobra.Command{
 		}
 
 		if clusterName != "" {
-			clusters, _, err := client.ClustersApi.ListOrganizationCluster(context.Background(), orgId).Execute()
+			clusters, _, err := client.ClustersAPI.ListOrganizationCluster(context.Background(), orgId).Execute()
 
 			if err == nil {
 				for _, c := range clusters.GetResults() {
@@ -63,7 +63,7 @@ var environmentCloneCmd = &cobra.Command{
 			}
 		}
 
-		_, res, err := client.EnvironmentActionsApi.CloneEnvironment(context.Background(), envId).CloneRequest(req).Execute()
+		_, res, err := client.EnvironmentActionsAPI.CloneEnvironment(context.Background(), envId).CloneRequest(req).Execute()
 
 		if err != nil {
 			// print http body error message

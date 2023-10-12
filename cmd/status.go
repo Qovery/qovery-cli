@@ -30,7 +30,7 @@ var statusCmd = &cobra.Command{
 
 		switch service.Type {
 		case utils.ApplicationType:
-			status, res, err := client.ApplicationMainCallsApi.GetApplicationStatus(context.Background(), string(service.ID)).Execute()
+			status, res, err := client.ApplicationMainCallsAPI.GetApplicationStatus(context.Background(), string(service.ID)).Execute()
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(0)
@@ -45,7 +45,7 @@ var statusCmd = &cobra.Command{
 				os.Exit(0)
 			}
 		case utils.ContainerType:
-			status, res, err := client.ContainerMainCallsApi.GetContainerStatus(context.Background(), string(service.ID)).Execute()
+			status, res, err := client.ContainerMainCallsAPI.GetContainerStatus(context.Background(), string(service.ID)).Execute()
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(0)

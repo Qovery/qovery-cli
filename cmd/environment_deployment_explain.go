@@ -49,7 +49,7 @@ var environmentDeploymentExplainCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		environment, _, err := client.EnvironmentMainCallsApi.GetEnvironment(context.Background(), environmentId).Execute()
+		environment, _, err := client.EnvironmentMainCallsAPI.GetEnvironment(context.Background(), environmentId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -57,7 +57,7 @@ var environmentDeploymentExplainCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		logsQuery := client.EnvironmentLogsApi.ListEnvironmentLogs(context.Background(), environmentId)
+		logsQuery := client.EnvironmentLogsAPI.ListEnvironmentLogs(context.Background(), environmentId)
 		if id != "" {
 			logsQuery = logsQuery.Version(id)
 		}
