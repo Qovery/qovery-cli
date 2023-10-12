@@ -30,7 +30,7 @@ var environmentStageEditCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		stages, _, err := client.DeploymentStageMainCallsApi.ListEnvironmentDeploymentStage(context.Background(), environmentId).Execute()
+		stages, _, err := client.DeploymentStageMainCallsAPI.ListEnvironmentDeploymentStage(context.Background(), environmentId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -57,7 +57,7 @@ var environmentStageEditCmd = &cobra.Command{
 			req.Description = desc
 		}
 
-		_, _, err = client.DeploymentStageMainCallsApi.EditDeploymentStage(context.Background(), stage.GetId()).DeploymentStageRequest(req).Execute()
+		_, _, err = client.DeploymentStageMainCallsAPI.EditDeploymentStage(context.Background(), stage.GetId()).DeploymentStageRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

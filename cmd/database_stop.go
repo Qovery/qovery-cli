@@ -58,7 +58,7 @@ var databaseStopCmd = &cobra.Command{
 				time.Sleep(5 * time.Second)
 			}
 
-			databases, _, err := client.DatabasesApi.ListDatabase(context.Background(), envId).Execute()
+			databases, _, err := client.DatabasesAPI.ListDatabase(context.Background(), envId).Execute()
 
 			if err != nil {
 				utils.PrintlnError(err)
@@ -90,7 +90,7 @@ var databaseStopCmd = &cobra.Command{
 			return
 		}
 
-		databases, _, err := client.DatabasesApi.ListDatabase(context.Background(), envId).Execute()
+		databases, _, err := client.DatabasesAPI.ListDatabase(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

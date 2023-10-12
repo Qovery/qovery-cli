@@ -32,7 +32,7 @@ var containerDomainDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
+		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -49,7 +49,7 @@ var containerDomainDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		customDomains, _, err := client.ContainerCustomDomainApi.ListContainerCustomDomain(context.Background(), container.Id).Execute()
+		customDomains, _, err := client.ContainerCustomDomainAPI.ListContainerCustomDomain(context.Background(), container.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -64,7 +64,7 @@ var containerDomainDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, err = client.ContainerCustomDomainApi.DeleteContainerCustomDomain(context.Background(), container.Id, customDomain.Id).Execute()
+		_, err = client.ContainerCustomDomainAPI.DeleteContainerCustomDomain(context.Background(), container.Id, customDomain.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

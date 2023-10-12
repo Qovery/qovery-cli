@@ -32,7 +32,7 @@ var lifecycleEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		lifecycles, _, err := client.JobsApi.ListJobs(context.Background(), envId).Execute()
+		lifecycles, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -49,7 +49,7 @@ var lifecycleEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		envVars, _, err := client.JobEnvironmentVariableApi.ListJobEnvironmentVariable(
+		envVars, _, err := client.JobEnvironmentVariableAPI.ListJobEnvironmentVariable(
 			context.Background(),
 			lifecycle.Id,
 		).Execute()
@@ -60,7 +60,7 @@ var lifecycleEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		secrets, _, err := client.JobSecretApi.ListJobSecrets(
+		secrets, _, err := client.JobSecretAPI.ListJobSecrets(
 			context.Background(),
 			lifecycle.Id,
 		).Execute()

@@ -31,7 +31,7 @@ var environmentCancelCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, _, err = client.EnvironmentActionsApi.CancelEnvironmentDeployment(context.Background(), envId).Execute()
+		_, _, err = client.EnvironmentActionsAPI.CancelEnvironmentDeployment(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

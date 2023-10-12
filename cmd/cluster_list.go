@@ -33,7 +33,7 @@ var clusterListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		clusters, _, err := client.ClustersApi.ListOrganizationCluster(context.Background(), orgId).Execute()
+		clusters, _, err := client.ClustersAPI.ListOrganizationCluster(context.Background(), orgId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

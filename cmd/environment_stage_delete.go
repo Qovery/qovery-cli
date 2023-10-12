@@ -31,7 +31,7 @@ var environmentStageDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		stages, _, err := client.DeploymentStageMainCallsApi.ListEnvironmentDeploymentStage(context.Background(), environmentId).Execute()
+		stages, _, err := client.DeploymentStageMainCallsAPI.ListEnvironmentDeploymentStage(context.Background(), environmentId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -47,7 +47,7 @@ var environmentStageDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, err = client.DeploymentStageMainCallsApi.DeleteDeploymentStage(context.Background(), stage.GetId()).Execute()
+		_, err = client.DeploymentStageMainCallsAPI.DeleteDeploymentStage(context.Background(), stage.GetId()).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

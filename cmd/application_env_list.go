@@ -32,7 +32,7 @@ var applicationEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
+		applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -49,7 +49,7 @@ var applicationEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		envVars, _, err := client.ApplicationEnvironmentVariableApi.ListApplicationEnvironmentVariable(
+		envVars, _, err := client.ApplicationEnvironmentVariableAPI.ListApplicationEnvironmentVariable(
 			context.Background(),
 			application.Id,
 		).Execute()
@@ -60,7 +60,7 @@ var applicationEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		secrets, _, err := client.ApplicationSecretApi.ListApplicationSecrets(
+		secrets, _, err := client.ApplicationSecretAPI.ListApplicationSecrets(
 			context.Background(),
 			application.Id,
 		).Execute()

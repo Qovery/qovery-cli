@@ -78,7 +78,7 @@ var applicationCloneCmd = &cobra.Command{
 			EnvironmentId: targetEnvironmentId,
 		}
 
-		clonedService, res, err := client.ApplicationsApi.CloneApplication(context.Background(), application.Id).CloneApplicationRequest(req).Execute()
+		clonedService, res, err := client.ApplicationsAPI.CloneApplication(context.Background(), application.Id).CloneApplicationRequest(req).Execute()
 
 		if err != nil {
 			// print http body error message

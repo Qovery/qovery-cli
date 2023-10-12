@@ -29,7 +29,7 @@ var containerListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
+		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -37,7 +37,7 @@ var containerListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
+		statuses, _, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

@@ -31,7 +31,7 @@ var environmentStageMoveCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		stages, _, err := client.DeploymentStageMainCallsApi.ListEnvironmentDeploymentStage(context.Background(), environmentId).Execute()
+		stages, _, err := client.DeploymentStageMainCallsAPI.ListEnvironmentDeploymentStage(context.Background(), environmentId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -73,7 +73,7 @@ var environmentStageMoveCmd = &cobra.Command{
 			req.Description = desc
 		}
 
-		_, _, err = client.DeploymentStageMainCallsApi.AttachServiceToDeploymentStage(context.Background(), stage.GetId(), service.GetServiceId()).Execute()
+		_, _, err = client.DeploymentStageMainCallsAPI.AttachServiceToDeploymentStage(context.Background(), stage.GetId(), service.GetServiceId()).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -89,7 +89,7 @@ func getServiceByName(client *qovery.APIClient, services []qovery.DeploymentStag
 	for _, service := range services {
 		switch service.GetServiceType() {
 		case "APPLICATION":
-			application, _, err := client.ApplicationMainCallsApi.GetApplication(context.Background(), service.GetServiceId()).Execute()
+			application, _, err := client.ApplicationMainCallsAPI.GetApplication(context.Background(), service.GetServiceId()).Execute()
 			if err != nil {
 				return nil, err
 			}
@@ -98,7 +98,7 @@ func getServiceByName(client *qovery.APIClient, services []qovery.DeploymentStag
 				return &service, nil
 			}
 		case "DATABASE":
-			database, _, err := client.DatabaseMainCallsApi.GetDatabase(context.Background(), service.GetServiceId()).Execute()
+			database, _, err := client.DatabaseMainCallsAPI.GetDatabase(context.Background(), service.GetServiceId()).Execute()
 			if err != nil {
 				return nil, err
 			}
@@ -107,7 +107,7 @@ func getServiceByName(client *qovery.APIClient, services []qovery.DeploymentStag
 				return &service, nil
 			}
 		case "CONTAINER":
-			container, _, err := client.ContainerMainCallsApi.GetContainer(context.Background(), service.GetServiceId()).Execute()
+			container, _, err := client.ContainerMainCallsAPI.GetContainer(context.Background(), service.GetServiceId()).Execute()
 			if err != nil {
 				return nil, err
 			}
@@ -116,7 +116,7 @@ func getServiceByName(client *qovery.APIClient, services []qovery.DeploymentStag
 				return &service, nil
 			}
 		case "JOB":
-			job, _, err := client.JobMainCallsApi.GetJob(context.Background(), service.GetServiceId()).Execute()
+			job, _, err := client.JobMainCallsAPI.GetJob(context.Background(), service.GetServiceId()).Execute()
 			if err != nil {
 				return nil, err
 			}

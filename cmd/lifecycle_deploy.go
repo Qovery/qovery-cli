@@ -99,8 +99,8 @@ var lifecycleDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		docker := lifecycle.Source.Docker.Get()
-		image := lifecycle.Source.Image.Get()
+		docker := lifecycle.Source.JobResponseAllOfSourceOneOf1.Docker
+		image := lifecycle.Source.JobResponseAllOfSourceOneOf.Image
 
 		var req qovery.JobDeployRequest
 
@@ -114,7 +114,7 @@ var lifecycleDeployCmd = &cobra.Command{
 			}
 		} else {
 			req = qovery.JobDeployRequest{
-				ImageTag: image.Tag,
+				ImageTag: &image.Tag,
 			}
 
 			if lifecycleTag != "" {

@@ -31,7 +31,7 @@ var environmentDeploymentListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		deployments, _, err := client.EnvironmentDeploymentHistoryApi.ListEnvironmentDeploymentHistory(context.Background(), environmentId).Execute()
+		deployments, _, err := client.EnvironmentDeploymentHistoryAPI.ListEnvironmentDeploymentHistory(context.Background(), environmentId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

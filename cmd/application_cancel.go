@@ -31,7 +31,7 @@ var applicationCancelCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
+		applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

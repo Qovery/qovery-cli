@@ -43,7 +43,7 @@ var serviceListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		apps, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
+		apps, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -51,7 +51,7 @@ var serviceListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		databases, _, err := client.DatabasesApi.ListDatabase(context.Background(), envId).Execute()
+		databases, _, err := client.DatabasesAPI.ListDatabase(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -59,7 +59,7 @@ var serviceListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
+		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -67,7 +67,7 @@ var serviceListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		jobs, _, err := client.JobsApi.ListJobs(context.Background(), envId).Execute()
+		jobs, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -75,7 +75,7 @@ var serviceListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		statuses, _, err := client.EnvironmentMainCallsApi.GetEnvironmentStatuses(context.Background(), envId).Execute()
+		statuses, _, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -177,7 +177,7 @@ func getOrganizationContextResourceId(qoveryAPIClient *qovery.APIClient, organiz
 	}
 
 	// find organization by name
-	organizations, _, err := qoveryAPIClient.OrganizationMainCallsApi.ListOrganization(context.Background()).Execute()
+	organizations, _, err := qoveryAPIClient.OrganizationMainCallsAPI.ListOrganization(context.Background()).Execute()
 
 	if err != nil {
 		return "", err
@@ -207,7 +207,7 @@ func getProjectContextResourceId(qoveryAPIClient *qovery.APIClient, projectName 
 	}
 
 	// find project id by name
-	projects, _, err := qoveryAPIClient.ProjectsApi.ListProject(context.Background(), organizationId).Execute()
+	projects, _, err := qoveryAPIClient.ProjectsAPI.ListProject(context.Background(), organizationId).Execute()
 
 	if err != nil {
 		return "", err
@@ -237,7 +237,7 @@ func getEnvironmentContextResourceId(qoveryAPIClient *qovery.APIClient, environm
 	}
 
 	// find environment id by name
-	environments, _, err := qoveryAPIClient.EnvironmentsApi.ListEnvironment(context.Background(), projectId).Execute()
+	environments, _, err := qoveryAPIClient.EnvironmentsAPI.ListEnvironment(context.Background(), projectId).Execute()
 
 	if err != nil {
 		return "", err
@@ -258,7 +258,7 @@ func getApplicationContextResource(qoveryAPIClient *qovery.APIClient, applicatio
 	}
 
 	// find applications id by name
-	applications, _, err := qoveryAPIClient.ApplicationsApi.ListApplication(context.Background(), environmentId).Execute()
+	applications, _, err := qoveryAPIClient.ApplicationsAPI.ListApplication(context.Background(), environmentId).Execute()
 
 	if err != nil {
 		return nil, err
@@ -280,7 +280,7 @@ func getContainerContextResource(qoveryAPIClient *qovery.APIClient, containerNam
 	}
 
 	// find containers id by name
-	containers, _, err := qoveryAPIClient.ContainersApi.ListContainer(context.Background(), environmentId).Execute()
+	containers, _, err := qoveryAPIClient.ContainersAPI.ListContainer(context.Background(), environmentId).Execute()
 
 	if err != nil {
 		return nil, err
@@ -302,7 +302,7 @@ func getJobContextResource(qoveryAPIClient *qovery.APIClient, jobName string, en
 	}
 
 	// find jobs id by name
-	jobs, _, err := qoveryAPIClient.JobsApi.ListJobs(context.Background(), environmentId).Execute()
+	jobs, _, err := qoveryAPIClient.JobsAPI.ListJobs(context.Background(), environmentId).Execute()
 
 	if err != nil {
 		return nil, err
@@ -381,7 +381,7 @@ func getServiceJsonOutput(statuses qovery.EnvironmentStatuses, apps []qovery.App
 }
 
 func getMarkdownOutput(client qovery.APIClient, orgId string, projectId string, envId string, apps []qovery.Application, containers []qovery.ContainerResponse, jobs []qovery.JobResponse, databases []qovery.Database) string {
-	env, _, err := client.EnvironmentMainCallsApi.GetEnvironment(context.Background(), envId).Execute()
+	env, _, err := client.EnvironmentMainCallsAPI.GetEnvironment(context.Background(), envId).Execute()
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
@@ -450,7 +450,7 @@ Powered by [Qovery](https://qovery.com).`
 }
 
 func getApplicationPreviewUrl(client qovery.APIClient, appId string) *string {
-	links, _, err := client.ApplicationMainCallsApi.ListApplicationLinks(context.Background(), appId).Execute()
+	links, _, err := client.ApplicationMainCallsAPI.ListApplicationLinks(context.Background(), appId).Execute()
 
 	if err != nil {
 		utils.PrintlnError(err)
@@ -468,7 +468,7 @@ func getApplicationPreviewUrl(client qovery.APIClient, appId string) *string {
 }
 
 func getContainerPreviewUrl(client qovery.APIClient, containerId string) *string {
-	links, _, err := client.ContainerMainCallsApi.ListContainerLinks(context.Background(), containerId).Execute()
+	links, _, err := client.ContainerMainCallsAPI.ListContainerLinks(context.Background(), containerId).Execute()
 
 	if err != nil {
 		utils.PrintlnError(err)

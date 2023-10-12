@@ -41,7 +41,7 @@ var environmentStageCreateCmd = &cobra.Command{
 			req.Description = desc
 		}
 
-		_, _, err = client.DeploymentStageMainCallsApi.CreateEnvironmentDeploymentStage(context.Background(), environmentId).DeploymentStageRequest(req).Execute()
+		_, _, err = client.DeploymentStageMainCallsAPI.CreateEnvironmentDeploymentStage(context.Background(), environmentId).DeploymentStageRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

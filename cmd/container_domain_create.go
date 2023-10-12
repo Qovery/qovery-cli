@@ -36,7 +36,7 @@ var containerDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		containers, _, err := client.ContainersApi.ListContainer(context.Background(), envId).Execute()
+		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -53,7 +53,7 @@ var containerDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		customDomains, _, err := client.ContainerCustomDomainApi.ListContainerCustomDomain(context.Background(), container.Id).Execute()
+		customDomains, _, err := client.ContainerCustomDomainAPI.ListContainerCustomDomain(context.Background(), container.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -74,7 +74,7 @@ var containerDomainCreateCmd = &cobra.Command{
 			GenerateCertificate: generateCertificate,
 		}
 
-		createdDomain, _, err := client.ContainerCustomDomainApi.CreateContainerCustomDomain(context.Background(), container.Id).CustomDomainRequest(req).Execute()
+		createdDomain, _, err := client.ContainerCustomDomainAPI.CreateContainerCustomDomain(context.Background(), container.Id).CustomDomainRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

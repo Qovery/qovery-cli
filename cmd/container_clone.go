@@ -78,7 +78,7 @@ var containerCloneCmd = &cobra.Command{
 			EnvironmentId: targetEnvironmentId,
 		}
 
-		clonedService, res, err := client.ContainersApi.CloneContainer(context.Background(), container.Id).CloneContainerRequest(req).Execute()
+		clonedService, res, err := client.ContainersAPI.CloneContainer(context.Background(), container.Id).CloneContainerRequest(req).Execute()
 
 		if err != nil {
 			// print http body error message

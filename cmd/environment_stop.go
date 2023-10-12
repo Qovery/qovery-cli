@@ -43,7 +43,7 @@ var environmentStopCmd = &cobra.Command{
 			utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
 			time.Sleep(5 * time.Second)
 		}
-		_, _, err = client.EnvironmentActionsApi.StopEnvironment(context.Background(), envId).Execute()
+		_, _, err = client.EnvironmentActionsAPI.StopEnvironment(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

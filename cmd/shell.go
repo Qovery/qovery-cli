@@ -121,7 +121,7 @@ func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequ
 
 	client := utils.GetQoveryClient(tokenType, token)
 
-	e, res, err := client.EnvironmentMainCallsApi.GetEnvironment(context.Background(), string(currentContext.EnvironmentId)).Execute()
+	e, res, err := client.EnvironmentMainCallsAPI.GetEnvironment(context.Background(), string(currentContext.EnvironmentId)).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -178,35 +178,35 @@ func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 			switch envService.Type {
 
 			case utils.ApplicationType:
-				applicationApi, err := utils.GetApplicationById(serviceId)
+				applicationAPI, err := utils.GetApplicationById(serviceId)
 				if err != nil {
 					return nil, err
 				}
 				service = utils.Service{
-					ID:   applicationApi.ID,
-					Name: applicationApi.Name,
+					ID:   applicationAPI.ID,
+					Name: applicationAPI.Name,
 					Type: utils.ApplicationType,
 				}
 
 			case utils.ContainerType:
-				containerApi, err := utils.GetContainerById(serviceId)
+				containerAPI, err := utils.GetContainerById(serviceId)
 				if err != nil {
 					return nil, err
 				}
 				service = utils.Service{
-					ID:   containerApi.ID,
-					Name: containerApi.Name,
+					ID:   containerAPI.ID,
+					Name: containerAPI.Name,
 					Type: utils.ContainerType,
 				}
 
 			case utils.JobType:
-				jobApi, err := utils.GetJobById(serviceId)
+				jobAPI, err := utils.GetJobById(serviceId)
 				if err != nil {
 					return nil, err
 				}
 				service = utils.Service{
-					ID:   jobApi.ID,
-					Name: jobApi.Name,
+					ID:   jobAPI.ID,
+					Name: jobAPI.Name,
 					Type: utils.JobType,
 				}
 

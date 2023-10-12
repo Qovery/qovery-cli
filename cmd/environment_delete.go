@@ -44,7 +44,7 @@ var environmentDeleteCmd = &cobra.Command{
 			time.Sleep(5 * time.Second)
 		}
 
-		_, err = client.EnvironmentMainCallsApi.DeleteEnvironment(context.Background(), envId).Execute()
+		_, err = client.EnvironmentMainCallsAPI.DeleteEnvironment(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

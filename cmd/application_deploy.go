@@ -76,7 +76,7 @@ var applicationDeployCmd = &cobra.Command{
 			return
 		}
 
-		applications, _, err := client.ApplicationsApi.ListApplication(context.Background(), envId).Execute()
+		applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
