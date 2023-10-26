@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
