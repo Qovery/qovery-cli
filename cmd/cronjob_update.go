@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/qovery/qovery-client-go"
 	"io"
 	"os"
 
@@ -64,8 +65,15 @@ var cronjobUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		docker := cronjob.Source.JobResponseAllOfSourceOneOf1.Docker
-		image := cronjob.Source.JobResponseAllOfSourceOneOf.Image
+		var docker *qovery.JobResponseAllOfSourceOneOf1Docker = nil
+		if cronjob.Source.JobResponseAllOfSourceOneOf1 != nil {
+			docker = cronjob.Source.JobResponseAllOfSourceOneOf1.Docker
+		}
+
+		var image *qovery.ContainerSource = nil
+		if cronjob.Source.JobResponseAllOfSourceOneOf != nil {
+			image = cronjob.Source.JobResponseAllOfSourceOneOf.Image
+		}
 
 		if docker != nil && (cronjobTag != "" || cronjobImageName != "") {
 			utils.PrintlnError(fmt.Errorf("you can't use --tag or --image-name with a cronjob targetting a Dockerfile. Use --branch instead"))

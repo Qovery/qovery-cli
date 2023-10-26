@@ -99,8 +99,15 @@ var lifecycleDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		docker := lifecycle.Source.JobResponseAllOfSourceOneOf1.Docker
-		image := lifecycle.Source.JobResponseAllOfSourceOneOf.Image
+		var docker *qovery.JobResponseAllOfSourceOneOf1Docker = nil
+		if lifecycle.Source.JobResponseAllOfSourceOneOf1 != nil {
+			docker = lifecycle.Source.JobResponseAllOfSourceOneOf1.Docker
+		}
+		
+		var image *qovery.ContainerSource = nil
+		if lifecycle.Source.JobResponseAllOfSourceOneOf != nil {
+			image = lifecycle.Source.JobResponseAllOfSourceOneOf.Image
+		}
 
 		var req qovery.JobDeployRequest
 
