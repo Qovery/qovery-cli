@@ -81,6 +81,7 @@ var applicationUpdateCmd = &cobra.Command{
 			Ports:               application.Ports,
 			Arguments:           application.Arguments,
 			Entrypoint:          application.Entrypoint,
+			AutoDeploy:          *qovery.NewNullableBool(application.AutoDeploy),
 		}
 
 		if applicationBranch != "" {

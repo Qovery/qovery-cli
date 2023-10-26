@@ -2108,6 +2108,7 @@ func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
 		Source:             &source,
 		Healthchecks:       job.Healthchecks,
 		Schedule:           &schedule,
+		AutoDeploy:         *qovery.NewNullableBool(job.AutoDeploy),
 	}
 }
 
