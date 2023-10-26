@@ -1358,8 +1358,15 @@ func DeployJobs(client *qovery.APIClient, envId string, jobNames string, commitI
 			return fmt.Errorf("job %s not found", trimmedJobName)
 		}
 
-		docker := job.Source.JobResponseAllOfSourceOneOf1.Docker
-		image := job.Source.JobResponseAllOfSourceOneOf.Image
+		var docker *qovery.JobResponseAllOfSourceOneOf1Docker = nil
+		if job.Source.JobResponseAllOfSourceOneOf1 != nil {
+			docker = job.Source.JobResponseAllOfSourceOneOf1.Docker
+		}
+
+		var image *qovery.ContainerSource = nil
+		if job.Source.JobResponseAllOfSourceOneOf != nil {
+			image = job.Source.JobResponseAllOfSourceOneOf.Image
+		}
 
 		var mCommitId *string
 		var mTag *string
@@ -2032,8 +2039,15 @@ func StopServices(client *qovery.APIClient, envId string, serviceIds []string, s
 }
 
 func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
-	docker := job.Source.JobResponseAllOfSourceOneOf1.Docker
-	image := job.Source.JobResponseAllOfSourceOneOf.Image
+	var docker *qovery.JobResponseAllOfSourceOneOf1Docker = nil
+	if job.Source.JobResponseAllOfSourceOneOf1 != nil {
+		docker = job.Source.JobResponseAllOfSourceOneOf1.Docker
+	}
+
+	var image *qovery.ContainerSource = nil
+	if job.Source.JobResponseAllOfSourceOneOf != nil {
+		image = job.Source.JobResponseAllOfSourceOneOf.Image
+	}
 
 	var sourceImage qovery.JobRequestAllOfSourceImage
 
