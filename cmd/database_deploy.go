@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
@@ -23,6 +24,18 @@ var databaseDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if databaseName == "" && databaseNames == "" {
+			utils.PrintlnError(fmt.Errorf("use either --database \"<database name>\" or --databases \"<database1 name>, <database2 name>\" but not both at the same time"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if databaseName != "" && databaseNames != "" {
+			utils.PrintlnError(fmt.Errorf("you can't use --database and --databases at the same time"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
@@ -38,6 +51,35 @@ var databaseDeployCmd = &cobra.Command{
 			utils.PrintlnError(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if databaseNames != "" {
+			// wait until service is ready
+			for {
+				if utils.IsEnvironmentInATerminalState(envId, client) {
+					break
+				}
+
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				time.Sleep(5 * time.Second)
+			}
+
+			// deploy multiple services
+			err := utils.DeployDatabases(client, envId, databaseNames)
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			utils.Println(fmt.Sprintf("Deploying databases %s in progress..", pterm.FgBlue.Sprintf(databaseNames)))
+
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			}
+
+			return
 		}
 
 		database := utils.FindByDatabaseName(databases.GetResults(), databaseName)
@@ -76,7 +118,6 @@ func init() {
 	databaseDeployCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	databaseDeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	databaseDeployCmd.Flags().StringVarP(&databaseName, "database", "n", "", "Database Name")
+	databaseDeployCmd.Flags().StringVarP(&databaseNames, "databases", "", "", "Database Names (comma separated) (ex: --databases \"database1,database2\")")
 	databaseDeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch database status until it's ready or an error occurs")
-
-	_ = databaseDeployCmd.MarkFlagRequired("database")
 }

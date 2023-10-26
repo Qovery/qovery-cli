@@ -1402,6 +1402,40 @@ func DeployJobs(client *qovery.APIClient, envId string, jobNames string, commitI
 	return deployAllServices(client, envId, req)
 }
 
+func DeployDatabases(client *qovery.APIClient, envId string, databaseNames string) error {
+	if databaseNames == "" {
+		return nil
+	}
+
+	var databasesToDeploy []string
+
+	databases, _, err := client.DatabasesAPI.ListDatabase(context.Background(), envId).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	for _, databaseName := range strings.Split(databaseNames, ",") {
+		trimmedDatabaseName := strings.TrimSpace(databaseName)
+		database := FindByDatabaseName(databases.GetResults(), trimmedDatabaseName)
+
+		if database == nil {
+			return fmt.Errorf("database %s not found", trimmedDatabaseName)
+		}
+
+		databasesToDeploy = append(databasesToDeploy, database.Id)
+	}
+
+	req := qovery.DeployAllRequest{
+		Applications: nil,
+		Containers:   nil,
+		Databases:    databasesToDeploy,
+		Jobs:         nil,
+	}
+
+	return deployAllServices(client, envId, req)
+}
+
 func deployAllServices(client *qovery.APIClient, envId string, req qovery.DeployAllRequest) error {
 	_, _, err := client.EnvironmentActionsAPI.DeployAllServices(context.Background(), envId).DeployAllRequest(req).Execute()
 	if err != nil {
