@@ -475,10 +475,10 @@ func SelectService(environment Id) (*Service, error) {
 	var services = make(map[string]Service)
 
 	for _, app := range apps.GetResults() {
-		servicesNames = append(servicesNames, *app.Name)
-		services[*app.Name] = Service{
+		servicesNames = append(servicesNames, app.Name)
+		services[app.Name] = Service{
 			ID:   Id(app.Id),
-			Name: Name(*app.Name),
+			Name: Name(app.Name),
 			Type: ApplicationType,
 		}
 	}
@@ -944,7 +944,7 @@ func FindByEnvironmentName(environments []qovery.Environment, name string) *qove
 
 func FindByApplicationName(applications []qovery.Application, name string) *qovery.Application {
 	for _, a := range applications {
-		if *a.Name == name {
+		if a.Name == name {
 			return &a
 		}
 	}

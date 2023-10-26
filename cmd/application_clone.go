@@ -70,7 +70,7 @@ var applicationCloneCmd = &cobra.Command{
 
 		if targetApplicationName == "" {
 			// use same app name as the source app
-			targetApplicationName = *application.Name
+			targetApplicationName = application.Name
 		}
 
 		req := qovery.CloneApplicationRequest{
@@ -94,7 +94,7 @@ var applicationCloneCmd = &cobra.Command{
 
 		name := ""
 		if clonedService != nil {
-			name = *clonedService.Name
+			name = clonedService.Name
 		}
 
 		utils.Println(fmt.Sprintf("Application %s cloned!", pterm.FgBlue.Sprintf(name)))

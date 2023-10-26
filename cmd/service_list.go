@@ -417,7 +417,7 @@ Powered by [Qovery](https://qovery.com).`
 
 		consoleLink := fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/application/%s", orgId, projectId, envId, app.Id)
 		consoleLogsLink := fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/logs/%s/live-logs", orgId, projectId, envId, app.Id)
-		body += fmt.Sprintf("\n| [%s](%s) | [Show logs](%s) | %s |", *app.Name, consoleLink, consoleLogsLink, *previewUrl)
+		body += fmt.Sprintf("\n| [%s](%s) | [Show logs](%s) | %s |", app.Name, consoleLink, consoleLogsLink, *previewUrl)
 	}
 
 	for _, container := range containers {

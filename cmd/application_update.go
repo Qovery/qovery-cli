@@ -62,7 +62,7 @@ var applicationUpdateCmd = &cobra.Command{
 
 		req := qovery.ApplicationEditRequest{
 			Storage:     storage,
-			Name:        application.Name,
+			Name:        &application.Name,
 			Description: application.Description.Get(),
 			GitRepository: &qovery.ApplicationGitRepositoryRequest{
 				Url:      *application.GitRepository.Url,
