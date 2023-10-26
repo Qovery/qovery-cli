@@ -65,7 +65,7 @@ var lifecycleUpdateCmd = &cobra.Command{
 		}
 
 		docker := lifecycle.Source.JobResponseAllOfSourceOneOf1.Docker
-	image := lifecycle.Source.JobResponseAllOfSourceOneOf.Image
+		image := lifecycle.Source.JobResponseAllOfSourceOneOf.Image
 
 		if docker != nil && (lifecycleTag != "" || lifecycleImageName != "") {
 			utils.PrintlnError(fmt.Errorf("you can't use --tag or --image-name with a lifecycle targetting a Dockerfile. Use --branch instead"))
