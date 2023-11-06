@@ -1726,10 +1726,10 @@ func DeleteServices(client *qovery.APIClient, envId string, serviceIds []string,
 }
 
 func DeployService(client *qovery.APIClient, envId string, serviceId string, serviceType ServiceType, request interface{}, watchFlag bool) (string, error) {
-	statuses, _, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
+	statuses, resp, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
 
 	if err != nil {
-		return "", err
+		return "", toHttpResponseError(resp)
 	}
 
 	if IsTerminalState(statuses.GetEnvironment().State) {
@@ -1738,9 +1738,9 @@ func DeployService(client *qovery.APIClient, envId string, serviceId string, ser
 			for _, application := range statuses.GetApplications() {
 				if application.Id == serviceId && IsTerminalState(application.State) {
 					req := request.(qovery.DeployRequest)
-					_, _, err := client.ApplicationActionsAPI.DeployApplication(context.Background(), serviceId).DeployRequest(req).Execute()
+					_, resp, err := client.ApplicationActionsAPI.DeployApplication(context.Background(), serviceId).DeployRequest(req).Execute()
 					if err != nil {
-						return "", err
+						return "", toHttpResponseError(resp)
 					}
 
 					// get current deployment id
@@ -1757,7 +1757,7 @@ func DeployService(client *qovery.APIClient, envId string, serviceId string, ser
 				if database.Id == serviceId && IsTerminalState(database.State) {
 					_, _, err := client.DatabaseActionsAPI.DeployDatabase(context.Background(), serviceId).Execute()
 					if err != nil {
-						return "", err
+						return "", toHttpResponseError(resp)
 					}
 
 					if watchFlag {
@@ -1773,7 +1773,7 @@ func DeployService(client *qovery.APIClient, envId string, serviceId string, ser
 					req := request.(qovery.ContainerDeployRequest)
 					_, _, err := client.ContainerActionsAPI.DeployContainer(context.Background(), serviceId).ContainerDeployRequest(req).Execute()
 					if err != nil {
-						return "", err
+						return "", toHttpResponseError(resp)
 					}
 
 					if watchFlag {
@@ -1789,7 +1789,7 @@ func DeployService(client *qovery.APIClient, envId string, serviceId string, ser
 					req := request.(qovery.JobDeployRequest)
 					_, _, err := client.JobActionsAPI.DeployJob(context.Background(), serviceId).JobDeployRequest(req).Execute()
 					if err != nil {
-						return "", err
+						return "", toHttpResponseError(resp)
 					}
 
 					if watchFlag {
