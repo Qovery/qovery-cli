@@ -904,14 +904,14 @@ FirstLoop:
 				// where v is an Alias, we should interpolate the value of the parent key
 				for _, x := range variables {
 					if v.AliasParentKey != nil && *v.AliasParentKey == x.Key {
-						finalValue = insertAtIndex(valueWithoutInterpolation, *x.Value, startIndex)
+						finalValue = insertAtIndex(valueWithoutInterpolation, getValueOrDefault(x.Value), startIndex)
 						continue FirstLoop
 					}
 				}
 			}
 
 			// work only if the key is a secret or an environment variable
-			finalValue = insertAtIndex(valueWithoutInterpolation, *v.Value, startIndex)
+			finalValue = insertAtIndex(valueWithoutInterpolation, getValueOrDefault(v.Value), startIndex)
 			break
 		}
 	}
@@ -921,6 +921,14 @@ FirstLoop:
 	}
 
 	return &finalValue
+}
+
+func getValueOrDefault(value *string) string {
+	if value == nil {
+		return "xxx secret xxx"
+	} else {
+		return *value
+	}
 }
 
 func GetEnvVarJsonOutput(variables []EnvVarLineOutput) string {
