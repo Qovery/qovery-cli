@@ -42,14 +42,14 @@ var cronjobEnvAliasCreateCmd = &cobra.Command{
 
 		cronjob := utils.FindByJobName(cronjobs.GetResults(), cronjobName)
 
-		if cronjob == nil {
+		if cronjob == nil || cronjob.CronJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateAlias(client, projectId, envId, cronjob.Id, utils.JobType, utils.Key, utils.Alias, utils.JobScope)
+		err = utils.CreateAlias(client, projectId, envId, cronjob.CronJobResponse.Id, utils.JobType, utils.Key, utils.Alias, utils.JobScope)
 
 		if err != nil {
 			utils.PrintlnError(err)

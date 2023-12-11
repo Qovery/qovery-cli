@@ -58,21 +58,21 @@ var cronjobUpdateCmd = &cobra.Command{
 
 		cronjob := utils.FindByJobName(cronjobs, cronjobName)
 
-		if cronjob == nil {
+		if cronjob == nil || cronjob.CronJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		var docker *qovery.JobResponseAllOfSourceOneOf1Docker = nil
-		if cronjob.Source.JobResponseAllOfSourceOneOf1 != nil {
-			docker = cronjob.Source.JobResponseAllOfSourceOneOf1.Docker
+		var docker *qovery.BaseJobResponseAllOfSourceOneOf1Docker = nil
+		if cronjob.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
+			docker = cronjob.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
 		}
 
 		var image *qovery.ContainerSource = nil
-		if cronjob.Source.JobResponseAllOfSourceOneOf != nil {
-			image = cronjob.Source.JobResponseAllOfSourceOneOf.Image
+		if cronjob.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
+			image = cronjob.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
 		}
 
 		if docker != nil && (cronjobTag != "" || cronjobImageName != "") {
@@ -102,7 +102,7 @@ var cronjobUpdateCmd = &cobra.Command{
 			req.Source.Docker.Set(nil)
 		}
 
-		_, res, err := client.JobMainCallsAPI.EditJob(context.Background(), cronjob.Id).JobRequest(req).Execute()
+		_, res, err := client.JobMainCallsAPI.EditJob(context.Background(), utils.GetJobId(cronjob)).JobRequest(req).Execute()
 
 		if err != nil {
 			result, _ := io.ReadAll(res.Body)

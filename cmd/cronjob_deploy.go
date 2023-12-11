@@ -92,21 +92,21 @@ var cronjobDeployCmd = &cobra.Command{
 
 		cronjob := utils.FindByJobName(cronjobs, cronjobName)
 
-		if cronjob == nil {
+		if cronjob == nil || cronjob.CronJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		var docker *qovery.JobResponseAllOfSourceOneOf1Docker = nil
-		if cronjob.Source.JobResponseAllOfSourceOneOf1 != nil {
-			docker = cronjob.Source.JobResponseAllOfSourceOneOf1.Docker
+		var docker *qovery.BaseJobResponseAllOfSourceOneOf1Docker = nil
+		if cronjob.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
+			docker = cronjob.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
 		}
 
 		var image *qovery.ContainerSource = nil
-		if cronjob.Source.JobResponseAllOfSourceOneOf != nil {
-			image = cronjob.Source.JobResponseAllOfSourceOneOf.Image
+		if cronjob.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
+			image = cronjob.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
 		}
 
 		var req qovery.JobDeployRequest
@@ -129,7 +129,7 @@ var cronjobDeployCmd = &cobra.Command{
 			}
 		}
 
-		msg, err := utils.DeployService(client, envId, cronjob.Id, utils.JobType, req, watchFlag)
+		msg, err := utils.DeployService(client, envId, cronjob.CronJobResponse.Id, utils.JobType, req, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)

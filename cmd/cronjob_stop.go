@@ -69,7 +69,7 @@ var cronjobStopCmd = &cobra.Command{
 			var serviceIds []string
 			for _, cronjobName := range strings.Split(cronjobNames, ",") {
 				trimmedCronjobName := strings.TrimSpace(cronjobName)
-				serviceIds = append(serviceIds, utils.FindByJobName(cronjobs, trimmedCronjobName).Id)
+				serviceIds = append(serviceIds, utils.FindByJobName(cronjobs, trimmedCronjobName).CronJobResponse.Id)
 			}
 
 			// stop multiple services
@@ -100,14 +100,14 @@ var cronjobStopCmd = &cobra.Command{
 
 		cronjob := utils.FindByJobName(cronjobs, cronjobName)
 
-		if cronjob == nil {
+		if cronjob == nil || cronjob.CronJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		msg, err := utils.StopService(client, envId, cronjob.Id, utils.JobType, watchFlag)
+		msg, err := utils.StopService(client, envId, cronjob.CronJobResponse.Id, utils.JobType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)

@@ -37,7 +37,7 @@ var lifecycleCloneCmd = &cobra.Command{
 
 		job, err := getJobContextResource(client, lifecycleName, envId)
 
-		if err != nil {
+		if err != nil || job == nil || job.LifecycleJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
 			utils.PrintlnInfo("You can list all jobs with: qovery job list")
 			os.Exit(1)
@@ -70,15 +70,15 @@ var lifecycleCloneCmd = &cobra.Command{
 
 		if targetLifecycleName == "" {
 			// use same job name as the source job
-			targetLifecycleName = job.Name
+			targetLifecycleName = job.LifecycleJobResponse.Name
 		}
 
-		req := qovery.CloneJobRequest{
+		req := qovery.CloneServiceRequest{
 			Name:          targetLifecycleName,
 			EnvironmentId: targetEnvironmentId,
 		}
 
-		clonedService, res, err := client.JobsAPI.CloneJob(context.Background(), job.Id).CloneJobRequest(req).Execute()
+		clonedService, res, err := client.JobsAPI.CloneJob(context.Background(), job.LifecycleJobResponse.Id).CloneServiceRequest(req).Execute()
 
 		if err != nil {
 			// print http body error message
@@ -94,7 +94,7 @@ var lifecycleCloneCmd = &cobra.Command{
 
 		name := ""
 		if clonedService != nil {
-			name = clonedService.Name
+			name = clonedService.LifecycleJobResponse.Name
 		}
 
 		utils.Println(fmt.Sprintf("Job %s cloned!", pterm.FgBlue.Sprintf(name)))

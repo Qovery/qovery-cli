@@ -57,8 +57,10 @@ var cronjobListCmd = &cobra.Command{
 		var data [][]string
 
 		for _, cronjob := range cronjobs {
-			data = append(data, []string{cronjob.Id, cronjob.Name, "Cronjob",
-				utils.FindStatusTextWithColor(statuses.GetJobs(), cronjob.Id), cronjob.UpdatedAt.String()})
+			if cronjob.CronJobResponse != nil {
+				data = append(data, []string{cronjob.CronJobResponse.Id, cronjob.CronJobResponse.Name, "Cronjob",
+					utils.FindStatusTextWithColor(statuses.GetJobs(), cronjob.CronJobResponse.Id), cronjob.CronJobResponse.UpdatedAt.String()})
+			}
 		}
 
 		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Last Update"}, data)
@@ -75,13 +77,13 @@ func getCronjobJsonOutput(statuses []qovery.Status, cronjobs []qovery.JobRespons
 	var results []interface{}
 
 	for _, cronjob := range cronjobs {
-		if cronjob.Schedule.Cronjob != nil {
+		if cronjob.CronJobResponse.Schedule.Cronjob != nil {
 			results = append(results, map[string]interface{}{
-				"id":         cronjob.Id,
-				"name":       cronjob.Name,
+				"id":         cronjob.CronJobResponse.Id,
+				"name":       cronjob.CronJobResponse.Name,
 				"type":       "Cronjob",
-				"status":     utils.FindStatus(statuses, cronjob.Id),
-				"updated_at": utils.ToIso8601(cronjob.UpdatedAt),
+				"status":     utils.FindStatus(statuses, cronjob.CronJobResponse.Id),
+				"updated_at": utils.ToIso8601(cronjob.CronJobResponse.UpdatedAt),
 			})
 		}
 	}

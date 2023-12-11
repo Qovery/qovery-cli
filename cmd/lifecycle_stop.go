@@ -69,7 +69,7 @@ var lifecycleStopCmd = &cobra.Command{
 			var serviceIds []string
 			for _, lifecycleName := range strings.Split(lifecycleNames, ",") {
 				trimmedLifecycleName := strings.TrimSpace(lifecycleName)
-				serviceIds = append(serviceIds, utils.FindByJobName(lifecycles, trimmedLifecycleName).Id)
+				serviceIds = append(serviceIds, utils.GetJobId(utils.FindByJobName(lifecycles, trimmedLifecycleName)))
 			}
 
 			// stop multiple services
@@ -100,14 +100,14 @@ var lifecycleStopCmd = &cobra.Command{
 
 		lifecycle := utils.FindByJobName(lifecycles, lifecycleName)
 
-		if lifecycle == nil {
+		if lifecycle == nil || lifecycle.LifecycleJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
 			utils.PrintlnInfo("You can list all lifecycle jobs with: qovery lifecycle list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		msg, err := utils.StopService(client, envId, lifecycle.Id, utils.JobType, watchFlag)
+		msg, err := utils.StopService(client, envId, lifecycle.LifecycleJobResponse.Id, utils.JobType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)

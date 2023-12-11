@@ -41,14 +41,14 @@ var cronjobRedeployCmd = &cobra.Command{
 
 		cronjob := utils.FindByJobName(cronjobs, cronjobName)
 
-		if cronjob == nil {
+		if cronjob == nil || cronjob.CronJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		msg, err := utils.RedeployService(client, envId, cronjob.Id, utils.JobType, watchFlag)
+		msg, err := utils.RedeployService(client, envId, cronjob.CronJobResponse.Id, utils.JobType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)

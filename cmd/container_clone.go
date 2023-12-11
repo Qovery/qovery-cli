@@ -73,12 +73,12 @@ var containerCloneCmd = &cobra.Command{
 			targetContainerName = container.Name
 		}
 
-		req := qovery.CloneContainerRequest{
+		req := qovery.CloneServiceRequest{
 			Name:          targetContainerName,
 			EnvironmentId: targetEnvironmentId,
 		}
 
-		clonedService, res, err := client.ContainersAPI.CloneContainer(context.Background(), container.Id).CloneContainerRequest(req).Execute()
+		clonedService, res, err := client.ContainersAPI.CloneContainer(context.Background(), container.Id).CloneServiceRequest(req).Execute()
 
 		if err != nil {
 			// print http body error message

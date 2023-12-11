@@ -121,7 +121,7 @@ func getServiceByName(client *qovery.APIClient, services []qovery.DeploymentStag
 				return nil, err
 			}
 
-			if job.GetName() == name {
+			if utils.GetJobName(job) == name {
 				return &service, nil
 			}
 		default:

@@ -69,7 +69,7 @@ var cronjobDeleteCmd = &cobra.Command{
 			var serviceIds []string
 			for _, cronjobName := range strings.Split(cronjobNames, ",") {
 				trimmedCronjobName := strings.TrimSpace(cronjobName)
-				serviceIds = append(serviceIds, utils.FindByJobName(cronjobs, trimmedCronjobName).Id)
+				serviceIds = append(serviceIds, utils.GetJobId(utils.FindByJobName(cronjobs, trimmedCronjobName)))
 			}
 
 			_, err = utils.DeleteServices(client, envId, serviceIds, utils.JobType)
@@ -106,7 +106,7 @@ var cronjobDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		msg, err := utils.DeleteService(client, envId, job.Id, utils.JobType, watchFlag)
+		msg, err := utils.DeleteService(client, envId, utils.GetJobId(job), utils.JobType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)

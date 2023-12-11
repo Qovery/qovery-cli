@@ -107,11 +107,11 @@ var serviceListCmd = &cobra.Command{
 
 		for _, job := range jobs.GetResults() {
 			jobType := "Lifecycle"
-			if job.Schedule.Cronjob != nil {
+			if job.CronJobResponse != nil {
 				jobType = "Cronjob"
 			}
 
-			data = append(data, []string{job.Name, jobType, utils.FindStatusTextWithColor(statuses.GetJobs(), job.Id)})
+			data = append(data, []string{utils.GetJobName(&job), jobType, utils.FindStatusTextWithColor(statuses.GetJobs(), utils.GetJobId(&job))})
 		}
 
 		for _, database := range databases.GetResults() {
@@ -344,15 +344,15 @@ func getServiceJsonOutput(statuses qovery.EnvironmentStatuses, apps []qovery.App
 
 	for _, job := range jobs {
 		jobType := "lifecycle"
-		if job.Schedule.Cronjob != nil {
+		if job.CronJobResponse != nil {
 			jobType = "cronjob"
 		}
 
 		m := map[string]interface{}{
-			"id":     job.Id,
-			"name":   job.Name,
+			"id":     utils.GetJobId(&job),
+			"name":   utils.GetJobName(&job),
 			"type":   jobType,
-			"status": utils.FindStatus(statuses.GetJobs(), job.Id),
+			"status": utils.FindStatus(statuses.GetJobs(), utils.GetJobId(&job)),
 		}
 
 		results = append(results, m)
@@ -435,9 +435,9 @@ Powered by [Qovery](https://qovery.com).`
 	}
 
 	for _, job := range jobs {
-		consoleLink := fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/application/%s", orgId, projectId, envId, job.Id)
-		consoleLogsLink := fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/logs/%s/live-logs", orgId, projectId, envId, job.Id)
-		body += fmt.Sprintf("\n| [%s](%s) | [Show logs](%s) | %s |", job.Name, consoleLink, consoleLogsLink, na)
+		consoleLink := fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/application/%s", orgId, projectId, envId,  utils.GetJobId(&job))
+		consoleLogsLink := fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/logs/%s/live-logs", orgId, projectId, envId, utils.GetJobId(&job))
+		body += fmt.Sprintf("\n| [%s](%s) | [Show logs](%s) | %s |",  utils.GetJobName(&job), consoleLink, consoleLogsLink, na)
 	}
 
 	for _, db := range databases {

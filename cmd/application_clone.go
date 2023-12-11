@@ -73,12 +73,12 @@ var applicationCloneCmd = &cobra.Command{
 			targetApplicationName = application.Name
 		}
 
-		req := qovery.CloneApplicationRequest{
+		req := qovery.CloneServiceRequest{
 			Name:          targetApplicationName,
 			EnvironmentId: targetEnvironmentId,
 		}
 
-		clonedService, res, err := client.ApplicationsAPI.CloneApplication(context.Background(), application.Id).CloneApplicationRequest(req).Execute()
+		clonedService, res, err := client.ApplicationsAPI.CloneApplication(context.Background(), application.Id).CloneServiceRequest(req).Execute()
 
 		if err != nil {
 			// print http body error message

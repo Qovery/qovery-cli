@@ -37,7 +37,7 @@ var cronjobCloneCmd = &cobra.Command{
 
 		job, err := getJobContextResource(client, cronjobName, envId)
 
-		if err != nil {
+		if err != nil || job == nil || job.CronJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("cronjobName %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all jobs with: qovery job list")
 			os.Exit(1)
@@ -70,15 +70,15 @@ var cronjobCloneCmd = &cobra.Command{
 
 		if targetCronjobName == "" {
 			// use same job name as the source job
-			targetCronjobName = job.Name
+			targetCronjobName = job.CronJobResponse.Name
 		}
 
-		req := qovery.CloneJobRequest{
+		req := qovery.CloneServiceRequest{
 			Name:          targetCronjobName,
 			EnvironmentId: targetEnvironmentId,
 		}
 
-		clonedService, res, err := client.JobsAPI.CloneJob(context.Background(), job.Id).CloneJobRequest(req).Execute()
+		clonedService, res, err := client.JobsAPI.CloneJob(context.Background(), job.CronJobResponse.Id).CloneServiceRequest(req).Execute()
 
 		if err != nil {
 			// print http body error message
@@ -94,7 +94,7 @@ var cronjobCloneCmd = &cobra.Command{
 
 		name := ""
 		if clonedService != nil {
-			name = clonedService.Name
+			name = clonedService.CronJobResponse.Name
 		}
 
 		utils.Println(fmt.Sprintf("Job %s cloned!", pterm.FgBlue.Sprintf(name)))
