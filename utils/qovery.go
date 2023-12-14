@@ -502,11 +502,23 @@ func SelectService(environment Id) (*Service, error) {
 	}
 
 	for _, job := range jobs.GetResults() {
-		servicesNames = append(servicesNames, job.Name)
-		services[job.Name] = Service{
-			ID:   Id(job.Id),
-			Name: Name(job.Name),
-			Type: JobType,
+		if job.CronJobResponse != nil {
+			cronJob := job.CronJobResponse
+			servicesNames = append(servicesNames, cronJob.Name)
+			services[cronJob.Name] = Service{
+				ID:   Id(cronJob.Id),
+				Name: Name(cronJob.Name),
+				Type: JobType,
+			}
+		}
+		if job.LifecycleJobResponse != nil {
+			lifecycleJob := job.LifecycleJobResponse
+			servicesNames = append(servicesNames, lifecycleJob.Name)
+			services[lifecycleJob.Name] = Service{
+				ID:   Id(lifecycleJob.Id),
+				Name: Name(lifecycleJob.Name),
+				Type: JobType,
+			}
 		}
 	}
 
@@ -635,10 +647,21 @@ func GetJobById(id string) (*Job, error) {
 		return nil, err
 	}
 
-	return &Job{
-		ID:   Id(job.Id),
-		Name: Name(job.GetName()),
-	}, nil
+	if job.LifecycleJobResponse != nil {
+		return &Job{
+			ID:   Id(job.LifecycleJobResponse.Id),
+			Name: Name(job.LifecycleJobResponse.GetName()),
+		}, nil
+	}
+
+	if job.CronJobResponse != nil {
+		return &Job{
+			ID:   Id(job.CronJobResponse.Id),
+			Name: Name(job.CronJobResponse.GetName()),
+		}, nil
+	}
+
+	return nil, errors.New("Invalid job response")
 }
 
 func CheckAdminUrl() {
@@ -974,7 +997,10 @@ func FindByContainerName(containers []qovery.ContainerResponse, name string) *qo
 
 func FindByJobName(jobs []qovery.JobResponse, name string) *qovery.JobResponse {
 	for _, j := range jobs {
-		if j.Name == name {
+		if j.CronJobResponse != nil && j.CronJobResponse.Name == name {
+			return &j
+		}
+		if j.LifecycleJobResponse != nil && j.LifecycleJobResponse.Name == name {
 			return &j
 		}
 	}
@@ -1231,7 +1257,7 @@ func GetServiceNameByIdAndType(client *qovery.APIClient, serviceId string, servi
 		if err != nil {
 			return ""
 		}
-		return job.GetName()
+		return GetJobName(job)
 	default:
 		return "Unknown"
 	}
@@ -1358,15 +1384,9 @@ func DeployJobs(client *qovery.APIClient, envId string, jobNames string, commitI
 			return fmt.Errorf("job %s not found", trimmedJobName)
 		}
 
-		var docker *qovery.JobResponseAllOfSourceOneOf1Docker = nil
-		if job.Source.JobResponseAllOfSourceOneOf1 != nil {
-			docker = job.Source.JobResponseAllOfSourceOneOf1.Docker
-		}
 
-		var image *qovery.ContainerSource = nil
-		if job.Source.JobResponseAllOfSourceOneOf != nil {
-			image = job.Source.JobResponseAllOfSourceOneOf.Image
-		}
+		var docker = GetJobDocker(job)
+		var image = GetJobImage(job)
 
 		var mCommitId *string
 		var mTag *string
@@ -1385,8 +1405,9 @@ func DeployJobs(client *qovery.APIClient, envId string, jobNames string, commitI
 			}
 		}
 
+		var jobId = GetJobId(job)
 		jobsToDeploy = append(jobsToDeploy, qovery.DeployAllRequestJobsInner{
-			Id:          &job.Id,
+			Id:          &jobId,
 			ImageTag:    mTag,
 			GitCommitId: mCommitId,
 		})
@@ -1400,6 +1421,47 @@ func DeployJobs(client *qovery.APIClient, envId string, jobNames string, commitI
 	}
 
 	return deployAllServices(client, envId, req)
+}
+
+func GetJobDocker(job *qovery.JobResponse) *qovery.BaseJobResponseAllOfSourceOneOf1Docker {
+	if job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
+		return job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
+	}
+
+	if job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
+		return job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
+	}
+	return nil
+}
+
+func GetJobImage(job *qovery.JobResponse) *qovery.ContainerSource {
+	if job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
+		return job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
+	}
+	if job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
+		return job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
+	}
+	return nil
+}
+
+func GetJobId(job *qovery.JobResponse) string {
+	if job.CronJobResponse != nil {
+		return job.CronJobResponse.Id
+	}
+	if job.LifecycleJobResponse != nil {
+		return job.LifecycleJobResponse.Id
+	}
+	return ""
+}
+
+func GetJobName(job *qovery.JobResponse) string {
+	if job.CronJobResponse != nil {
+		return job.CronJobResponse.Name
+	}
+	if job.LifecycleJobResponse != nil {
+		return job.LifecycleJobResponse.Name
+	}
+	return ""
 }
 
 func DeployDatabases(client *qovery.APIClient, envId string, databaseNames string) error {
@@ -2073,15 +2135,8 @@ func StopServices(client *qovery.APIClient, envId string, serviceIds []string, s
 }
 
 func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
-	var docker *qovery.JobResponseAllOfSourceOneOf1Docker = nil
-	if job.Source.JobResponseAllOfSourceOneOf1 != nil {
-		docker = job.Source.JobResponseAllOfSourceOneOf1.Docker
-	}
-
-	var image *qovery.ContainerSource = nil
-	if job.Source.JobResponseAllOfSourceOneOf != nil {
-		image = job.Source.JobResponseAllOfSourceOneOf.Image
-	}
+	var docker = GetJobDocker(&job)
+	var image = GetJobImage(&job)
 
 	var sourceImage qovery.JobRequestAllOfSourceImage
 
@@ -2116,47 +2171,56 @@ func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
 	source.Image.Set(&sourceImage)
 	source.Docker.Set(&sourceDocker)
 
-	var schedule qovery.JobRequestAllOfSchedule
-
-	if job.Schedule != nil {
-		var scheduleCronjob qovery.JobRequestAllOfScheduleCronjob
-
-		if job.Schedule.Cronjob != nil {
-			scheduleCronjob = qovery.JobRequestAllOfScheduleCronjob{
-				Arguments:   job.Schedule.Cronjob.Arguments,
-				Entrypoint:  job.Schedule.Cronjob.Entrypoint,
-				ScheduledAt: job.Schedule.Cronjob.ScheduledAt,
-			}
-
-			schedule = qovery.JobRequestAllOfSchedule{
-				OnStart:  nil,
-				OnStop:   nil,
-				OnDelete: nil,
-				Cronjob:  &scheduleCronjob,
-			}
-		} else {
-			schedule = qovery.JobRequestAllOfSchedule{
-				OnStart:  job.Schedule.OnStart,
-				OnStop:   job.Schedule.OnStop,
-				OnDelete: job.Schedule.OnDelete,
-				Cronjob:  nil,
-			}
+	if job.LifecycleJobResponse != nil {
+		var schedule = qovery.JobRequestAllOfSchedule{
+			OnStart:  job.LifecycleJobResponse.Schedule.OnStart,
+			OnStop:   job.LifecycleJobResponse.Schedule.OnStop,
+			OnDelete: job.LifecycleJobResponse.Schedule.OnDelete,
+			Cronjob:  nil,
 		}
-	}
 
-	return qovery.JobRequest{
-		Name:               job.Name,
-		Description:        job.Description,
-		Cpu:                Int32(job.Cpu),
-		Memory:             Int32(job.Memory),
-		MaxNbRestart:       job.MaxNbRestart,
-		MaxDurationSeconds: job.MaxDurationSeconds,
-		AutoPreview:        Bool(job.AutoPreview),
-		Port:               job.Port,
-		Source:             &source,
-		Healthchecks:       job.Healthchecks,
-		Schedule:           &schedule,
-		AutoDeploy:         *qovery.NewNullableBool(job.AutoDeploy),
+		return qovery.JobRequest{
+			Name:               job.LifecycleJobResponse.Name,
+			Description:        job.LifecycleJobResponse.Description,
+			Cpu:                Int32(job.LifecycleJobResponse.Cpu),
+			Memory:             Int32(job.LifecycleJobResponse.Memory),
+			MaxNbRestart:       job.LifecycleJobResponse.MaxNbRestart,
+			MaxDurationSeconds: job.LifecycleJobResponse.MaxDurationSeconds,
+			AutoPreview:        Bool(job.LifecycleJobResponse.AutoPreview),
+			Port:               job.LifecycleJobResponse.Port,
+			Source:             &source,
+			Healthchecks:       job.LifecycleJobResponse.Healthchecks,
+			Schedule:           &schedule,
+			AutoDeploy:         *qovery.NewNullableBool(job.LifecycleJobResponse.AutoDeploy),
+		}
+	} else {
+		var scheduleCronjob = qovery.JobRequestAllOfScheduleCronjob{
+			Entrypoint: job.CronJobResponse.Schedule.Cronjob.Entrypoint,
+			Arguments: job.CronJobResponse.Schedule.Cronjob.Arguments,
+			ScheduledAt: job.CronJobResponse.Schedule.Cronjob.ScheduledAt,
+		}
+
+		var schedule = qovery.JobRequestAllOfSchedule{
+			OnStart:  nil,
+			OnStop:   nil,
+			OnDelete: nil,
+			Cronjob:  &scheduleCronjob,
+		}
+
+		return qovery.JobRequest{
+			Name:               job.LifecycleJobResponse.Name,
+			Description:        job.LifecycleJobResponse.Description,
+			Cpu:                Int32(job.LifecycleJobResponse.Cpu),
+			Memory:             Int32(job.LifecycleJobResponse.Memory),
+			MaxNbRestart:       job.LifecycleJobResponse.MaxNbRestart,
+			MaxDurationSeconds: job.LifecycleJobResponse.MaxDurationSeconds,
+			AutoPreview:        Bool(job.LifecycleJobResponse.AutoPreview),
+			Port:               job.LifecycleJobResponse.Port,
+			Source:             &source,
+			Healthchecks:       job.LifecycleJobResponse.Healthchecks,
+			Schedule:           &schedule,
+			AutoDeploy:         *qovery.NewNullableBool(job.LifecycleJobResponse.AutoDeploy),
+		}
 	}
 }
 

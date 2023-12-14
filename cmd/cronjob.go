@@ -45,10 +45,7 @@ func ListCronjobs(envId string, client *qovery.APIClient) ([]qovery.JobResponse,
 
 	cronjobs := make([]qovery.JobResponse, 0)
 	for _, job := range jobs.GetResults() {
-		schedule := job.GetSchedule()
-		cronjob, _ := schedule.GetCronjobOk()
-
-		if cronjob != nil && cronjob.ScheduledAt != "" {
+		if job.CronJobResponse != nil {
 			cronjobs = append(cronjobs, job)
 		}
 	}

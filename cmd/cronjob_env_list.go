@@ -42,7 +42,7 @@ var cronjobEnvListCmd = &cobra.Command{
 
 		cronjob := utils.FindByJobName(cronjobs.GetResults(), cronjobName)
 
-		if cronjob == nil {
+		if cronjob == nil || cronjob.CronJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 			os.Exit(1)
@@ -51,7 +51,7 @@ var cronjobEnvListCmd = &cobra.Command{
 
 		envVars, _, err := client.JobEnvironmentVariableAPI.ListJobEnvironmentVariable(
 			context.Background(),
-			cronjob.Id,
+			cronjob.CronJobResponse.Id,
 		).Execute()
 
 		if err != nil {
@@ -62,7 +62,7 @@ var cronjobEnvListCmd = &cobra.Command{
 
 		secrets, _, err := client.JobSecretAPI.ListJobSecrets(
 			context.Background(),
-			cronjob.Id,
+			cronjob.CronJobResponse.Id,
 		).Execute()
 
 		if err != nil {

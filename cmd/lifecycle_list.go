@@ -58,8 +58,10 @@ var lifecycleListCmd = &cobra.Command{
 		var data [][]string
 
 		for _, lifecycle := range lifecycles {
-			data = append(data, []string{lifecycle.Id, lifecycle.Name, "Lifecycle",
-				utils.FindStatusTextWithColor(statuses.GetJobs(), lifecycle.Id), lifecycle.UpdatedAt.String()})
+			if lifecycle.LifecycleJobResponse != nil {
+				data = append(data, []string{lifecycle.LifecycleJobResponse.Id, lifecycle.LifecycleJobResponse.Name, "Lifecycle",
+					utils.FindStatusTextWithColor(statuses.GetJobs(), lifecycle.LifecycleJobResponse.Id), lifecycle.LifecycleJobResponse.UpdatedAt.String()})
+			}
 		}
 
 		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Last Update"}, data)
@@ -76,13 +78,13 @@ func getLifecycleJsonOutput(statuses []qovery.Status, lifecycles []qovery.JobRes
 	var results []interface{}
 
 	for _, lifecycle := range lifecycles {
-		if lifecycle.Schedule.Cronjob == nil {
+		if lifecycle.LifecycleJobResponse != nil {
 			results = append(results, map[string]interface{}{
-				"id":         lifecycle.Id,
-				"name":       lifecycle.Name,
+				"id":         lifecycle.LifecycleJobResponse.Id,
+				"name":       lifecycle.LifecycleJobResponse.Name,
 				"type":       "Lifecycle",
-				"status":     utils.FindStatus(statuses, lifecycle.Id),
-				"updated_at": utils.ToIso8601(lifecycle.UpdatedAt),
+				"status":     utils.FindStatus(statuses, lifecycle.LifecycleJobResponse.Id),
+				"updated_at": utils.ToIso8601(lifecycle.LifecycleJobResponse.UpdatedAt),
 			})
 		}
 	}

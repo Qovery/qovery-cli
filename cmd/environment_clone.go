@@ -34,7 +34,7 @@ var environmentCloneCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		req := qovery.CloneRequest{
+		req := qovery.CloneEnvironmentRequest{
 			Name:                newEnvironmentName,
 			ApplyDeploymentRule: &applyDeploymentRule,
 		}
@@ -63,7 +63,7 @@ var environmentCloneCmd = &cobra.Command{
 			}
 		}
 
-		_, res, err := client.EnvironmentActionsAPI.CloneEnvironment(context.Background(), envId).CloneRequest(req).Execute()
+		_, res, err := client.EnvironmentActionsAPI.CloneEnvironment(context.Background(), envId).CloneEnvironmentRequest(req).Execute()
 
 		if err != nil {
 			// print http body error message

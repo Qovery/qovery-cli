@@ -42,15 +42,12 @@ func ListLifecycleJobs(envId string, client *qovery.APIClient) ([]qovery.JobResp
 		return nil, err
 	}
 
-	cronjobs := make([]qovery.JobResponse, 0)
+	lifecycleJobs := make([]qovery.JobResponse, 0)
 	for _, job := range jobs.GetResults() {
-		schedule := job.GetSchedule()
-		cronjob, _ := schedule.GetCronjobOk()
-
-		if cronjob == nil || cronjob.ScheduledAt == "" {
-			cronjobs = append(cronjobs, job)
+		if job.LifecycleJobResponse != nil {
+			lifecycleJobs = append(lifecycleJobs, job)
 		}
 	}
 
-	return cronjobs, nil
+	return lifecycleJobs, nil
 }

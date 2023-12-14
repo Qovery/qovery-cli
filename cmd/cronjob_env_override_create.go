@@ -42,14 +42,14 @@ var cronjobEnvOverrideCreateCmd = &cobra.Command{
 
 		cronjob := utils.FindByJobName(cronjobs.GetResults(), cronjobName)
 
-		if cronjob == nil {
+		if cronjob == nil || cronjob.CronJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateOverride(client, projectId, envId, cronjob.Id, utils.JobType, utils.Key, &utils.Value, utils.JobScope)
+		err = utils.CreateOverride(client, projectId, envId, cronjob.CronJobResponse.Id, utils.JobType, utils.Key, &utils.Value, utils.JobScope)
 
 		if err != nil {
 			utils.PrintlnError(err)

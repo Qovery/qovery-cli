@@ -41,14 +41,14 @@ var lifecycleCancelCmd = &cobra.Command{
 
 		lifecycle := utils.FindByJobName(lifecycles.GetResults(), lifecycleName)
 
-		if lifecycle == nil {
+		if lifecycle == nil || lifecycle.LifecycleJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
 			utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		msg, err := utils.CancelServiceDeployment(client, envId, lifecycle.Id, utils.JobType, watchFlag)
+		msg, err := utils.CancelServiceDeployment(client, envId, lifecycle.LifecycleJobResponse.Id, utils.JobType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)

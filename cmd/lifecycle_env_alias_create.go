@@ -42,14 +42,14 @@ var lifecycleEnvAliasCreateCmd = &cobra.Command{
 
 		lifecycle := utils.FindByJobName(lifecycles.GetResults(), lifecycleName)
 
-		if lifecycle == nil {
+		if lifecycle == nil || lifecycle.LifecycleJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
 			utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateAlias(client, projectId, envId, lifecycle.Id, utils.JobType, utils.Key, utils.Alias, utils.JobScope)
+		err = utils.CreateAlias(client, projectId, envId, lifecycle.LifecycleJobResponse.Id, utils.JobType, utils.Key, utils.Alias, utils.JobScope)
 
 		if err != nil {
 			utils.PrintlnError(err)

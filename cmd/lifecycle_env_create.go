@@ -42,7 +42,7 @@ var lifecycleEnvCreateCmd = &cobra.Command{
 
 		lifecycle := utils.FindByJobName(lifecycles.GetResults(), lifecycleName)
 
-		if lifecycle == nil {
+		if lifecycle == nil || lifecycle.LifecycleJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
 			utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
 			os.Exit(1)
@@ -50,7 +50,7 @@ var lifecycleEnvCreateCmd = &cobra.Command{
 		}
 
 		if utils.IsSecret {
-			err = utils.CreateSecret(client, projectId, envId, lifecycle.Id, utils.Key, utils.Value, utils.JobScope)
+			err = utils.CreateSecret(client, projectId, envId, lifecycle.LifecycleJobResponse.Id, utils.Key, utils.Value, utils.JobScope)
 
 			if err != nil {
 				utils.PrintlnError(err)
@@ -62,7 +62,7 @@ var lifecycleEnvCreateCmd = &cobra.Command{
 			return
 		}
 
-		err = utils.CreateEnvironmentVariable(client, projectId, envId, lifecycle.Id, utils.Key, utils.Value, utils.JobScope)
+		err = utils.CreateEnvironmentVariable(client, projectId, envId, lifecycle.LifecycleJobResponse.Id, utils.Key, utils.Value, utils.JobScope)
 
 		if err != nil {
 			utils.PrintlnError(err)

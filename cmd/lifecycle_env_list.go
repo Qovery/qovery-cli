@@ -42,7 +42,7 @@ var lifecycleEnvListCmd = &cobra.Command{
 
 		lifecycle := utils.FindByJobName(lifecycles.GetResults(), lifecycleName)
 
-		if lifecycle == nil {
+		if lifecycle == nil || lifecycle.LifecycleJobResponse == nil{
 			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
 			utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
 			os.Exit(1)
@@ -51,7 +51,7 @@ var lifecycleEnvListCmd = &cobra.Command{
 
 		envVars, _, err := client.JobEnvironmentVariableAPI.ListJobEnvironmentVariable(
 			context.Background(),
-			lifecycle.Id,
+			lifecycle.LifecycleJobResponse.Id,
 		).Execute()
 
 		if err != nil {
@@ -62,7 +62,7 @@ var lifecycleEnvListCmd = &cobra.Command{
 
 		secrets, _, err := client.JobSecretAPI.ListJobSecrets(
 			context.Background(),
-			lifecycle.Id,
+			lifecycle.LifecycleJobResponse.Id,
 		).Execute()
 
 		if err != nil {

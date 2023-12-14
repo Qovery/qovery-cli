@@ -58,21 +58,21 @@ var lifecycleUpdateCmd = &cobra.Command{
 
 		lifecycle := utils.FindByJobName(lifecycles, lifecycleName)
 
-		if lifecycle == nil {
+		if lifecycle == nil || lifecycle.LifecycleJobResponse == nil {
 			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
 			utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		var docker *qovery.JobResponseAllOfSourceOneOf1Docker = nil
-		if lifecycle.Source.JobResponseAllOfSourceOneOf1 != nil {
-			docker = lifecycle.Source.JobResponseAllOfSourceOneOf1.Docker
+		var docker *qovery.BaseJobResponseAllOfSourceOneOf1Docker = nil
+		if lifecycle.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
+			docker = lifecycle.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
 		}
 
 		var image *qovery.ContainerSource = nil
-		if lifecycle.Source.JobResponseAllOfSourceOneOf != nil {
-			image = lifecycle.Source.JobResponseAllOfSourceOneOf.Image
+		if lifecycle.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
+			image = lifecycle.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
 		}
 
 		if docker != nil && (lifecycleTag != "" || lifecycleImageName != "") {
@@ -102,7 +102,7 @@ var lifecycleUpdateCmd = &cobra.Command{
 			req.Source.Docker.Set(nil)
 		}
 
-		_, res, err := client.JobMainCallsAPI.EditJob(context.Background(), lifecycle.Id).JobRequest(req).Execute()
+		_, res, err := client.JobMainCallsAPI.EditJob(context.Background(), lifecycle.LifecycleJobResponse.Id).JobRequest(req).Execute()
 
 		if err != nil {
 			result, _ := io.ReadAll(res.Body)
