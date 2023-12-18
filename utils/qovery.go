@@ -418,6 +418,7 @@ const (
 	ContainerType   ServiceType = "container"
 	DatabaseType    ServiceType = "database"
 	JobType         ServiceType = "job"
+	HelmType        ServiceType = "helm"
 )
 
 type Service struct {
@@ -1012,6 +1013,16 @@ func FindByDatabaseName(databases []qovery.Database, name string) *qovery.Databa
 	for _, d := range databases {
 		if d.Name == name {
 			return &d
+		}
+	}
+
+	return nil
+}
+
+func FindByHelmName(helms []qovery.HelmResponse, name string) *qovery.HelmResponse {
+	for _, h := range helms {
+		if h.Name == name {
+			return &h
 		}
 	}
 
@@ -1674,6 +1685,21 @@ func DeleteService(client *qovery.APIClient, envId string, serviceId string, ser
 					return "", nil
 				}
 			}
+		case HelmType:
+			for _, helm := range statuses.GetHelms() {
+				if helm.Id == serviceId && IsTerminalState(helm.State) {
+					_, err := client.HelmMainCallsAPI.DeleteHelm(context.Background(), serviceId).Execute()
+					if err != nil {
+						return "", err
+					}
+
+					if watchFlag {
+						WatchJob(serviceId, envId, client)
+					}
+
+					return "", nil
+				}
+			}
 		}
 	}
 
@@ -1768,6 +1794,25 @@ func DeleteServices(client *qovery.APIClient, envId string, serviceIds []string,
 					DeleteSelectedServices(context.Background(), envId).
 					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
 						JobIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		case HelmType:
+			for _, helm := range statuses.GetHelms() {
+				if _, ok := serviceIdsSet[helm.Id]; ok && !IsTerminalState(helm.State) {
+					cannotDelete = true
+				}
+			}
+			if !cannotDelete {
+				_, err := client.EnvironmentActionsAPI.
+					DeleteSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						HelmIds: serviceIds,
 					}).
 					Execute()
 				if err != nil {
@@ -1936,6 +1981,21 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 
 					if watchFlag {
 						WatchJob(serviceId, envId, client)
+					}
+
+					return "", nil
+				}
+			}
+		case HelmType:
+			for _, helm := range statuses.GetHelms() {
+				if helm.Id == serviceId && IsTerminalState(helm.State) {
+					_, _, err := client.HelmActionsAPI.RedeployHelm(context.Background(), serviceId).Execute()
+					if err != nil {
+						return "", err
+					}
+
+					if watchFlag {
+						WatchContainer(serviceId, envId, client)
 					}
 
 					return "", nil

@@ -75,6 +75,14 @@ var serviceListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		helms, _, err := client.HelmsAPI.ListHelms(context.Background(), envId).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		statuses, _, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
 
 		if err != nil {
@@ -116,6 +124,10 @@ var serviceListCmd = &cobra.Command{
 
 		for _, database := range databases.GetResults() {
 			data = append(data, []string{database.Name, "Database", utils.FindStatusTextWithColor(statuses.GetDatabases(), database.Id)})
+		}
+
+		for _, helm := range helms.GetResults() {
+			data = append(data, []string{helm.Name, "Helm", utils.FindStatusTextWithColor(statuses.GetHelms(), helm.Id)})
 		}
 
 		err = utils.PrintTable([]string{"Name", "Type", "Status"}, data)
@@ -316,6 +328,29 @@ func getJobContextResource(qoveryAPIClient *qovery.APIClient, jobName string, en
 
 	return job, nil
 }
+
+func getHelmContextResource(qoveryAPIClient *qovery.APIClient, helmName string, environmentId string) (*qovery.HelmResponse, error) {
+	if strings.TrimSpace(environmentId) == "" {
+		// avoid making a call to the API if the environment id is not set
+		return nil, nil
+	}
+
+	// find helms id by name
+	helms, _, err := qoveryAPIClient.HelmsAPI.ListHelms(context.Background(), environmentId).Execute()
+
+	if err != nil {
+		return nil, err
+	}
+
+	helm := utils.FindByHelmName(helms.GetResults(), helmName)
+
+	if helm == nil {
+		return nil, errors.Errorf("helm %s not found", helmName)
+	}
+
+	return helm, nil
+}
+
 
 func getServiceJsonOutput(statuses qovery.EnvironmentStatuses, apps []qovery.Application, containers []qovery.ContainerResponse, jobs []qovery.JobResponse, databases []qovery.Database) string {
 	var results []interface{}
