@@ -35,6 +35,13 @@ var shellCmd = &cobra.Command{
 		pkg.ExecShell(shellRequest)
 	},
 }
+var (
+	command           []string
+	podName           *string
+	podContainerName  *string
+	podNameFlag       string
+	containerNameFlag string
+)
 
 func shellRequestWithoutArg() (*pkg.ShellRequest, error) {
 	useContext := false
@@ -108,6 +115,9 @@ func shellRequestFromSelect() (*pkg.ShellRequest, error) {
 		OrganizationID: orga.ID,
 		EnvironmentID:  env.ID,
 		ClusterID:      env.ClusterID,
+		PodName:        podName,
+		ContainerName:  podContainerName,
+		Command:        command,
 	}, nil
 }
 
@@ -135,6 +145,9 @@ func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequ
 		OrganizationID: currentContext.OrganizationId,
 		EnvironmentID:  currentContext.EnvironmentId,
 		ClusterID:      utils.Id(e.ClusterId),
+		PodName:        podName,
+		ContainerName:  podContainerName,
+		Command:        command,
 	}, nil
 }
 
@@ -230,9 +243,24 @@ func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 		EnvironmentID:  environment.ID,
 		ServiceID:      service.ID,
 		ClusterID:      environment.ClusterID,
+		PodName:        podName,
+		ContainerName:  podContainerName,
+		Command:        command,
 	}, nil
 }
 
 func init() {
+	var shellCmd = shellCmd
+	shellCmd.Flags().StringSliceVarP(&command, "command", "c", []string{"sh"}, "command to launch inside the pod")
+	shellCmd.Flags().StringVarP(&podNameFlag, "pod", "p", "", "pod name where to exec into")
+	shellCmd.Flags().StringVar(&containerNameFlag, "container", "", "container name inside the pod")
+
+	if podNameFlag != "" {
+		podName = &podNameFlag
+	}
+	if containerNameFlag != "" {
+		podContainerName = &containerNameFlag
+	}
+
 	rootCmd.AddCommand(shellCmd)
 }

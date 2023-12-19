@@ -1,9 +1,10 @@
 package pkg
 
 import (
-	"fmt"
+	"github.com/appscode/go-querystring/query"
 	"net/http"
 	"net/url"
+	"regexp"
 
 	"github.com/containerd/console"
 	"github.com/gorilla/websocket"
@@ -14,12 +15,14 @@ import (
 const StdinBufferSize = 4096
 
 type ShellRequest struct {
-	ServiceID      utils.Id
-	ApplicationID  utils.Id
-	EnvironmentID  utils.Id
-	ProjectID      utils.Id
-	OrganizationID utils.Id
-	ClusterID      utils.Id
+	ServiceID      utils.Id `url:"service"`
+	EnvironmentID  utils.Id `url:"environment"`
+	ProjectID      utils.Id `url:"project"`
+	OrganizationID utils.Id `url:"organization"`
+	ClusterID      utils.Id `url:"cluster"`
+	PodName        *string  `url:"pod_name,omitempty"`
+	ContainerName  *string  `url:"container_name,omitempty"`
+	Command        []string `url:"command"`
 }
 
 func ExecShell(req *ShellRequest) {
@@ -58,18 +61,17 @@ func ExecShell(req *ShellRequest) {
 }
 
 func createWebsocketConn(req *ShellRequest) (*websocket.Conn, error) {
-	wsURL, err := url.Parse(fmt.Sprintf(
-		"wss://ws.qovery.com/shell/exec?service=%s&application=%s&cluster=%s&environment=%s&organization=%s&project=%s",
-		req.ServiceID,
-		req.ApplicationID,
-		req.ClusterID,
-		req.EnvironmentID,
-		req.OrganizationID,
-		req.ProjectID,
-	))
+	command, err := query.Values(req)
 	if err != nil {
 		return nil, err
 	}
+
+	wsURL, err := url.Parse("wss://ws.qovery.com/shell/exec")
+	if err != nil {
+		return nil, err
+	}
+	pattern := regexp.MustCompile("%5B([0-9]+)%5D=")
+	wsURL.RawQuery = pattern.ReplaceAllString(command.Encode(), "[${1}]=")
 
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
