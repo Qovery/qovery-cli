@@ -1058,9 +1058,10 @@ func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnu
 			countStatuses := countStatus(statuses.Applications, finalServiceState) +
 				countStatus(statuses.Databases, finalServiceState) +
 				countStatus(statuses.Jobs, finalServiceState) +
-				countStatus(statuses.Containers, finalServiceState)
+				countStatus(statuses.Containers, finalServiceState) +
+				countStatus(statuses.Helms, finalServiceState)
 
-			totalStatuses := len(statuses.Applications) + len(statuses.Databases) + len(statuses.Jobs) + len(statuses.Containers)
+			totalStatuses := len(statuses.Applications) + len(statuses.Databases) + len(statuses.Jobs) + len(statuses.Containers) + len(statuses.Helms)
 
 			icon := "⏳"
 			if countStatuses > 0 {
@@ -1173,6 +1174,33 @@ func WatchJob(jobId string, envId string, client *qovery.APIClient) {
 out:
 	for {
 		status, _, err := client.JobMainCallsAPI.GetJobStatus(context.Background(), jobId).Execute()
+
+		if err != nil {
+			break
+		}
+
+		switch WatchStatus(status) {
+		case Continue:
+		case Stop:
+			break out
+		case Err:
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		time.Sleep(3 * time.Second)
+	}
+
+	log.Println("Check environment status..")
+
+	// check status of environment
+	WatchEnvironmentWithOptions(envId, "unused", client, true)
+}
+
+func WatchHelm(helmId string, envId string, client *qovery.APIClient) {
+out:
+	for {
+		status, _, err := client.HelmMainCallsAPI.GetHelmStatus(context.Background(), helmId).Execute()
 
 		if err != nil {
 			break
@@ -2081,6 +2109,21 @@ func StopService(client *qovery.APIClient, envId string, serviceIds string, serv
 					return "", nil
 				}
 			}
+		case HelmType:
+			for _, helm := range statuses.GetHelms() {
+				if helm.Id == serviceIds && IsTerminalState(helm.State) {
+					_, _, err := client.HelmActionsAPI.StopHelm(context.Background(), serviceIds).Execute()
+					if err != nil {
+						return "", err
+					}
+
+					if watchFlag {
+						WatchHelm(serviceIds, envId, client)
+					}
+
+					return "", nil
+				}
+			}
 		}
 	}
 
@@ -2175,6 +2218,25 @@ func StopServices(client *qovery.APIClient, envId string, serviceIds []string, s
 					StopSelectedServices(context.Background(), envId).
 					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
 						JobIds: serviceIds,
+					}).
+					Execute()
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		case HelmType:
+			for _, helm := range statuses.GetHelms() {
+				if _, ok := serviceIdsSet[helm.Id]; ok && !IsTerminalState(helm.State) {
+					cannotStop = true
+				}
+			}
+			if !cannotStop {
+				_, err := client.EnvironmentActionsAPI.
+					StopSelectedServices(context.Background(), envId).
+					EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+						HelmIds: serviceIds,
 					}).
 					Execute()
 				if err != nil {
