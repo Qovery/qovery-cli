@@ -36,11 +36,9 @@ var shellCmd = &cobra.Command{
 	},
 }
 var (
-	command           []string
-	podName           *string
-	podContainerName  *string
-	podNameFlag       string
-	containerNameFlag string
+	command          []string
+	podName          string
+	podContainerName string
 )
 
 func shellRequestWithoutArg() (*pkg.ShellRequest, error) {
@@ -252,15 +250,8 @@ func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 func init() {
 	var shellCmd = shellCmd
 	shellCmd.Flags().StringSliceVarP(&command, "command", "c", []string{"sh"}, "command to launch inside the pod")
-	shellCmd.Flags().StringVarP(&podNameFlag, "pod", "p", "", "pod name where to exec into")
-	shellCmd.Flags().StringVar(&containerNameFlag, "container", "", "container name inside the pod")
-
-	if podNameFlag != "" {
-		podName = &podNameFlag
-	}
-	if containerNameFlag != "" {
-		podContainerName = &containerNameFlag
-	}
+	shellCmd.Flags().StringVarP(&podName, "pod", "p", "", "pod name where to exec into")
+	shellCmd.Flags().StringVar(&podContainerName, "container", "", "container name inside the pod")
 
 	rootCmd.AddCommand(shellCmd)
 }

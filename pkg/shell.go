@@ -20,8 +20,8 @@ type ShellRequest struct {
 	ProjectID      utils.Id `url:"project"`
 	OrganizationID utils.Id `url:"organization"`
 	ClusterID      utils.Id `url:"cluster"`
-	PodName        *string  `url:"pod_name,omitempty"`
-	ContainerName  *string  `url:"container_name,omitempty"`
+	PodName        string   `url:"pod_name,omitempty"`
+	ContainerName  string   `url:"container_name,omitempty"`
 	Command        []string `url:"command"`
 }
 
@@ -62,6 +62,7 @@ func ExecShell(req *ShellRequest) {
 
 func createWebsocketConn(req *ShellRequest) (*websocket.Conn, error) {
 	command, err := query.Values(req)
+	println("", command.Encode(), req.PodName)
 	if err != nil {
 		return nil, err
 	}
