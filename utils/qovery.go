@@ -1461,7 +1461,6 @@ func DeployJobs(client *qovery.APIClient, envId string, jobNames string, commitI
 
 	return deployAllServices(client, envId, req)
 }
-
 func GetJobDocker(job *qovery.JobResponse) *qovery.BaseJobResponseAllOfSourceOneOf1Docker {
 	if job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
 		return job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
@@ -1535,6 +1534,92 @@ func DeployDatabases(client *qovery.APIClient, envId string, databaseNames strin
 	}
 
 	return deployAllServices(client, envId, req)
+}
+
+func DeployHelms(client *qovery.APIClient, envId string, helmNames string, chartVersion string, chartGitCommitId string, valuesOverrideCommitId string) error {
+	if helmNames == "" {
+		return nil
+	}
+
+	var helmsToDeploy []qovery.DeployAllRequestHelmsInner
+
+	helms, _, err := client.HelmsAPI.ListHelms(context.Background(), envId).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	for _, helmName := range strings.Split(helmNames, ",") {
+		trimmedHelmName := strings.TrimSpace(helmName)
+		helm := FindByHelmName(helms.GetResults(), trimmedHelmName)
+
+		if helm == nil {
+			return fmt.Errorf("helm %s not found", trimmedHelmName)
+		}
+
+
+		var gitSource = GetGitSource(helm)
+		var helmRepositorySource = GetHelmRepository(helm)
+
+		if gitSource != nil && helmRepositorySource != nil {
+			return fmt.Errorf("invalid helm")
+		}
+
+		var mCommitId *string
+		var mChartVersion *string
+		var mValuesOverrideCommitId *string
+
+		if gitSource != nil {
+			if chartGitCommitId != "" {
+				mCommitId = &chartGitCommitId
+			}
+		}
+
+		if helmRepositorySource != nil {
+			if chartVersion != "" {
+				mChartVersion = &chartVersion
+			}
+		}
+
+		if valuesOverrideCommitId != "" {
+			mValuesOverrideCommitId = &valuesOverrideCommitId
+		}
+
+
+		helmsToDeploy = append(helmsToDeploy, qovery.DeployAllRequestHelmsInner{
+			Id:          &helm.Id,
+			ChartVersion: mChartVersion,
+			GitCommitId: mCommitId,
+			ValuesOverrideGitCommitId: mValuesOverrideCommitId,
+		})
+	}
+
+	req := qovery.DeployAllRequest{
+		Applications: nil,
+		Databases:    nil,
+		Containers:   nil,
+		Jobs:         nil,
+		Helms:        helmsToDeploy,
+	}
+
+	return deployAllServices(client, envId, req)
+}
+
+
+func GetGitSource(helm *qovery.HelmResponse) *qovery.ApplicationGitRepositoryRequest {
+	if helm.Source.HelmResponseAllOfSourceOneOf != nil && helm.Source.HelmResponseAllOfSourceOneOf.Git != nil {
+		return helm.Source.HelmResponseAllOfSourceOneOf.Git.GitRepository
+	}
+
+	return nil
+}
+
+func GetHelmRepository(helm *qovery.HelmResponse) *qovery.HelmResponseAllOfSourceOneOf1Repository {
+	if helm.Source.HelmResponseAllOfSourceOneOf1 != nil {
+		return helm.Source.HelmResponseAllOfSourceOneOf1.Repository
+	}
+
+	return nil
 }
 
 func deployAllServices(client *qovery.APIClient, envId string, req qovery.DeployAllRequest) error {
@@ -1626,6 +1711,17 @@ func CancelServiceDeployment(client *qovery.APIClient, envId string, serviceId s
 	case JobType:
 		for _, job := range statuses.GetJobs() {
 			if job.Id == serviceId && !IsTerminalState(job.State) {
+				err := CancelEnvironmentDeployment(client, envId, watchFlag)
+				if err != nil {
+					return "", err
+				}
+
+				return "", nil
+			}
+		}
+	case HelmType:
+		for _, helm := range statuses.GetHelms() {
+			if helm.Id == serviceId && !IsTerminalState(helm.State) {
 				err := CancelEnvironmentDeployment(client, envId, watchFlag)
 				if err != nil {
 					return "", err
@@ -1929,6 +2025,22 @@ func DeployService(client *qovery.APIClient, envId string, serviceId string, ser
 
 					if watchFlag {
 						WatchJob(serviceId, envId, client)
+					}
+
+					return "", nil
+				}
+			}
+		case HelmType:
+			for _, helm := range statuses.GetHelms() {
+				if helm.Id == serviceId && IsTerminalState(helm.State) {
+					req := request.(qovery.HelmDeployRequest)
+					_, _, err := client.HelmActionsAPI.DeployHelm(context.Background(), serviceId).HelmDeployRequest(req).Execute()
+					if err != nil {
+						return "", toHttpResponseError(resp)
+					}
+
+					if watchFlag {
+						WatchHelm(serviceId, envId, client)
 					}
 
 					return "", nil
