@@ -9,6 +9,9 @@ import (
 var helmName string
 var helmNames string
 var targetHelmName string
+var chartVersion string
+var chartGitCommitId string
+var valuesOverrideCommitId string
 
 var helmCmd = &cobra.Command{
 	Use:   "helm",
