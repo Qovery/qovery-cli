@@ -1423,7 +1423,6 @@ func DeployJobs(client *qovery.APIClient, envId string, jobNames string, commitI
 			return fmt.Errorf("job %s not found", trimmedJobName)
 		}
 
-
 		var docker = GetJobDocker(job)
 		var image = GetJobImage(job)
 
@@ -1462,21 +1461,21 @@ func DeployJobs(client *qovery.APIClient, envId string, jobNames string, commitI
 	return deployAllServices(client, envId, req)
 }
 func GetJobDocker(job *qovery.JobResponse) *qovery.BaseJobResponseAllOfSourceOneOf1Docker {
-	if job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
+	if job.CronJobResponse != nil && job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
 		return job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
 	}
 
-	if job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
+	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
 		return job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
 	}
 	return nil
 }
 
 func GetJobImage(job *qovery.JobResponse) *qovery.ContainerSource {
-	if job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
+	if job.CronJobResponse != nil && job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
 		return job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
 	}
-	if job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
+	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
 		return job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
 	}
 	return nil
@@ -1557,7 +1556,6 @@ func DeployHelms(client *qovery.APIClient, envId string, helmNames string, chart
 			return fmt.Errorf("helm %s not found", trimmedHelmName)
 		}
 
-
 		var gitSource = GetGitSource(helm)
 		var helmRepositorySource = GetHelmRepository(helm)
 
@@ -1585,11 +1583,10 @@ func DeployHelms(client *qovery.APIClient, envId string, helmNames string, chart
 			mValuesOverrideCommitId = &valuesOverrideCommitId
 		}
 
-
 		helmsToDeploy = append(helmsToDeploy, qovery.DeployAllRequestHelmsInner{
-			Id:          &helm.Id,
-			ChartVersion: mChartVersion,
-			GitCommitId: mCommitId,
+			Id:                        &helm.Id,
+			ChartVersion:              mChartVersion,
+			GitCommitId:               mCommitId,
 			ValuesOverrideGitCommitId: mValuesOverrideCommitId,
 		})
 	}
@@ -1604,7 +1601,6 @@ func DeployHelms(client *qovery.APIClient, envId string, helmNames string, chart
 
 	return deployAllServices(client, envId, req)
 }
-
 
 func GetGitSource(helm *qovery.HelmResponse) *qovery.ApplicationGitRepositoryRequest {
 	if helm.Source.HelmResponseAllOfSourceOneOf != nil && helm.Source.HelmResponseAllOfSourceOneOf.Git != nil {
@@ -2429,8 +2425,8 @@ func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
 		}
 	} else {
 		var scheduleCronjob = qovery.JobRequestAllOfScheduleCronjob{
-			Entrypoint: job.CronJobResponse.Schedule.Cronjob.Entrypoint,
-			Arguments: job.CronJobResponse.Schedule.Cronjob.Arguments,
+			Entrypoint:  job.CronJobResponse.Schedule.Cronjob.Entrypoint,
+			Arguments:   job.CronJobResponse.Schedule.Cronjob.Arguments,
 			ScheduledAt: job.CronJobResponse.Schedule.Cronjob.ScheduledAt,
 		}
 
