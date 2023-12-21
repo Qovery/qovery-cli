@@ -10,8 +10,11 @@ var helmName string
 var helmNames string
 var targetHelmName string
 var chartVersion string
+var chartName string
 var chartGitCommitId string
+var charGitCommitBranch string
 var valuesOverrideCommitId string
+var valuesOverrideCommitBranch string
 
 var helmCmd = &cobra.Command{
 	Use:   "helm",
