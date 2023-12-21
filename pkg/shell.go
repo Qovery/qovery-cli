@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"errors"
 	"github.com/appscode/go-querystring/query"
 	"net/http"
 	"net/url"
@@ -37,6 +38,10 @@ func ExecShell(req *ShellRequest) {
 	}()
 
 	currentConsole := console.Current()
+	defer func() {
+		_ = currentConsole.Reset()
+	}()
+
 	if err := currentConsole.SetRaw(); err != nil {
 		log.Fatal("error while setting up console", err)
 	}
@@ -62,7 +67,6 @@ func ExecShell(req *ShellRequest) {
 
 func createWebsocketConn(req *ShellRequest) (*websocket.Conn, error) {
 	command, err := query.Values(req)
-	println("", command.Encode(), req.PodName)
 	if err != nil {
 		return nil, err
 	}
@@ -92,8 +96,13 @@ func readWebsocketConnection(wsConn *websocket.Conn, currentConsole console.Cons
 	for {
 		_, msg, err := wsConn.ReadMessage()
 		if err != nil {
-			if e, ok := err.(*websocket.CloseError); ok {
-				log.Error("connection closed by server: ", e)
+			var e *websocket.CloseError
+			if errors.As(err, &e) {
+				if e.Code == websocket.CloseNormalClosure {
+					log.Info("** shell terminated bye **")
+				} else {
+					log.Error("connection closed by server: ", e)
+				}
 				return
 			}
 			log.Error("error while reading on websocket:", err)
