@@ -49,7 +49,7 @@ var containerEnvOverrideCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateOverride(client, projectId, envId, container.Id, utils.ContainerType, utils.Key, &utils.Value, utils.ContainerScope)
+		err = utils.CreateOverride(client, projectId, envId, container.Id, utils.ContainerType, utils.Key, utils.Value, utils.ContainerScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -73,4 +73,5 @@ func init() {
 
 	_ = containerEnvOverrideCreateCmd.MarkFlagRequired("key")
 	_ = containerEnvOverrideCreateCmd.MarkFlagRequired("container")
+	_ = containerEnvOverrideCreateCmd.MarkFlagRequired("value")
 }
