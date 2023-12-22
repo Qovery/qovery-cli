@@ -24,7 +24,7 @@ var containerEnvCreateCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, projectId, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -49,20 +49,7 @@ var containerEnvCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if utils.IsSecret {
-			err = utils.CreateSecret(client, projectId, envId, container.Id, utils.Key, utils.Value, utils.ContainerScope)
-
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-
-			utils.Println(fmt.Sprintf("Secret %s has been created", pterm.FgBlue.Sprintf(utils.Key)))
-			return
-		}
-
-		err = utils.CreateEnvironmentVariable(client, projectId, envId, container.Id, utils.Key, utils.Value, utils.ContainerScope)
+		err = utils.CreateEnvironmentVariable(client, container.Id, utils.ContainerScope, utils.Key, utils.Value, utils.IsSecret)
 
 		if err != nil {
 			utils.PrintlnError(err)
