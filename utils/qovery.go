@@ -472,6 +472,14 @@ func SelectService(environment Id) (*Service, error) {
 		return nil, errors.New("Received " + res.Status + " response while listing containers. ")
 	}
 
+	helms, res, err := client.HelmsAPI.ListHelms(context.Background(), string(environment)).Execute()
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while listing helms. ")
+	}
+
 	var servicesNames []string
 	var services = make(map[string]Service)
 
@@ -520,6 +528,15 @@ func SelectService(environment Id) (*Service, error) {
 				Name: Name(lifecycleJob.Name),
 				Type: JobType,
 			}
+		}
+	}
+
+	for _, helm := range helms.GetResults() {
+		servicesNames = append(servicesNames, helm.Name)
+		services[helm.Name] = Service{
+			ID:   Id(helm.Id),
+			Name: Name(helm.Name),
+			Type: HelmType,
 		}
 	}
 
