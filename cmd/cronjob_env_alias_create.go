@@ -24,7 +24,7 @@ var cronjobEnvAliasCreateCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, projectId, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)

@@ -49,7 +49,8 @@ var applicationEnvAliasCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateAlias(client, projectId, envId, application.Id, utils.ApplicationType, utils.Key, utils.Alias, utils.ApplicationScope)
+
+		err = utils.CreateAlias(client, projectId, envId, application.Id, utils.ApplicationType, utils.Key, utils.Alias,  utils.ApplicationScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
