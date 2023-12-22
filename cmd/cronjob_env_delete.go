@@ -24,7 +24,7 @@ var cronjobEnvDeleteCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, projectId, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -49,7 +49,7 @@ var cronjobEnvDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.DeleteByKey(client, projectId, envId, cronjob.CronJobResponse.Id, utils.JobType, utils.Key)
+		err = utils.DeleteVariable(client, cronjob.CronJobResponse.Id, utils.JobType, utils.Key)
 
 		if err != nil {
 			utils.PrintlnError(err)

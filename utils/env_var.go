@@ -234,7 +234,8 @@ func ServiceTypeToScope(serviceType ServiceType) (qovery.APIVariableScopeEnum, e
 	case HelmType:
 		return qovery.APIVARIABLESCOPEENUM_HELM, nil
 	}
-	return qovery.APIVARIABLESCOPEENUM_BUILT_IN, fmt.Errorf("{} service type not supported", serviceType)
+
+	return qovery.APIVARIABLESCOPEENUM_BUILT_IN, fmt.Errorf("%s not supported", serviceType)
 }
 
 func VariableScopeFrom(scope string) (qovery.APIVariableScopeEnum, error) {
@@ -295,155 +296,25 @@ func ListSecrets(
 	return res.Results, nil
 }
 
-func DeleteEnvironmentVariableByKey(
+func DeleteVariable(
 	client *qovery.APIClient,
-	projectId string,
-	environmentId string,
 	serviceId string,
 	serviceType ServiceType,
 	key string,
 ) error {
+
 	envVars, err := ListEnvironmentVariables(client, serviceId, serviceType)
 	if err != nil {
 		return err
 	}
 
 	envVar := FindEnvironmentVariableByKey(key, envVars)
-
 	if envVar == nil {
 		return fmt.Errorf("environment variable %s not found", pterm.FgRed.Sprintf(key))
 	}
 
-	switch string(envVar.Scope) {
-	case "PROJECT":
-		_, err := client.ProjectEnvironmentVariableAPI.DeleteProjectEnvironmentVariable(
-			context.Background(),
-			projectId,
-			envVar.Id,
-		).Execute()
-
-		return err
-	case "ENVIRONMENT":
-		_, err := client.EnvironmentVariableAPI.DeleteEnvironmentEnvironmentVariable(
-			context.Background(),
-			environmentId,
-			envVar.Id,
-		).Execute()
-
-		return err
-	case "APPLICATION":
-		_, err := client.ApplicationEnvironmentVariableAPI.DeleteApplicationEnvironmentVariable(
-			context.Background(),
-			serviceId,
-			envVar.Id,
-		).Execute()
-
-		return err
-	case "JOB":
-		_, err := client.JobEnvironmentVariableAPI.DeleteJobEnvironmentVariable(
-			context.Background(),
-			serviceId,
-			envVar.Id,
-		).Execute()
-
-		return err
-	case "CONTAINER":
-		_, err := client.ContainerEnvironmentVariableAPI.DeleteContainerEnvironmentVariable(
-			context.Background(),
-			serviceId,
-			envVar.Id,
-		).Execute()
-
-		return err
-	}
-
-	return errors.New("invalid scope")
-}
-
-func DeleteSecretByKey(
-	client *qovery.APIClient,
-	projectId string,
-	environmentId string,
-	serviceId string,
-	serviceType ServiceType,
-	key string,
-) error {
-	secrets, err := ListSecrets(client, serviceId, serviceType)
-	if err != nil {
-		return err
-	}
-
-	secret := FindSecretByKey(key, secrets)
-
-	if secret == nil {
-		return fmt.Errorf("secret %s not found", pterm.FgRed.Sprintf(key))
-	}
-
-	switch string(secret.Scope) {
-	case "PROJECT":
-		_, err := client.ProjectSecretAPI.DeleteProjectSecret(
-			context.Background(),
-			projectId,
-			secret.Id,
-		).Execute()
-
-		return err
-	case "ENVIRONMENT":
-		_, err := client.EnvironmentVariableAPI.DeleteEnvironmentEnvironmentVariable(
-			context.Background(),
-			environmentId,
-			secret.Id,
-		).Execute()
-
-		return err
-	case "APPLICATION":
-		_, err := client.ApplicationSecretAPI.DeleteApplicationSecret(
-			context.Background(),
-			serviceId,
-			secret.Id,
-		).Execute()
-
-		return err
-	case "JOB":
-		_, err := client.JobSecretAPI.DeleteJobSecret(
-			context.Background(),
-			serviceId,
-			secret.Id,
-		).Execute()
-
-		return err
-	case "CONTAINER":
-		_, err := client.ContainerSecretAPI.DeleteContainerSecret(
-			context.Background(),
-			serviceId,
-			secret.Id,
-		).Execute()
-
-		return err
-	}
-
-	return errors.New("invalid scope")
-}
-
-func DeleteByKey(
-	client *qovery.APIClient,
-	projectId string,
-	environmentId string,
-	serviceId string,
-	serviceType ServiceType,
-	key string,
-) error {
-	err := DeleteEnvironmentVariableByKey(client, projectId, environmentId, serviceId, serviceType, key)
-	if err == nil {
-		return nil
-	}
-
-	err = DeleteSecretByKey(client, projectId, environmentId, serviceId, serviceType, key)
-	if err == nil {
-		return nil
-	}
-
-	return fmt.Errorf("environment variable or secret %s not found", pterm.FgRed.Sprintf(key))
+	_, err = client.VariableMainCallsAPI.DeleteVariable(context.Background(), envVar.Id).Execute()
+	return err
 }
 
 func CreateEnvironmentVariableAlias(

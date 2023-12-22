@@ -24,7 +24,7 @@ var applicationEnvDeleteCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, projectId, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -49,7 +49,7 @@ var applicationEnvDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.DeleteByKey(client, projectId, envId, application.Id, utils.ApplicationType, utils.Key)
+		err = utils.DeleteVariable(client, application.Id, utils.ApplicationType, utils.Key)
 
 		if err != nil {
 			utils.PrintlnError(err)
