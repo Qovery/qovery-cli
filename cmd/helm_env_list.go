@@ -9,9 +9,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cronjobEnvListCmd = &cobra.Command{
+var helmEnvListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List cronjob environment variables",
+	Short: "List helm environment variables",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -32,7 +32,7 @@ var cronjobEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		cronjobs, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
+		helms, _, err := client.HelmsAPI.ListHelms(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -40,20 +40,26 @@ var cronjobEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		cronjob := utils.FindByJobName(cronjobs.GetResults(), cronjobName)
+		helm := utils.FindByHelmName(helms.GetResults(), helmName)
 
-		if cronjob == nil || cronjob.CronJobResponse == nil {
-			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
-			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
+		if helm == nil {
+			utils.PrintlnError(fmt.Errorf("helm %s not found", helmName))
+			utils.PrintlnInfo("You can list all helms with: qovery helm list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		envVars, err := utils.ListEnvironmentVariables(
 			client,
-			cronjob.CronJobResponse.Id,
-			utils.JobType,
+			helm.Id,
+			utils.HelmType,
 		)
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -86,14 +92,14 @@ var cronjobEnvListCmd = &cobra.Command{
 }
 
 func init() {
-	cronjobEnvCmd.AddCommand(cronjobEnvListCmd)
-	cronjobEnvListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
-	cronjobEnvListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
-	cronjobEnvListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	cronjobEnvListCmd.Flags().StringVarP(&cronjobName, "cronjob", "n", "", "Cronjob Name")
-	cronjobEnvListCmd.Flags().BoolVarP(&utils.ShowValues, "show-values", "", false, "Show env var values")
-	cronjobEnvListCmd.Flags().BoolVarP(&utils.PrettyPrint, "pretty-print", "", false, "Pretty print output")
-	cronjobEnvListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
+	helmEnvCmd.AddCommand(helmEnvListCmd)
+	helmEnvListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	helmEnvListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	helmEnvListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	helmEnvListCmd.Flags().StringVarP(&helmName, "helm", "n", "", "helm Name")
+	helmEnvListCmd.Flags().BoolVarP(&utils.ShowValues, "show-values", "", false, "Show env var values")
+	helmEnvListCmd.Flags().BoolVarP(&utils.PrettyPrint, "pretty-print", "", false, "Pretty print output")
+	helmEnvListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
 
-	_ = cronjobEnvListCmd.MarkFlagRequired("cronjob")
+	_ = helmEnvListCmd.MarkFlagRequired("helm")
 }

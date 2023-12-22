@@ -122,7 +122,7 @@ func (e EnvVarLineOutput) Data(showValues bool) []string {
 	return []string{e.Key, keyType, parentKey, value, e.UpdatedAt.Format(time.RFC822), service, e.Scope}
 }
 
-func FromEnvironmentVariableToEnvVarLineOutput(envVar qovery.EnvironmentVariable) EnvVarLineOutput {
+func FromEnvironmentVariableToEnvVarLineOutput(envVar qovery.VariableResponse) EnvVarLineOutput {
 	var aliasParentKey *string
 	if envVar.AliasedVariable != nil {
 		aliasParentKey = &envVar.AliasedVariable.Key
@@ -133,15 +133,20 @@ func FromEnvironmentVariableToEnvVarLineOutput(envVar qovery.EnvironmentVariable
 		overrideParentKey = &envVar.OverriddenVariable.Key
 	}
 
+	var value *string
+	if envVar.Value.IsSet() {
+		value = envVar.Value.Get()
+	}
+
 	return EnvVarLineOutput{
 		Id:                envVar.Id,
 		Key:               envVar.Key,
-		Value:             envVar.Value,
+		Value:             value,
 		CreatedAt:         envVar.CreatedAt,
 		UpdatedAt:         envVar.UpdatedAt,
 		Service:           envVar.ServiceName,
 		Scope:             string(envVar.Scope),
-		IsSecret:          false,
+		IsSecret:          envVar.IsSecret,
 		AliasParentKey:    aliasParentKey,
 		OverrideParentKey: overrideParentKey,
 	}
@@ -284,7 +289,7 @@ func CreateSecret(
 	return errors.New("invalid scope")
 }
 
-func FindEnvironmentVariableByKey(key string, envVars []qovery.EnvironmentVariable) *qovery.EnvironmentVariable {
+func FindEnvironmentVariableByKey(key string, envVars []qovery.VariableResponse) *qovery.VariableResponse {
 	for _, envVar := range envVars {
 		if envVar.Key == key {
 			return &envVar
@@ -308,38 +313,37 @@ func ListEnvironmentVariables(
 	client *qovery.APIClient,
 	serviceId string,
 	serviceType ServiceType,
-) ([]qovery.EnvironmentVariable, error) {
-	var res *qovery.EnvironmentVariableResponseList
+) ([]qovery.VariableResponse, error) {
+	scope, err := ServiceTypeToScope(serviceType)
+	if err != nil {
+		return nil, err
+	}
 
-	switch serviceType {
-	case ApplicationType:
-		r, _, err := client.ApplicationEnvironmentVariableAPI.ListApplicationEnvironmentVariable(context.Background(), serviceId).Execute()
-		if err != nil {
-			return nil, err
-		}
-
-		res = r
-	case ContainerType:
-		r, _, err := client.ContainerEnvironmentVariableAPI.ListContainerEnvironmentVariable(context.Background(), serviceId).Execute()
-		if err != nil {
-			return nil, err
-		}
-
-		res = r
-	case JobType:
-		r, _, err := client.JobEnvironmentVariableAPI.ListJobEnvironmentVariable(context.Background(), serviceId).Execute()
-		if err != nil {
-			return nil, err
-		}
-
-		res = r
+	request := client.VariableMainCallsAPI.ListVariables(context.Background())
+	res, _, err := request.ParentId(serviceId).Scope(scope).Execute()
+	if err != nil {
+		return nil, err
 	}
 
 	if res == nil {
 		return nil, errors.New("invalid service type")
 	}
+	
+	return res.GetResults(), nil
+}
 
-	return res.Results, nil
+func ServiceTypeToScope(serviceType ServiceType) (qovery.APIVariableScopeEnum, error) {
+	switch serviceType {
+	case ApplicationType:
+		return qovery.APIVARIABLESCOPEENUM_APPLICATION, nil
+	case ContainerType:
+		return qovery.APIVARIABLESCOPEENUM_CONTAINER, nil
+	case JobType:
+		return qovery.APIVARIABLESCOPEENUM_JOB, nil
+	case HelmType:
+		return qovery.APIVARIABLESCOPEENUM_HELM, nil
+	}
+	return qovery.APIVARIABLESCOPEENUM_BUILT_IN, fmt.Errorf("{} service type not supported", serviceType)
 }
 
 func ListSecrets(
