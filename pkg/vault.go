@@ -2,6 +2,7 @@ package pkg
 
 import (
 	b64 "encoding/base64"
+	"encoding/json"
 	"os"
 
 	"github.com/hashicorp/vault/api"
@@ -52,6 +53,13 @@ func GetVarsByClusterId(clusterID string) []utils.Var {
 			vaultVars = append(vaultVars, utils.Var{Key: "AWS_DEFAULT_REGION", Value: value.(string)})
 		case "AWS_SECRET_ACCESS_KEY", "aws_secret_access_key":
 			vaultVars = append(vaultVars, utils.Var{Key: "AWS_SECRET_ACCESS_KEY", Value: value.(string)})
+		case "GOOGLE_CREDENTIALS", "google_credentials":
+			jsonStr, err := json.Marshal(value)
+			if err != nil {
+				log.Error("Can't convert to json GOOGLE_CREDENTIALS")
+				return []utils.Var{}
+			}
+			vaultVars = append(vaultVars, utils.Var{Key: "GOOGLE_CREDENTIALS", Value: string(jsonStr)})
 		case "kubeconfig_b64", "KUBECONFIG_b64":
 			decodedValue, encErr := b64.StdEncoding.DecodeString(value.(string))
 			if encErr != nil {
