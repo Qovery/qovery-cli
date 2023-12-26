@@ -38,6 +38,23 @@ func launchK9s(args []string) {
 
 	for _, variable := range vars {
 		os.Setenv(variable.Key, variable.Value)
+
+		// Generate temporary file + ENV for GCP auth
+		// https://serverfault.com/questions/848580/how-to-use-google-application-credentials-with-gcloud-on-a-server
+		if variable.Key == "GOOGLE_CREDENTIALS" {
+			googleCredentialsFile, err := os.CreateTemp("", "sample")
+			if err != nil {
+				log.Error("Can't create google credentials file : " + err.Error())
+			}
+			defer os.Remove(googleCredentialsFile.Name())
+
+			_, err = googleCredentialsFile.WriteString(variable.Value)
+			if err != nil {
+				log.Error("Can't create google credentials file : " + err.Error())
+			}
+
+			os.Setenv("CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE", googleCredentialsFile.Name())
+		}
 	}
 	utils.GenerateExportEnvVarsScript(vars, args[0])
 
