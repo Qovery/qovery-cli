@@ -3,8 +3,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"os"
+	"os/signal"
+	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
@@ -14,34 +18,66 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 )
 
-var shellCmd = &cobra.Command{
-	Use:   "shell",
-	Short: "Connect to an application container",
+var portForwardCmd = &cobra.Command{
+	Use:   "port-forward",
+	Short: "Port forward a port to an application container",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		var shellRequest *pkg.ShellRequest
+		if len(ports) == 0 {
+			log.Fatal("port flag must be specified at least once")
+			return
+		}
+
+		var portForwardRequest *pkg.PortForwardRequest
 		var err error
 		if len(args) > 0 {
-			shellRequest, err = shellRequestWithApplicationUrl(args)
+			portForwardRequest, err = portForwardRequestWithApplicationUrl(args)
 		} else {
-			shellRequest, err = shellRequestWithoutArg()
+			portForwardRequest, err = portForwardRequestWithoutArg()
 		}
 		if err != nil {
 			utils.PrintlnError(err)
 			return
 		}
 
-		pkg.ExecShell(shellRequest)
+		for _, port := range ports {
+			ps := strings.Split(port, ":")
+			var localPortStr, remotePortStr string
+			if len(ps) > 1 {
+				localPortStr = ps[0]
+				remotePortStr = ps[1]
+			} else {
+				localPortStr = ps[0]
+				remotePortStr = ps[0]
+			}
+
+			localPort, err := strconv.ParseUint(localPortStr, 10, 16)
+			if err != nil {
+				log.Fatal("Invalid local port {} {}", port, err)
+			}
+
+			remotePort, err := strconv.ParseUint(remotePortStr, 10, 16)
+			if err != nil {
+				log.Fatal("Invalid remote port {} {}", port, err)
+			}
+
+			req := *portForwardRequest
+			req.LocalPort = uint16(localPort)
+			req.Port = uint16(remotePort)
+			go pkg.ExecPortForward(&req)
+		}
+
+		done := make(chan os.Signal, 1)
+		signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
+		<-done
 	},
 }
 var (
-	command          []string
-	podName          string
-	podContainerName string
+	ports []string
 )
 
-func shellRequestWithoutArg() (*pkg.ShellRequest, error) {
+func portForwardRequestWithoutArg() (*pkg.PortForwardRequest, error) {
 	useContext := false
 	currentContext, err := utils.CurrentContext()
 	if err != nil {
@@ -58,22 +94,22 @@ func shellRequestWithoutArg() (*pkg.ShellRequest, error) {
 		}
 		fmt.Println()
 
-		utils.PrintlnInfo("Continue with shell command using this context ?")
+		utils.PrintlnInfo("Continue with port-forward command using this context ?")
 		useContext = utils.Validate("context")
 		fmt.Println()
 	} else {
 		if err := utils.PrintlnContext(); err != nil {
 			fmt.Println("Context not yet configured.")
-			fmt.Println("Unable to use current context for `shell` command.")
+			fmt.Println("Unable to use current context for `port-forward` command.")
 			fmt.Println()
 		}
 	}
 
-	var req *pkg.ShellRequest
+	var req *pkg.PortForwardRequest
 	if useContext {
-		req, err = shellRequestFromContext(currentContext)
+		req, err = portForwardRequestFromContext(currentContext)
 	} else {
-		req, err = shellRequestFromSelect()
+		req, err = portForwardRequestFromSelect()
 	}
 	if err != nil {
 		return nil, err
@@ -82,7 +118,7 @@ func shellRequestWithoutArg() (*pkg.ShellRequest, error) {
 	return req, nil
 }
 
-func shellRequestFromSelect() (*pkg.ShellRequest, error) {
+func portForwardRequestFromSelect() (*pkg.PortForwardRequest, error) {
 	utils.PrintlnInfo("Select organization")
 	orga, err := utils.SelectOrganization()
 	if err != nil {
@@ -107,19 +143,19 @@ func shellRequestFromSelect() (*pkg.ShellRequest, error) {
 		return nil, err
 	}
 
-	return &pkg.ShellRequest{
+	return &pkg.PortForwardRequest{
 		ServiceID:      service.ID,
 		ProjectID:      project.ID,
 		OrganizationID: orga.ID,
 		EnvironmentID:  env.ID,
 		ClusterID:      env.ClusterID,
 		PodName:        podName,
-		ContainerName:  podContainerName,
-		Command:        command,
+		Port:           0,
+		LocalPort:      0,
 	}, nil
 }
 
-func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequest, error) {
+func portForwardRequestFromContext(currentContext utils.QoveryContext) (*pkg.PortForwardRequest, error) {
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
 		utils.PrintlnError(err)
@@ -137,19 +173,19 @@ func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequ
 		return nil, errors.New("Received " + res.Status + " response while fetching environment. ")
 	}
 
-	return &pkg.ShellRequest{
+	return &pkg.PortForwardRequest{
 		ServiceID:      currentContext.ServiceId,
 		ProjectID:      currentContext.ProjectId,
 		OrganizationID: currentContext.OrganizationId,
 		EnvironmentID:  currentContext.EnvironmentId,
 		ClusterID:      utils.Id(e.ClusterId),
 		PodName:        podName,
-		ContainerName:  podContainerName,
-		Command:        command,
+		Port:           0,
+		LocalPort:      0,
 	}, nil
 }
 
-func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
+func portForwardRequestWithApplicationUrl(args []string) (*pkg.PortForwardRequest, error) {
 	var url = args[0]
 	url = strings.Replace(url, "https://console.qovery.com/", "", 1)
 	url = strings.Replace(url, "https://new.console.qovery.com/", "", 1)
@@ -236,7 +272,7 @@ func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 				service = *helm
 
 			default:
-				return nil, errors.New("ServiceLevel type `" + string(envService.Type) + "` is not supported for shell")
+				return nil, errors.New("ServiceLevel type `" + string(envService.Type) + "` is not supported for port-forward")
 			}
 		}
 	}
@@ -249,23 +285,23 @@ func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 		{"ServiceType", string(service.Type)},
 	}).Render()
 
-	return &pkg.ShellRequest{
+	return &pkg.PortForwardRequest{
 		OrganizationID: organization.ID,
 		ProjectID:      project.ID,
 		EnvironmentID:  environment.ID,
 		ServiceID:      service.ID,
 		ClusterID:      environment.ClusterID,
 		PodName:        podName,
-		ContainerName:  podContainerName,
-		Command:        command,
+		Port:           8000,
+		LocalPort:      8000,
 	}, nil
 }
 
 func init() {
-	var shellCmd = shellCmd
-	shellCmd.Flags().StringSliceVarP(&command, "command", "c", []string{"sh"}, "command to launch inside the pod")
-	shellCmd.Flags().StringVarP(&podName, "pod", "p", "", "pod name where to exec into")
-	shellCmd.Flags().StringVar(&podContainerName, "container", "", "container name inside the pod")
+	var portForwardCmd = portForwardCmd
+	portForwardCmd.Flags().StringVarP(&podName, "pod", "", "", "pod name where to forward traffic")
+	portForwardCmd.Flags().StringSliceVarP(&ports, "port", "p", nil, "port that will be forwarded. Format  \"local_port:remote_port\" i.e: 8080:80")
+	_ = portForwardCmd.MarkFlagRequired("port")
 
-	rootCmd.AddCommand(shellCmd)
+	rootCmd.AddCommand(portForwardCmd)
 }
