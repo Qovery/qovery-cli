@@ -644,6 +644,52 @@ func GetContainerById(id string) (*Container, error) {
 	}, nil
 }
 
+func GetDatabaseById(id string) (*Service, error) {
+	tokenType, token, err := GetAccessToken()
+	if err != nil {
+		return nil, err
+	}
+
+	client := GetQoveryClient(tokenType, token)
+
+	database, res, err := client.DatabaseMainCallsAPI.GetDatabase(context.Background(), id).Execute()
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while getting database " + id)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &Service{
+		ID:   Id(database.Id),
+		Name: Name(database.GetName()),
+		Type: DatabaseType,
+	}, nil
+}
+
+func GetHelmById(id string) (*Service, error) {
+	tokenType, token, err := GetAccessToken()
+	if err != nil {
+		return nil, err
+	}
+
+	client := GetQoveryClient(tokenType, token)
+
+	helm, res, err := client.HelmMainCallsAPI.GetHelm(context.Background(), id).Execute()
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while getting helm " + id)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &Service{
+		ID:   Id(helm.Id),
+		Name: Name(helm.GetName()),
+		Type: HelmType,
+	}, nil
+}
+
 type Job struct {
 	ID   Id
 	Name Name
