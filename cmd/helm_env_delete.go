@@ -10,9 +10,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var lifecycleEnvDeleteCmd = &cobra.Command{
+var helmEnvDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Delete lifecycle environment variable or secret",
+	Short: "Delete helm environment variable or secret",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -32,7 +32,7 @@ var lifecycleEnvDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		lifecycles, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
+		helms, _, err := client.HelmsAPI.ListHelms(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -40,16 +40,16 @@ var lifecycleEnvDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		lifecycle := utils.FindByJobName(lifecycles.GetResults(), lifecycleName)
+		helm := utils.FindByHelmName(helms.GetResults(), helmName)
 
-		if lifecycle == nil || lifecycle.LifecycleJobResponse == nil {
-			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
-			utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
+		if helm == nil {
+			utils.PrintlnError(fmt.Errorf("helm %s not found", helmName))
+			utils.PrintlnInfo("You can list all helms with: qovery helm list")
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.DeleteVariable(client, lifecycle.LifecycleJobResponse.Id, utils.JobType, utils.Key)
+		err = utils.DeleteVariable(client, helm.Id, utils.HelmType, utils.Key)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -62,13 +62,13 @@ var lifecycleEnvDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	lifecycleEnvCmd.AddCommand(lifecycleEnvDeleteCmd)
-	lifecycleEnvDeleteCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
-	lifecycleEnvDeleteCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
-	lifecycleEnvDeleteCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	lifecycleEnvDeleteCmd.Flags().StringVarP(&lifecycleName, "lifecycle", "n", "", "Lifecycle Name")
-	lifecycleEnvDeleteCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable or secret key")
+	helmEnvCmd.AddCommand(helmEnvDeleteCmd)
+	helmEnvDeleteCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	helmEnvDeleteCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	helmEnvDeleteCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	helmEnvDeleteCmd.Flags().StringVarP(&helmName, "helm", "n", "", "helm Name")
+	helmEnvDeleteCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable or secret key")
 
-	_ = lifecycleEnvDeleteCmd.MarkFlagRequired("key")
-	_ = lifecycleEnvDeleteCmd.MarkFlagRequired("lifecycle")
+	_ = helmEnvDeleteCmd.MarkFlagRequired("key")
+	_ = helmEnvDeleteCmd.MarkFlagRequired("helm")
 }
