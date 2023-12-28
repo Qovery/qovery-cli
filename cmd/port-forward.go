@@ -303,7 +303,7 @@ func portForwardRequestWithApplicationUrl(args []string) (*pkg.PortForwardReques
 func init() {
 	var portForwardCmd = portForwardCmd
 	portForwardCmd.Flags().StringVarP(&podName, "pod", "", "", "pod name where to forward traffic")
-	portForwardCmd.Flags().StringSliceVarP(&ports, "port", "p", nil, "port that will be forwarded. Format  \"local_port:remote_port\" i.e: 8080:80")
+	portForwardCmd.Flags().StringSliceVarP(&ports, "port", "p", nil, "port that will be forwarded. Can be specified multiple time. Format \"local_port:remote_port\" i.e: 8080:80")
 	_ = portForwardCmd.MarkFlagRequired("port")
 
 	rootCmd.AddCommand(portForwardCmd)
