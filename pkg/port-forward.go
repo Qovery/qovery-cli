@@ -4,15 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/appscode/go-querystring/query"
+	"github.com/gorilla/websocket"
+	"github.com/qovery/qovery-cli/utils"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"regexp"
-
-	"github.com/gorilla/websocket"
-	"github.com/qovery/qovery-cli/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 type PortForwardRequest struct {
@@ -22,6 +21,7 @@ type PortForwardRequest struct {
 	OrganizationID utils.Id `url:"organization"`
 	ClusterID      utils.Id `url:"cluster"`
 	PodName        string   `url:"pod_name,omitempty"`
+	ServiceType    string   `url:"service_type"`
 	Port           uint16   `url:"port"`
 	LocalPort      uint16
 }
