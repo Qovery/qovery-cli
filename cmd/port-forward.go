@@ -145,6 +145,7 @@ func portForwardRequestFromSelect() (*pkg.PortForwardRequest, error) {
 
 	return &pkg.PortForwardRequest{
 		ServiceID:      service.ID,
+		ServiceType:    strings.ToUpper(string(service.Type)),
 		ProjectID:      project.ID,
 		OrganizationID: orga.ID,
 		EnvironmentID:  env.ID,
@@ -175,6 +176,7 @@ func portForwardRequestFromContext(currentContext utils.QoveryContext) (*pkg.Por
 
 	return &pkg.PortForwardRequest{
 		ServiceID:      currentContext.ServiceId,
+		ServiceType:    strings.ToUpper(string(currentContext.ServiceType)),
 		ProjectID:      currentContext.ProjectId,
 		OrganizationID: currentContext.OrganizationId,
 		EnvironmentID:  currentContext.EnvironmentId,
@@ -290,10 +292,11 @@ func portForwardRequestWithApplicationUrl(args []string) (*pkg.PortForwardReques
 		ProjectID:      project.ID,
 		EnvironmentID:  environment.ID,
 		ServiceID:      service.ID,
+		ServiceType:    strings.ToUpper(string(service.Type)),
 		ClusterID:      environment.ClusterID,
 		PodName:        podName,
-		Port:           8000,
-		LocalPort:      8000,
+		Port:           0,
+		LocalPort:      0,
 	}, nil
 }
 
