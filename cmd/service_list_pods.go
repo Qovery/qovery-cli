@@ -4,6 +4,7 @@ import (
 	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -34,6 +35,7 @@ var serviceListPods = &cobra.Command{
 
 		var data [][]string
 		for _, pod := range pods.Pods {
+			sort.Slice(pod.Ports, func(i, j int) bool { return pod.Ports[i] < pod.Ports[j] })
 			ports := make([]string, len(pod.Ports))
 			for i, x := range pod.Ports {
 				ports[i] = strconv.FormatUint(uint64(x), 10)

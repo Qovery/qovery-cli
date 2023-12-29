@@ -24,9 +24,23 @@ type ShellRequest struct {
 	PodName        string   `url:"pod_name,omitempty"`
 	ContainerName  string   `url:"container_name,omitempty"`
 	Command        []string `url:"command"`
+	TtyWidth       uint16   `url:"tty_width"`
+	TtyHeight      uint16   `url:"tty_height"`
 }
 
 func ExecShell(req *ShellRequest) {
+	currentConsole := console.Current()
+	defer func() {
+		_ = currentConsole.Reset()
+	}()
+
+	winSize, err := currentConsole.Size()
+	if err != nil {
+		log.Fatal("Cannot get terminal size", err)
+	}
+	req.TtyWidth = winSize.Width
+	req.TtyHeight = winSize.Height
+
 	wsConn, err := createWebsocketConn(req)
 	if err != nil {
 		log.Fatal("error while creating websocket connection", err)
@@ -35,11 +49,6 @@ func ExecShell(req *ShellRequest) {
 		if err := wsConn.Close(); err != nil {
 			log.Fatal("error while closing websocket connection", err)
 		}
-	}()
-
-	currentConsole := console.Current()
-	defer func() {
-		_ = currentConsole.Reset()
 	}()
 
 	if err := currentConsole.SetRaw(); err != nil {
