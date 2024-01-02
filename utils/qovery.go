@@ -1665,7 +1665,7 @@ func DeployHelms(client *qovery.APIClient, envId string, helmNames string, chart
 	return deployAllServices(client, envId, req)
 }
 
-func GetGitSource(helm *qovery.HelmResponse) *qovery.ApplicationGitRepositoryRequest {
+func GetGitSource(helm *qovery.HelmResponse) *qovery.ApplicationGitRepository {
 	if helm.Source.HelmResponseAllOfSourceOneOf != nil && helm.Source.HelmResponseAllOfSourceOneOf.Git != nil {
 		return helm.Source.HelmResponseAllOfSourceOneOf.Git.GitRepository
 	}
