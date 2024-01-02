@@ -15,6 +15,7 @@ var chartGitCommitId string
 var charGitCommitBranch string
 var valuesOverrideCommitId string
 var valuesOverrideCommitBranch string
+var helmCustomDomain string
 
 var helmCmd = &cobra.Command{
 	Use:   "helm",
