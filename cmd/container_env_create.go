@@ -24,7 +24,7 @@ var containerEnvCreateCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		_, projectId, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -49,7 +49,7 @@ var containerEnvCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateEnvironmentVariable(client, container.Id, utils.ContainerScope, utils.Key, utils.Value, utils.IsSecret)
+		err = utils.CreateEnvironmentVariable(client, projectId, envId, container.Id, utils.ContainerScope, utils.Key, utils.Value, utils.IsSecret)
 
 		if err != nil {
 			utils.PrintlnError(err)

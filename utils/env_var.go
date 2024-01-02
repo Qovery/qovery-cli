@@ -155,14 +155,16 @@ func FromEnvironmentVariableToEnvVarLineOutput(envVar qovery.VariableResponse) E
 
 func CreateEnvironmentVariable(
 	client *qovery.APIClient,
-	parentId string,
+	projectId string,
+	environmentId string,
+	serviceId string,
 	scope string,
 	key string,
 	value string,
 	isSecret bool,
 ) error {
 
-	variableScope, err := VariableScopeFrom(scope)
+	parentId, parentScope, err := getParentIdByScope(scope, projectId, environmentId, serviceId)
 	if err != nil {
 		return err
 	}
@@ -172,7 +174,7 @@ func CreateEnvironmentVariable(
 		Value:     value,
 		MountPath: qovery.NullableString{},
 		IsSecret:  isSecret,
-		VariableScope: variableScope,
+		VariableScope: parentScope,
 		VariableParentId: parentId,
 	}
 
@@ -226,26 +228,6 @@ func ServiceTypeToScope(serviceType ServiceType) (qovery.APIVariableScopeEnum, e
 	}
 
 	return qovery.APIVARIABLESCOPEENUM_BUILT_IN, fmt.Errorf("the service type %s is not supported", serviceType)
-}
-
-func VariableScopeFrom(scope string) (qovery.APIVariableScopeEnum, error) {
-	switch scope {
-	case "APPLICATION":
-		return qovery.APIVARIABLESCOPEENUM_APPLICATION, nil
-	case "BUILT_IN":
-		return qovery.APIVARIABLESCOPEENUM_BUILT_IN, nil
-	case "ENVIRONMENT":
-		return qovery.APIVARIABLESCOPEENUM_ENVIRONMENT, nil
-	case "PROJECT":
-		return qovery.APIVARIABLESCOPEENUM_PROJECT, nil
-	case "CONTAINER":
-		return qovery.APIVARIABLESCOPEENUM_CONTAINER, nil
-	case "JOB":
-		return qovery.APIVARIABLESCOPEENUM_JOB, nil
-	case "HELM":
-		return qovery.APIVARIABLESCOPEENUM_HELM, nil
-	}
-	return qovery.APIVARIABLESCOPEENUM_BUILT_IN, fmt.Errorf("the scope %s is not supported", scope)
 }
 
 func getParentIdByScope(scope string, projectId string, environmentId string, serviceId string) (string, qovery.APIVariableScopeEnum, error) {
