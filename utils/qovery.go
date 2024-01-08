@@ -2128,7 +2128,7 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 		case ApplicationType:
 			for _, application := range statuses.GetApplications() {
 				if application.Id == serviceId && IsTerminalState(application.State) {
-					_, _, err := client.ApplicationActionsAPI.RedeployApplication(context.Background(), serviceId).Execute()
+					_, _, err := client.ApplicationActionsAPI.DeployApplication(context.Background(), serviceId).Execute()
 					if err != nil {
 						return "", err
 					}
@@ -2143,7 +2143,7 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 		case DatabaseType:
 			for _, database := range statuses.GetDatabases() {
 				if database.Id == serviceId && IsTerminalState(database.State) {
-					_, _, err := client.DatabaseActionsAPI.RedeployDatabase(context.Background(), serviceId).Execute()
+					_, _, err := client.DatabaseActionsAPI.DeployDatabase(context.Background(), serviceId).Execute()
 					if err != nil {
 						return "", err
 					}
@@ -2158,7 +2158,7 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 		case ContainerType:
 			for _, container := range statuses.GetContainers() {
 				if container.Id == serviceId && IsTerminalState(container.State) {
-					_, _, err := client.ContainerActionsAPI.RedeployContainer(context.Background(), serviceId).Execute()
+					_, _, err := client.ContainerActionsAPI.DeployContainer(context.Background(), serviceId).Execute()
 					if err != nil {
 						return "", err
 					}
@@ -2173,7 +2173,7 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 		case JobType:
 			for _, job := range statuses.GetJobs() {
 				if job.Id == serviceId && IsTerminalState(job.State) {
-					_, _, err := client.JobActionsAPI.RedeployJob(context.Background(), serviceId).Execute()
+					_, _, err := client.JobActionsAPI.DeployJob(context.Background(), serviceId).Execute()
 					if err != nil {
 						return "", err
 					}
@@ -2188,7 +2188,7 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 		case HelmType:
 			for _, helm := range statuses.GetHelms() {
 				if helm.Id == serviceId && IsTerminalState(helm.State) {
-					_, _, err := client.HelmActionsAPI.RedeployHelm(context.Background(), serviceId).Execute()
+					_, _, err := client.HelmActionsAPI.DeployHelm(context.Background(), serviceId).Execute()
 					if err != nil {
 						return "", err
 					}

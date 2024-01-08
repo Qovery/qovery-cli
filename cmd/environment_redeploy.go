@@ -44,7 +44,7 @@ var environmentRedeployCmd = &cobra.Command{
 			time.Sleep(5 * time.Second)
 		}
 
-		_, _, err = client.EnvironmentActionsAPI.RedeployEnvironment(context.Background(), envId).Execute()
+		_, _, err = client.EnvironmentActionsAPI.DeployEnvironment(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
