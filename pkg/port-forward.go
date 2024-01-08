@@ -36,12 +36,22 @@ func (w WebsocketPortForward) Write(p []byte) (n int, err error) {
 	return len(p), err
 }
 func (w WebsocketPortForward) Read(p []byte) (n int, err error) {
-	_, msg, err := w.ws.ReadMessage()
-	if err != nil {
-		return 0, err
-	}
+	for {
+		msgType, msg, err := w.ws.ReadMessage()
+		if err != nil {
+			return 0, err
+		}
 
-	return copy(p, msg), err
+		if msgType == websocket.CloseMessage {
+			return 0, io.EOF
+		}
+
+		if msgType != websocket.BinaryMessage {
+			continue
+		}
+
+		return copy(p, msg), err
+	}
 }
 
 func mkWebsocketConn(req *PortForwardRequest) (*WebsocketPortForward, error) {

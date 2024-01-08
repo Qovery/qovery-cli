@@ -103,7 +103,7 @@ func createWebsocketConn(req *ShellRequest) (*websocket.Conn, error) {
 func readWebsocketConnection(wsConn *websocket.Conn, currentConsole console.Console, done chan struct{}) {
 	defer close(done)
 	for {
-		_, msg, err := wsConn.ReadMessage()
+		msgType, msg, err := wsConn.ReadMessage()
 		if err != nil {
 			var e *websocket.CloseError
 			if errors.As(err, &e) {
@@ -117,6 +117,15 @@ func readWebsocketConnection(wsConn *websocket.Conn, currentConsole console.Cons
 			log.Error("error while reading on websocket:", err)
 			return
 		}
+
+		if msgType == websocket.CloseMessage {
+			return
+		}
+
+		if msgType != websocket.BinaryMessage {
+			continue
+		}
+
 		if _, err = currentConsole.Write(msg); err != nil {
 			log.Error("error while writing in console:", err)
 			return
