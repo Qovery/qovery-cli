@@ -53,7 +53,7 @@ var helmDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		customDomains, _, err := client.CustomDomainAPI.ListHelmCustomDomain(context.Background(), helm.Id).Execute()
+		customDomains, _, err := client.HelmCustomDomainAPI.ListHelmCustomDomain(context.Background(), helm.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -74,7 +74,7 @@ var helmDomainCreateCmd = &cobra.Command{
 			GenerateCertificate: generateCertificate,
 		}
 
-		createdDomain, _, err := client.CustomDomainAPI.CreateHelmCustomDomain(context.Background(), helm.Id).CustomDomainRequest(req).Execute()
+		createdDomain, _, err := client.HelmCustomDomainAPI.CreateHelmCustomDomain(context.Background(), helm.Id).CustomDomainRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
