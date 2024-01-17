@@ -202,6 +202,8 @@ github.com/qovery/qovery-client-go v0.0.0-20240104104714-c749f31f31e6 h1:WRC6Gt5
 github.com/qovery/qovery-client-go v0.0.0-20240104104714-c749f31f31e6/go.mod h1:5QD7sC1Z6XCCYd31c4XKVwGdEOjvtgG0NDcaVDoWb+o=
 github.com/qovery/qovery-client-go v0.0.0-20240108095100-718858da5460 h1:NTLkMvIy9jfIx/X1aKpCjBwsNyTIK4sO03nZY/Zn2w4=
 github.com/qovery/qovery-client-go v0.0.0-20240108095100-718858da5460/go.mod h1:5QD7sC1Z6XCCYd31c4XKVwGdEOjvtgG0NDcaVDoWb+o=
+github.com/qovery/qovery-client-go v0.0.0-20240117104703-29bf4ea6d3b0 h1:RwDgJbYuAxjq7GJ2kxvf4ORq9g0l/ZWv5xHjMlOzNmU=
+github.com/qovery/qovery-client-go v0.0.0-20240117104703-29bf4ea6d3b0/go.mod h1:5QD7sC1Z6XCCYd31c4XKVwGdEOjvtgG0NDcaVDoWb+o=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.4.4 h1:8TfxU8dW6PdqD27gjM8MVNuicgxIjxpm4K7x4jp8sis=
 github.com/rivo/uniseg v0.4.4/go.mod h1:FN3SvrM+Zdj16jyLfmOkMNblXMcoc8DfTHruCPUcx88=

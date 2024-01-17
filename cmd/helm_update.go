@@ -51,16 +51,15 @@ var helmUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-
 		var ports []qovery.HelmPortRequestPortsInner
 		for _, p := range helm.Ports {
 			ports = append(ports, qovery.HelmPortRequestPortsInner{
-				Name:               p.Name,
-				InternalPort:       p.InternalPort,
-				ExternalPort:       p.ExternalPort,
-				ServiceName:        p.ServiceName,
-				Namespace:          p.Namespace,
-				Protocol:           &p.Protocol,
+				Name:         p.Name,
+				InternalPort: p.InternalPort,
+				ExternalPort: p.ExternalPort,
+				ServiceName:  p.ServiceName,
+				Namespace:    p.Namespace,
+				Protocol:     &p.Protocol,
 			})
 		}
 
@@ -156,8 +155,8 @@ func GetHelmSource(helm *qovery.HelmResponse, chartName string, chartVersion str
 			HelmRequestAllOfSourceOneOf: nil,
 			HelmRequestAllOfSourceOneOf1: &qovery.HelmRequestAllOfSourceOneOf1{
 				HelmRepository: &qovery.HelmRequestAllOfSourceOneOf1HelmRepository{
-					Repository: repositoryId,
-					ChartName: updatedChartName,
+					Repository:   repositoryId,
+					ChartName:    updatedChartName,
 					ChartVersion: updatedChartVersion,
 				},
 			},
@@ -181,11 +180,14 @@ func GetHelmValuesOverride(helm *qovery.HelmResponse, valuesOverrideCommitBranch
 		}
 
 		updatedFile := qovery.HelmRequestAllOfValuesOverrideFile{}
-		updatedFile.SetGitRepository(qovery.HelmValuesGitRepositoryRequest{
-			Url:        *git.GitRepository.Url,
-			Branch:     *updatedBranch,
-			Paths:      git.Paths,
-			GitTokenId: git.GitRepository.GitTokenId,
+		updatedFile.SetGit(qovery.HelmRequestAllOfValuesOverrideFileGit{
+			Paths: git.Paths,
+			GitRepository: qovery.ApplicationGitRepositoryRequest{
+				Url:        *git.GitRepository.Url,
+				Branch:     updatedBranch,
+				GitTokenId: git.GitRepository.GitTokenId,
+				RootPath:   git.GitRepository.RootPath,
+			},
 		})
 		updatedFile.SetRawNil()
 
@@ -203,7 +205,7 @@ func GetHelmValuesOverride(helm *qovery.HelmResponse, valuesOverrideCommitBranch
 		var values = make([]qovery.HelmRequestAllOfValuesOverrideFileRawValues, len(raw.Values))
 		for _, value := range raw.Values {
 			values = append(values, qovery.HelmRequestAllOfValuesOverrideFileRawValues{
-				Name: &value.Name,
+				Name:    &value.Name,
 				Content: &value.Content,
 			})
 		}
@@ -223,7 +225,7 @@ func GetHelmValuesOverride(helm *qovery.HelmResponse, valuesOverrideCommitBranch
 		return &helmRequest, nil
 	}
 
-	return nil,fmt.Errorf("Invalid Helm values orerride")
+	return nil, fmt.Errorf("Invalid Helm values orerride")
 }
 
 func init() {
