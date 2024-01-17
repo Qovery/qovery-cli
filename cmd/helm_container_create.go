@@ -13,7 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
 var helmDomainCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create helm custom domain",
@@ -53,7 +52,7 @@ var helmDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		customDomains, _, err := client.CustomDomainAPI.ListHelmCustomDomain(context.Background(), helm.Id).Execute()
+		customDomains, _, err := client.HelmCustomDomainAPI.ListHelmCustomDomain(context.Background(), helm.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -70,11 +69,11 @@ var helmDomainCreateCmd = &cobra.Command{
 
 		generateCertificate := !doNotGenerateCertificate
 		req := qovery.CustomDomainRequest{
-			Domain: helmCustomDomain,
+			Domain:              helmCustomDomain,
 			GenerateCertificate: generateCertificate,
 		}
 
-		createdDomain, _, err := client.CustomDomainAPI.CreateHelmCustomDomain(context.Background(), helm.Id).CustomDomainRequest(req).Execute()
+		createdDomain, _, err := client.HelmCustomDomainAPI.CreateHelmCustomDomain(context.Background(), helm.Id).CustomDomainRequest(req).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -82,7 +81,7 @@ var helmDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Custom domain %s has been created (generate certificate: %s)", pterm.FgBlue.Sprintf(createdDomain.Domain),  pterm.FgBlue.Sprintf(strconv.FormatBool(createdDomain.GenerateCertificate))))
+		utils.Println(fmt.Sprintf("Custom domain %s has been created (generate certificate: %s)", pterm.FgBlue.Sprintf(createdDomain.Domain), pterm.FgBlue.Sprintf(strconv.FormatBool(createdDomain.GenerateCertificate))))
 	},
 }
 

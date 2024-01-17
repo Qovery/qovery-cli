@@ -49,7 +49,7 @@ var helmDomainDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		customDomains, _, err := client.CustomDomainAPI.ListHelmCustomDomain(context.Background(), helm.Id).Execute()
+		customDomains, _, err := client.HelmCustomDomainAPI.ListHelmCustomDomain(context.Background(), helm.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

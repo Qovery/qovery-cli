@@ -51,7 +51,7 @@ var helmDomainEditCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		customDomains, _, err := client.CustomDomainAPI.ListHelmCustomDomain(context.Background(), helm.Id).Execute()
+		customDomains, _, err := client.HelmCustomDomainAPI.ListHelmCustomDomain(context.Background(), helm.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -68,7 +68,7 @@ var helmDomainEditCmd = &cobra.Command{
 
 		generateCertificate := !doNotGenerateCertificate
 		req := qovery.CustomDomainRequest{
-			Domain: helmCustomDomain,
+			Domain:              helmCustomDomain,
 			GenerateCertificate: generateCertificate,
 		}
 
@@ -80,7 +80,7 @@ var helmDomainEditCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Custom domain %s has been edited (generate certificate: %s)", pterm.FgBlue.Sprintf(editedDomain.Domain),  pterm.FgBlue.Sprintf(strconv.FormatBool(editedDomain.GenerateCertificate))))
+		utils.Println(fmt.Sprintf("Custom domain %s has been edited (generate certificate: %s)", pterm.FgBlue.Sprintf(editedDomain.Domain), pterm.FgBlue.Sprintf(strconv.FormatBool(editedDomain.GenerateCertificate))))
 	},
 }
 
