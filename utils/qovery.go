@@ -2501,18 +2501,18 @@ func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
 		}
 
 		return qovery.JobRequest{
-			Name:               job.LifecycleJobResponse.Name,
-			Description:        job.LifecycleJobResponse.Description,
-			Cpu:                Int32(job.LifecycleJobResponse.Cpu),
-			Memory:             Int32(job.LifecycleJobResponse.Memory),
-			MaxNbRestart:       job.LifecycleJobResponse.MaxNbRestart,
-			MaxDurationSeconds: job.LifecycleJobResponse.MaxDurationSeconds,
-			AutoPreview:        Bool(job.LifecycleJobResponse.AutoPreview),
-			Port:               job.LifecycleJobResponse.Port,
+			Name:               job.CronJobResponse.Name,
+			Description:        job.CronJobResponse.Description,
+			Cpu:                Int32(job.CronJobResponse.Cpu),
+			Memory:             Int32(job.CronJobResponse.Memory),
+			MaxNbRestart:       job.CronJobResponse.MaxNbRestart,
+			MaxDurationSeconds: job.CronJobResponse.MaxDurationSeconds,
+			AutoPreview:        Bool(job.CronJobResponse.AutoPreview),
+			Port:               job.CronJobResponse.Port,
 			Source:             &source,
-			Healthchecks:       job.LifecycleJobResponse.Healthchecks,
+			Healthchecks:       job.CronJobResponse.Healthchecks,
 			Schedule:           &schedule,
-			AutoDeploy:         *qovery.NewNullableBool(job.LifecycleJobResponse.AutoDeploy),
+			AutoDeploy:         *qovery.NewNullableBool(job.CronJobResponse.AutoDeploy),
 		}
 	}
 }
