@@ -16,7 +16,7 @@ func DeleteProjectById(projectId string, dryRunDisabled bool) {
 
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("delete") {
-		res := delete(utils.AdminUrl+"/project/"+projectId, http.MethodDelete, dryRunDisabled)
+		res := httpDelete(utils.AdminUrl+"/project/"+projectId, http.MethodDelete, dryRunDisabled)
 
 		if !dryRunDisabled {
 			fmt.Println("Project with id " + projectId + " deletable.")
