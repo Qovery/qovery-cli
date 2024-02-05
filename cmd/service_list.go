@@ -98,7 +98,7 @@ var serviceListCmd = &cobra.Command{
 		}
 
 		if jsonFlag {
-			j := getServiceJsonOutput(*statuses, apps.GetResults(), containers.GetResults(), jobs.GetResults(), databases.GetResults())
+			j := getServiceJsonOutput(*statuses, apps.GetResults(), containers.GetResults(), jobs.GetResults(), databases.GetResults(), helms.GetResults())
 			fmt.Print(j)
 			return
 		}
@@ -352,7 +352,7 @@ func getHelmContextResource(qoveryAPIClient *qovery.APIClient, helmName string, 
 }
 
 
-func getServiceJsonOutput(statuses qovery.EnvironmentStatuses, apps []qovery.Application, containers []qovery.ContainerResponse, jobs []qovery.JobResponse, databases []qovery.Database) string {
+func getServiceJsonOutput(statuses qovery.EnvironmentStatuses, apps []qovery.Application, containers []qovery.ContainerResponse, jobs []qovery.JobResponse, databases []qovery.Database, helms []qovery.HelmResponse) string {
 	var results []interface{}
 
 	for _, app := range apps {
@@ -388,6 +388,17 @@ func getServiceJsonOutput(statuses qovery.EnvironmentStatuses, apps []qovery.App
 			"name":   utils.GetJobName(&job),
 			"type":   jobType,
 			"status": utils.FindStatus(statuses.GetJobs(), utils.GetJobId(&job)),
+		}
+
+		results = append(results, m)
+	}
+
+	for _, helm := range helms {
+		m := map[string]interface{}{
+			"id":     helm.Id,
+			"name":   helm.Name,
+			"type":   "helm",
+			"status": utils.FindStatus(statuses.GetHelms(), helm.Id),
 		}
 
 		results = append(results, m)
