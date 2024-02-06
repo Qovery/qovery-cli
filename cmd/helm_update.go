@@ -120,14 +120,10 @@ func GetHelmSource(helm *qovery.HelmResponse, chartName string, chartVersion str
 			updatedBranch = &charGitCommitBranch
 		}
 
-		if gitRepository.Url == nil {
-			return nil, fmt.Errorf("Invalid Helm git repository source")
-		}
-
 		return &qovery.HelmRequestAllOfSource{
 			HelmRequestAllOfSourceOneOf: &qovery.HelmRequestAllOfSourceOneOf{
 				GitRepository: &qovery.HelmGitRepositoryRequest{
-					Url:        *gitRepository.Url,
+					Url:        gitRepository.Url,
 					Branch:     updatedBranch,
 					RootPath:   gitRepository.RootPath,
 					GitTokenId: gitRepository.GitTokenId,
@@ -175,15 +171,11 @@ func GetHelmValuesOverride(helm *qovery.HelmResponse, valuesOverrideCommitBranch
 			updatedBranch = &valuesOverrideCommitBranch
 		}
 
-		if git.GitRepository.Url == nil {
-			return nil, fmt.Errorf("Invalid Helm git repository source")
-		}
-
 		updatedFile := qovery.HelmRequestAllOfValuesOverrideFile{}
 		updatedFile.SetGit(qovery.HelmRequestAllOfValuesOverrideFileGit{
 			Paths: git.Paths,
 			GitRepository: qovery.ApplicationGitRepositoryRequest{
-				Url:        *git.GitRepository.Url,
+				Url:        git.GitRepository.Url,
 				Branch:     updatedBranch,
 				GitTokenId: git.GitRepository.GitTokenId,
 				RootPath:   git.GitRepository.RootPath,

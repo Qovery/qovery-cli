@@ -49,7 +49,7 @@ var applicationRedeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		msg, err := utils.RedeployService(client, envId, application.Id, utils.ApplicationType, watchFlag)
+		msg, err := utils.RedeployService(client, envId, application.Id, application.Name, utils.ApplicationType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)

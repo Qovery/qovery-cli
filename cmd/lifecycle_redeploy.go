@@ -48,7 +48,7 @@ var lifecycleRedeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		msg, err := utils.RedeployService(client, envId, lifecycle.LifecycleJobResponse.Id, utils.JobType, watchFlag)
+		msg, err := utils.RedeployService(client, envId, lifecycle.LifecycleJobResponse.Id, lifecycle.LifecycleJobResponse.Name,  utils.JobType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)

@@ -49,7 +49,7 @@ var databaseRedeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		msg, err := utils.RedeployService(client, envId, database.Id, utils.DatabaseType, watchFlag)
+		msg, err := utils.RedeployService(client, envId, database.Id, database.Name, utils.DatabaseType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)
