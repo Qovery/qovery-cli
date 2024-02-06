@@ -65,7 +65,7 @@ var applicationUpdateCmd = &cobra.Command{
 			Name:        &application.Name,
 			Description: application.Description.Get(),
 			GitRepository: &qovery.ApplicationGitRepositoryRequest{
-				Url:      *application.GitRepository.Url,
+				Url:      application.GitRepository.Url,
 				Branch:   application.GitRepository.Branch,
 				RootPath: application.GitRepository.RootPath,
 			},

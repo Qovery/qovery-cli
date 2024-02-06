@@ -2116,7 +2116,7 @@ func DeployService(client *qovery.APIClient, envId string, serviceId string, ser
 	return DeployService(client, envId, serviceId, serviceType, request, watchFlag)
 }
 
-func RedeployService(client *qovery.APIClient, envId string, serviceId string, serviceType ServiceType, watchFlag bool) (string, error) {
+func RedeployService(client *qovery.APIClient, envId string, serviceId string, serviceName string, serviceType ServiceType, watchFlag bool) (string, error) {
 	statuses, _, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
 
 	if err != nil {
@@ -2128,7 +2128,24 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 		case ApplicationType:
 			for _, application := range statuses.GetApplications() {
 				if application.Id == serviceId && IsTerminalState(application.State) {
-					_, _, err := client.ApplicationActionsAPI.DeployApplication(context.Background(), serviceId).Execute()
+					apps, _, error := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
+					if error != nil {
+						PrintlnError(err)
+						os.Exit(1)
+						panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+					}
+
+					app := FindByApplicationName(apps.GetResults(), serviceName);
+					if app == nil {
+						PrintlnError(fmt.Errorf("application %s not found", serviceName))
+						PrintlnInfo("You can list all applications with: qovery application list")
+						os.Exit(1)
+						panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+					}
+
+					deployRequest := qovery.DeployRequest{ GitCommitId: *app.GitRepository.DeployedCommitId}
+
+					_, _, err := client.ApplicationActionsAPI.DeployApplication(context.Background(), serviceId).DeployRequest(deployRequest).Execute()
 					if err != nil {
 						return "", err
 					}
@@ -2158,7 +2175,9 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 		case ContainerType:
 			for _, container := range statuses.GetContainers() {
 				if container.Id == serviceId && IsTerminalState(container.State) {
-					_, _, err := client.ContainerActionsAPI.DeployContainer(context.Background(), serviceId).Execute()
+					containerDeployRequest := qovery.ContainerDeployRequest{}
+
+					_, _, err := client.ContainerActionsAPI.DeployContainer(context.Background(), serviceId).ContainerDeployRequest(containerDeployRequest) .Execute()
 					if err != nil {
 						return "", err
 					}
@@ -2173,7 +2192,9 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 		case JobType:
 			for _, job := range statuses.GetJobs() {
 				if job.Id == serviceId && IsTerminalState(job.State) {
-					_, _, err := client.JobActionsAPI.DeployJob(context.Background(), serviceId).Execute()
+					deployRequest := qovery.JobDeployRequest{}
+
+					_, _, err := client.JobActionsAPI.DeployJob(context.Background(), serviceId).JobDeployRequest(deployRequest).Execute()
 					if err != nil {
 						return "", err
 					}
@@ -2188,7 +2209,9 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 		case HelmType:
 			for _, helm := range statuses.GetHelms() {
 				if helm.Id == serviceId && IsTerminalState(helm.State) {
-					_, _, err := client.HelmActionsAPI.DeployHelm(context.Background(), serviceId).Execute()
+					deployRequest := qovery.HelmDeployRequest{}
+
+					_, _, err := client.HelmActionsAPI.DeployHelm(context.Background(), serviceId).HelmDeployRequest(deployRequest).Execute()
 					if err != nil {
 						return "", err
 					}
@@ -2208,7 +2231,7 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 	// sleep here to avoid too many requests
 	time.Sleep(5 * time.Second)
 
-	return RedeployService(client, envId, serviceId, serviceType, watchFlag)
+	return RedeployService(client, envId, serviceId, serviceName, serviceType, watchFlag)
 }
 
 func StopService(client *qovery.APIClient, envId string, serviceIds string, serviceType ServiceType, watchFlag bool) (string, error) {
@@ -2445,7 +2468,7 @@ func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
 
 	if docker != nil {
 		sourceDockerGitRepository := qovery.ApplicationGitRepositoryRequest{
-			Url:      *docker.GitRepository.Url,
+			Url:      docker.GitRepository.Url,
 			Branch:   docker.GitRepository.Branch,
 			RootPath: docker.GitRepository.RootPath,
 		}
