@@ -18,7 +18,7 @@ func DeleteClusterById(clusterId string, dryRunDisabled bool) {
 
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("delete") {
-		res := delete(utils.AdminUrl+"/cluster/"+clusterId, http.MethodDelete, dryRunDisabled)
+		res := httpDelete(utils.AdminUrl+"/cluster/"+clusterId, http.MethodDelete, dryRunDisabled)
 
 		if !dryRunDisabled {
 			fmt.Println("Cluster with id " + clusterId + " deletable.")
@@ -34,7 +34,7 @@ func DeleteClusterUnDeployedInError() {
 	utils.CheckAdminUrl()
 
 	if utils.Validate("delete") {
-		res := delete(utils.AdminUrl+"/cluster/deleteNotDeployedInErrorClusters", http.MethodPost, true)
+		res := httpDelete(utils.AdminUrl+"/cluster/deleteNotDeployedInErrorClusters", http.MethodPost, true)
 
 		if !strings.Contains(res.Status, "200") {
 			result, _ := io.ReadAll(res.Body)
@@ -53,7 +53,7 @@ func DeleteOldClustersWithInvalidCredentials(ageInDay int, dryRunDisabled bool) 
 
 		params := map[string]interface{}{
 			"last_update_in_days": ageInDay,
-			"dry_run":            !dryRunDisabled,
+			"dry_run":             !dryRunDisabled,
 		}
 
 		requestBody, err := json.Marshal(params)
@@ -77,5 +77,3 @@ func DeleteOldClustersWithInvalidCredentials(ageInDay int, dryRunDisabled bool) 
 		}
 	}
 }
-
-

@@ -2,12 +2,14 @@ package pkg
 
 import (
 	"fmt"
-	"github.com/qovery/qovery-cli/utils"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"os"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 func DeleteOrganizationByClusterId(clusterId string, dryRunDisabled bool) {
@@ -15,7 +17,7 @@ func DeleteOrganizationByClusterId(clusterId string, dryRunDisabled bool) {
 
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("delete") {
-		res := delete(utils.AdminUrl+"/organization?clusterId="+clusterId, http.MethodDelete, dryRunDisabled)
+		res := httpDelete(utils.AdminUrl+"/organization?clusterId="+clusterId, http.MethodDelete, dryRunDisabled)
 
 		if !dryRunDisabled {
 			fmt.Println("Organization owning cluster" + clusterId + " deletable.")
@@ -28,7 +30,7 @@ func DeleteOrganizationByClusterId(clusterId string, dryRunDisabled bool) {
 	}
 }
 
-func delete(url string, method string, dryRunDisabled bool) *http.Response {
+func httpDelete(url string, method string, dryRunDisabled bool) *http.Response {
 	return deleteWithBody(url, method, dryRunDisabled, nil)
 }
 
