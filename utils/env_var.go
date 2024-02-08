@@ -182,6 +182,34 @@ func CreateEnvironmentVariable(
 	return err
 }
 
+func UpdateEnvironmentVariable(
+	client *qovery.APIClient,
+	key string,
+	value string,
+	serviceId string,
+	serviceType ServiceType,
+) error {
+	envVars, err := ListEnvironmentVariables(client, serviceId, serviceType)
+	if err != nil {
+		return err
+	}
+
+	envVar := FindEnvironmentVariableByKey(key, envVars)
+	if envVar == nil {
+		return fmt.Errorf("environment variable %s not found", pterm.FgRed.Sprintf(key))
+	}
+
+    // fmt.Printf(envVar.Id)
+	variableId := envVar.Id
+	variableEditRequest := qovery.VariableEditRequest{
+		Key:       key,
+		Value:     value,
+	}
+
+	_, _, err = client.VariableMainCallsAPI.EditVariable(context.Background(), variableId).VariableEditRequest(variableEditRequest).Execute()
+	return err
+}
+
 func FindEnvironmentVariableByKey(key string, envVars []qovery.VariableResponse) *qovery.VariableResponse {
 	for _, envVar := range envVars {
 		if envVar.Key == key {
@@ -248,12 +276,7 @@ func getParentIdByScope(scope string, projectId string, environmentId string, se
 	return "", qovery.APIVARIABLESCOPEENUM_BUILT_IN, fmt.Errorf("scope %s not supported", scope)
 }
 
-func DeleteVariable(
-	client *qovery.APIClient,
-	serviceId string,
-	serviceType ServiceType,
-	key string,
-) error {
+func DeleteVariable(client *qovery.APIClient, serviceId string, serviceType ServiceType, key string) error {
 
 	envVars, err := ListEnvironmentVariables(client, serviceId, serviceType)
 	if err != nil {
