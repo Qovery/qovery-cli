@@ -25,7 +25,7 @@ var clusterListCmd = &cobra.Command{
 
 		client := utils.GetQoveryClient(tokenType, token)
 
-		orgId, _, _, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		orgId, err := getOrganizationContextResourceId(client, organizationName)
 
 		if err != nil {
 			utils.PrintlnError(err)
