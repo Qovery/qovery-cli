@@ -382,6 +382,7 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 
 		// sleep some time before fetching statuses
 		if service.DryRunDisabled {
+			utils.Println(fmt.Sprintf("Checking clusters' status in %d seconds", service.RefreshDelay))
 			time.Sleep(time.Duration(service.RefreshDelay) * time.Second)
 		} else {
 			time.Sleep(time.Duration(1) * time.Second)
