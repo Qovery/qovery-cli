@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/qovery/qovery-client-go"
+
 	"github.com/qovery/qovery-cli/utils"
 )
 
@@ -302,6 +304,15 @@ func (service AdminClusterBatchDeployServiceImpl) PrintParameters() {
 	}
 	utils.Println("-------------------------------------------")
 }
+
+func getQoveryClient() (*qovery.APIClient, error) {
+	tokenType, token, err := utils.GetAccessToken()
+	if err != nil {
+		return nil, err
+	}
+	return utils.GetQoveryClient(tokenType, token), nil
+}
+
 func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetails) (*ClusterBatchDeployResult, error) {
 	if !service.DryRunDisabled {
 		utils.Println("dry-run-disabled is false: following information is purely indicative, no cluster will be deployed at all")
@@ -316,12 +327,11 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 
 	var indexCurrentClusterToDeploy = -1
 	for {
-		// fetch token regularly to avoid old invalid token
-		tokenType, token, err := utils.GetAccessToken()
+		// fetch Qovery client
+		qoveryClient, err := getQoveryClient()
 		if err != nil {
 			return nil, err
 		}
-		client := utils.GetQoveryClient(tokenType, token)
 
 		// boolean to wait for current batch to continue, according to 'execution-mode' command flag
 		var waitToTriggerCluster = false
@@ -346,7 +356,17 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 
 				// check status in case a deployment has occurred in the meantime
 				var cluster = clusters[indexCurrentClusterToDeploy]
-				clusterStatus, response, err := client.ClustersAPI.GetClusterStatus(context.Background(), cluster.OrganizationId, cluster.ClusterId).Execute()
+
+				clusterStatus, response, err := RetryQoveryClientApiRequestOnUnauthorized(func(needToRefetchClient bool) (*qovery.ClusterStatusGet, *http.Response, error) {
+					if needToRefetchClient {
+						client, errQoveryClient := getQoveryClient()
+						if errQoveryClient != nil {
+							return nil, nil, errQoveryClient
+						}
+						qoveryClient = client
+					}
+					return qoveryClient.ClustersAPI.GetClusterStatus(context.Background(), cluster.OrganizationId, cluster.ClusterId).Execute()
+				})
 				if response.StatusCode > 200 || err != nil {
 					return nil, err
 				}
@@ -382,6 +402,7 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 
 		// sleep some time before fetching statuses
 		if service.DryRunDisabled {
+			utils.Println(fmt.Sprintf("Checking clusters' status in %d seconds", service.RefreshDelay))
 			time.Sleep(time.Duration(service.RefreshDelay) * time.Second)
 		} else {
 			time.Sleep(time.Duration(1) * time.Second)
@@ -390,7 +411,16 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 		// wait for clusters statuses
 		var clustersToRemoveFromMap []string
 		for clusterId, cluster := range currentDeployingClustersByClusterId {
-			clusterStatus, response, err := client.ClustersAPI.GetClusterStatus(context.Background(), cluster.OrganizationId, cluster.ClusterId).Execute()
+			clusterStatus, response, err := RetryQoveryClientApiRequestOnUnauthorized(func(needToRefetchClient bool) (*qovery.ClusterStatusGet, *http.Response, error) {
+				if needToRefetchClient {
+					client, errQoveryClient := getQoveryClient()
+					if errQoveryClient != nil {
+						return nil, nil, errQoveryClient
+					}
+					qoveryClient = client
+				}
+				return qoveryClient.ClustersAPI.GetClusterStatus(context.Background(), cluster.OrganizationId, cluster.ClusterId).Execute()
+			})
 			if response.StatusCode > 200 || err != nil {
 				return nil, err
 			}
@@ -428,7 +458,11 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 
 func (service AdminClusterBatchDeployServiceImpl) deployCluster(clusterId string) error {
 	response := deploy(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, true)
-	if !strings.Contains(response.Status, "200") {
+	if response.StatusCode == 401 {
+		DoRequestUserToAuthenticate(false)
+		response = deploy(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, true)
+	}
+	if response.StatusCode != 200 {
 		result, _ := io.ReadAll(response.Body)
 		return fmt.Errorf("could not deploy cluster : %s. %s", response.Status, string(result))
 	}
@@ -456,7 +490,19 @@ func (service AdminClusterBatchDeployServiceImpl) upgradeCluster(clusterId strin
 		return err
 	}
 
-	if !strings.Contains(response.Status, "200") {
+	if response.StatusCode == 401 {
+		DoRequestUserToAuthenticate(false)
+		request, err = http.NewRequest(http.MethodPost, utils.AdminUrl+"/cluster/update/"+clusterId, body)
+		if err != nil {
+			return err
+		}
+		response, err = http.DefaultClient.Do(request)
+		if err != nil {
+			return err
+		}
+	}
+
+	if response.StatusCode != 200 {
 		result, _ := io.ReadAll(response.Body)
 		return fmt.Errorf("could not deploy cluster : %s. %s", response.Status, string(result))
 	}
