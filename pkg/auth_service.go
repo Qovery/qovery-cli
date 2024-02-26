@@ -257,3 +257,16 @@ func getTokensWith(params DeviceFlowParameters) (TokensResponse, error) {
 		return TokensResponse{}, errors.New("Could not fetch tokens")
 	}
 }
+
+type QoveryClientApiRequest[T any] func(needToRefetchClient bool) (*T, *http.Response, error)
+
+// RetryQoveryClientApiRequestOnUnauthorized To be able to ask for re-auth when first attempt leads to unauthorized
+func RetryQoveryClientApiRequestOnUnauthorized[T any](request QoveryClientApiRequest[T]) (*T, *http.Response, error) {
+	// TODO (mzo) print log line
+	qoveryStruct, response, err := request(false)
+	if response.StatusCode == 401 {
+		DoRequestUserToAuthenticate(false)
+		qoveryStruct, response, err = request(true)
+	}
+	return qoveryStruct, response, err
+}
