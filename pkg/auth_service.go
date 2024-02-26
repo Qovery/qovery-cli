@@ -262,9 +262,9 @@ type QoveryClientApiRequest[T any] func(needToRefetchClient bool) (*T, *http.Res
 
 // RetryQoveryClientApiRequestOnUnauthorized To be able to ask for re-auth when first attempt leads to unauthorized
 func RetryQoveryClientApiRequestOnUnauthorized[T any](request QoveryClientApiRequest[T]) (*T, *http.Response, error) {
-	// TODO (mzo) print log line
 	qoveryStruct, response, err := request(false)
 	if response.StatusCode == 401 {
+		utils.Println("Needs to re-authenticate as the response is UNAUTHORIZED (401)")
 		DoRequestUserToAuthenticate(false)
 		qoveryStruct, response, err = request(true)
 	}
