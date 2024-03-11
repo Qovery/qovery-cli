@@ -408,6 +408,13 @@ func GetEnvironmentServicesById(id string) ([]EnvironmentService, error) {
 		})
 	}
 
+	for _, service := range environmentServices.Helms {
+		services = append(services, EnvironmentService{
+			ID:   service.Id,
+			Type: HelmType,
+		})
+	}
+
 	return services, nil
 }
 
@@ -2135,7 +2142,7 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 						panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 					}
 
-					app := FindByApplicationName(apps.GetResults(), serviceName);
+					app := FindByApplicationName(apps.GetResults(), serviceName)
 					if app == nil {
 						PrintlnError(fmt.Errorf("application %s not found", serviceName))
 						PrintlnInfo("You can list all applications with: qovery application list")
@@ -2143,7 +2150,7 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 						panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 					}
 
-					deployRequest := qovery.DeployRequest{ GitCommitId: *app.GitRepository.DeployedCommitId}
+					deployRequest := qovery.DeployRequest{GitCommitId: *app.GitRepository.DeployedCommitId}
 
 					_, _, err := client.ApplicationActionsAPI.DeployApplication(context.Background(), serviceId).DeployRequest(deployRequest).Execute()
 					if err != nil {
@@ -2177,7 +2184,7 @@ func RedeployService(client *qovery.APIClient, envId string, serviceId string, s
 				if container.Id == serviceId && IsTerminalState(container.State) {
 					containerDeployRequest := qovery.ContainerDeployRequest{}
 
-					_, _, err := client.ContainerActionsAPI.DeployContainer(context.Background(), serviceId).ContainerDeployRequest(containerDeployRequest) .Execute()
+					_, _, err := client.ContainerActionsAPI.DeployContainer(context.Background(), serviceId).ContainerDeployRequest(containerDeployRequest).Execute()
 					if err != nil {
 						return "", err
 					}
