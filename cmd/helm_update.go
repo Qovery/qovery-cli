@@ -163,6 +163,12 @@ func GetHelmSource(helm *qovery.HelmResponse, chartName string, chartVersion str
 }
 
 func GetHelmValuesOverride(helm *qovery.HelmResponse, valuesOverrideCommitBranch string) (*qovery.HelmRequestAllOfValuesOverride, error) {
+	helmRequest := qovery.HelmRequestAllOfValuesOverride{}
+	helmRequest.SetSet(helm.ValuesOverride.Set)
+	helmRequest.SetSetString(helm.ValuesOverride.SetString)
+	helmRequest.SetSetJson(helm.ValuesOverride.SetJson)
+	helmRequest.SetSetJson(helm.ValuesOverride.SetJson)
+
 	if helm.ValuesOverride.File.Get() != nil && helm.ValuesOverride.File.Get().Git.Get() != nil {
 		git := helm.ValuesOverride.File.Get().Git.Get()
 
@@ -182,12 +188,6 @@ func GetHelmValuesOverride(helm *qovery.HelmResponse, valuesOverrideCommitBranch
 			},
 		})
 		updatedFile.SetRawNil()
-
-		helmRequest := qovery.HelmRequestAllOfValuesOverride{}
-		helmRequest.SetSet(helm.ValuesOverride.Set)
-		helmRequest.SetSetString(helm.ValuesOverride.SetString)
-		helmRequest.SetSetJson(helm.ValuesOverride.SetJson)
-		helmRequest.SetSetJson(helm.ValuesOverride.SetJson)
 		helmRequest.SetFile(updatedFile)
 
 		return &helmRequest, nil
@@ -195,23 +195,17 @@ func GetHelmValuesOverride(helm *qovery.HelmResponse, valuesOverrideCommitBranch
 		raw := helm.ValuesOverride.File.Get().Raw.Get()
 
 		var values = make([]qovery.HelmRequestAllOfValuesOverrideFileRawValues, len(raw.Values))
-		for _, value := range raw.Values {
-			values = append(values, qovery.HelmRequestAllOfValuesOverrideFileRawValues{
+		for ix, value := range raw.Values {
+			values[ix] = qovery.HelmRequestAllOfValuesOverrideFileRawValues{
 				Name:    &value.Name,
 				Content: &value.Content,
-			})
+			}
 		}
 
 		updatedFile := qovery.HelmRequestAllOfValuesOverrideFile{}
 		updatedFile.SetRaw(qovery.HelmRequestAllOfValuesOverrideFileRaw{
 			Values: values,
 		})
-
-		helmRequest := qovery.HelmRequestAllOfValuesOverride{}
-		helmRequest.SetSet(helm.ValuesOverride.Set)
-		helmRequest.SetSetString(helm.ValuesOverride.SetString)
-		helmRequest.SetSetJson(helm.ValuesOverride.SetJson)
-		helmRequest.SetSetJson(helm.ValuesOverride.SetJson)
 		helmRequest.SetFile(updatedFile)
 
 		return &helmRequest, nil

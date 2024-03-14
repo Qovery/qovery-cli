@@ -63,14 +63,14 @@ var applicationUpdateCmd = &cobra.Command{
 		req := qovery.ApplicationEditRequest{
 			Storage:     storage,
 			Name:        &application.Name,
-			Description: application.Description.Get(),
+			Description: application.Description,
 			GitRepository: &qovery.ApplicationGitRepositoryRequest{
 				Url:      application.GitRepository.Url,
 				Branch:   application.GitRepository.Branch,
 				RootPath: application.GitRepository.RootPath,
 			},
 			BuildMode:           application.BuildMode,
-			DockerfilePath:      application.DockerfilePath.Get(),
+			DockerfilePath:      application.DockerfilePath,
 			BuildpackLanguage:   application.BuildpackLanguage,
 			Cpu:                 application.Cpu,
 			Memory:              application.Memory,
