@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.6
+	github.com/appscode/go-querystring v0.0.0-20170504095604-0126cfb3f1dc
 	github.com/containerd/console v1.0.3
 	github.com/fatih/color v1.14.1
 	github.com/getsentry/sentry-go v0.19.0
@@ -32,7 +33,6 @@ require (
 	atomicgo.dev/cursor v0.1.1 // indirect
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
-	github.com/appscode/go-querystring v0.0.0-20170504095604-0126cfb3f1dc // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
