@@ -28,7 +28,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@master
         with:
-          go-version: 1.19.x
+          go-version: 1.21.x
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
