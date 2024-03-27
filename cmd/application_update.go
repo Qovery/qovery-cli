@@ -88,6 +88,10 @@ var applicationUpdateCmd = &cobra.Command{
 			req.GitRepository.Branch = &applicationBranch
 		}
 
+		if cmd.Flags().Changed("auto-deploy") {
+			req.AutoDeploy = *qovery.NewNullableBool(&applicationAutoDeploy)
+		}
+
 		_, _, err = client.ApplicationMainCallsAPI.EditApplication(context.Background(), application.Id).ApplicationEditRequest(req).Execute()
 
 		if err != nil {
@@ -107,6 +111,7 @@ func init() {
 	applicationUpdateCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	applicationUpdateCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
 	applicationUpdateCmd.Flags().StringVarP(&applicationBranch, "branch", "", "", "Application Git Branch")
+	applicationUpdateCmd.Flags().BoolVarP(&applicationAutoDeploy, "auto-deploy", "", false, "Application Auto Deploy")
 
 	_ = applicationUpdateCmd.MarkFlagRequired("application")
 }
