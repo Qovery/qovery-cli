@@ -42,6 +42,12 @@ var environmentCloneCmd = &cobra.Command{
 		if clusterName != "" {
 			clusters, _, err := client.ClustersAPI.ListOrganizationCluster(context.Background(), orgId).Execute()
 
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
 			if err == nil {
 				for _, c := range clusters.GetResults() {
 					if strings.EqualFold(c.Name, clusterName) {
