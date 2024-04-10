@@ -19,6 +19,7 @@ var projectName string
 var environmentName string
 var watchFlag bool
 var markdownFlag bool
+var jiraFlag bool
 var jsonFlag bool
 
 var serviceListCmd = &cobra.Command{
@@ -94,6 +95,12 @@ var serviceListCmd = &cobra.Command{
 		if markdownFlag {
 			markdown := getMarkdownOutput(*client, orgId, projectId, envId, apps.GetResults(), containers.GetResults(), jobs.GetResults(), databases.GetResults())
 			fmt.Print(markdown)
+			return
+		}
+
+		if jiraFlag {
+			jira := getJiraOutput(*client, orgId, projectId, envId, apps.GetResults(), containers.GetResults(), jobs.GetResults(), databases.GetResults())
+			fmt.Print(jira)
 			return
 		}
 
@@ -351,7 +358,6 @@ func getHelmContextResource(qoveryAPIClient *qovery.APIClient, helmName string, 
 	return helm, nil
 }
 
-
 func getServiceJsonOutput(statuses qovery.EnvironmentStatuses, apps []qovery.Application, containers []qovery.ContainerResponse, jobs []qovery.JobResponse, databases []qovery.Database, helms []qovery.HelmResponse) string {
 	var results []interface{}
 
@@ -481,15 +487,83 @@ Powered by [Qovery](https://qovery.com).`
 	}
 
 	for _, job := range jobs {
-		consoleLink := fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/application/%s", orgId, projectId, envId,  utils.GetJobId(&job))
+		consoleLink := fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/application/%s", orgId, projectId, envId, utils.GetJobId(&job))
 		consoleLogsLink := fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/logs/%s/live-logs", orgId, projectId, envId, utils.GetJobId(&job))
-		body += fmt.Sprintf("\n| [%s](%s) | [Show logs](%s) | %s |",  utils.GetJobName(&job), consoleLink, consoleLogsLink, na)
+		body += fmt.Sprintf("\n| [%s](%s) | [Show logs](%s) | %s |", utils.GetJobName(&job), consoleLink, consoleLogsLink, na)
 	}
 
 	for _, db := range databases {
 		consoleLink := fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/database/%s", orgId, projectId, envId, db.Id)
 		consoleLogsLink := fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/logs/%s/deployment-logs", orgId, projectId, envId, db.Id)
 		body += fmt.Sprintf("\n| [%s](%s) | [Show logs](%s) | %s |", db.Name, consoleLink, consoleLogsLink, na)
+	}
+
+	return header + body + footer
+}
+
+func getJiraOutput(client qovery.APIClient, orgId string, projectId string, envId string, apps []qovery.Application, containers []qovery.ContainerResponse, jobs []qovery.JobResponse, databases []qovery.Database) string {
+	env, _, err := client.EnvironmentMainCallsAPI.GetEnvironment(context.Background(), envId).Execute()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	header := fmt.Sprintf(`[Qovery Preview|%s]
+---
+
+Here is the [%s|%s] environment services.
+
+Click on the links below to access the different services:
+`, fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s", orgId, projectId, envId), env.Name, fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s", orgId, projectId, envId))
+
+	body := `
+|| Service || Logs || Preview URL ||`
+
+	footer := `
+---
+
+Powered by [Qovery|https://qovery.com].`
+
+	na := "N/A"
+	for _, app := range apps {
+		previewUrl := getApplicationPreviewUrl(client, app.Id)
+		if previewUrl != nil {
+			p := fmt.Sprintf("[Link|%s]", *previewUrl)
+			previewUrl = &p
+		} else {
+			previewUrl = &na
+		}
+
+		consoleLink := fmt.Sprintf("[Console|%s]", fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/application/%s", orgId, projectId, envId, app.Id))
+		consoleLogsLink := fmt.Sprintf("[Logs|%s]", fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/logs/%s/live-logs", orgId, projectId, envId, app.Id))
+		body += fmt.Sprintf("\n|| [%s|%s] || %s || %s ||", app.Name, consoleLink, consoleLogsLink, *previewUrl)
+	}
+
+	for _, container := range containers {
+		previewUrl := getContainerPreviewUrl(client, container.Id)
+		if previewUrl != nil {
+			p := fmt.Sprintf("[Link|%s]", *previewUrl)
+			previewUrl = &p
+		} else {
+			previewUrl = &na
+		}
+
+		consoleLink := fmt.Sprintf("[Console|%s]", fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/application/%s", orgId, projectId, envId, container.Id))
+		consoleLogsLink := fmt.Sprintf("[Logs|%s]", fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/logs/%s/live-logs", orgId, projectId, envId, container.Id))
+		body += fmt.Sprintf("\n|| [%s|%s] || %s || %s ||", container.Name, consoleLink, consoleLogsLink, *previewUrl)
+	}
+
+	for _, job := range jobs {
+		consoleLink := fmt.Sprintf("[Console|%s]", fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/application/%s", orgId, projectId, envId, utils.GetJobId(&job)))
+		consoleLogsLink := fmt.Sprintf("[Logs|%s]", fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/logs/%s/live-logs", orgId, projectId, envId, utils.GetJobId(&job)))
+		body += fmt.Sprintf("\n|| [%s|%s] || %s || %s ||", utils.GetJobName(&job), consoleLink, consoleLogsLink, na)
+	}
+
+	for _, db := range databases {
+		consoleLink := fmt.Sprintf("[Console|%s]", fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/database/%s", orgId, projectId, envId, db.Id))
+		consoleLogsLink := fmt.Sprintf("[Logs|%s]", fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s/logs/%s/deployment-logs", orgId, projectId, envId, db.Id))
+		body += fmt.Sprintf("\n|| [%s|%s] || %s || %s ||", db.Name, consoleLink, consoleLogsLink, na)
 	}
 
 	return header + body + footer
@@ -537,5 +611,6 @@ func init() {
 	serviceListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	serviceListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	serviceListCmd.Flags().BoolVarP(&markdownFlag, "markdown", "", false, "Markdown output")
+	serviceListCmd.Flags().BoolVarP(&jiraFlag, "jira", "", false, "Atlassian Jira output")
 	serviceListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
 }
