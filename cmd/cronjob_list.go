@@ -77,7 +77,7 @@ func getCronjobJsonOutput(statuses []qovery.Status, cronjobs []qovery.JobRespons
 	var results []interface{}
 
 	for _, cronjob := range cronjobs {
-		if cronjob.CronJobResponse.Schedule.Cronjob != nil {
+		if cronjob.CronJobResponse != nil {
 			results = append(results, map[string]interface{}{
 				"id":         cronjob.CronJobResponse.Id,
 				"name":       cronjob.CronJobResponse.Name,
