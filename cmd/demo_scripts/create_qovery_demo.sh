@@ -141,7 +141,8 @@ echo 'Fetching Qovery values to setup your cluster'
 echo '""""""""""""""""""""""""""""""""""""""""""""'
 get_cluster_values "${clusterId}" > values.yaml
 echo "" >> values.yaml
-sed -i 's/AMD64/'"$ARCH"'/g' values.yaml
+sed -i.bak 's/AMD64/'"$ARCH"'/g' values.yaml
+rm values.yaml.bak
 curl -s -L https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-local.yaml | grep -vE 'set-by-customer|^qovery:' >> values.yaml
 echo 'Helm values written into values.yaml'
 
