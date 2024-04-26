@@ -1,15 +1,19 @@
 #!/bin/sh
 
-set -euo pipefail
+set -eu
 
 CLUSTER_NAME=$1
-ORGANIZATION_ID=$2
-if [ "${3:0:4}" = "qov_" ]
-then
-  AUTHORIZATION_HEADER="Authorization: Token $3"
-else
-  AUTHORIZATION_HEADER="Authorization: Bearer $3"
-fi
+ARCH=$2
+ORGANIZATION_ID=$3
+case $3 in
+  qov_*)
+    AUTHORIZATION_HEADER="Authorization: Token $4"
+  ;;
+
+  *)
+    AUTHORIZATION_HEADER="Authorization: Bearer $4"
+  ;;
+esac
 
 get_or_create_on_premise_account() {
   accountId=$(curl -s --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' https://api.qovery.com/organization/"${ORGANIZATION_ID}"/onPremise/credentials | jq -r .results[0].id)
@@ -74,18 +78,35 @@ install_deps() {
      echo "jq already installed"
   else
     echo "jq command is missing. Please use your package manager to install it"
+    exit 1
   fi
 
   if which grep >/dev/null; then
      echo "grep already installed"
   else
     echo "grep command is missing. Please use your package manager to install it"
+    exit 1
+  fi
+
+  if which sed >/dev/null; then
+     echo "sed already installed"
+  else
+    echo "sed command is missing. Please use your package manager to install it"
+    exit 1
   fi
 
   if which curl >/dev/null; then
      echo "curl already installed"
   else
     echo "curl command is missing. Please use your package manager to install it"
+    exit 1
+  fi
+
+  if which docker >/dev/null; then
+     echo "docker already installed"
+  else
+    echo "docker command is missing. Please use your package manager to install it"
+    exit 1
   fi
 
   if which k3d >/dev/null; then
@@ -120,6 +141,7 @@ echo 'Fetching Qovery values to setup your cluster'
 echo '""""""""""""""""""""""""""""""""""""""""""""'
 get_cluster_values "${clusterId}" > values.yaml
 echo "" >> values.yaml
+sed -i 's/AMD64/'"$ARCH"'/g' values.yaml
 curl -s -L https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-local.yaml | grep -vE 'set-by-customer|^qovery:' >> values.yaml
 echo 'Helm values written into values.yaml'
 

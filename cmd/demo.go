@@ -8,6 +8,9 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"regexp"
+	"runtime"
+	"strings"
 )
 
 var demoCmd = &cobra.Command{
@@ -34,13 +37,20 @@ var demoCmd = &cobra.Command{
 		}
 
 		if args[0] == "up" {
+			regex := "^[a-zA-Z][-a-z]+[a-zA-Z]$"
+			match, _ := regexp.MatchString(regex, demoClusterName)
+			if !match {
+				log.Errorf("cluster name must match regex %s: got %s", regex, demoClusterName)
+				os.Exit(1)
+			}
+
 			err := os.WriteFile("create_demo_cluster.sh", demoScriptsCreate, 0700)
 			if err != nil {
 				log.Errorf("Cannot write file to disk: %s", err)
 				os.Exit(1)
 			}
 
-			cmd := exec.Command("/bin/sh", "create_demo_cluster.sh", demoClusterName, organizationId, string(token))
+			cmd := exec.Command("/bin/sh", "create_demo_cluster.sh", demoClusterName, strings.ToUpper(runtime.GOARCH), organizationId, string(token))
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
