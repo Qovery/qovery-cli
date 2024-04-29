@@ -83,8 +83,12 @@ setup_network() {
     # MacOs
     set -x
     sudo ifconfig lo0 alias 172.42.0.3/32 up || exit 1
-  elif grep -q Microsoft /proc/version; then
+  elif grep -qi microsoft /proc/version; then
     # Wsl
+    echo '******** PLEASE READ ********'
+    echo 'For Qovery url to work outside WSL (from your windows host). You need to run this command within an administrator terminal'
+    echo 'netsh interface ipv4 add address name="Loopback Pseudo-Interface 1" address=172.42.0.3 mask=255.255.255.255 skipassource=true'
+    echo '******** PLEASE READ ********'
     set -x
     sudo ip addr add 172.42.0.3/32 dev lo || exit 1
   fi
