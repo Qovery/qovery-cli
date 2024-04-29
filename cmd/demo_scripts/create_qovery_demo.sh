@@ -49,7 +49,12 @@ get_or_create_cluster() {
   clusterExist=$(k3d cluster list -o json | jq '.[] | select(.name=="'"$clusterName"'") | .name')
   if [ "$clusterExist" = "" ]
   then
-    k3d cluster create --k3s-arg "--disable=traefik@server:*" "$clusterName" --registry-create qovery-registry.lan
+    k3d cluster create "$clusterName" \
+    --subnet '172.42.0.0/16' \
+    --k3s-arg "--node-ip=172.42.0.3@server:0" \
+    --k3s-arg "--disable=traefik@server:*" \
+    --registry-create qovery-registry.lan \
+    --port "80:80@loadbalancer" --port "443:443@loadbalancer"
   else
     k3d cluster start "$clusterName"
   fi
@@ -70,6 +75,19 @@ install_or_upgrade_helm_charts() {
 
   set -x
   helm upgrade --install --create-namespace -n qovery -f values.yaml --wait --atomic qovery qovery/qovery
+  set +x
+}
+
+setup_network() {
+  if [ "$(uname -s)" = 'Darwin' ]; then
+    # MacOs
+    set -x
+    sudo ifconfig lo0 alias 172.42.0.3/32 up || exit 1
+  elif grep -q Microsoft /proc/version; then
+    # Wsl
+    set -x
+    sudo ip addr add 172.42.0.3/32 dev lo || exit 1
+  fi
   set +x
 }
 
@@ -165,6 +183,13 @@ echo '""""""""""""""""""""""""""""""""""""""""""""'
 echo 'Installing Qovery helm charts'
 echo '""""""""""""""""""""""""""""""""""""""""""""'
 install_or_upgrade_helm_charts
+
+
+echo ''
+echo '""""""""""""""""""""""""""""""""""""""""""""'
+echo 'Configure network'
+echo '""""""""""""""""""""""""""""""""""""""""""""'
+setup_network
 
 
 echo ''
