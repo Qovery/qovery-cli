@@ -60,10 +60,23 @@ var demoCmd = &cobra.Command{
 		}
 
 		if args[0] == "destroy" {
-			panic("Destroy is not yet implemented")
+			err := os.WriteFile("destroy_demo_cluster.sh", demoScriptsDestroy, 0700)
+			if err != nil {
+				log.Errorf("Cannot write file to disk: %s", err)
+				os.Exit(1)
+			}
+
+			cmd := exec.Command("/bin/sh", "destroy_demo_cluster.sh", demoClusterName, organizationId, string(token))
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			if err := cmd.Run(); err != nil {
+				log.Errorf("Error executing the command %s", err)
+			}
+			os.Exit(0)
 		}
 
 		log.Errorf("Unknown command %s. Only `up` and `destroy` are supported", args[0])
+		os.Exit(1)
 	},
 }
 var (
@@ -72,6 +85,9 @@ var (
 
 //go:embed demo_scripts/create_qovery_demo.sh
 var demoScriptsCreate []byte
+
+//go:embed demo_scripts/destroy_qovery_demo.sh
+var demoScriptsDestroy []byte
 
 func init() {
 	var userName string
