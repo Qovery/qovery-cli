@@ -82,7 +82,7 @@ setup_network() {
   if [ "$(uname -s)" = 'Darwin' ]; then
     # MacOs
     set -x
-    sudo ifconfig lo0 alias 172.42.0.3/32 up || exit 1
+    sudo ifconfig lo0 alias 172.42.0.3/32 up || true
   elif grep -qi microsoft /proc/version; then
     # Wsl
     echo '******** PLEASE READ ********'
@@ -90,7 +90,7 @@ setup_network() {
     echo 'netsh interface ipv4 add address name="Loopback Pseudo-Interface 1" address=172.42.0.3 mask=255.255.255.255 skipassource=true'
     echo '******** PLEASE READ ********'
     set -x
-    sudo ip addr add 172.42.0.3/32 dev lo || exit 1
+    sudo ip addr add 172.42.0.3/32 dev lo || true
   fi
   set +x
 }
