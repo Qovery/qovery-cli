@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -66,7 +67,7 @@ var demoCmd = &cobra.Command{
 				os.Exit(1)
 			}
 
-			cmd := exec.Command("/bin/sh", "destroy_demo_cluster.sh", demoClusterName, organizationId, string(token))
+			cmd := exec.Command("/bin/sh", "destroy_demo_cluster.sh", demoClusterName, organizationId, string(token), strconv.FormatBool(demoDeleteQoveryConfig))
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
@@ -80,7 +81,8 @@ var demoCmd = &cobra.Command{
 	},
 }
 var (
-	demoClusterName string
+	demoClusterName        string
+	demoDeleteQoveryConfig bool
 )
 
 //go:embed demo_scripts/create_qovery_demo.sh
@@ -100,6 +102,7 @@ func init() {
 
 	var demoCmd = demoCmd
 	demoCmd.Flags().StringVarP(&demoClusterName, "cluster-name", "c", "local-demo-"+userName, "The name of the cluster to create")
+	demoCmd.Flags().BoolVarP(&demoDeleteQoveryConfig, "delete-qovery-config", "d", false, "If you want to delete also the config on Qovery side (environments and associated cluster)")
 
 	rootCmd.AddCommand(demoCmd)
 }
