@@ -337,14 +337,14 @@ var clusterInstallCmd = &cobra.Command{
 		utils.Println("\nhelm repo add qovery https://helm.qovery.com")
 		utils.Println("helm repo update")
 		utils.Println(fmt.Sprintf(`
-helm upgrade --install --create-namespace -n qovery -f %s --atomic \
+helm upgrade --install --create-namespace -n qovery -f "%s" --atomic \
 	 --set services.certificates.cert-manager-configs.enabled=false \
 	 --set services.certificates.qovery-cert-manager-webhook.enabled=false \
 	 --set services.qovery.qovery-cluster-agent.enabled=false \
 	 --set services.qovery.qovery-engine.enabled=false \
 	 qovery qovery/qovery`, helmValuesFileName))
 
-		utils.Println(fmt.Sprintf("\nhelm upgrade --install --create-namespace -n qovery -f %s --wait --atomic qovery qovery/qovery\n", helmValuesFileName))
+		utils.Println(fmt.Sprintf("\nhelm upgrade --install --create-namespace -n qovery -f \"%s\" --wait --atomic qovery qovery/qovery\n", helmValuesFileName))
 		utils.Println("////////////////////////////////////////////////////////////////////////////////////")
 		utils.PrintlnInfo("Please note that the installation process may take a few minutes to complete.")
 	},
