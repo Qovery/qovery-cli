@@ -10,7 +10,7 @@ import (
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -87,7 +87,6 @@ var clusterInstallCmd = &cobra.Command{
 			}
 		}
 
-		reuseOrCreateNewCluster := "Create a new cluster"
 		var cluster *qovery.Cluster
 		if len(selfManagedClusters) > 0 {
 			// if a self-managed cluster exist, then propose to reuse it or create a new one
@@ -98,7 +97,7 @@ var clusterInstallCmd = &cobra.Command{
 				Items: []string{"Reuse a Cluster", "Create a new cluster"},
 			}
 
-			_, reuseOrCreateNewCluster, err = reuseOrCreateNewClusterPrompt.Run()
+			_, reuseOrCreateNewCluster, err := reuseOrCreateNewClusterPrompt.Run()
 
 			if err != nil {
 				utils.PrintlnError(err)
@@ -324,6 +323,12 @@ var clusterInstallCmd = &cobra.Command{
 
 		err = os.WriteFile(helmValuesFileName, []byte(finalClusterHelmValuesContent), 0644)
 
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		// give instruction to the user to install the cluster
 		utils.Println("////////////////////////////////////////////////////////////////////////////////////")
 		utils.Println("//// Please copy/paste the following commands to install Qovery on your cluster ////")
@@ -435,7 +440,7 @@ func getOrCreateOnPremiseAccount(authorizationToken string, organizationID strin
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
@@ -464,7 +469,7 @@ func getOrCreateOnPremiseAccount(authorizationToken string, organizationID strin
 	}
 	defer resp.Body.Close()
 
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
@@ -497,7 +502,7 @@ func getBaseHelmValuesContent() string {
 		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
