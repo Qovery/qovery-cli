@@ -249,6 +249,21 @@ var clusterInstallCmd = &cobra.Command{
 			}
 		}
 
+		// get the email of the user for Cert Manager
+		utils.Println("Email for Cert Manager:")
+		emailPrompt := promptui.Prompt{
+			Label:   "Enter your email address for Cert Manager",
+			Default: "acme@qovery.com",
+		}
+
+		email, err := emailPrompt.Run()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		// get the values file for the cluster
 		clusterHelmValuesContent, _, err := client.ClustersAPI.GetInstallationHelmValues(
 			context.Background(),
@@ -261,6 +276,9 @@ var clusterInstallCmd = &cobra.Command{
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
+
+		// inject the email for Cert Manager
+		clusterHelmValuesContent = strings.ReplaceAll(clusterHelmValuesContent, "acme@qovery.com", email)
 
 		finalClusterHelmValuesContent := fmt.Sprintf("%s\n", clusterHelmValuesContent)
 
@@ -309,6 +327,7 @@ var clusterInstallCmd = &cobra.Command{
 		// give instruction to the user to install the cluster
 		utils.Println("////////////////////////////////////////////////////////////////////////////////////")
 		utils.Println("//// Please copy/paste the following commands to install Qovery on your cluster ////")
+		utils.Println("////          ⚠️ Check the values file before running the commands ⚠️           ////")
 		utils.Println("////////////////////////////////////////////////////////////////////////////////////")
 		utils.Println("\nhelm repo add qovery https://helm.qovery.com")
 		utils.Println("helm repo update")
@@ -322,7 +341,6 @@ helm upgrade --install --create-namespace -n qovery -f %s --atomic \
 
 		utils.Println(fmt.Sprintf("\nhelm upgrade --install --create-namespace -n qovery -f %s --wait --atomic qovery qovery/qovery\n", helmValuesFileName))
 		utils.Println("////////////////////////////////////////////////////////////////////////////////////")
-
 		utils.PrintlnInfo("Please note that the installation process may take a few minutes to complete.")
 	},
 }
