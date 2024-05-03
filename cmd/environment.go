@@ -9,6 +9,7 @@ import (
 var targetEnvironmentName string
 var newEnvironmentName string
 var clusterName string
+var clusterType string
 var environmentType string
 var applyDeploymentRule bool
 var targetProjectName string
