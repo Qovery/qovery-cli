@@ -21,9 +21,10 @@ var demoCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		currentContext, err := utils.CurrentContext()
 		if err != nil {
-			log.Errorf("Cannot get current Qovery context %s", currentContext)
+			log.Errorf("Qovery context is not set. Use `qovery context set` first")
 			os.Exit(1)
 		}
+
 		organizationId := string(currentContext.OrganizationId)
 		if organizationId == "" {
 			log.Errorf("Qovery context is not set. Use `qovery context set` first")
