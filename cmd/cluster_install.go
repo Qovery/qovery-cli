@@ -396,9 +396,9 @@ func showContainerRegistryConfiguration(cluster *qovery.Cluster, organization *u
 		utils.Println("Note: you can also use another container registry if you prefer.")
 	}
 
-	if kubernetesType == "GCP GKE" {
-		// TODO implement GCP GKE container registry configuration
-	}
+	//if kubernetesType == "GCP GKE" {
+	// TODO implement GCP GKE container registry configuration
+	//}
 
 	if kubernetesType == "Scaleway Kapsule" {
 		utils.Println("For Scaleway Kapsule, you can:")
@@ -408,9 +408,9 @@ func showContainerRegistryConfiguration(cluster *qovery.Cluster, organization *u
 		utils.Println("Note: you can also use another container registry if you prefer.")
 	}
 
-	if kubernetesType == "OVH Cloud Kubernetes" {
-		// TODO implement OVH Cloud Kubernetes container registry configuration
-	}
+	// if kubernetesType == "OVH Cloud Kubernetes" {
+	// TODO implement OVH Cloud Kubernetes container registry configuration
+	// }
 
 	if kubernetesType == "Digital Ocean Kubernetes" {
 		utils.Println("For Digital Ocean Kubernetes, you can:")
@@ -420,9 +420,9 @@ func showContainerRegistryConfiguration(cluster *qovery.Cluster, organization *u
 		utils.Println("Note: you can also use another container registry if you prefer.")
 	}
 
-	if kubernetesType == "Civo K3S" {
-		// TODO implement Civo K3S container registry configuration
-	}
+	//if kubernetesType == "Civo K3S" {
+	// TODO implement Civo K3S container registry configuration
+	//}
 
 	if kubernetesType == "On Premise" {
 		utils.Println("For On Premise, you can connect any container registry you want.")
