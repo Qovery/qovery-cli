@@ -248,8 +248,34 @@ var clusterInstallCmd = &cobra.Command{
 			}
 		}
 
+		// propose to configure the container registry (optional);
+		// by default it is a local registry on the cluster (not recommended for production)
+		// configure container registry (optional)
+		utils.Println("")
+		utils.Println(`Qovery must uses a container registry to mirror your images. 
+You can use the default registry (local) on your cluster or a managed registry.
+We recommend using a managed registry for intensive deployments.
+This can be configured later in the Qovery Console.`)
+
+		configureContainerRegistryPrompt := promptui.Select{
+			Label: "Do you want to configure a container registry?",
+			Items: []string{"Yes", "No"},
+		}
+
+		_, configureContainerRegistry, err := configureContainerRegistryPrompt.Run()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		if configureContainerRegistry == "Yes" {
+			showContainerRegistryConfiguration(cluster, organization, kubernetesType)
+		}
+
 		// get the email of the user for Cert Manager
-		utils.Println("Email for Cert Manager:")
+		utils.Println("Email for Cert Manager / Let's Encrypt:")
 		emailPrompt := promptui.Prompt{
 			Label:   "Enter your email address for Cert Manager",
 			Default: "acme@qovery.com",
@@ -287,6 +313,18 @@ var clusterInstallCmd = &cobra.Command{
 				continue
 			}
 			finalClusterHelmValuesContent += line + "\n"
+		}
+
+		if kubernetesType == "AWS EKS" {
+			finalClusterHelmValuesContent = injectAWSEKSValues(finalClusterHelmValuesContent)
+		}
+
+		if kubernetesType == "GCP GKE" {
+			finalClusterHelmValuesContent = injectGCPGKEValues(finalClusterHelmValuesContent)
+		}
+
+		if kubernetesType == "Scaleway Kapsule" {
+			finalClusterHelmValuesContent = injectScalewayKapsuleValues(finalClusterHelmValuesContent)
 		}
 
 		if kubernetesType == "Azure AKS" {
@@ -329,14 +367,84 @@ var clusterInstallCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		// give instruction to the user to install the cluster
-		utils.Println("////////////////////////////////////////////////////////////////////////////////////")
-		utils.Println("//// Please copy/paste the following commands to install Qovery on your cluster ////")
-		utils.Println("////          ⚠️ Check the values file before running the commands ⚠️           ////")
-		utils.Println("////////////////////////////////////////////////////////////////////////////////////")
-		utils.Println("\nhelm repo add qovery https://helm.qovery.com")
-		utils.Println("helm repo update")
-		utils.Println(fmt.Sprintf(`
+		outputCommandsToInstallQoveryOnCluster(helmValuesFileName)
+	},
+}
+
+func showContainerRegistryConfiguration(cluster *qovery.Cluster, organization *utils.Organization, kubernetesType string) {
+	utils.Println("\nPlease configure the container registry in the Qovery Console:")
+	utils.Println(fmt.Sprintf("https://console.qovery.com/organization/%s/settings/container-registries", string(organization.ID)))
+	utils.Println(fmt.Sprintf("The registry name is: registry-%s", cluster.Id))
+	utils.Println("")
+
+	if kubernetesType == "Azure AKS" {
+		utils.Println("For Azure AKS, you can:")
+		utils.Println("- Create a container registry in Azure Container Registry")
+		utils.Println("- Turn on the Admin User in the Azure Container Registry (Access Keys section)")
+		utils.Println("- Use the GENERIC_CR as the container registry in Qovery")
+		utils.Println("- Your Azure Container Registry URL is: https://<registry-name>.azurecr.io/v2/")
+		utils.Println("- Your Azure Container Registry Username is: <access key username>")
+		utils.Println("- Your Azure Container Registry Password is: <access key password>")
+		utils.Println("Note: you can also use another container registry if you prefer.")
+	}
+
+	if kubernetesType == "AWS EKS" {
+		utils.Println("For AWS EKS, you can:")
+		utils.Println("- Create a container registry in Amazon Elastic Container Registry (ECR)")
+		utils.Println("- Use the ECR as the container registry in Qovery")
+		utils.Println("- Set your credentials")
+		utils.Println("Note: you can also use another container registry if you prefer.")
+	}
+
+	//if kubernetesType == "GCP GKE" {
+	// TODO implement GCP GKE container registry configuration
+	//}
+
+	if kubernetesType == "Scaleway Kapsule" {
+		utils.Println("For Scaleway Kapsule, you can:")
+		utils.Println("- Create a container registry in Scaleway Container Registry")
+		utils.Println("- Use the Scaleway Container Registry as the container registry in Qovery")
+		utils.Println("- Set your credentials")
+		utils.Println("Note: you can also use another container registry if you prefer.")
+	}
+
+	// if kubernetesType == "OVH Cloud Kubernetes" {
+	// TODO implement OVH Cloud Kubernetes container registry configuration
+	// }
+
+	if kubernetesType == "Digital Ocean Kubernetes" {
+		utils.Println("For Digital Ocean Kubernetes, you can:")
+		utils.Println("- Create a container registry in Digital Ocean Container Registry")
+		utils.Println("- Use the Digital Ocean Container Registry as the container registry in Qovery")
+		utils.Println("- Set your credentials")
+		utils.Println("Note: you can also use another container registry if you prefer.")
+	}
+
+	//if kubernetesType == "Civo K3S" {
+	// TODO implement Civo K3S container registry configuration
+	//}
+
+	if kubernetesType == "On Premise" {
+		utils.Println("For On Premise, you can connect any container registry you want.")
+	}
+
+	utils.Println("")
+}
+
+func outputCommandsToInstallQoveryOnCluster(helmValuesFileName string) {
+	// give instruction to the user to install the cluster
+	utils.Println("")
+	utils.Println("////////////////////////////////////////////////////////////////////////////////////")
+	utils.Println("//// Please copy/paste the following commands to install Qovery on your cluster ////")
+	utils.Println("////          ⚠️ Check the values file before running the commands ⚠️           ////")
+	utils.Println("////////////////////////////////////////////////////////////////////////////////////")
+	utils.Println(`
+# Add the Qovery Helm repository
+helm repo add qovery https://helm.qovery.com`)
+	utils.Println("helm repo update")
+
+	utils.Println(fmt.Sprintf(`
+# Install Qovery on your cluster first, without some some services to avoid circular dependencies errors
 helm upgrade --install --create-namespace -n qovery -f "%s" --atomic \
 	 --set services.certificates.cert-manager-configs.enabled=false \
 	 --set services.certificates.qovery-cert-manager-webhook.enabled=false \
@@ -344,10 +452,12 @@ helm upgrade --install --create-namespace -n qovery -f "%s" --atomic \
 	 --set services.qovery.qovery-engine.enabled=false \
 	 qovery qovery/qovery`, helmValuesFileName))
 
-		utils.Println(fmt.Sprintf("\nhelm upgrade --install --create-namespace -n qovery -f \"%s\" --wait --atomic qovery qovery/qovery\n", helmValuesFileName))
-		utils.Println("////////////////////////////////////////////////////////////////////////////////////")
-		utils.PrintlnInfo("Please note that the installation process may take a few minutes to complete.")
-	},
+	utils.Println(fmt.Sprintf(`
+# Then, re-apply the full Qovery installation with all services
+helm upgrade --install --create-namespace -n qovery -f \"%s\" --wait --atomic qovery qovery/qovery
+`, helmValuesFileName))
+	utils.Println("////////////////////////////////////////////////////////////////////////////////////")
+	utils.PrintlnInfo("Please note that the installation process may take a few minutes to complete.")
 }
 
 func promptForClusterName(defaultName string) string {
@@ -366,6 +476,96 @@ func promptForClusterName(defaultName string) string {
 	}
 
 	return mClusterName
+}
+
+func injectAWSEKSValues(clusterHelmValuesContent string) string {
+	// convert the clusterHelmValuesContent into a YAML object and into a map
+	var helmValuesYaml map[string]interface{}
+
+	err := yaml.Unmarshal([]byte(clusterHelmValuesContent), &helmValuesYaml)
+
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	services := helmValuesYaml["services"].(map[string]interface{})
+	servicesAws := services["aws"].(map[string]interface{})
+	servicesAwsStorageclass := servicesAws["q-storageclass-aws"].(map[string]interface{})
+	servicesAwsCsiDriver := servicesAws["aws-ebs-csi-driver"].(map[string]interface{})
+
+	// inject the AWS EKS values
+	servicesAwsStorageclass["enabled"] = true
+	servicesAwsCsiDriver["enabled"] = true
+
+	helmValuesYamlBytes, err := yaml.Marshal(helmValuesYaml)
+
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+	return string(helmValuesYamlBytes)
+}
+
+func injectGCPGKEValues(clusterHelmValuesContent string) string {
+	// convert the clusterHelmValuesContent into a YAML object and into a map
+	var helmValuesYaml map[string]interface{}
+
+	err := yaml.Unmarshal([]byte(clusterHelmValuesContent), &helmValuesYaml)
+
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	services := helmValuesYaml["services"].(map[string]interface{})
+	servicesGcp := services["gcp"].(map[string]interface{})
+	servicesGcpStorageclass := servicesGcp["q-storageclass-gcp"].(map[string]interface{})
+
+	// inject the GCP GKE values
+	servicesGcpStorageclass["enabled"] = true
+
+	helmValuesYamlBytes, err := yaml.Marshal(helmValuesYaml)
+
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+	return string(helmValuesYamlBytes)
+}
+
+func injectScalewayKapsuleValues(clusterHelmValuesContent string) string {
+	// convert the clusterHelmValuesContent into a YAML object and into a map
+	var helmValuesYaml map[string]interface{}
+
+	err := yaml.Unmarshal([]byte(clusterHelmValuesContent), &helmValuesYaml)
+
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	services := helmValuesYaml["services"].(map[string]interface{})
+	servicesScaleway := services["scaleway"].(map[string]interface{})
+	servicesScalewayStorageclass := servicesScaleway["q-storageclass-scaleway"].(map[string]interface{})
+
+	// inject the Scaleway Kapsule values
+	servicesScalewayStorageclass["enabled"] = true
+
+	helmValuesYamlBytes, err := yaml.Marshal(helmValuesYaml)
+
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+	return string(helmValuesYamlBytes)
+
 }
 
 func injectAzureAKSValues(clusterHelmValuesContent string) string {
