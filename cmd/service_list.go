@@ -187,7 +187,7 @@ func getOrganizationProjectContextResourcesIds(qoveryAPIClient *qovery.APIClient
 
 func getOrganizationContextResourceId(qoveryAPIClient *qovery.APIClient, organizationName string) (string, error) {
 	if strings.TrimSpace(organizationName) == "" {
-		id, _, err := utils.CurrentOrganization()
+		id, _, err := utils.CurrentOrganization(true)
 		if err != nil {
 			return "", err
 		}
@@ -212,7 +212,7 @@ func getOrganizationContextResourceId(qoveryAPIClient *qovery.APIClient, organiz
 
 func getProjectContextResourceId(qoveryAPIClient *qovery.APIClient, projectName string, organizationId string) (string, error) {
 	if strings.TrimSpace(projectName) == "" {
-		id, _, err := utils.CurrentProject()
+		id, _, err := utils.CurrentProject(true)
 		if err != nil {
 			return "", err
 		}
@@ -242,7 +242,7 @@ func getProjectContextResourceId(qoveryAPIClient *qovery.APIClient, projectName 
 
 func getEnvironmentContextResourceId(qoveryAPIClient *qovery.APIClient, environmentName string, projectId string) (string, error) {
 	if strings.TrimSpace(environmentName) == "" {
-		id, _, err := utils.CurrentEnvironment()
+		id, _, err := utils.CurrentEnvironment(true)
 		if err != nil {
 			return "", err
 		}

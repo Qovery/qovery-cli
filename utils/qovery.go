@@ -147,9 +147,9 @@ func SelectOrganization() (*Organization, error) {
 func SelectAndSetOrganization() (*Organization, error) {
 	selectedOrganization, err := SelectOrganization()
 	if err != nil {
-		PrintlnError(err)
 		return nil, err
 	}
+
 	err = SetOrganization(selectedOrganization)
 	if err != nil {
 		PrintlnError(err)
@@ -325,7 +325,6 @@ func SelectEnvironment(projectID Id) (*Environment, error) {
 func SelectAndSetEnvironment(projectID Id) (*Environment, error) {
 	selectedEnvironment, err := SelectEnvironment(projectID)
 	if err != nil {
-		PrintlnError(err)
 		return nil, err
 	}
 
@@ -604,7 +603,7 @@ func GetApplicationById(id string) (*Application, error) {
 }
 
 func ResetApplicationContext() error {
-	ctx, err := CurrentContext()
+	ctx, err := GetCurrentContext()
 	if err != nil {
 		return err
 	}

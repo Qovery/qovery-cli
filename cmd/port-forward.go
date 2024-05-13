@@ -79,7 +79,7 @@ var (
 
 func portForwardRequestWithoutArg() (*pkg.PortForwardRequest, error) {
 	useContext := false
-	currentContext, err := utils.CurrentContext()
+	currentContext, err := utils.GetOrSetCurrentContext()
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func portForwardRequestWithoutArg() (*pkg.PortForwardRequest, error) {
 		currentContext.EnvironmentId != "" && currentContext.EnvironmentName != "" &&
 		currentContext.ProjectId != "" && currentContext.ProjectName != "" &&
 		currentContext.OrganizationId != "" && currentContext.OrganizationName != "" {
-		if err := utils.PrintlnContext(); err != nil {
+		if err := utils.PrintContext(); err != nil {
 			fmt.Println("Context not yet configured.")
 		}
 		fmt.Println()
@@ -98,7 +98,7 @@ func portForwardRequestWithoutArg() (*pkg.PortForwardRequest, error) {
 		useContext = utils.Validate("context")
 		fmt.Println()
 	} else {
-		if err := utils.PrintlnContext(); err != nil {
+		if err := utils.PrintContext(); err != nil {
 			fmt.Println("Context not yet configured.")
 			fmt.Println("Unable to use current context for `port-forward` command.")
 			fmt.Println()

@@ -12,7 +12,7 @@ var contextCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 		utils.PrintlnInfo("Current context:")
-		err := utils.PrintlnContext()
+		err := utils.PrintContext()
 		if err != nil {
 			fmt.Println("Context not yet configured. ")
 		}
