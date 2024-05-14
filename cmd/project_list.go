@@ -24,7 +24,7 @@ var projectListCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		organizationID, err := getOrganizationContextResourceId(client, organizationName)
+		organizationId, err := getOrganizationContextResourceId(client, organizationName)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -32,7 +32,7 @@ var projectListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		projects, _, err := client.ProjectsAPI.ListProject(context.Background(), organizationID).Execute()
+		projects, _, err := client.ProjectsAPI.ListProject(context.Background(), organizationId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

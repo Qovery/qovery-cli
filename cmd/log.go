@@ -22,14 +22,14 @@ var logCmd = &cobra.Command{
 }
 
 func getLogs() string {
-	service, err := utils.CurrentService()
+	service, err := utils.CurrentService(true)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)
 	}
-	orga, _, _ := utils.CurrentOrganization()
-	project, _, _ := utils.CurrentProject()
-	env, _, _ := utils.CurrentEnvironment()
+	org, _, _ := utils.CurrentOrganization(true)
+	project, _, _ := utils.CurrentProject(true)
+	env, _, _ := utils.CurrentEnvironment(true)
 
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
@@ -52,7 +52,7 @@ func getLogs() string {
 
 	req := pkg.LogRequest{
 		ServiceID:      service.ID,
-		OrganizationID: orga,
+		OrganizationID: org,
 		ProjectID:      project,
 		EnvironmentID:  env,
 		ClusterID:      utils.Id(e.ClusterId),

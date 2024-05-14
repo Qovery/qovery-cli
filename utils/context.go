@@ -33,7 +33,33 @@ type AccessToken string
 type RefreshToken string
 type Id string
 
-func CurrentContext() (QoveryContext, error) {
+func isMinimalContextValid(context QoveryContext) bool {
+	// this is the minimal context that we need to have to be able to use the CLI
+	return context.AccessToken != "" &&
+		context.AccessTokenExpiration.After(time.Now()) &&
+		context.RefreshToken != "" &&
+		context.OrganizationId != ""
+}
+
+func GetOrSetCurrentContext(setProject bool, setEnvironment bool, setService bool) (QoveryContext, error) {
+	context, _ := GetCurrentContext()
+	if isMinimalContextValid(context) &&
+		((setProject && context.ProjectId != "") || !setProject) &&
+		((setEnvironment && context.EnvironmentId != "") || !setEnvironment) &&
+		((setService && context.ServiceId != "") || !setService) {
+		return context, nil
+	}
+
+	err := SetContext(setProject, setEnvironment, setService, false)
+
+	if err != nil {
+		return context, err
+	}
+
+	return GetCurrentContext()
+}
+
+func GetCurrentContext() (QoveryContext, error) {
 	context := QoveryContext{}
 
 	path, err := QoveryContextPath()
@@ -52,6 +78,55 @@ func CurrentContext() (QoveryContext, error) {
 	}
 
 	return context, err
+}
+
+func SetContext(setProject bool, setEnvironment bool, setService bool, printFinalContext bool) error {
+	_ = PrintContext()
+	_ = ResetApplicationContext()
+
+	org, err := SelectAndSetOrganization()
+	if err != nil {
+		return err
+	}
+
+	if !setProject {
+		return nil
+	}
+
+	project, err := SelectAndSetProject(org.ID)
+	if err != nil {
+		return err
+	}
+
+	if !setEnvironment {
+		return nil
+	}
+
+	env, err := SelectAndSetEnvironment(project.ID)
+	if err != nil {
+		return err
+	}
+
+	if !setService {
+		return nil
+	}
+
+	_, err = SelectAndSetService(env.ID)
+	if err != nil {
+		return err
+	}
+	_, _ = CurrentService(false)
+
+	if printFinalContext {
+		println()
+		err = PrintContext()
+		if err != nil {
+			PrintlnError(err)
+		}
+		println()
+	}
+
+	return nil
 }
 
 func (c QoveryContext) ToPosthogProperties() map[string]interface{} {
@@ -78,8 +153,13 @@ func StoreContext(context QoveryContext) error {
 	return os.WriteFile(path, bytes, os.ModePerm)
 }
 
-func CurrentOrganization() (Id, Name, error) {
-	context, err := CurrentContext()
+func CurrentOrganization(promptContext bool) (Id, Name, error) {
+	context, err := GetCurrentContext()
+
+	if (context.OrganizationId == "" || err != nil) && promptContext {
+		context, err = GetOrSetCurrentContext(false, false, false)
+	}
+
 	if err != nil {
 		return "", "", err
 	}
@@ -96,20 +176,25 @@ func CurrentOrganization() (Id, Name, error) {
 	return id, name, nil
 }
 
-func SetOrganization(orga *Organization) error {
-	context, err := CurrentContext()
+func SetOrganization(org *Organization) error {
+	context, err := GetCurrentContext()
 	if err != nil {
 		return err
 	}
 
-	context.OrganizationName = orga.Name
-	context.OrganizationId = orga.ID
+	context.OrganizationName = org.Name
+	context.OrganizationId = org.ID
 
 	return StoreContext(context)
 }
 
-func CurrentProject() (Id, Name, error) {
-	context, err := CurrentContext()
+func CurrentProject(promptContext bool) (Id, Name, error) {
+	context, err := GetCurrentContext()
+
+	if (context.ProjectId == "" || err != nil) && promptContext {
+		context, err = GetOrSetCurrentContext(true, false, false)
+	}
+
 	if err != nil {
 		return "", "", err
 	}
@@ -127,7 +212,7 @@ func CurrentProject() (Id, Name, error) {
 }
 
 func SetProject(project *Project) error {
-	context, err := CurrentContext()
+	context, err := GetCurrentContext()
 	if err != nil {
 		return err
 	}
@@ -138,8 +223,13 @@ func SetProject(project *Project) error {
 	return StoreContext(context)
 }
 
-func CurrentEnvironment() (Id, Name, error) {
-	context, err := CurrentContext()
+func CurrentEnvironment(promptContext bool) (Id, Name, error) {
+	context, err := GetCurrentContext()
+
+	if (context.EnvironmentId == "" || err != nil) && promptContext {
+		context, err = GetOrSetCurrentContext(true, true, false)
+	}
+
 	if err != nil {
 		return "", "", err
 	}
@@ -157,7 +247,7 @@ func CurrentEnvironment() (Id, Name, error) {
 }
 
 func SetEnvironment(env *Environment) error {
-	context, err := CurrentContext()
+	context, err := GetCurrentContext()
 	if err != nil {
 		return err
 	}
@@ -168,26 +258,32 @@ func SetEnvironment(env *Environment) error {
 	return StoreContext(context)
 }
 
-func CurrentService() (*Service, error) {
-	context, err := CurrentContext()
+func CurrentService(promptContext bool) (*Service, error) {
+	context, err := GetCurrentContext()
+
+	if (context.ServiceId == "" || err != nil) && promptContext {
+		context, err = GetOrSetCurrentContext(true, true, true)
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
 	id := context.ServiceId
 	if id == "" {
-		return nil, errors.New("Current application has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return nil, errors.New("Current service has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
+
 	name := context.ServiceName
 	if name == "" {
-		return nil, errors.New("Current application has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return nil, errors.New("Current service has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
 	return &Service{ID: id, Name: name, Type: context.ServiceType}, nil
 }
 
 func SetService(service *Service) error {
-	context, err := CurrentContext()
+	context, err := GetCurrentContext()
 	if err != nil {
 		return err
 	}
@@ -223,14 +319,14 @@ func GetAccessToken() (AccessTokenType, AccessToken, error) {
 		return AccessTokenType("Token"), AccessToken(token), nil
 	}
 
-	context, err := CurrentContext()
+	context, err := GetCurrentContext()
 	if err != nil {
 		return "", "", err
 	}
 
 	token = string(context.AccessToken)
 	if token == "" {
-		return "", "", errors.New("Access token has not been found. Please, sign in using 'qovery auth' command. ")
+		return "", "", errors.New("Access token has not been found. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
 	}
 
 	expired := context.AccessTokenExpiration.Before(time.Now())
@@ -247,7 +343,7 @@ func GetAccessToken() (AccessTokenType, AccessToken, error) {
 }
 
 func GetAccessTokenExpiration() (time.Time, error) {
-	context, err := CurrentContext()
+	context, err := GetCurrentContext()
 	t := time.Time{}
 	if err != nil {
 		return t, err
@@ -255,14 +351,14 @@ func GetAccessTokenExpiration() (time.Time, error) {
 
 	expiration := context.AccessTokenExpiration
 	if expiration == t {
-		return t, errors.New("Access token has not been found. Please, sign in using 'qovery auth' command. ")
+		return t, errors.New("Access token has not been found. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
 	}
 
 	return expiration, nil
 }
 
 func SetAccessToken(token AccessToken, expiration time.Time) error {
-	context, err := CurrentContext()
+	context, err := GetCurrentContext()
 	if err != nil {
 		return err
 	}
@@ -285,21 +381,21 @@ func SetAccessToken(token AccessToken, expiration time.Time) error {
 }
 
 func GetRefreshToken() (RefreshToken, error) {
-	context, err := CurrentContext()
+	context, err := GetCurrentContext()
 	if err != nil {
 		return RefreshToken(""), err
 	}
 
 	token := context.RefreshToken
 	if token == "" {
-		return "", errors.New("Refresh token has not been found. Please, sign in using 'qovery auth' command. ")
+		return "", errors.New("Refresh token has not been found. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
 	}
 
 	return token, nil
 }
 
 func SetRefreshToken(token RefreshToken) error {
-	context, err := CurrentContext()
+	context, err := GetCurrentContext()
 	if err != nil {
 		return err
 	}

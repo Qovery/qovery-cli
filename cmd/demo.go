@@ -19,21 +19,15 @@ var demoCmd = &cobra.Command{
 	Short: "Create a demo kubernetes cluster with Qovery installed on your local machine",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		currentContext, err := utils.CurrentContext()
-		if err != nil {
-			log.Errorf("Qovery context is not set. Use `qovery context set` first")
-			os.Exit(1)
-		}
-
-		organizationId := string(currentContext.OrganizationId)
-		if organizationId == "" {
-			log.Errorf("Qovery context is not set. Use `qovery context set` first")
-			os.Exit(1)
-		}
-
 		_, token, err := utils.GetAccessToken()
 		if err != nil {
-			log.Errorf("Cannot get Bearer or Token to access Qovery API. Please use `qovery auth` first: %s", err)
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		orgId, _, err := utils.CurrentOrganization(true)
+		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
@@ -52,7 +46,7 @@ var demoCmd = &cobra.Command{
 				os.Exit(1)
 			}
 
-			cmd := exec.Command("/bin/sh", "create_demo_cluster.sh", demoClusterName, strings.ToUpper(runtime.GOARCH), organizationId, string(token))
+			cmd := exec.Command("/bin/sh", "create_demo_cluster.sh", demoClusterName, strings.ToUpper(runtime.GOARCH), string(orgId), string(token))
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
@@ -68,7 +62,7 @@ var demoCmd = &cobra.Command{
 				os.Exit(1)
 			}
 
-			cmd := exec.Command("/bin/sh", "destroy_demo_cluster.sh", demoClusterName, organizationId, string(token), strconv.FormatBool(demoDeleteQoveryConfig))
+			cmd := exec.Command("/bin/sh", "destroy_demo_cluster.sh", demoClusterName, string(orgId), string(token), strconv.FormatBool(demoDeleteQoveryConfig))
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {

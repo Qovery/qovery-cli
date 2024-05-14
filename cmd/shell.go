@@ -43,7 +43,7 @@ var (
 
 func shellRequestWithoutArg() (*pkg.ShellRequest, error) {
 	useContext := false
-	currentContext, err := utils.CurrentContext()
+	currentContext, err := utils.GetCurrentContext()
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func shellRequestWithoutArg() (*pkg.ShellRequest, error) {
 		currentContext.EnvironmentId != "" && currentContext.EnvironmentName != "" &&
 		currentContext.ProjectId != "" && currentContext.ProjectName != "" &&
 		currentContext.OrganizationId != "" && currentContext.OrganizationName != "" {
-		if err := utils.PrintlnContext(); err != nil {
+		if err := utils.PrintContext(); err != nil {
 			fmt.Println("Context not yet configured.")
 		}
 		fmt.Println()
@@ -62,7 +62,7 @@ func shellRequestWithoutArg() (*pkg.ShellRequest, error) {
 		useContext = utils.Validate("context")
 		fmt.Println()
 	} else {
-		if err := utils.PrintlnContext(); err != nil {
+		if err := utils.PrintContext(); err != nil {
 			fmt.Println("Context not yet configured.")
 			fmt.Println("Unable to use current context for `shell` command.")
 			fmt.Println()

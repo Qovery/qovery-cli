@@ -13,28 +13,30 @@ var consoleCmd = &cobra.Command{
 	Short: "Opens the application in Qovery Console in your browser",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		organization, _, err := utils.CurrentOrganization()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(0)
-		}
-		project, _, err := utils.CurrentProject()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(0)
-		}
-		environment, _, err := utils.CurrentEnvironment()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(0)
-		}
-		service, err := utils.CurrentService()
+		organization, _, err := utils.CurrentOrganization(true)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(0)
 		}
 
-		url := fmt.Sprintf("https://console.qovery.com/platform/organization/%v/projects/%v/environments/%v/%vs/%v/summary", organization, project, environment, service.Type, service.ID)
+		project, _, err := utils.CurrentProject(true)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(0)
+		}
+
+		environment, _, err := utils.CurrentEnvironment(true)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(0)
+		}
+		service, err := utils.CurrentService(true)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(0)
+		}
+
+		url := fmt.Sprintf("https://console.qovery.com/organization/%v/project/%v/environment/%v/%v/%v/general", organization, project, environment, service.Type, service.ID)
 		utils.PrintlnInfo("Opening " + url)
 		err = browser.OpenURL(url)
 		if err != nil {

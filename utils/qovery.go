@@ -115,15 +115,22 @@ func SelectOrganization() (*Organization, error) {
 	}
 
 	var organizationNames []string
-	var orgas = make(map[string]string)
+	var orgs = make(map[string]string)
 
 	for _, org := range organizations.GetResults() {
 		organizationNames = append(organizationNames, org.Name)
-		orgas[org.Name] = org.Id
+		orgs[org.Name] = org.Id
 	}
 
 	if len(organizationNames) < 1 {
 		return nil, errors.New("No organizations found. ")
+	}
+
+	if len(organizationNames) == 1 {
+		return &Organization{
+			ID:   Id(orgs[organizationNames[0]]),
+			Name: Name(organizationNames[0]),
+		}, nil
 	}
 
 	fmt.Println("Organization:")
@@ -139,7 +146,7 @@ func SelectOrganization() (*Organization, error) {
 	}
 
 	return &Organization{
-		ID:   Id(orgas[selectedOrganization]),
+		ID:   Id(orgs[selectedOrganization]),
 		Name: Name(selectedOrganization),
 	}, nil
 }
@@ -147,9 +154,9 @@ func SelectOrganization() (*Organization, error) {
 func SelectAndSetOrganization() (*Organization, error) {
 	selectedOrganization, err := SelectOrganization()
 	if err != nil {
-		PrintlnError(err)
 		return nil, err
 	}
+
 	err = SetOrganization(selectedOrganization)
 	if err != nil {
 		PrintlnError(err)
@@ -212,6 +219,13 @@ func SelectProject(organizationID Id) (*Project, error) {
 
 	if len(projectsNames) < 1 {
 		return nil, errors.New("No projects found. ")
+	}
+
+	if len(projectsNames) == 1 {
+		return &Project{
+			ID:   Id(projects[projectsNames[0]]),
+			Name: Name(projectsNames[0]),
+		}, nil
 	}
 
 	fmt.Println("Project:")
@@ -303,6 +317,14 @@ func SelectEnvironment(projectID Id) (*Environment, error) {
 		return nil, errors.New("No environments found. ")
 	}
 
+	if len(environmentsNames) == 1 {
+		return &Environment{
+			ID:        Id(environments[environmentsNames[0]].Id),
+			Name:      Name(environmentsNames[0]),
+			ClusterID: Id(environments[environmentsNames[0]].ClusterId),
+		}, nil
+	}
+
 	fmt.Println("Environment:")
 	prompt := promptui.Select{
 		Items: environmentsNames,
@@ -325,7 +347,6 @@ func SelectEnvironment(projectID Id) (*Environment, error) {
 func SelectAndSetEnvironment(projectID Id) (*Environment, error) {
 	selectedEnvironment, err := SelectEnvironment(projectID)
 	if err != nil {
-		PrintlnError(err)
 		return nil, err
 	}
 
@@ -551,6 +572,11 @@ func SelectService(environment Id) (*Service, error) {
 		return nil, errors.New("No services found. ")
 	}
 
+	if len(servicesNames) == 1 {
+		service := services[servicesNames[0]]
+		return &service, nil
+	}
+
 	fmt.Println("Services:")
 	prompt := promptui.Select{
 		Items: servicesNames,
@@ -604,7 +630,7 @@ func GetApplicationById(id string) (*Application, error) {
 }
 
 func ResetApplicationContext() error {
-	ctx, err := CurrentContext()
+	ctx, err := GetCurrentContext()
 	if err != nil {
 		return err
 	}

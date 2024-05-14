@@ -46,7 +46,7 @@ var envImportCmd = &cobra.Command{
 			return
 		}
 
-		service, err := utils.CurrentService()
+		service, err := utils.CurrentService(true)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(0)

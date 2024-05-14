@@ -20,7 +20,7 @@ var statusCmd = &cobra.Command{
 			utils.PrintlnError(err)
 			os.Exit(0)
 		}
-		service, err := utils.CurrentService()
+		service, err := utils.CurrentService(true)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(0)

@@ -3,10 +3,10 @@ package utils
 import (
 	"fmt"
 	"github.com/fatih/color"
-//	"github.com/getsentry/sentry-go"
+	//	"github.com/getsentry/sentry-go"
 	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
-//	"time"
+	//	"time"
 )
 
 func PrintlnError(err error) {
@@ -25,20 +25,20 @@ func Println(text string) {
 	fmt.Printf("%v\n", text)
 }
 
-func PrintlnContext() error {
-	_, oName, err := CurrentOrganization()
+func PrintContext() error {
+	_, oName, err := CurrentOrganization(false)
 	if err != nil {
 		return err
 	}
-	_, pName, err := CurrentProject()
+	_, pName, err := CurrentProject(false)
 	if err != nil {
 		return err
 	}
-	_, eName, err := CurrentEnvironment()
+	_, eName, err := CurrentEnvironment(false)
 	if err != nil {
 		return err
 	}
-	srv, err := CurrentService()
+	srv, err := CurrentService(false)
 	if err != nil {
 		return err
 	}
