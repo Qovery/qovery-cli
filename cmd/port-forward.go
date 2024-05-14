@@ -79,7 +79,7 @@ var (
 
 func portForwardRequestWithoutArg() (*pkg.PortForwardRequest, error) {
 	useContext := false
-	currentContext, err := utils.GetOrSetCurrentContext(true, true, true)
+	currentContext, err := utils.GetCurrentContext()
 	if err != nil {
 		return nil, err
 	}
@@ -120,13 +120,13 @@ func portForwardRequestWithoutArg() (*pkg.PortForwardRequest, error) {
 
 func portForwardRequestFromSelect() (*pkg.PortForwardRequest, error) {
 	utils.PrintlnInfo("Select organization")
-	orga, err := utils.SelectOrganization()
+	org, err := utils.SelectOrganization()
 	if err != nil {
 		return nil, err
 	}
 
 	utils.PrintlnInfo("Select project")
-	project, err := utils.SelectProject(orga.ID)
+	project, err := utils.SelectProject(org.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func portForwardRequestFromSelect() (*pkg.PortForwardRequest, error) {
 		ServiceID:      service.ID,
 		ServiceType:    strings.ToUpper(string(service.Type)),
 		ProjectID:      project.ID,
-		OrganizationID: orga.ID,
+		OrganizationID: org.ID,
 		EnvironmentID:  env.ID,
 		ClusterID:      env.ClusterID,
 		PodName:        podName,
