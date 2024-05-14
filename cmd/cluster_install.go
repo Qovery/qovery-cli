@@ -308,23 +308,11 @@ This can be configured later in the Qovery Console.`)
 		finalClusterHelmValuesContent := fmt.Sprintf("%s\n", clusterHelmValuesContent)
 
 		// trim lines if they start with "qovery:" or if they contain "set-by-customer"
-		for _, line := range strings.Split(getBaseHelmValuesContent(), "\n") {
+		for _, line := range strings.Split(getBaseHelmValuesContent(kubernetesType), "\n") {
 			if strings.HasPrefix(line, "qovery:") || strings.Contains(line, "set-by-customer") {
 				continue
 			}
 			finalClusterHelmValuesContent += line + "\n"
-		}
-
-		if kubernetesType == "AWS EKS" {
-			finalClusterHelmValuesContent = injectAWSEKSValues(finalClusterHelmValuesContent)
-		}
-
-		if kubernetesType == "GCP GKE" {
-			finalClusterHelmValuesContent = injectGCPGKEValues(finalClusterHelmValuesContent)
-		}
-
-		if kubernetesType == "Scaleway Kapsule" {
-			finalClusterHelmValuesContent = injectScalewayKapsuleValues(finalClusterHelmValuesContent)
 		}
 
 		if kubernetesType == "Azure AKS" {
@@ -478,96 +466,6 @@ func promptForClusterName(defaultName string) string {
 	return mClusterName
 }
 
-func injectAWSEKSValues(clusterHelmValuesContent string) string {
-	// convert the clusterHelmValuesContent into a YAML object and into a map
-	var helmValuesYaml map[string]interface{}
-
-	err := yaml.Unmarshal([]byte(clusterHelmValuesContent), &helmValuesYaml)
-
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-	}
-
-	services := helmValuesYaml["services"].(map[string]interface{})
-	servicesAws := services["aws"].(map[string]interface{})
-	servicesAwsStorageclass := servicesAws["q-storageclass-aws"].(map[string]interface{})
-	servicesAwsCsiDriver := servicesAws["aws-ebs-csi-driver"].(map[string]interface{})
-
-	// inject the AWS EKS values
-	servicesAwsStorageclass["enabled"] = true
-	servicesAwsCsiDriver["enabled"] = true
-
-	helmValuesYamlBytes, err := yaml.Marshal(helmValuesYaml)
-
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-	}
-	return string(helmValuesYamlBytes)
-}
-
-func injectGCPGKEValues(clusterHelmValuesContent string) string {
-	// convert the clusterHelmValuesContent into a YAML object and into a map
-	var helmValuesYaml map[string]interface{}
-
-	err := yaml.Unmarshal([]byte(clusterHelmValuesContent), &helmValuesYaml)
-
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-	}
-
-	services := helmValuesYaml["services"].(map[string]interface{})
-	servicesGcp := services["gcp"].(map[string]interface{})
-	servicesGcpStorageclass := servicesGcp["q-storageclass-gcp"].(map[string]interface{})
-
-	// inject the GCP GKE values
-	servicesGcpStorageclass["enabled"] = true
-
-	helmValuesYamlBytes, err := yaml.Marshal(helmValuesYaml)
-
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-	}
-	return string(helmValuesYamlBytes)
-}
-
-func injectScalewayKapsuleValues(clusterHelmValuesContent string) string {
-	// convert the clusterHelmValuesContent into a YAML object and into a map
-	var helmValuesYaml map[string]interface{}
-
-	err := yaml.Unmarshal([]byte(clusterHelmValuesContent), &helmValuesYaml)
-
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-	}
-
-	services := helmValuesYaml["services"].(map[string]interface{})
-	servicesScaleway := services["scaleway"].(map[string]interface{})
-	servicesScalewayStorageclass := servicesScaleway["q-storageclass-scaleway"].(map[string]interface{})
-
-	// inject the Scaleway Kapsule values
-	servicesScalewayStorageclass["enabled"] = true
-
-	helmValuesYamlBytes, err := yaml.Marshal(helmValuesYaml)
-
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-	}
-	return string(helmValuesYamlBytes)
-
-}
-
 func injectAzureAKSValues(clusterHelmValuesContent string) string {
 	// convert the clusterHelmValuesContent into a YAML object and into a map
 	var helmValuesYaml map[string]interface{}
@@ -683,9 +581,21 @@ func getOrCreateOnPremiseAccount(authorizationToken string, organizationID strin
 	return credentials.ID, nil
 }
 
-func getBaseHelmValuesContent() string {
-	// download values file from https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-local.yaml
-	res, err := http.Get("https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-local.yaml")
+func getBaseHelmValuesContent(kubernetesType string) string {
+	// download the appropriate values file
+	// default: https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-local.yaml
+	valuesUrl := "https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-local.yaml"
+
+	switch kubernetesType {
+	case "AWS EKS":
+		valuesUrl = "https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-aws.yaml"
+	case "GCP GKE":
+		valuesUrl = "https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-gcp.yaml"
+	case "Scaleway Kapsule":
+		valuesUrl = "https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-scaleway.yaml"
+	}
+
+	res, err := http.Get(valuesUrl)
 
 	if err != nil {
 		utils.PrintlnError(err)
