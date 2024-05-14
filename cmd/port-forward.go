@@ -79,7 +79,7 @@ var (
 
 func portForwardRequestWithoutArg() (*pkg.PortForwardRequest, error) {
 	useContext := false
-	currentContext, err := utils.GetOrSetCurrentContext()
+	currentContext, err := utils.GetOrSetCurrentContext(true, true, true)
 	if err != nil {
 		return nil, err
 	}

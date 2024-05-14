@@ -41,13 +41,16 @@ func isMinimalContextValid(context QoveryContext) bool {
 		context.OrganizationId != ""
 }
 
-func GetOrSetCurrentContext() (QoveryContext, error) {
+func GetOrSetCurrentContext(setProject bool, setEnvironment bool, setService bool) (QoveryContext, error) {
 	context, _ := GetCurrentContext()
-	if isMinimalContextValid(context) {
+	if isMinimalContextValid(context) &&
+		((setProject && context.ProjectId != "") || !setProject) &&
+		((setEnvironment && context.EnvironmentId != "") || !setEnvironment) &&
+		((setService && context.ServiceId != "") || !setService) {
 		return context, nil
 	}
 
-	err := SetContext(false)
+	err := SetContext(setProject, setEnvironment, setService, false)
 
 	if err != nil {
 		return context, err
@@ -77,7 +80,7 @@ func GetCurrentContext() (QoveryContext, error) {
 	return context, err
 }
 
-func SetContext(printFinalContext bool) error {
+func SetContext(setProject bool, setEnvironment bool, setService bool, printFinalContext bool) error {
 	_ = PrintContext()
 	_ = ResetApplicationContext()
 
@@ -86,14 +89,26 @@ func SetContext(printFinalContext bool) error {
 		return err
 	}
 
+	if !setProject {
+		return nil
+	}
+
 	project, err := SelectAndSetProject(org.ID)
 	if err != nil {
 		return err
 	}
 
+	if !setEnvironment {
+		return nil
+	}
+
 	env, err := SelectAndSetEnvironment(project.ID)
 	if err != nil {
 		return err
+	}
+
+	if !setService {
+		return nil
 	}
 
 	_, err = SelectAndSetService(env.ID)
@@ -142,7 +157,7 @@ func CurrentOrganization(promptContext bool) (Id, Name, error) {
 	context, err := GetCurrentContext()
 
 	if (context.OrganizationId == "" || err != nil) && promptContext {
-		context, err = GetOrSetCurrentContext()
+		context, err = GetOrSetCurrentContext(false, false, false)
 	}
 
 	if err != nil {
@@ -177,7 +192,7 @@ func CurrentProject(promptContext bool) (Id, Name, error) {
 	context, err := GetCurrentContext()
 
 	if (context.ProjectId == "" || err != nil) && promptContext {
-		context, err = GetOrSetCurrentContext()
+		context, err = GetOrSetCurrentContext(true, false, false)
 	}
 
 	if err != nil {
@@ -212,7 +227,7 @@ func CurrentEnvironment(promptContext bool) (Id, Name, error) {
 	context, err := GetCurrentContext()
 
 	if (context.EnvironmentId == "" || err != nil) && promptContext {
-		context, err = GetOrSetCurrentContext()
+		context, err = GetOrSetCurrentContext(true, true, false)
 	}
 
 	if err != nil {
@@ -247,7 +262,7 @@ func CurrentService(promptContext bool) (*Service, error) {
 	context, err := GetCurrentContext()
 
 	if (context.ServiceId == "" || err != nil) && promptContext {
-		context, err = GetOrSetCurrentContext()
+		context, err = GetOrSetCurrentContext(true, true, true)
 	}
 
 	if err != nil {

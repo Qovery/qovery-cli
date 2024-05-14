@@ -115,15 +115,22 @@ func SelectOrganization() (*Organization, error) {
 	}
 
 	var organizationNames []string
-	var orgas = make(map[string]string)
+	var orgs = make(map[string]string)
 
 	for _, org := range organizations.GetResults() {
 		organizationNames = append(organizationNames, org.Name)
-		orgas[org.Name] = org.Id
+		orgs[org.Name] = org.Id
 	}
 
 	if len(organizationNames) < 1 {
 		return nil, errors.New("No organizations found. ")
+	}
+
+	if len(organizationNames) == 1 {
+		return &Organization{
+			ID:   Id(orgs[organizationNames[0]]),
+			Name: Name(organizationNames[0]),
+		}, nil
 	}
 
 	fmt.Println("Organization:")
@@ -139,7 +146,7 @@ func SelectOrganization() (*Organization, error) {
 	}
 
 	return &Organization{
-		ID:   Id(orgas[selectedOrganization]),
+		ID:   Id(orgs[selectedOrganization]),
 		Name: Name(selectedOrganization),
 	}, nil
 }
@@ -212,6 +219,13 @@ func SelectProject(organizationID Id) (*Project, error) {
 
 	if len(projectsNames) < 1 {
 		return nil, errors.New("No projects found. ")
+	}
+
+	if len(projectsNames) == 1 {
+		return &Project{
+			ID:   Id(projects[projectsNames[0]]),
+			Name: Name(projectsNames[0]),
+		}, nil
 	}
 
 	fmt.Println("Project:")
@@ -301,6 +315,14 @@ func SelectEnvironment(projectID Id) (*Environment, error) {
 
 	if len(environmentsNames) < 1 {
 		return nil, errors.New("No environments found. ")
+	}
+
+	if len(environmentsNames) == 1 {
+		return &Environment{
+			ID:        Id(environments[environmentsNames[0]].Id),
+			Name:      Name(environmentsNames[0]),
+			ClusterID: Id(environments[environmentsNames[0]].ClusterId),
+		}, nil
 	}
 
 	fmt.Println("Environment:")
@@ -548,6 +570,11 @@ func SelectService(environment Id) (*Service, error) {
 
 	if len(servicesNames) < 1 {
 		return nil, errors.New("No services found. ")
+	}
+
+	if len(servicesNames) == 1 {
+		service := services[servicesNames[0]]
+		return &service, nil
 	}
 
 	fmt.Println("Services:")

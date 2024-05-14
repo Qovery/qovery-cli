@@ -21,7 +21,7 @@ func Capture(command *cobra.Command) {
 	}
 	defer ph.Close()
 
-	ctx, err := GetOrSetCurrentContext()
+	ctx, err := GetCurrentContext()
 	if err != nil {
 		return
 	}

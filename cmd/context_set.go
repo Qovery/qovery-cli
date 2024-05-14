@@ -10,7 +10,7 @@ var setCmd = &cobra.Command{
 	Short: "Set Qovery CLI context",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		err := utils.SetContext(true)
+		err := utils.SetContext(true, true, true, true)
 		if err != nil {
 			utils.PrintlnError(err)
 		}

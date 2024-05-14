@@ -43,7 +43,7 @@ var (
 
 func shellRequestWithoutArg() (*pkg.ShellRequest, error) {
 	useContext := false
-	currentContext, err := utils.GetOrSetCurrentContext()
+	currentContext, err := utils.GetOrSetCurrentContext(true, true, true)
 	if err != nil {
 		return nil, err
 	}
