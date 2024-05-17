@@ -86,12 +86,9 @@ setup_network() {
     sudo ifconfig lo0 alias 172.42.0.3/32 up || true
   elif grep -qi microsoft /proc/version; then
     # Wsl
-    echo '******** PLEASE READ ********'
-    echo 'For Qovery url to work outside WSL (from your windows host). You need to run this command within an administrator terminal'
-    echo 'netsh interface ipv4 add address name="Loopback Pseudo-Interface 1" address=172.42.0.3 mask=255.255.255.255 skipassource=true'
-    echo '******** PLEASE READ ********'
     set -x
     sudo ip addr add 172.42.0.3/32 dev lo || true
+    powershell.exe -Command "Start-Process powershell -Verb RunAs -ArgumentList \"netsh interface ipv3 add address name='Loopback Pseudo-Interface 1' address=172.42.0.3 mask=255.255.255.255 skipassource=true\""
   fi
   set +x
 }
@@ -149,6 +146,9 @@ install_deps() {
   echo "All dependencies are installed"
 }
 
+# shellcheck disable=SC2046
+# shellcheck disable=SC2086
+cd "$(dirname $(realpath $0))"
 
 echo '""""""""""""""""""""""""""""""""""""""""""""'
 echo 'Checking and installing dependencies'
