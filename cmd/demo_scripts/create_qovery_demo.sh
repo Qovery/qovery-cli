@@ -88,7 +88,7 @@ setup_network() {
     # Wsl
     set -x
     sudo ip addr add 172.42.0.3/32 dev lo || true
-    powershell.exe -Command "Start-Process powershell -Verb RunAs -ArgumentList \"netsh interface ipv3 add address name='Loopback Pseudo-Interface 1' address=172.42.0.3 mask=255.255.255.255 skipassource=true\""
+    powershell.exe -Command "Start-Process powershell -Verb RunAs -ArgumentList \"netsh interface ipv4 add address name='Loopback Pseudo-Interface 1' address=172.42.0.3 mask=255.255.255.255 skipassource=true\""
   fi
   set +x
 }
