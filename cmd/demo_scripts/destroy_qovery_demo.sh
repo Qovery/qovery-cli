@@ -32,8 +32,8 @@ delete_k3d_cluster() {
   then
     k3d cluster delete "$clusterName" || true
   fi
-  docker network rm "k3d-${clusterName}" || true
-  k3d registry delete qovery-registry.lan || true
+  docker network rm "k3d-${clusterName}" 2>/dev/null || true
+  k3d registry delete qovery-registry.lan 2>/dev/null || true
 }
 
 teardown_network() {

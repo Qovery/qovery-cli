@@ -2,9 +2,6 @@ package cmd
 
 import (
 	_ "embed"
-	"github.com/qovery/qovery-cli/utils"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
 	"os/user"
@@ -12,6 +9,10 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/qovery/qovery-cli/utils"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 var demoCmd = &cobra.Command{
@@ -32,6 +33,12 @@ var demoCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		tmpDir, err := os.MkdirTemp("", demoClusterName)
+		if err != nil {
+			log.Errorln("Cannot create temporary directory")
+			panic(err)
+		}
+
 		if args[0] == "up" {
 			regex := "^[a-zA-Z][-a-z]+[a-zA-Z]$"
 			match, _ := regexp.MatchString(regex, demoClusterName)
@@ -40,13 +47,15 @@ var demoCmd = &cobra.Command{
 				os.Exit(1)
 			}
 
-			err := os.WriteFile("create_demo_cluster.sh", demoScriptsCreate, 0700)
+			script := tmpDir + "create_demo_cluster.sh"
+
+			err := os.WriteFile(script, demoScriptsCreate, 0700)
 			if err != nil {
 				log.Errorf("Cannot write file to disk: %s", err)
 				os.Exit(1)
 			}
 
-			cmd := exec.Command("/bin/sh", "create_demo_cluster.sh", demoClusterName, strings.ToUpper(runtime.GOARCH), string(orgId), string(token))
+			cmd := exec.Command("/bin/sh", script, demoClusterName, strings.ToUpper(runtime.GOARCH), string(orgId), string(token))
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
@@ -56,13 +65,15 @@ var demoCmd = &cobra.Command{
 		}
 
 		if args[0] == "destroy" {
-			err := os.WriteFile("destroy_demo_cluster.sh", demoScriptsDestroy, 0700)
+			script := tmpDir + "destroy_demo_cluster.sh"
+
+			err := os.WriteFile(script, demoScriptsDestroy, 0700)
 			if err != nil {
 				log.Errorf("Cannot write file to disk: %s", err)
 				os.Exit(1)
 			}
 
-			cmd := exec.Command("/bin/sh", "destroy_demo_cluster.sh", demoClusterName, string(orgId), string(token), strconv.FormatBool(demoDeleteQoveryConfig))
+			cmd := exec.Command("/bin/sh", script, demoClusterName, string(orgId), string(token), strconv.FormatBool(demoDeleteQoveryConfig))
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
