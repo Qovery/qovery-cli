@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -28,6 +29,7 @@ var demoCmd = &cobra.Command{
 
 		orgId, _, err := utils.CurrentOrganization(true)
 		if err != nil {
+			log.Errorf("Cannot get Bearer or Token to access Qovery API. Please use `qovery auth` first: %s", err)
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
@@ -40,13 +42,21 @@ var demoCmd = &cobra.Command{
 				os.Exit(1)
 			}
 
-			err := os.WriteFile("create_demo_cluster.sh", demoScriptsCreate, 0700)
+			scriptDir := filepath.Join(os.TempDir(), "qovery-demo")
+			err := os.MkdirAll(scriptDir, os.FileMode(0700))
+			if err != nil {
+				log.Fatal(err)
+				os.Exit(1)
+			}
+
+			scriptPath := filepath.Join(scriptDir, "create_demo_cluster.sh")
+			err = os.WriteFile(scriptPath, demoScriptsCreate, 0700)
 			if err != nil {
 				log.Errorf("Cannot write file to disk: %s", err)
 				os.Exit(1)
 			}
 
-			cmd := exec.Command("/bin/sh", "create_demo_cluster.sh", demoClusterName, strings.ToUpper(runtime.GOARCH), string(orgId), string(token))
+			cmd := exec.Command("/bin/sh", scriptPath, demoClusterName, strings.ToUpper(runtime.GOARCH), string(orgId), string(token))
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
@@ -56,13 +66,26 @@ var demoCmd = &cobra.Command{
 		}
 
 		if args[0] == "destroy" {
-			err := os.WriteFile("destroy_demo_cluster.sh", demoScriptsDestroy, 0700)
+			scriptDir := filepath.Join(os.TempDir(), "qovery-demo")
+			err := os.MkdirAll(scriptDir, os.FileMode(0700))
+			if err != nil {
+				log.Fatal(err)
+				os.Exit(1)
+			}
+
+			scriptPath := filepath.Join(scriptDir, "destroy_demo_cluster.sh")
+			err = os.WriteFile(scriptPath, demoScriptsCreate, 0700)
+			if err != nil {
+				log.Errorf("Cannot write file to disk: %s", err)
+				os.Exit(1)
+			}
+			err = os.WriteFile(scriptPath, demoScriptsDestroy, 0700)
 			if err != nil {
 				log.Errorf("Cannot write file to disk: %s", err)
 				os.Exit(1)
 			}
 
-			cmd := exec.Command("/bin/sh", "destroy_demo_cluster.sh", demoClusterName, string(orgId), string(token), strconv.FormatBool(demoDeleteQoveryConfig))
+			cmd := exec.Command("/bin/sh", scriptPath, demoClusterName, string(orgId), string(token), strconv.FormatBool(demoDeleteQoveryConfig))
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {

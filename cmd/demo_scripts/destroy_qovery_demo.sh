@@ -32,8 +32,8 @@ delete_k3d_cluster() {
   then
     k3d cluster delete "$clusterName" || true
   fi
-  docker network rm "k3d-${clusterName}" || true
-  k3d registry delete qovery-registry.lan || true
+  docker network rm "k3d-${clusterName}" > /dev/null 2>&1 || true
+  k3d registry delete qovery-registry.lan > /dev/null 2>&1 || true
 }
 
 teardown_network() {
@@ -43,16 +43,16 @@ teardown_network() {
     sudo ifconfig lo0 -alias 172.42.0.3/32 up || true
   elif grep -qi microsoft /proc/version; then
     # Wsl
-    echo '******** PLEASE READ ********'
-    echo 'You must run this command from an administrator terminal to finish the cleanup'
-    echo 'netsh interface ipv4 delete address name="Loopback Pseudo-Interface 1" address=172.42.0.3'
-    echo '******** PLEASE READ ********'
     set -x
     sudo ip addr del 172.42.0.3/32 dev lo || true
+    powershell.exe -Command "Start-Process powershell -Verb RunAs -ArgumentList \"netsh interface ipv4 delete address name='Loopback Pseudo-Interface 1' address=172.42.0.3\""
   fi
   set +x
 }
 
+# shellcheck disable=SC2046
+# shellcheck disable=SC2086
+cd "$(dirname $(realpath $0))"
 
 echo ''
 echo '""""""""""""""""""""""""""""""""""""""""""""'
