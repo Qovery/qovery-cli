@@ -139,6 +139,7 @@ func SelectOrganization() (*Organization, error) {
 		Searcher: func(input string, index int) bool {
 			return strings.Contains(strings.ToLower(organizationNames[index]), strings.ToLower(input))
 		},
+		Size: 30,
 	}
 	_, selectedOrganization, err := prompt.Run()
 	if err != nil {

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	context2 "context"
 	"encoding/json"
 	"errors"
 	"os"
@@ -329,8 +330,10 @@ func GetAccessToken() (AccessTokenType, AccessToken, error) {
 		return "", "", errors.New("Access token has not been found. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
 	}
 
-	expired := context.AccessTokenExpiration.Before(time.Now())
-	if expired {
+	// check the token is correct
+	client := GetQoveryClient(AccessTokenType(tokenType), AccessToken(token))
+	_, _, err = client.OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute()
+	if err != nil {
 		RefreshExpiredTokenSilently()
 		_, refreshed, err := GetAccessToken()
 		if err != nil {
