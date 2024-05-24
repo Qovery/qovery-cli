@@ -291,6 +291,7 @@ var clusterInstallCmd = &cobra.Command{
 		}
 
 		configureRegistry(client, cluster)
+		configureStorageClass(client, cluster)
 
 		// Email selection for certificate
 		email := func() string {
@@ -518,6 +519,35 @@ func createCredentials(client *qovery.APIClient, orgaId string, providerType qov
 	}
 
 	panic("Unhandled cloudprovider type during credentials creation")
+}
+
+func configureStorageClass(client *qovery.APIClient, cluster *qovery.Cluster) {
+	if cluster.CloudProvider != qovery.CLOUDPROVIDERENUM_ON_PREMISE {
+		return
+	}
+
+	utils.Println("We need to know the storage class name that your kubernetes cluster use in order to deploy app with network storage.")
+	storageClassUI := promptui.Select{
+		Label: "Storage class name",
+	}
+	_, storageClassName, err := storageClassUI.Run()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+
+	settings, _, err := client.ClustersAPI.GetClusterAdvancedSettings(context.Background(), cluster.Organization.Id, cluster.Id).Execute()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+
+	settings.StorageclassFastSsd = &storageClassName
+	_, _, err = client.ClustersAPI.EditClusterAdvancedSettings(context.Background(), cluster.Organization.Id, cluster.Id).ClusterAdvancedSettings(*settings).Execute()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
 }
 
 func configureRegistry(client *qovery.APIClient, cluster *qovery.Cluster) {
