@@ -1,19 +1,20 @@
 package cmd
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 	"io"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -27,7 +28,6 @@ var clusterInstallCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -38,51 +38,63 @@ var clusterInstallCmd = &cobra.Command{
 		// if Local Machine, quit and print message to use the `qovery demo up` on the local machine
 		utils.Println("Cluster Type:")
 		clusterTypePrompt := promptui.Select{
-			Label: "Select where you want to install Qovery on:",
-			Items: []string{"Your Kubernetes Cluster", "Your Local Machine"},
+			Label: "Select where you want to install Qovery on",
+			Items: []string{
+				"Your AWS EKS cluster",
+				"Your GCP GKE cluster",
+				"Your Scaleway Kapsule cluster",
+				"Your Azure AKS cluster",
+				"Your OVH kuke cluster",
+				"Your Digital Ocean kube cluster",
+				"Your Civo K3S cluster",
+				"Your Local Machine",
+				"Other",
+			},
+			Size: 10,
 		}
 
 		_, kubernetesType, err := clusterTypePrompt.Run()
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		if kubernetesType == "Local Machine" {
+		cloudProviderType := qovery.CLOUDPROVIDERENUM_AWS
+		if strings.Contains(kubernetesType, "AWS") {
+			cloudProviderType = qovery.CLOUDPROVIDERENUM_AWS
+		} else if strings.Contains(kubernetesType, "GCP") {
+			cloudProviderType = qovery.CLOUDPROVIDERENUM_GCP
+		} else if strings.Contains(kubernetesType, "Scaleway") {
+			cloudProviderType = qovery.CLOUDPROVIDERENUM_SCW
+		} else if strings.Contains(kubernetesType, "Local Machine") {
 			utils.PrintlnInfo("Please use `qovery demo up` to create a demo cluster on your local machine")
 			os.Exit(0)
+		} else {
+			cloudProviderType = qovery.CLOUDPROVIDERENUM_ON_PREMISE
 		}
 
-		// if Self Managed, continue with the installation process
-
+		// Select the correct organization
 		organization, err := utils.SelectOrganization()
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
-
 		if organization == nil {
 			utils.PrintlnError(fmt.Errorf("organizations not found, please create one on https://console.qovery.com"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		// check that the cluster name is unique
+		// List cluster and if there is one that already exist for self-managed and this cloud provider
+		// propose to re-use it
 		clusters, _, err := client.ClustersAPI.ListOrganizationCluster(context.Background(), string(organization.ID)).Execute()
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		var selfManagedClusters []qovery.Cluster
 		for _, cluster := range clusters.GetResults() {
-			if cluster.CloudProvider == qovery.CLOUDPROVIDERENUM_ON_PREMISE {
+			if *cluster.Kubernetes == qovery.KUBERNETESENUM_SELF_MANAGED && cluster.CloudProvider == cloudProviderType {
 				selfManagedClusters = append(selfManagedClusters, cluster)
 			}
 		}
@@ -97,26 +109,23 @@ var clusterInstallCmd = &cobra.Command{
 				Items: []string{"Reuse a Cluster", "Create a new cluster"},
 			}
 
-			_, reuseOrCreateNewCluster, err := reuseOrCreateNewClusterPrompt.Run()
-
+			ix, _, err := reuseOrCreateNewClusterPrompt.Run()
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
-			if reuseOrCreateNewCluster == "Reuse a Cluster" {
+			if ix == 0 {
 				utils.Println("Select the cluster you want to reuse:")
 
 				var clusterNameItems []string
-
 				for _, cluster := range selfManagedClusters {
 					clusterNameItems = append(clusterNameItems, cluster.Name)
 				}
-
 				reuseClusterPrompt := promptui.Select{
 					Label: "Select the cluster you want to reuse",
 					Items: clusterNameItems,
+					Size:  10,
 				}
 
 				_, reuseClusterName, err := reuseClusterPrompt.Run()
@@ -124,170 +133,182 @@ var clusterInstallCmd = &cobra.Command{
 				if err != nil {
 					utils.PrintlnError(err)
 					os.Exit(1)
-					panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 				}
 
 				cluster = utils.FindByClusterName(selfManagedClusters, reuseClusterName)
 			}
 		}
 
-		// clusterTypePrompt where the cluster is located (AWS, GCP, Azure, Scaleway, OVH Cloud, Digital Ocean, Civo, Other, etc.)
-		utils.Println("Kubernetes Type:")
-		kubernetesTypePrompt := promptui.Select{
-			Label: "Select your Kubernetes type",
-			Items: []string{
-				"AWS EKS",
-				"GCP GKE",
-				"Azure AKS",
-				"Scaleway Kapsule",
-				"OVH Cloud Kubernetes",
-				"Digital Ocean Kubernetes",
-				"Civo K3S",
-				"On Premise",
-				"Other",
-			},
-		}
-
-		_, kubernetesType, err = kubernetesTypePrompt.Run()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		kubernetesTypeOther := ""
-		if kubernetesType == "Other" {
-			utils.Println("Other: where your Kubernetes cluster is located?")
-			clusterLocationOtherPrompt := promptui.Prompt{
-				Label: "Enter the location of your Kubernetes cluster (optional)",
-			}
-
-			kubernetesType, err = clusterLocationOtherPrompt.Run()
-
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-
-			kubernetesTypeOther = kubernetesType
-		}
-
-		// TODO clusterTypePrompt for the Kubernetes version -- propose a list of versions
-		// TODO based on the version, display a message explaining if Qovery supports the version or not
-
+		// We need to create the cluster
 		if cluster == nil {
-			// clusterTypePrompt for cluster name
-			mClusterName := promptForClusterName(fmt.Sprintf("my-cluster-%s", utils.RandStringBytes(4)))
+			var clusterCreds *qovery.ClusterCredentialsResponseList
+			var clusterRegions *qovery.ClusterRegionResponseList
+			switch cloudProviderType {
+			case qovery.CLOUDPROVIDERENUM_GCP:
+				regions, _, err := client.CloudProviderAPI.ListGcpRegions(context.Background()).Execute()
+				if err != nil {
+					utils.PrintlnError(err)
+					os.Exit(1)
+				}
+				clusterRegions = regions
 
-			for {
-				cluster := utils.FindByClusterName(clusters.GetResults(), mClusterName)
-				if cluster == nil {
-					break
+				req := client.CloudProviderCredentialsAPI.ListGcpCredentials(context.Background(), string(organization.ID))
+				creds, _, err := client.CloudProviderCredentialsAPI.ListGcpCredentialsExecute(req)
+				if err != nil {
+					utils.PrintlnError(err)
+					os.Exit(1)
+				}
+				clusterCreds = creds
+			case qovery.CLOUDPROVIDERENUM_AWS:
+				regions, _, err := client.CloudProviderAPI.ListAWSRegions(context.Background()).Execute()
+				if err != nil {
+					utils.PrintlnError(err)
+					os.Exit(1)
+				}
+				clusterRegions = regions
+
+				req := client.CloudProviderCredentialsAPI.ListAWSCredentials(context.Background(), string(organization.ID))
+				creds, _, err := client.CloudProviderCredentialsAPI.ListAWSCredentialsExecute(req)
+				if err != nil {
+					utils.PrintlnError(err)
+					os.Exit(1)
+				}
+				clusterCreds = creds
+			case qovery.CLOUDPROVIDERENUM_SCW:
+				regions, _, err := client.CloudProviderAPI.ListScalewayRegions(context.Background()).Execute()
+				if err != nil {
+					utils.PrintlnError(err)
+					os.Exit(1)
+				}
+				clusterRegions = regions
+
+				req := client.CloudProviderCredentialsAPI.ListScalewayCredentials(context.Background(), string(organization.ID))
+				creds, _, err := client.CloudProviderCredentialsAPI.ListScalewayCredentialsExecute(req)
+				if err != nil {
+					utils.PrintlnError(err)
+					os.Exit(1)
+				}
+				clusterCreds = creds
+
+			case qovery.CLOUDPROVIDERENUM_ON_PREMISE:
+				req := client.CloudProviderCredentialsAPI.ListOnPremiseCredentials(context.Background(), string(organization.ID))
+				creds, _, err := client.CloudProviderCredentialsAPI.ListOnPremiseCredentialsExecute(req)
+				if err != nil {
+					utils.PrintlnError(err)
+					os.Exit(1)
+				}
+				clusterCreds = creds
+			}
+
+			// Select the region
+			clusterRegion := func() *string {
+				if clusterRegions == nil {
+					onPrem := "on-premise"
+					return &onPrem
 				}
 
-				utils.PrintlnError(fmt.Errorf("cluster %s already exists", mClusterName))
-				utils.Println("Here are the clusters that already exist in your organization:")
-
-				for _, cluster := range clusters.GetResults() {
-					utils.Println(fmt.Sprintf("- %s", cluster.Name))
+				var items []string
+				for _, item := range clusterRegions.Results {
+					items = append(items, item.Name)
 				}
 
-				utils.Println("\nPlease choose another name that is not already in use.\n")
+				utils.Println("Cluster Region:")
+				prompt := promptui.Select{
+					Label: "Select the region where your cluster is installed",
+					Items: items,
+					Size:  30,
+					Searcher: func(input string, index int) bool {
+						return strings.Contains(items[index], input)
+					},
+					StartInSearchMode: true,
+				}
+				ix, _, err := prompt.Run()
 
-				mClusterName = promptForClusterName(mClusterName)
-			}
+				if err != nil {
+					utils.PrintlnError(err)
+					os.Exit(1)
+				}
+				return &clusterRegions.Results[ix].Name
+			}()
 
-			// API call to get or create the on-premise account
-			onPremiseAccount, err := getOrCreateOnPremiseAccount(utils.GetAuthorizationHeaderValue(tokenType, token), string(organization.ID))
-			if err != nil {
+			// Select the credentials to use
+			credentials := func() qovery.ClusterCredentials {
+				var ix = math.MaxInt
 
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
+				if cloudProviderType == qovery.CLOUDPROVIDERENUM_ON_PREMISE {
+					if len(clusterCreds.Results) > 0 {
+						ix = 0
+					}
+				} else {
+					var items []string
+					for _, creds := range clusterCreds.Results {
+						items = append(items, creds.Name)
+					}
+					items = append(items, "Create new credentials")
 
-			// API call to create the self-managed cluster and link it to the on-premise account
-			description := fmt.Sprintf("Cluster running on %s (%s)", kubernetesType, kubernetesTypeOther)
+					utils.Println("Cluster registry credentials:")
+					prompt := promptui.Select{
+						Label: "Which credentials do you want to use for the container registry ?",
+						Items: items,
+						Size:  10,
+					}
+					ixx, _, err := prompt.Run()
+					if err != nil {
+						utils.PrintlnError(err)
+						os.Exit(1)
+					}
+					ix = ixx
+				}
 
-			k := qovery.KUBERNETESENUM_SELF_MANAGED
-			cp := qovery.CLOUDPROVIDERENUM_ON_PREMISE
-			region := "on-premise"
+				if ix >= len(clusterCreds.Results) {
+					return *createCredentials(client, string(organization.ID), cloudProviderType)
+				}
 
-			infoCredentialsName := "on-premise"
-			infoCredentials := qovery.ClusterCloudProviderInfoCredentials{
-				Id:   &onPremiseAccount,
-				Name: &infoCredentialsName,
-			}
+				return clusterCreds.Results[ix]
+			}()
 
-			cloudProviderCredentials := qovery.ClusterCloudProviderInfoRequest{
-				CloudProvider: &cp,
-				Credentials:   &infoCredentials,
-				Region:        &region,
-			}
-
-			cluster, _, err = client.ClustersAPI.CreateCluster(
-				context.Background(),
-				string(organization.ID),
-			).ClusterRequest(qovery.ClusterRequest{
-				Name:                     mClusterName,
-				Description:              &description,
-				Region:                   region,
-				CloudProvider:            cp,
-				Kubernetes:               &k,
-				Production:               utils.Bool(false),
-				Features:                 []qovery.ClusterRequestFeaturesInner{},
-				CloudProviderCredentials: &cloudProviderCredentials,
+			selfManagedMode := qovery.KUBERNETESENUM_SELF_MANAGED
+			clusterRes, resp, err := client.ClustersAPI.CreateCluster(context.Background(), string(organization.ID)).ClusterRequest(qovery.ClusterRequest{
+				Name:          promptForClusterName("my-cluster"),
+				Region:        *clusterRegion,
+				CloudProvider: cloudProviderType,
+				Kubernetes:    &selfManagedMode,
+				CloudProviderCredentials: &qovery.ClusterCloudProviderInfoRequest{
+					CloudProvider: &cloudProviderType,
+					Credentials:   &qovery.ClusterCloudProviderInfoCredentials{Id: &credentials.Id, Name: &credentials.Name},
+					Region:        clusterRegion,
+				},
+				Features: []qovery.ClusterRequestFeaturesInner{},
 			}).Execute()
 
 			if err != nil {
 				utils.PrintlnError(err)
+				body, _ := io.ReadAll(resp.Body)
+				fmt.Printf("%s: %v\n", color.RedString("Error"), string(body))
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
+			cluster = clusterRes
 		}
 
-		// propose to configure the container registry (optional);
-		// by default it is a local registry on the cluster (not recommended for production)
-		// configure container registry (optional)
-		utils.Println("")
-		utils.Println(`Qovery must uses a container registry to mirror your images. 
-You can use the default registry (local) on your cluster or a managed registry.
-We recommend using a managed registry for intensive deployments.
-This can be configured later in the Qovery Console.`)
+		configureRegistry(client, cluster)
 
-		configureContainerRegistryPrompt := promptui.Select{
-			Label: "Do you want to configure a container registry?",
-			Items: []string{"Yes", "No"},
-		}
+		// Email selection for certificate
+		email := func() string {
+			// get the email of the user for Cert Manager
+			utils.Println("Contact email for Let's Encrypt certificate:")
+			emailPrompt := promptui.Prompt{
+				Label:   "Enter your email address to receive expiration notification from Let's Encrypt",
+				Default: "acme@qovery.com",
+			}
 
-		_, configureContainerRegistry, err := configureContainerRegistryPrompt.Run()
+			email, err := emailPrompt.Run()
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if configureContainerRegistry == "Yes" {
-			showContainerRegistryConfiguration(cluster, organization, kubernetesType)
-		}
-
-		// get the email of the user for Cert Manager
-		utils.Println("Email for Cert Manager / Let's Encrypt:")
-		emailPrompt := promptui.Prompt{
-			Label:   "Enter your email address for Cert Manager",
-			Default: "acme@qovery.com",
-		}
-
-		email, err := emailPrompt.Run()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+			}
+			return email
+		}()
 
 		// get the values file for the cluster
 		clusterHelmValuesContent, _, err := client.ClustersAPI.GetInstallationHelmValues(
@@ -299,7 +320,6 @@ This can be configured later in the Qovery Console.`)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		// inject the email for Cert Manager
@@ -308,14 +328,14 @@ This can be configured later in the Qovery Console.`)
 		finalClusterHelmValuesContent := fmt.Sprintf("%s\n", clusterHelmValuesContent)
 
 		// trim lines if they start with "qovery:" or if they contain "set-by-customer"
-		for _, line := range strings.Split(getBaseHelmValuesContent(kubernetesType), "\n") {
+		for _, line := range strings.Split(getBaseHelmValuesContent(cloudProviderType), "\n") {
 			if strings.HasPrefix(line, "qovery:") || strings.Contains(line, "set-by-customer") {
 				continue
 			}
 			finalClusterHelmValuesContent += line + "\n"
 		}
 
-		if kubernetesType == "Azure AKS" {
+		if strings.Contains(kubernetesType, "Azure") {
 			finalClusterHelmValuesContent = injectAzureAKSValues(finalClusterHelmValuesContent)
 		}
 
@@ -328,7 +348,6 @@ This can be configured later in the Qovery Console.`)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		helmValuesFileName = filepath.Join(dir, helmValuesFileName)
@@ -344,7 +363,6 @@ This can be configured later in the Qovery Console.`)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		err = os.WriteFile(helmValuesFileName, []byte(finalClusterHelmValuesContent), 0644)
@@ -352,71 +370,235 @@ This can be configured later in the Qovery Console.`)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		outputCommandsToInstallQoveryOnCluster(helmValuesFileName)
 	},
 }
 
-func showContainerRegistryConfiguration(cluster *qovery.Cluster, organization *utils.Organization, kubernetesType string) {
-	utils.Println("\nPlease configure the container registry in the Qovery Console:")
-	utils.Println(fmt.Sprintf("https://console.qovery.com/organization/%s/settings/container-registries", string(organization.ID)))
-	utils.Println(fmt.Sprintf("The registry name is: registry-%s", cluster.Id))
-	utils.Println("")
+func createCredentials(client *qovery.APIClient, orgaId string, providerType qovery.CloudProviderEnum) *qovery.ClusterCredentials {
+	credsName, err := func() *promptui.Prompt {
+		return &promptui.Prompt{
+			Label:   "Give a name to your credentials",
+			Default: "",
+		}
+	}().Run()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+	switch providerType {
+	case qovery.CLOUDPROVIDERENUM_AWS:
+		accessKey, err := func() *promptui.Prompt {
+			return &promptui.Prompt{
+				Label:   "Enter your AWS access key",
+				Default: "",
+			}
+		}().Run()
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+		secretKey, err := func() *promptui.Prompt {
+			return &promptui.Prompt{
+				Label:   "Enter your AWS secret key",
+				Default: "",
+			}
+		}().Run()
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
 
-	if kubernetesType == "Azure AKS" {
-		utils.Println("For Azure AKS, you can:")
-		utils.Println("- Create a container registry in Azure Container Registry")
-		utils.Println("- Turn on the Admin User in the Azure Container Registry (Access Keys section)")
-		utils.Println("- Use the GENERIC_CR as the container registry in Qovery")
-		utils.Println("- Your Azure Container Registry URL is: https://<registry-name>.azurecr.io/v2/")
-		utils.Println("- Your Azure Container Registry Username is: <access key username>")
-		utils.Println("- Your Azure Container Registry Password is: <access key password>")
-		utils.Println("Note: you can also use another container registry if you prefer.")
+		creds, resp, err := client.CloudProviderCredentialsAPI.CreateAWSCredentials(context.Background(), orgaId).AwsCredentialsRequest(qovery.AwsCredentialsRequest{
+			Name:            credsName,
+			AccessKeyId:     accessKey,
+			SecretAccessKey: secretKey,
+		}).Execute()
+		if err != nil {
+			utils.PrintlnError(err)
+			body, _ := io.ReadAll(resp.Body)
+			fmt.Printf("%s: %v\n", color.RedString("Error"), string(body))
+			os.Exit(1)
+		}
+		return creds
+
+	case qovery.CLOUDPROVIDERENUM_SCW:
+		accessKey, err := func() *promptui.Prompt {
+			return &promptui.Prompt{
+				Label:   "Enter your SCW access key",
+				Default: "",
+			}
+		}().Run()
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+		secretKey, err := func() *promptui.Prompt {
+			return &promptui.Prompt{
+				Label:   "Enter your SCW secret key",
+				Default: "",
+			}
+		}().Run()
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		organizationId, err := func() *promptui.Prompt {
+			return &promptui.Prompt{
+				Label:   "Enter your SCW organization ID",
+				Default: "",
+			}
+		}().Run()
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		projectId, err := func() *promptui.Prompt {
+			return &promptui.Prompt{
+				Label:   "Enter your SCW project ID",
+				Default: "",
+			}
+		}().Run()
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		creds, resp, err := client.CloudProviderCredentialsAPI.CreateScalewayCredentials(context.Background(), orgaId).ScalewayCredentialsRequest(qovery.ScalewayCredentialsRequest{
+			Name:                   credsName,
+			ScalewayAccessKey:      accessKey,
+			ScalewaySecretKey:      secretKey,
+			ScalewayProjectId:      projectId,
+			ScalewayOrganizationId: organizationId,
+		}).Execute()
+		if err != nil {
+			utils.PrintlnError(err)
+			body, _ := io.ReadAll(resp.Body)
+			fmt.Printf("%s: %v\n", color.RedString("Error"), string(body))
+			os.Exit(1)
+		}
+		return creds
+
+	case qovery.CLOUDPROVIDERENUM_GCP:
+		gcpCredentials, err := func() *promptui.Prompt {
+			return &promptui.Prompt{
+				Label:   "Enter your GCP json credentials",
+				Default: "",
+			}
+		}().Run()
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+		creds, resp, err := client.CloudProviderCredentialsAPI.CreateGcpCredentials(context.Background(), orgaId).GcpCredentialsRequest(qovery.GcpCredentialsRequest{
+			Name:           credsName,
+			GcpCredentials: gcpCredentials,
+		}).Execute()
+		if err != nil {
+			utils.PrintlnError(err)
+			body, _ := io.ReadAll(resp.Body)
+			fmt.Printf("%s: %v\n", color.RedString("Error"), string(body))
+			os.Exit(1)
+		}
+		return creds
+	case qovery.CLOUDPROVIDERENUM_ON_PREMISE:
+		creds, resp, err := client.CloudProviderCredentialsAPI.CreateOnPremiseCredentials(context.Background(), orgaId).OnPremiseCredentialsRequest(qovery.OnPremiseCredentialsRequest{
+			Name: "on-premise",
+		}).Execute()
+		if err != nil {
+			utils.PrintlnError(err)
+			body, _ := io.ReadAll(resp.Body)
+			fmt.Printf("%s: %v\n", color.RedString("Error"), string(body))
+			os.Exit(1)
+		}
+		return creds
 	}
 
-	if kubernetesType == "AWS EKS" {
-		utils.Println("For AWS EKS, you can:")
-		utils.Println("- Create a container registry in Amazon Elastic Container Registry (ECR)")
-		utils.Println("- Use the ECR as the container registry in Qovery")
-		utils.Println("- Set your credentials")
-		utils.Println("Note: you can also use another container registry if you prefer.")
+	panic("Unhandled cloudprovider type during credentials creation")
+}
+
+func configureRegistry(client *qovery.APIClient, cluster *qovery.Cluster) {
+	if cluster.CloudProvider != qovery.CLOUDPROVIDERENUM_ON_PREMISE {
+		return
 	}
 
-	//if kubernetesType == "GCP GKE" {
-	// TODO implement GCP GKE container registry configuration
-	//}
-
-	if kubernetesType == "Scaleway Kapsule" {
-		utils.Println("For Scaleway Kapsule, you can:")
-		utils.Println("- Create a container registry in Scaleway Container Registry")
-		utils.Println("- Use the Scaleway Container Registry as the container registry in Qovery")
-		utils.Println("- Set your credentials")
-		utils.Println("Note: you can also use another container registry if you prefer.")
+	configureContainerRegistryPrompt := promptui.Select{
+		Label: "You need to configure a container registry that Qovery will use to push images for your cluster. Do you want to do it now ?",
+		Items: []string{"Yes", "No"},
 	}
 
-	// if kubernetesType == "OVH Cloud Kubernetes" {
-	// TODO implement OVH Cloud Kubernetes container registry configuration
-	// }
+	_, configureContainerRegistry, err := configureContainerRegistryPrompt.Run()
 
-	if kubernetesType == "Digital Ocean Kubernetes" {
-		utils.Println("For Digital Ocean Kubernetes, you can:")
-		utils.Println("- Create a container registry in Digital Ocean Container Registry")
-		utils.Println("- Use the Digital Ocean Container Registry as the container registry in Qovery")
-		utils.Println("- Set your credentials")
-		utils.Println("Note: you can also use another container registry if you prefer.")
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
 	}
 
-	//if kubernetesType == "Civo K3S" {
-	// TODO implement Civo K3S container registry configuration
-	//}
-
-	if kubernetesType == "On Premise" {
-		utils.Println("For On Premise, you can connect any container registry you want.")
+	if configureContainerRegistry == "No" {
+		return
 	}
 
-	utils.Println("")
+	resp, _, err := client.ContainerRegistriesAPI.ListContainerRegistry(context.Background(), cluster.Organization.Id).Execute()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+	ix := slices.IndexFunc(resp.GetResults(), func(c qovery.ContainerRegistryResponse) bool { return c.Cluster != nil && c.Cluster.Id == cluster.Id })
+	cr := resp.Results[ix]
+
+	url, err := func() *promptui.Prompt {
+		return &promptui.Prompt{
+			Label:   "Url of your registry",
+			Default: "https://",
+		}
+	}().Run()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+
+	login, err := func() *promptui.Prompt {
+		return &promptui.Prompt{
+			Label:   "Username to use to login to your registry",
+			Default: "",
+		}
+	}().Run()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+
+	password, err := func() *promptui.Prompt {
+		return &promptui.Prompt{
+			Label:   "Password to use to login to your registry",
+			Default: "",
+		}
+	}().Run()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+
+	_, res, err := client.ContainerRegistriesAPI.EditContainerRegistry(context.Background(), cluster.Organization.Id, cr.Id).ContainerRegistryRequest(qovery.ContainerRegistryRequest{
+		Name:        *cr.Name,
+		Kind:        *cr.Kind,
+		Description: cr.Description,
+		Url:         &url,
+		Config: qovery.ContainerRegistryRequestConfig{
+			Username: &login,
+			Password: &password,
+		},
+	}).Execute()
+
+	if err != nil {
+		utils.PrintlnError(err)
+		body, _ := io.ReadAll(res.Body)
+		fmt.Printf("%s: %v\n", color.RedString("Error"), string(body))
+		os.Exit(1)
+	}
 }
 
 func outputCommandsToInstallQoveryOnCluster(helmValuesFileName string) {
@@ -442,7 +624,7 @@ helm upgrade --install --create-namespace -n qovery -f "%s" --atomic \
 
 	utils.Println(fmt.Sprintf(`
 # Then, re-apply the full Qovery installation with all services
-helm upgrade --install --create-namespace -n qovery -f \"%s\" --wait --atomic qovery qovery/qovery
+helm upgrade --install --create-namespace -n qovery -f "%s" --wait --atomic qovery qovery/qovery
 `, helmValuesFileName))
 	utils.Println("////////////////////////////////////////////////////////////////////////////////////")
 	utils.PrintlnInfo("Please note that the installation process may take a few minutes to complete.")
@@ -451,16 +633,14 @@ helm upgrade --install --create-namespace -n qovery -f \"%s\" --wait --atomic qo
 func promptForClusterName(defaultName string) string {
 	utils.Println("Cluster Name:")
 	clusterNamePrompt := promptui.Prompt{
-		Label:   "Your Cluster Name",
+		Label:   "Give a name to your new cluster",
 		Default: defaultName,
 	}
-
 	mClusterName, err := clusterNamePrompt.Run()
 
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	return mClusterName
@@ -475,7 +655,6 @@ func injectAzureAKSValues(clusterHelmValuesContent string) string {
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	ingressNginx := helmValuesYaml["ingress-nginx"].(map[string]interface{})
@@ -508,115 +687,43 @@ func injectAzureAKSValues(clusterHelmValuesContent string) string {
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 	return string(helmValuesYamlBytes)
 }
 
-type onPremiseCredentials struct {
-	ID string `json:"id"`
-}
-
-type onPremiseResults struct {
-	Results []onPremiseCredentials `json:"results"`
-}
-
-func getOrCreateOnPremiseAccount(authorizationToken string, organizationID string) (string, error) {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://api.qovery.com/organization/"+organizationID+"/onPremise/credentials", nil)
-	if err != nil {
-		return "", err
-	}
-
-	req.Header.Add("Authorization", authorizationToken)
-	req.Header.Add("Content-Type", "application/json")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	var results onPremiseResults
-	err = json.Unmarshal(body, &results)
-	if err != nil {
-		return "", err
-	}
-
-	if len(results.Results) > 0 {
-		return results.Results[0].ID, nil
-	}
-
-	req, err = http.NewRequest("POST", "https://api.qovery.com/organization/"+organizationID+"/onPremise/credentials", bytes.NewBuffer([]byte(`{"name": "on-premise"}`)))
-	if err != nil {
-		return "", err
-	}
-
-	req.Header.Add("Authorization", authorizationToken)
-	req.Header.Add("Content-Type", "application/json")
-
-	resp, err = client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	body, err = io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	var credentials onPremiseCredentials
-	err = json.Unmarshal(body, &credentials)
-	if err != nil {
-		return "", err
-	}
-
-	return credentials.ID, nil
-}
-
-func getBaseHelmValuesContent(kubernetesType string) string {
+func getBaseHelmValuesContent(kubernetesType qovery.CloudProviderEnum) string {
 	// download the appropriate values file
-	// default: https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-local.yaml
-	valuesUrl := "https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-local.yaml"
-
+	valuesUrl := ""
 	switch kubernetesType {
-	case "AWS EKS":
+	case qovery.CLOUDPROVIDERENUM_AWS:
 		valuesUrl = "https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-aws.yaml"
-	case "GCP GKE":
+	case qovery.CLOUDPROVIDERENUM_GCP:
 		valuesUrl = "https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-gcp.yaml"
-	case "Scaleway Kapsule":
+	case qovery.CLOUDPROVIDERENUM_SCW:
 		valuesUrl = "https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-scaleway.yaml"
+	case qovery.CLOUDPROVIDERENUM_ON_PREMISE:
+		valuesUrl = "https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-local.yaml"
 	}
 
 	res, err := http.Get(valuesUrl)
-
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
-
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(res.Body)
 
 	// Check server response
 	if res.StatusCode != http.StatusOK {
 		utils.PrintlnError(fmt.Errorf("bad status while downloading Qovery Helm Values file: %s", res.Status))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	return string(body)
