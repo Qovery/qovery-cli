@@ -13,6 +13,34 @@ var (
 	adminClusterListCmd = &cobra.Command{
 		Use:   "list",
 		Short: "List clusters by applying any filter",
+		Long: `This command is used to list clusters information using filters.
+The endpoint fetched by the CLI return all clusters except the locked ones.
+
+> Filters
+---------
+Apply filters using the "--filters" option: filters can be applied to one or more values separated by comma interpreted as logical OR.
+The fields usable as filters are the following ones:
+* OrganizationId
+* OrganizationName
+* OrganizationPlan
+* ClusterId
+* ClusterName
+* ClusterType
+* ClusterK8sVersion
+* Mode
+* IsProduction
+* CurrentStatus
+
+Not implemented yet: filtering from last deployed date or created date
+
+> Examples
+----------
+* Display every production cluster on cloud providers AWS and GCP:
+qovery admin cluster list -f IsProduction=true -f ClusterType=AWS,GCP
+
+* Display every deployed cluster on organization "FooBar":
+qovery admin cluster list -f OrganizationName=FooBar -f CurrentStatus=DEPLOYED
+`,
 		Run: func(cmd *cobra.Command, args []string) {
 			listClusters()
 		},
