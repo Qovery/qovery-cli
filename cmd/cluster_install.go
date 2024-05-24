@@ -486,7 +486,7 @@ func createCredentials(client *qovery.APIClient, orgaId string, providerType qov
 	case qovery.CLOUDPROVIDERENUM_GCP:
 		gcpCredentials, err := func() *promptui.Prompt {
 			return &promptui.Prompt{
-				Label:   "Enter your GCP json credentials",
+				Label:   "Enter your GCP json credentials (can be *base64* encoded)",
 				Default: "",
 			}
 		}().Run()
