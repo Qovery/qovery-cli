@@ -248,7 +248,7 @@ var clusterInstallCmd = &cobra.Command{
 
 					utils.Println("Cluster registry credentials:")
 					prompt := promptui.Select{
-						Label: "Which credentials do you want to use for the container registry ?",
+						Label: "Which credentials do you want to use for the container registry ? A container registry is necessary to build and mirror the images deployed on your cluster.",
 						Items: items,
 						Size:  10,
 					}
@@ -486,7 +486,7 @@ func createCredentials(client *qovery.APIClient, orgaId string, providerType qov
 	case qovery.CLOUDPROVIDERENUM_GCP:
 		gcpCredentials, err := func() *promptui.Prompt {
 			return &promptui.Prompt{
-				Label:   "Enter your GCP json credentials (can be *base64* encoded)",
+				Label:   "Enter your GCP JSON credentials (*base64* encoded)",
 				Default: "",
 			}
 		}().Run()
@@ -518,7 +518,7 @@ func createCredentials(client *qovery.APIClient, orgaId string, providerType qov
 		return creds
 	}
 
-	panic("Unhandled cloudprovider type during credentials creation")
+	panic("Unhandled cloud provider type during credentials creation")
 }
 
 func configureStorageClass(client *qovery.APIClient, cluster *qovery.Cluster) {
@@ -526,7 +526,7 @@ func configureStorageClass(client *qovery.APIClient, cluster *qovery.Cluster) {
 		return
 	}
 
-	utils.Println("We need to know the storage class name that your kubernetes cluster use in order to deploy app with network storage.")
+	utils.Println("We need to know the storage class name that your kubernetes cluster uses to deploy app with network storage.")
 	storageClassUI := promptui.Select{
 		Label: "Storage class name",
 	}
@@ -644,7 +644,7 @@ helm repo add qovery https://helm.qovery.com`)
 	utils.Println("helm repo update")
 
 	utils.Println(fmt.Sprintf(`
-# Install Qovery on your cluster first, without some some services to avoid circular dependencies errors
+# Install Qovery on your cluster first, without some services to avoid circular dependency errors
 helm upgrade --install --create-namespace -n qovery -f "%s" --atomic \
 	 --set services.certificates.cert-manager-configs.enabled=false \
 	 --set services.certificates.qovery-cert-manager-webhook.enabled=false \
