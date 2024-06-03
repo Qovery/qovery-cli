@@ -1,13 +1,13 @@
 package cmd
 
 import (
-//	"github.com/getsentry/sentry-go"
-//	"github.com/qovery/qovery-cli/pkg"
+	//	"github.com/getsentry/sentry-go"
+	//	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-cli/variable"
 	"github.com/spf13/cobra"
 	"os"
-//	"time"
+	//	"time"
 )
 
 var rootCmd = &cobra.Command{
@@ -16,6 +16,7 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
+	utils.Capture(rootCmd)
 	if err := rootCmd.Execute(); err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)

@@ -130,16 +130,6 @@ func SetContext(setProject bool, setEnvironment bool, setService bool, printFina
 	return nil
 }
 
-func (c QoveryContext) ToPosthogProperties() map[string]interface{} {
-	return map[string]interface{}{
-		"organization": c.OrganizationName,
-		"project":      c.ProjectName,
-		"environment":  c.EnvironmentName,
-		"service":      c.ServiceName,
-		"type":         c.ServiceType,
-	}
-}
-
 func StoreContext(context QoveryContext) error {
 	bytes, err := json.Marshal(context)
 	if err != nil {
