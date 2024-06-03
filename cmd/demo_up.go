@@ -49,13 +49,15 @@ var demoUpCmd = &cobra.Command{
 		}
 
 		scriptPath := filepath.Join(scriptDir, "create_demo_cluster.sh")
+		debugLogsPath := filepath.Join(scriptDir, "qovery-demo.log")
 		err = os.WriteFile(scriptPath, demoScriptsCreate, 0700)
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("cannot write file to disk: %s", err))
 			os.Exit(1)
 		}
 
-		shCmd := exec.Command("/bin/sh", scriptPath, demoClusterName, strings.ToUpper(runtime.GOARCH), string(orgId), string(token))
+		cmdArgs := fmt.Sprintf("%s %s %s %s %s %t 2>&1 | tee %s", scriptPath, demoClusterName, strings.ToUpper(runtime.GOARCH), string(orgId), string(token), demoDebug, debugLogsPath)
+		shCmd := exec.Command("/bin/sh", "-c", cmdArgs)
 		shCmd.Stdout = os.Stdout
 		shCmd.Stderr = os.Stderr
 		if err := shCmd.Run(); err != nil {
@@ -78,6 +80,7 @@ func init() {
 
 	var demoUpCmd = demoUpCmd
 	demoUpCmd.Flags().StringVarP(&demoClusterName, "cluster-name", "c", "local-demo-"+userName, "The name of the cluster to create")
+	demoUpCmd.Flags().BoolVar(&demoDebug, "debug", false, "Enable debug mode")
 
 	demoCmd.AddCommand(demoUpCmd)
 }

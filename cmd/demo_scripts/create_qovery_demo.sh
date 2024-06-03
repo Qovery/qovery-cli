@@ -14,6 +14,15 @@ case $3 in
     AUTHORIZATION_HEADER="Authorization: Bearer $4"
   ;;
 esac
+case $5 in
+  true)
+    HELM_DEBUG="--debug"
+  ;;
+
+  *)
+    HELM_DEBUG=""
+  ;;
+esac
 
 get_or_create_on_premise_account() {
   accountId=$(curl -s --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' https://api.qovery.com/organization/"${ORGANIZATION_ID}"/onPremise/credentials | jq -r .results[0].id)
@@ -66,7 +75,7 @@ install_or_upgrade_helm_charts() {
   if [ "$releaseExist" = "" ]
   then
     set -x
-    helm upgrade --install --create-namespace -n qovery -f values.yaml --atomic \
+    helm upgrade --install --create-namespace ${HELM_DEBUG} --timeout=15m -n qovery -f values.yaml --atomic \
       --set services.certificates.cert-manager-configs.enabled=false \
       --set services.certificates.qovery-cert-manager-webhook.enabled=false \
       --set services.qovery.qovery-cluster-agent.enabled=false \
@@ -75,7 +84,7 @@ install_or_upgrade_helm_charts() {
   fi
 
   set -x
-  helm upgrade --install --create-namespace -n qovery -f values.yaml --wait --atomic qovery qovery/qovery
+  helm upgrade --install --create-namespace ${HELM_DEBUG} --timeout=15m -n qovery -f values.yaml --wait --atomic qovery qovery/qovery
   set +x
 }
 
