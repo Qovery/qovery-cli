@@ -374,6 +374,8 @@ var clusterInstallCmd = &cobra.Command{
 		}
 
 		outputCommandsToInstallQoveryOnCluster(helmValuesFileName)
+
+		utils.CaptureWithEvent(cmd, utils.EndOfExecutionEventName)
 	},
 }
 
