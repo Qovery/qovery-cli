@@ -10,6 +10,7 @@ import (
 var (
 	demoClusterName        string
 	demoDeleteQoveryConfig bool
+	demoDebug              bool
 )
 
 //go:embed demo_scripts/create_qovery_demo.sh
