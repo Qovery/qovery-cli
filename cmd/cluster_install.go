@@ -82,6 +82,7 @@ var clusterInstallCmd = &cobra.Command{
 		if organization == nil {
 			utils.PrintlnError(fmt.Errorf("organizations not found, please create one on https://console.qovery.com"))
 			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		// List cluster and if there is one that already exist for self-managed and this cloud provider
