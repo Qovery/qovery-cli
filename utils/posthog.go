@@ -4,6 +4,7 @@ import (
 	"github.com/posthog/posthog-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -48,6 +49,11 @@ func CaptureWithEventAndProperties(command *cobra.Command, event string, propert
 		return
 	}
 
+	tokenType := "jwt"
+	if strings.HasPrefix(string(ctx.AccessToken), "qov_") {
+		tokenType = "static"
+	}
+
 	mProperties := properties.
 		Set("organization", ctx.OrganizationName).
 		Set("organization_id", ctx.OrganizationId).
@@ -57,6 +63,9 @@ func CaptureWithEventAndProperties(command *cobra.Command, event string, propert
 		Set("environment_id", ctx.EnvironmentId).
 		Set("service", ctx.ServiceName).
 		Set("service_id", ctx.ServiceId).
+		Set("token_type", tokenType).
+		Set("os", runtime.GOOS).
+		Set("arch", runtime.GOARCH).
 		Set("command", commandName(command))
 
 	flags := []string{}
