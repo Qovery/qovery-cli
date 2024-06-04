@@ -102,39 +102,69 @@ setup_network() {
   set +x
 }
 
+try_install_missing_deps() {
+  if which sudo >/dev/null; then
+    SUDO="sudo"
+  else
+    SUDO=""
+  fi
+
+  if which apt-get >/dev/null; then
+    echo "Installing dependencies with apt"
+    ${SUDO} apt-get update && ${SUDO} apt-get install -y jq grep sed curl iproute2
+  elif which yum >/dev/null; then
+    echo "Installing dependencies with yum"
+    ${SUDO} yum update -y && ${SUDO} yum install -y jq grep sed curl iproute
+  elif which pacman >/dev/null; then
+    echo "Installing dependencies with pacman"
+    ${SUDO} pacman -Sy && ${SUDO} pacman --noconfirm -S jq grep curl sed iproute
+  elif which brew >/dev/null; then
+    echo "Installing dependencies with brew"
+    brew update && brew install jq grep curl
+  else
+    echo "Cannot detect your package manager. Please install the following command 'jq grep curl sed iproute2'"
+    exit 1
+  fi
+}
+
 install_deps() {
   if which jq >/dev/null; then
      echo "jq already installed"
   else
-    echo "jq command is missing. Please use your package manager to install it"
-    exit 1
+    try_install_missing_deps
   fi
 
   if which grep >/dev/null; then
      echo "grep already installed"
   else
-    echo "grep command is missing. Please use your package manager to install it"
-    exit 1
+    try_install_missing_deps
   fi
 
   if which sed >/dev/null; then
      echo "sed already installed"
   else
-    echo "sed command is missing. Please use your package manager to install it"
-    exit 1
+    try_install_missing_deps
+  fi
+
+  if grep -qi microsoft /proc/version; then
+    if which ip >/dev/null; then
+       echo "iproute already installed"
+    else
+      try_install_missing_deps
+    fi
   fi
 
   if which curl >/dev/null; then
      echo "curl already installed"
   else
-    echo "curl command is missing. Please use your package manager to install it"
-    exit 1
+    try_install_missing_deps
   fi
 
   if which docker >/dev/null; then
      echo "docker already installed"
   else
     echo "docker command is missing. Please use your package manager to install it"
+    echo "https://docs.docker.com/engine/install/"
     exit 1
   fi
 
