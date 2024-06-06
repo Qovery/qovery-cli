@@ -46,10 +46,8 @@ func RefreshAccessToken() error {
 }
 
 func RefreshExpiredTokenSilently() bool {
-	token, _ := GetRefreshToken()
-	refreshToken := strings.TrimSpace(string(token))
 	expiration, err := GetAccessTokenExpiration()
-	if err == nil && expiration.After(time.Now()) && refreshToken != "" {
+	if err == nil && expiration.Before(time.Now()) {
 		return RefreshAccessToken() == nil
 	}
 
