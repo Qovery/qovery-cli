@@ -1559,23 +1559,24 @@ func DeployJobs(client *qovery.APIClient, envId string, jobNames string, commitI
 	return deployAllServices(client, envId, req)
 }
 
-func unmarshal[T any](input interface{}, output *T) {
+func unmarshal[T any](input interface{}, output *T) error {
 	jsonString, _ := json.Marshal(input)
-	err := json.Unmarshal(jsonString, output)
-	if err != nil {
-		output = nil
-	}
+	return json.Unmarshal(jsonString, output)
 }
 
 func GetJobDocker(job *qovery.JobResponse) *qovery.JobSourceDockerResponse {
 	ret := qovery.JobSourceDockerResponse{}
 
 	if job.CronJobResponse != nil && job.CronJobResponse.Source["docker"] != nil {
-		unmarshal(job.CronJobResponse.Source["docker"], &ret)
+		if unmarshal(job.CronJobResponse.Source["docker"], &ret) != nil {
+			return nil
+		}
 	}
 
 	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source["docker"] != nil {
-		unmarshal(job.LifecycleJobResponse.Source["docker"], &ret)
+		if unmarshal(job.LifecycleJobResponse.Source["docker"], &ret) != nil {
+			return nil
+		}
 	}
 
 	return &ret
@@ -1584,11 +1585,15 @@ func GetJobDocker(job *qovery.JobResponse) *qovery.JobSourceDockerResponse {
 func GetJobImage(job *qovery.JobResponse) *qovery.ContainerSource {
 	ret := qovery.ContainerSource{}
 	if job.CronJobResponse != nil && job.CronJobResponse.Source["image"] != nil {
-		unmarshal(job.CronJobResponse.Source["image"], &ret)
+		if unmarshal(job.CronJobResponse.Source["image"], &ret) != nil {
+			return nil
+		}
 	}
 
 	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source["image"] != nil {
-		unmarshal(job.LifecycleJobResponse.Source["image"], &ret)
+		if unmarshal(job.LifecycleJobResponse.Source["image"], &ret) != nil {
+			return nil
+		}
 	}
 
 	return &ret
