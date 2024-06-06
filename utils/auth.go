@@ -45,11 +45,13 @@ func RefreshAccessToken() error {
 	return nil
 }
 
-func RefreshExpiredTokenSilently() {
+func RefreshExpiredTokenSilently() bool {
 	token, _ := GetRefreshToken()
 	refreshToken := strings.TrimSpace(string(token))
 	expiration, err := GetAccessTokenExpiration()
-	if err == nil && expiration.Before(time.Now()) && refreshToken != "" {
-		_ = RefreshAccessToken()
+	if err == nil && expiration.After(time.Now()) && refreshToken != "" {
+		return RefreshAccessToken() == nil
 	}
+
+	return false
 }

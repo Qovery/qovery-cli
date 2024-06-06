@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -49,6 +50,9 @@ func GetQoveryClient(tokenType AccessTokenType, token AccessToken) *qovery.APICl
 	conf.UserAgent = "Qovery CLI"
 	conf.DefaultHeader["Authorization"] = GetAuthorizationHeaderValue(tokenType, token)
 	conf.Debug = variable.Verbose
+	conf.HTTPClient = &http.Client{
+		Timeout: time.Second * 15,
+	}
 	return qovery.NewAPIClient(conf)
 }
 
