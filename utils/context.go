@@ -324,12 +324,15 @@ func GetAccessToken() (AccessTokenType, AccessToken, error) {
 	client := GetQoveryClient(AccessTokenType(tokenType), AccessToken(token))
 	_, _, err = client.OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute()
 	if err != nil {
-		RefreshExpiredTokenSilently()
-		_, refreshed, err := GetAccessToken()
-		if err != nil {
+		if RefreshExpiredTokenSilently() {
+			_, refreshed, err := GetAccessToken()
+			if err != nil {
+				return "", "", err
+			}
+			token = string(refreshed)
+		} else {
 			return "", "", err
 		}
-		token = string(refreshed)
 	}
 
 	return AccessTokenType(tokenType), AccessToken(token), nil
