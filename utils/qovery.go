@@ -51,7 +51,7 @@ func GetQoveryClient(tokenType AccessTokenType, token AccessToken) *qovery.APICl
 	conf.DefaultHeader["Authorization"] = GetAuthorizationHeaderValue(tokenType, token)
 	conf.Debug = variable.Verbose
 	conf.HTTPClient = &http.Client{
-		Timeout: time.Second,
+		Timeout: time.Second * 15,
 	}
 	return qovery.NewAPIClient(conf)
 }
