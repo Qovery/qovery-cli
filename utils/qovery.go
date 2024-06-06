@@ -51,7 +51,7 @@ func GetQoveryClient(tokenType AccessTokenType, token AccessToken) *qovery.APICl
 	conf.DefaultHeader["Authorization"] = GetAuthorizationHeaderValue(tokenType, token)
 	conf.Debug = variable.Verbose
 	conf.HTTPClient = &http.Client{
-		Timeout: time.Second * 15,
+		Timeout: time.Second,
 	}
 	return qovery.NewAPIClient(conf)
 }
@@ -1569,7 +1569,7 @@ func unmarshal[T any](input interface{}, output *T) error {
 }
 
 func GetJobDocker(job *qovery.JobResponse) *qovery.JobSourceDockerResponse {
-	ret := qovery.JobSourceDockerResponse{}
+	var ret *qovery.JobSourceDockerResponse
 
 	if job.CronJobResponse != nil && job.CronJobResponse.Source["docker"] != nil {
 		if unmarshal(job.CronJobResponse.Source["docker"], &ret) != nil {
@@ -1583,11 +1583,11 @@ func GetJobDocker(job *qovery.JobResponse) *qovery.JobSourceDockerResponse {
 		}
 	}
 
-	return &ret
+	return ret
 }
 
 func GetJobImage(job *qovery.JobResponse) *qovery.ContainerSource {
-	ret := qovery.ContainerSource{}
+	var ret *qovery.ContainerSource
 	if job.CronJobResponse != nil && job.CronJobResponse.Source["image"] != nil {
 		if unmarshal(job.CronJobResponse.Source["image"], &ret) != nil {
 			return nil
@@ -1600,7 +1600,7 @@ func GetJobImage(job *qovery.JobResponse) *qovery.ContainerSource {
 		}
 	}
 
-	return &ret
+	return ret
 }
 
 func GetJobId(job *qovery.JobResponse) string {
@@ -1725,25 +1725,25 @@ func DeployHelms(client *qovery.APIClient, envId string, helmNames string, chart
 }
 
 func GetGitSource(helm *qovery.HelmResponse) *qovery.HelmSourceGitResponse {
-	ret := qovery.HelmSourceGitResponse{}
+	var ret *qovery.HelmSourceGitResponse
 	if helm.Source["git"] != nil {
 		if unmarshal(helm.Source["git"], &ret) != nil {
 			return nil
 		}
 	}
 
-	return &ret
+	return ret
 }
 
 func GetHelmRepository(helm *qovery.HelmResponse) *qovery.HelmSourceRepositoryResponse {
-	ret := qovery.HelmSourceRepositoryResponse{}
+	var ret *qovery.HelmSourceRepositoryResponse
 	if helm.Source["repository"] != nil {
 		if unmarshal(helm.Source["repository"], &ret) != nil {
 			return nil
 		}
 	}
 
-	return &ret
+	return ret
 }
 
 func deployAllServices(client *qovery.APIClient, envId string, req qovery.DeployAllRequest) error {
