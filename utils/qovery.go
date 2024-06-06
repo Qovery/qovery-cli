@@ -1720,20 +1720,26 @@ func DeployHelms(client *qovery.APIClient, envId string, helmNames string, chart
 	return deployAllServices(client, envId, req)
 }
 
-func GetGitSource(helm *qovery.HelmResponse) *qovery.ApplicationGitRepository {
-	if helm.Source.HelmResponseAllOfSourceOneOf != nil && helm.Source.HelmResponseAllOfSourceOneOf.Git != nil {
-		return helm.Source.HelmResponseAllOfSourceOneOf.Git.GitRepository
+func GetGitSource(helm *qovery.HelmResponse) *qovery.HelmSourceGitResponse {
+	ret := qovery.HelmSourceGitResponse{}
+	if helm.Source["git"] != nil {
+		if unmarshal(helm.Source["git"], &ret) != nil {
+			return nil
+		}
 	}
 
-	return nil
+	return &ret
 }
 
-func GetHelmRepository(helm *qovery.HelmResponse) *qovery.HelmResponseAllOfSourceOneOf1Repository {
-	if helm.Source.HelmResponseAllOfSourceOneOf1 != nil {
-		return helm.Source.HelmResponseAllOfSourceOneOf1.Repository
+func GetHelmRepository(helm *qovery.HelmResponse) *qovery.HelmSourceRepositoryResponse {
+	ret := qovery.HelmSourceRepositoryResponse{}
+	if helm.Source["repository"] != nil {
+		if unmarshal(helm.Source["repository"], &ret) != nil {
+			return nil
+		}
 	}
 
-	return nil
+	return &ret
 }
 
 func deployAllServices(client *qovery.APIClient, envId string, req qovery.DeployAllRequest) error {

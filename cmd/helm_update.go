@@ -112,10 +112,9 @@ var helmUpdateCmd = &cobra.Command{
 }
 
 func GetHelmSource(helm *qovery.HelmResponse, chartName string, chartVersion string, charGitCommitBranch string) (*qovery.HelmRequestAllOfSource, error) {
-	if helm.Source.HelmResponseAllOfSourceOneOf != nil && helm.Source.HelmResponseAllOfSourceOneOf.Git != nil && helm.Source.HelmResponseAllOfSourceOneOf.Git.GitRepository != nil {
-		gitRepository := helm.Source.HelmResponseAllOfSourceOneOf.Git.GitRepository
 
-		updatedBranch := gitRepository.Branch
+	if git := utils.GetGitSource(helm); git != nil {
+		updatedBranch := git.GitRepository.Branch
 		if charGitCommitBranch != "" {
 			updatedBranch = &charGitCommitBranch
 		}
@@ -123,17 +122,15 @@ func GetHelmSource(helm *qovery.HelmResponse, chartName string, chartVersion str
 		return &qovery.HelmRequestAllOfSource{
 			HelmRequestAllOfSourceOneOf: &qovery.HelmRequestAllOfSourceOneOf{
 				GitRepository: &qovery.HelmGitRepositoryRequest{
-					Url:        gitRepository.Url,
+					Url:        git.GitRepository.Url,
 					Branch:     updatedBranch,
-					RootPath:   gitRepository.RootPath,
-					GitTokenId: gitRepository.GitTokenId,
+					RootPath:   git.GitRepository.RootPath,
+					GitTokenId: git.GitRepository.GitTokenId,
 				},
 			},
-			HelmRequestAllOfSourceOneOf1: nil,
 		}, nil
-	} else if helm.Source.HelmResponseAllOfSourceOneOf1 != nil && helm.Source.HelmResponseAllOfSourceOneOf1.Repository != nil {
-		repository := helm.Source.HelmResponseAllOfSourceOneOf1.Repository
 
+	} else if repository := utils.GetHelmRepository(helm); repository != nil {
 		updatedChartName := &repository.ChartName
 		if chartName != "" {
 			updatedChartName = &chartName
