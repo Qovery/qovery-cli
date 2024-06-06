@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -1557,25 +1558,40 @@ func DeployJobs(client *qovery.APIClient, envId string, jobNames string, commitI
 
 	return deployAllServices(client, envId, req)
 }
-func GetJobDocker(job *qovery.JobResponse) *qovery.BaseJobResponseAllOfSourceOneOf1Docker {
-	if job.CronJobResponse != nil && job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
-		return job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
+
+func unmarshal[T any](input interface{}, output *T) {
+	jsonString, _ := json.Marshal(input)
+	err := json.Unmarshal(jsonString, output)
+	if err != nil {
+		output = nil
+	}
+}
+
+func GetJobDocker(job *qovery.JobResponse) *qovery.JobSourceDockerResponse {
+	ret := qovery.JobSourceDockerResponse{}
+
+	if job.CronJobResponse != nil && job.CronJobResponse.Source["docker"] != nil {
+		unmarshal(job.CronJobResponse.Source["docker"], &ret)
 	}
 
-	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
-		return job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
+	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source["docker"] != nil {
+		unmarshal(job.LifecycleJobResponse.Source["docker"], &ret)
 	}
-	return nil
+
+	return &ret
 }
 
 func GetJobImage(job *qovery.JobResponse) *qovery.ContainerSource {
-	if job.CronJobResponse != nil && job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
-		return job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
+	ret := qovery.ContainerSource{}
+	if job.CronJobResponse != nil && job.CronJobResponse.Source["image"] != nil {
+		unmarshal(job.CronJobResponse.Source["image"], &ret)
 	}
-	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
-		return job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
+
+	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source["image"] != nil {
+		unmarshal(job.LifecycleJobResponse.Source["image"], &ret)
 	}
-	return nil
+
+	return &ret
 }
 
 func GetJobId(job *qovery.JobResponse) string {

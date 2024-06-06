@@ -99,15 +99,8 @@ var cronjobDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		var docker *qovery.BaseJobResponseAllOfSourceOneOf1Docker = nil
-		if cronjob.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
-			docker = cronjob.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
-		}
-
-		var image *qovery.ContainerSource = nil
-		if cronjob.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
-			image = cronjob.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
-		}
+		var docker = utils.GetJobDocker(cronjob)
+		var image = utils.GetJobImage(cronjob)
 
 		var req qovery.JobDeployRequest
 

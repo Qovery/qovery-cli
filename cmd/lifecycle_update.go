@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/qovery/qovery-client-go"
 	"io"
 	"os"
 
@@ -65,15 +64,8 @@ var lifecycleUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		var docker *qovery.BaseJobResponseAllOfSourceOneOf1Docker = nil
-		if lifecycle.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
-			docker = lifecycle.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
-		}
-
-		var image *qovery.ContainerSource = nil
-		if lifecycle.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
-			image = lifecycle.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
-		}
+		var docker = utils.GetJobDocker(lifecycle)
+		var image = utils.GetJobImage(lifecycle)
 
 		if docker != nil && (lifecycleTag != "" || lifecycleImageName != "") {
 			utils.PrintlnError(fmt.Errorf("you can't use --tag or --image-name with a lifecycle targetting a Dockerfile. Use --branch instead"))
