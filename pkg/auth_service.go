@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -38,6 +39,7 @@ var (
 type TokensResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
+	ExpiresIn    uint   `json:"expires_in"`
 }
 type DeviceFlowParameters struct {
 	DeviceCode              string `json:"device_code"`
@@ -103,16 +105,18 @@ func DoRequestUserToAuthenticate(headless bool) {
 			utils.PrintlnError(errors.New("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
 			os.Exit(0)
 		} else {
-			defer res.Body.Close()
+			defer func(Body io.ReadCloser) {
+				_ = Body.Close()
+			}(res.Body)
+
 			tokens := TokensResponse{}
 			err := json.NewDecoder(res.Body).Decode(&tokens)
 			if err != nil {
 				utils.PrintlnError(errors.New("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
 				os.Exit(0)
 			}
-			expiredAt := tokenExpiration()
-			_ = utils.SetAccessToken(utils.AccessToken(tokens.AccessToken), expiredAt)
-			_ = utils.SetRefreshToken(utils.RefreshToken(tokens.RefreshToken))
+			expiredAt := time.Now().Local().Add(time.Duration(tokens.ExpiresIn-60) * time.Second)
+			_ = utils.SetAccessToken(utils.AccessToken(tokens.AccessToken), expiredAt, utils.RefreshToken(tokens.RefreshToken))
 			utils.PrintlnInfo("Success!")
 		}
 
@@ -166,9 +170,8 @@ func runHeadlessFlow() {
 		tokens, err := getTokensWith(parameters)
 
 		if err == nil {
-			expiredAt := tokenExpiration()
-			_ = utils.SetRefreshToken(utils.RefreshToken(tokens.RefreshToken))
-			_ = utils.SetAccessToken(utils.AccessToken(tokens.AccessToken), expiredAt)
+			expiredAt := time.Now().Local().Add(time.Duration(tokens.ExpiresIn-60) * time.Second)
+			_ = utils.SetAccessToken(utils.AccessToken(tokens.AccessToken), expiredAt, utils.RefreshToken(tokens.RefreshToken))
 			utils.PrintlnInfo("Success!")
 			return
 		}
@@ -176,11 +179,6 @@ func runHeadlessFlow() {
 
 	fmt.Println("Code has expired! ")
 	os.Exit(0)
-}
-
-func tokenExpiration() time.Time {
-	oneHour := time.Second * time.Duration(3599)
-	return time.Now().Local().Add(oneHour)
 }
 
 func deviceFlowParameters() DeviceFlowParameters {

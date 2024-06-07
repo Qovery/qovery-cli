@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -10,8 +11,8 @@ import (
 )
 
 type TokensResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	AccessToken string `json:"access_token"`
+	ExpiresIn   uint   `json:"expires_in"`
 }
 
 var (
@@ -19,11 +20,10 @@ var (
 	oAuthTokenEndpoint       = "https://auth.qovery.com/oauth/token"
 )
 
-func RefreshAccessToken() error {
-	token, _ := GetRefreshToken()
+func RefreshAccessToken(token RefreshToken) (AccessToken, error) {
 	refreshToken := strings.TrimSpace(string(token))
 	if refreshToken == "" {
-		return errors.New("Could not reauthenticate automatically. Please, run 'qovery auth' to authenticate. ")
+		return "", errors.New("Could not reauthenticate automatically. Please, run 'qovery auth' to authenticate. ")
 	}
 	res, err := http.PostForm(oAuthTokenEndpoint, url.Values{
 		"grant_type":    {"refresh_token"},
@@ -31,25 +31,23 @@ func RefreshAccessToken() error {
 		"refresh_token": {refreshToken},
 	})
 	if err != nil {
-		return errors.New("Error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ")
-	} else {
-		defer res.Body.Close()
-		tokens := TokensResponse{}
-		err := json.NewDecoder(res.Body).Decode(&tokens)
-		if err != nil {
-			return errors.New("Error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ")
-		}
-		expiredAt := time.Now().Local().Add(time.Second * time.Duration(30000))
-		_ = SetAccessToken(AccessToken(tokens.AccessToken), expiredAt)
-	}
-	return nil
-}
-
-func RefreshExpiredTokenSilently() bool {
-	expiration, err := GetAccessTokenExpiration()
-	if err == nil && expiration.Before(time.Now()) {
-		return RefreshAccessToken() == nil
+		return "", errors.New("Error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ")
 	}
 
-	return false
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(res.Body)
+
+	tokens := TokensResponse{}
+	err = json.NewDecoder(res.Body).Decode(&tokens)
+	if err != nil {
+		return "", errors.New("Error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ")
+	}
+	expiredAt := time.Now().Local().Add(time.Duration(tokens.ExpiresIn-60) * time.Second)
+	accessToken := AccessToken(tokens.AccessToken)
+	// We dont have refreshToken rotation enabled, we should, ...
+	// So the response does not contain a new refresh token to use. We keep the old one
+	_ = SetAccessToken(accessToken, expiredAt, token)
+
+	return accessToken, nil
 }
