@@ -147,7 +147,7 @@ func StoreContext(context QoveryContext) error {
 func CurrentOrganization(promptContext bool) (Id, Name, error) {
 	context, err := GetCurrentContext()
 
-	if (context.OrganizationId == "" || err != nil) && promptContext {
+	if (err != nil || context.OrganizationId == "") && promptContext {
 		context, err = GetOrSetCurrentContext(false, false, false)
 	}
 
@@ -182,7 +182,7 @@ func SetOrganization(org *Organization) error {
 func CurrentProject(promptContext bool) (Id, Name, error) {
 	context, err := GetCurrentContext()
 
-	if (context.ProjectId == "" || err != nil) && promptContext {
+	if (err != nil || context.ProjectId == "") && promptContext {
 		context, err = GetOrSetCurrentContext(true, false, false)
 	}
 
@@ -217,7 +217,7 @@ func SetProject(project *Project) error {
 func CurrentEnvironment(promptContext bool) (Id, Name, error) {
 	context, err := GetCurrentContext()
 
-	if (context.EnvironmentId == "" || err != nil) && promptContext {
+	if (err != nil || context.EnvironmentId == "") && promptContext {
 		context, err = GetOrSetCurrentContext(true, true, false)
 	}
 
@@ -252,7 +252,7 @@ func SetEnvironment(env *Environment) error {
 func CurrentService(promptContext bool) (*Service, error) {
 	context, err := GetCurrentContext()
 
-	if (context.ServiceId == "" || err != nil) && promptContext {
+	if (err != nil || context.ServiceId == "") && promptContext {
 		context, err = GetOrSetCurrentContext(true, true, true)
 	}
 
@@ -291,69 +291,45 @@ func GetAuthorizationHeaderValue(tokenType AccessTokenType, token AccessToken) s
 }
 
 func GetAccessToken() (AccessTokenType, AccessToken, error) {
-	tokenType := os.Getenv("QOVERY_CLI_ACCESS_TOKEN_TYPE")
-	token := os.Getenv("QOVERY_CLI_ACCESS_TOKEN")
-
-	if tokenType == "" {
-		tokenType = os.Getenv("Q_CLI_ACCESS_TOKEN_TYPE")
+	apiToken := os.Getenv("QOVERY_CLI_ACCESS_TOKEN")
+	if apiToken == "" {
+		apiToken = os.Getenv("Q_CLI_ACCESS_TOKEN")
+	}
+	if apiToken != "" {
+		return "Token", AccessToken(apiToken), nil
 	}
 
-	if token == "" {
-		token = os.Getenv("Q_CLI_ACCESS_TOKEN")
-	}
-
-	if tokenType == "" {
-		tokenType = "Bearer"
-	}
-
-	if token != "" {
-		return AccessTokenType("Token"), AccessToken(token), nil
-	}
-
+	// User does not use a Token, but a Jwt/Bearer token retrieve it from the context and check it has not expired
 	context, err := GetCurrentContext()
 	if err != nil {
 		return "", "", err
 	}
 
-	token = string(context.AccessToken)
+	token := context.AccessToken
 	if token == "" {
 		return "", "", errors.New("Access token has not been found. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
 	}
 
-	// check the token is correct
-	client := GetQoveryClient(AccessTokenType(tokenType), AccessToken(token))
-	_, _, err = client.OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute()
-	if err != nil {
-		if RefreshExpiredTokenSilently() {
-			_, refreshed, err := GetAccessToken()
-			if err != nil {
-				return "", "", err
-			}
-			token = string(refreshed)
-		} else {
-			return "", "", err
-		}
+	// check the token is valid by trying to list the organizations
+	if _, _, err = GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute(); err == nil {
+		// everything is fine, return the token
+		return "Bearer", token, nil
 	}
 
-	return AccessTokenType(tokenType), AccessToken(token), nil
+	// Means the token is expired or invalid. Try to refresh it
+	if token, err = RefreshAccessToken(context.RefreshToken); err != nil {
+		return "", "", err
+	}
+
+	if _, _, err = GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute(); err == nil {
+		// everything is fine, return the token
+		return "Bearer", token, nil
+	}
+
+	return "", "", errors.New("Access token is invalid or expired. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
 }
 
-func GetAccessTokenExpiration() (time.Time, error) {
-	context, err := GetCurrentContext()
-	t := time.Time{}
-	if err != nil {
-		return t, err
-	}
-
-	expiration := context.AccessTokenExpiration
-	if expiration == t {
-		return t, errors.New("Access token has not been found. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
-	}
-
-	return expiration, nil
-}
-
-func SetAccessToken(token AccessToken, expiration time.Time) error {
+func SetAccessToken(token AccessToken, expiration time.Time, refreshToken RefreshToken) error {
 	context, err := GetCurrentContext()
 	if err != nil {
 		return err
@@ -361,6 +337,7 @@ func SetAccessToken(token AccessToken, expiration time.Time) error {
 
 	context.AccessToken = token
 	context.AccessTokenExpiration = expiration
+	context.RefreshToken = refreshToken
 
 	claims := jwt.MapClaims{}
 	_, _ = jwt.ParseWithClaims(string(token), claims, func(token *jwt.Token) (interface{}, error) {
@@ -372,31 +349,6 @@ func SetAccessToken(token AccessToken, expiration time.Time) error {
 		subStr := sub.(string)
 		context.User = Name(subStr)
 	}
-
-	return StoreContext(context)
-}
-
-func GetRefreshToken() (RefreshToken, error) {
-	context, err := GetCurrentContext()
-	if err != nil {
-		return RefreshToken(""), err
-	}
-
-	token := context.RefreshToken
-	if token == "" {
-		return "", errors.New("Refresh token has not been found. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
-	}
-
-	return token, nil
-}
-
-func SetRefreshToken(token RefreshToken) error {
-	context, err := GetCurrentContext()
-	if err != nil {
-		return err
-	}
-
-	context.RefreshToken = token
 
 	return StoreContext(context)
 }
