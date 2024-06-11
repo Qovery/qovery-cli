@@ -1715,7 +1715,7 @@ func DeployHelms(client *qovery.APIClient, envId string, helmNames string, chart
 
 func GetGitSource(helm *qovery.HelmResponse) *qovery.HelmSourceGitResponse {
 	if helm.Source.HelmResponseAllOfSourceOneOf != nil {
-		return helm.Source.HelmResponseAllOfSourceOneOf.Git
+		return &helm.Source.HelmResponseAllOfSourceOneOf.Git
 	}
 
 	return nil
@@ -1723,7 +1723,7 @@ func GetGitSource(helm *qovery.HelmResponse) *qovery.HelmSourceGitResponse {
 
 func GetHelmRepository(helm *qovery.HelmResponse) *qovery.HelmSourceRepositoryResponse {
 	if helm.Source.HelmResponseAllOfSourceOneOf1 != nil {
-		return helm.Source.HelmResponseAllOfSourceOneOf1.Repository
+		return &helm.Source.HelmResponseAllOfSourceOneOf1.Repository
 	}
 
 	return nil
