@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -1563,11 +1562,6 @@ func DeployJobs(client *qovery.APIClient, envId string, jobNames string, commitI
 	return deployAllServices(client, envId, req)
 }
 
-func unmarshal[T any](input interface{}, output *T) error {
-	jsonString, _ := json.Marshal(input)
-	return json.Unmarshal(jsonString, output)
-}
-
 func GetJobDocker(job *qovery.JobResponse) *qovery.JobSourceDockerResponse {
 	if job.CronJobResponse != nil && job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
 		return &job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
@@ -1715,7 +1709,7 @@ func DeployHelms(client *qovery.APIClient, envId string, helmNames string, chart
 
 func GetGitSource(helm *qovery.HelmResponse) *qovery.HelmSourceGitResponse {
 	if helm.Source.HelmResponseAllOfSourceOneOf != nil {
-		return helm.Source.HelmResponseAllOfSourceOneOf.Git
+		return &helm.Source.HelmResponseAllOfSourceOneOf.Git
 	}
 
 	return nil
@@ -1723,7 +1717,7 @@ func GetGitSource(helm *qovery.HelmResponse) *qovery.HelmSourceGitResponse {
 
 func GetHelmRepository(helm *qovery.HelmResponse) *qovery.HelmSourceRepositoryResponse {
 	if helm.Source.HelmResponseAllOfSourceOneOf1 != nil {
-		return helm.Source.HelmResponseAllOfSourceOneOf1.Repository
+		return &helm.Source.HelmResponseAllOfSourceOneOf1.Repository
 	}
 
 	return nil
