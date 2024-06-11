@@ -1569,38 +1569,27 @@ func unmarshal[T any](input interface{}, output *T) error {
 }
 
 func GetJobDocker(job *qovery.JobResponse) *qovery.JobSourceDockerResponse {
-	var ret *qovery.JobSourceDockerResponse
-
-	if job.CronJobResponse != nil && job.CronJobResponse.Source["docker"] != nil {
-		if unmarshal(job.CronJobResponse.Source["docker"], &ret) != nil {
-			return nil
-		}
+	if job.CronJobResponse != nil && job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
+		return &job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
 	}
 
-	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source["docker"] != nil {
-		if unmarshal(job.LifecycleJobResponse.Source["docker"], &ret) != nil {
-			return nil
-		}
+	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
+		return &job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
 	}
 
-	return ret
+	return nil
 }
 
 func GetJobImage(job *qovery.JobResponse) *qovery.ContainerSource {
-	var ret *qovery.ContainerSource
-	if job.CronJobResponse != nil && job.CronJobResponse.Source["image"] != nil {
-		if unmarshal(job.CronJobResponse.Source["image"], &ret) != nil {
-			return nil
-		}
+	if job.CronJobResponse != nil && job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
+		return &job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
 	}
 
-	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source["image"] != nil {
-		if unmarshal(job.LifecycleJobResponse.Source["image"], &ret) != nil {
-			return nil
-		}
+	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
+		return &job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
 	}
 
-	return ret
+	return nil
 }
 
 func GetJobId(job *qovery.JobResponse) string {
@@ -1725,25 +1714,19 @@ func DeployHelms(client *qovery.APIClient, envId string, helmNames string, chart
 }
 
 func GetGitSource(helm *qovery.HelmResponse) *qovery.HelmSourceGitResponse {
-	var ret *qovery.HelmSourceGitResponse
-	if helm.Source["git"] != nil {
-		if unmarshal(helm.Source["git"], &ret) != nil {
-			return nil
-		}
+	if helm.Source.HelmResponseAllOfSourceOneOf != nil {
+		return helm.Source.HelmResponseAllOfSourceOneOf.Git
 	}
 
-	return ret
+	return nil
 }
 
 func GetHelmRepository(helm *qovery.HelmResponse) *qovery.HelmSourceRepositoryResponse {
-	var ret *qovery.HelmSourceRepositoryResponse
-	if helm.Source["repository"] != nil {
-		if unmarshal(helm.Source["repository"], &ret) != nil {
-			return nil
-		}
+	if helm.Source.HelmResponseAllOfSourceOneOf1 != nil {
+		return helm.Source.HelmResponseAllOfSourceOneOf1.Repository
 	}
 
-	return ret
+	return nil
 }
 
 func deployAllServices(client *qovery.APIClient, envId string, req qovery.DeployAllRequest) error {
