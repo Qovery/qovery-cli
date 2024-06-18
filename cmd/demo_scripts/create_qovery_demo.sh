@@ -146,7 +146,7 @@ install_deps() {
     try_install_missing_deps
   fi
 
-  if grep -qi microsoft /proc/version; then
+  if test -f /proc/version && grep -qi microsoft /proc/version; then
     if which ip >/dev/null; then
        echo "iproute already installed"
     else
