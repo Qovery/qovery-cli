@@ -3,12 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/manifoldco/promptui"
-	"github.com/qovery/qovery-cli/utils"
-	"github.com/qovery/qovery-client-go"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 	"io"
 	"math"
 	"net/http"
@@ -16,6 +10,13 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/fatih/color"
+	"github.com/manifoldco/promptui"
+	"github.com/qovery/qovery-cli/utils"
+	"github.com/qovery/qovery-client-go"
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
 var clusterInstallCmd = &cobra.Command{
@@ -31,6 +32,10 @@ var clusterInstallCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
+
+		utils.Println("")
+		utils.PrintlnInfo(`The following procedure allows you to generate the values files and the helm command necessary to install Qovery on your cluster. You can find more information on our public documentation: https://hub.qovery.com/docs/getting-started/install-qovery/kubernetes/quickstart/
+		`)
 
 		// clusterTypePrompt for cluster type
 		// select between Managed By Qovery or Self Managed or Local Machine
@@ -638,13 +643,18 @@ func outputCommandsToInstallQoveryOnCluster(helmValuesFileName string) {
 	// give instruction to the user to install the cluster
 	utils.Println("")
 	utils.Println("////////////////////////////////////////////////////////////////////////////////////")
-	utils.Println("//// Please copy/paste the following commands to install Qovery on your cluster ////")
-	utils.Println("////          ⚠️ Check the values file before running the commands ⚠️           ////")
+	utils.Println("////              Follow these instructions to install your cluster             ////")
 	utils.Println("////////////////////////////////////////////////////////////////////////////////////")
 	utils.Println(`
 # Add the Qovery Helm repository
 helm repo add qovery https://helm.qovery.com`)
 	utils.Println("helm repo update")
+
+	utils.Println(fmt.Sprintf(`
+# Verify the helm values
+Qovery provides you with a default configuration that can be customized based on your needs. More information here: https://hub.qovery.com/docs/getting-started/install-qovery/kubernetes/byok-config
+Helm values location: %s
+	`, helmValuesFileName))
 
 	utils.Println(fmt.Sprintf(`
 # Install Qovery on your cluster first, without some services to avoid circular dependency errors
