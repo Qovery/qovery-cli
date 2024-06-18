@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -534,13 +535,18 @@ func configureStorageClass(client *qovery.APIClient, cluster *qovery.Cluster) {
 		return
 	}
 
-	utils.Println("We need to know the storage class name that your kubernetes cluster uses to deploy app with network storage.")
-	storageClassUI := promptui.Select{
-		Label: "Storage class name",
-	}
-	_, storageClassName, err := storageClassUI.Run()
+	storageClassName, err := func() *promptui.Prompt {
+		return &promptui.Prompt{
+			Label:   "We need to know the storage class name that your kubernetes cluster uses to deploy app with network storage. Enter your storage class name",
+			Default: "",
+		}
+	}().Run()
 	if err != nil {
 		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+	if storageClassName == "" {
+		utils.PrintlnError(errors.New("storage class name should be defined and cannot be empty"))
 		os.Exit(1)
 	}
 
