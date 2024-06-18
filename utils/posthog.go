@@ -1,12 +1,13 @@
 package utils
 
 import (
-	"github.com/posthog/posthog-go"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/posthog/posthog-go"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 const DefaultEventName = "cli-command-execution"
@@ -34,7 +35,7 @@ func CaptureWithEventAndProperties(command *cobra.Command, event string, propert
 	ph, err := posthog.NewWithConfig(
 		"phc_IgdG1K2GveDUte1gJ6hlwNbFHCv9nViWETUyLMU7ciq",
 		posthog.Config{
-			Endpoint: "https://app.posthog.com",
+			Endpoint: "https://phprox.qovery.com",
 		},
 	)
 
