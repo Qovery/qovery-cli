@@ -2510,9 +2510,10 @@ func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
 
 	if docker != nil {
 		sourceDockerGitRepository := qovery.ApplicationGitRepositoryRequest{
-			Url:      docker.GitRepository.Url,
-			Branch:   docker.GitRepository.Branch,
-			RootPath: docker.GitRepository.RootPath,
+			Branch:     docker.GitRepository.Branch,
+			GitTokenId: docker.GitRepository.GitTokenId,
+			RootPath:   docker.GitRepository.RootPath,
+			Url:        docker.GitRepository.Url,
 		}
 
 		sourceDocker = qovery.JobRequestAllOfSourceDocker{
