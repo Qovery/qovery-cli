@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var forceCancel bool
+
 var environmentCancelCmd = &cobra.Command{
 	Use:   "cancel",
 	Short: "Cancel an environment deployment",
@@ -24,17 +26,14 @@ var environmentCancelCmd = &cobra.Command{
 
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, _, err = client.EnvironmentActionsAPI.CancelEnvironmentDeployment(context.Background(), envId).Execute()
-
+		_, _, err = client.EnvironmentActionsAPI.CancelEnvironmentDeployment(context.Background(), envId).CancelEnvironmentDeploymentRequest(qovery.CancelEnvironmentDeploymentRequest{ForceCancel: &forceCancel}).Execute()
 		if err != nil {
-			utils.PrintlnError(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -52,5 +51,6 @@ func init() {
 	environmentCancelCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
 	environmentCancelCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	environmentCancelCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	environmentCancelCmd.Flags().BoolVarP(&forceCancel, "force", "f", false, "Force cancel")
 	environmentCancelCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch environment status until it's ready or an error occurs")
 }
