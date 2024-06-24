@@ -2532,10 +2532,11 @@ func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
 
 	if job.LifecycleJobResponse != nil {
 		var schedule = qovery.JobRequestAllOfSchedule{
-			OnStart:  job.LifecycleJobResponse.Schedule.OnStart,
-			OnStop:   job.LifecycleJobResponse.Schedule.OnStop,
-			OnDelete: job.LifecycleJobResponse.Schedule.OnDelete,
-			Cronjob:  nil,
+			OnStart:       job.LifecycleJobResponse.Schedule.OnStart,
+			OnStop:        job.LifecycleJobResponse.Schedule.OnStop,
+			OnDelete:      job.LifecycleJobResponse.Schedule.OnDelete,
+			LifecycleType: job.LifecycleJobResponse.Schedule.LifecycleType,
+			Cronjob:       nil,
 		}
 
 		return qovery.JobRequest{
@@ -2560,10 +2561,11 @@ func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
 		}
 
 		var schedule = qovery.JobRequestAllOfSchedule{
-			OnStart:  nil,
-			OnStop:   nil,
-			OnDelete: nil,
-			Cronjob:  &scheduleCronjob,
+			OnStart:       nil,
+			OnStop:        nil,
+			OnDelete:      nil,
+			LifecycleType: nil,
+			Cronjob:       &scheduleCronjob,
 		}
 
 		return qovery.JobRequest{
