@@ -406,9 +406,17 @@ func insertAtIndex(src string, insert string, index int) string {
 	return string(newRunes)
 }
 
-func getInterpolatedValue(value *string, variables []EnvVarLineOutput) *string {
+func getInterpolatedValue(value *string, variables []EnvVarLineOutput, aliasParentKey *string) *string {
 	if value == nil {
 		return nil
+	}
+
+	if aliasParentKey != nil {
+		for _, x := range variables {
+			if *aliasParentKey == x.Key {
+				return x.Value
+			}
+		}
 	}
 
 	if !strings.Contains(*value, "{{") {
@@ -468,7 +476,7 @@ FirstLoop:
 	}
 
 	if strings.Contains(finalValue, "{{") && finalValue != *value {
-		return getInterpolatedValue(&finalValue, variables)
+		return getInterpolatedValue(&finalValue, variables, nil)
 	}
 
 	return &finalValue
@@ -494,7 +502,7 @@ func GetEnvVarJsonOutput(variables []EnvVarLineOutput) string {
 			"updated_at":            ToIso8601(v.UpdatedAt),
 			"key":                   v.Key,
 			"value":                 v.Value,
-			"interpolated_value":    getInterpolatedValue(v.Value, variables),
+			"interpolated_value":    getInterpolatedValue(v.Value, variables, v.AliasParentKey),
 			"service_name":          v.Service,
 			"scope":                 v.Scope,
 			"alias_parent_key":      v.AliasParentKey,
