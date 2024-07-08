@@ -22,11 +22,12 @@ case "$(uname -m)" in
 
   arm64)
   aarch64)
-    arch="amd64"
+    arch="arm4"
   ;;
 
   *)
-    arch="amd64"
+    echo "Un-supported architecture. Please report to us to add it"
+    exit 1
   ;;
 esac
 
@@ -36,7 +37,7 @@ latest_tag=$(curl --silent "https://api.github.com/repos/$repo/releases/latest" 
 version=$(echo $latest_tag | sed 's/^v//')
 
 test -f $output_tgz && rm -f $output_tgz
-curl -o $output_tgz -sOL "https://github.com/${repo}/releases/download/${latest_tag}/qovery-cli_${version}_${os}_amd64.tar.gz"
+curl -o $output_tgz -sOL "https://github.com/${repo}/releases/download/${latest_tag}/qovery-cli_${version}_${os}_${arch}.tar.gz"
 
 echo "[+] Uncompressing qovery binary in $dest_binary directory (sudo permissions are required)"
 sudo tar -xzf $output_tgz -C $dest_binary qovery
