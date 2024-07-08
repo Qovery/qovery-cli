@@ -168,6 +168,14 @@ install_deps() {
     exit 1
   fi
 
+  docker_running=$( (docker ps -q >/dev/null && echo true ) || echo false )
+  if "$docker_running" == "true"; then
+     echo "docker is running"
+  else
+    echo "Docker is not running. Please start Docker before running this command"
+    exit 1
+  fi
+
   if which k3d >/dev/null; then
     echo "k3d already installed"
   else

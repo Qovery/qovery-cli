@@ -20,6 +20,12 @@ var demoUpCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
+		if runtime.GOOS == "windows" {
+			utils.PrintlnError(fmt.Errorf("qovery demo is not supported from Windows. Please use WSL (Windows Subsystem for Linux) to use qovery demo"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		_, token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
