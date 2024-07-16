@@ -12,7 +12,9 @@ var (
 	dryRun     bool
 	version    string
 	versionErr error
-	ageInDay int
+	ageInDay   int
+	execId     string
+	directory  string
 	adminCmd   = &cobra.Command{Use: "admin", Hidden: true}
 )
 
