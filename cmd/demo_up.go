@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"bytes"
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"os/user"
@@ -26,7 +30,7 @@ var demoUpCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, token, err := utils.GetAccessToken()
+		tokenType, token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -62,17 +66,51 @@ var demoUpCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		cmdArgs := fmt.Sprintf("%s %s %s %s %s %t 2>&1 | tee %s", scriptPath, demoClusterName, strings.ToUpper(runtime.GOARCH), string(orgId), string(token), demoDebug, debugLogsPath)
+		cmdArgs := fmt.Sprintf("set -euo pipefail ; %s %s %s %s %s %t 2>&1 | tee %s", scriptPath, demoClusterName, strings.ToUpper(runtime.GOARCH), string(orgId), string(token), demoDebug, debugLogsPath)
 		shCmd := exec.Command("/bin/sh", "-c", cmdArgs)
 		shCmd.Stdout = os.Stdout
 		shCmd.Stderr = os.Stderr
-		if err := shCmd.Run(); err != nil {
+		if err := shCmd.Run(); err != nil || !shCmd.ProcessState.Success() {
 			utils.PrintlnError(fmt.Errorf("error executing the command %s", err))
+			uploadErrorLogs(tokenType, token, orgId, demoClusterName, debugLogsPath)
 			utils.CaptureError(cmd, shCmd.String(), err.Error())
 		}
 
 		utils.CaptureWithEvent(cmd, utils.EndOfExecutionEventName)
 	},
+}
+
+func uploadErrorLogs(tokenType utils.AccessTokenType, token utils.AccessToken, organization utils.Id, clusterName string, debugLogsPath string) {
+	type Payload struct {
+		Organization string
+		clusterName  string
+		Content      string
+	}
+
+	content, _ := os.ReadFile(debugLogsPath)
+	payload, _ := json.Marshal(Payload{Organization: string(organization), clusterName: clusterName, Content: string(content)})
+	client := utils.GetQoveryClient(tokenType, token)
+	url := fmt.Sprintf("%s/admin/demoDebugLog", client.GetConfig().Servers[0].URL)
+	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(payload))
+	query := req.URL.Query()
+	query.Add("organization", string(organization))
+	query.Add("clusterName", clusterName)
+	req.URL.RawQuery = query.Encode()
+
+	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
+	req.Header.Set("Content-Type", "application/json")
+
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		utils.PrintlnError(fmt.Errorf("error uploading debug logs: %s", err))
+		return
+	}
+
+	if response.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(response.Body)
+		utils.PrintlnError(fmt.Errorf("error uploading debug logs: %s %s", response.Status, body))
+		return
+	}
 }
 
 func init() {
