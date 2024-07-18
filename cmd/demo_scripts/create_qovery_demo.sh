@@ -16,6 +16,7 @@ case $3 in
 esac
 case $5 in
   true)
+    set -x
     HELM_DEBUG="--debug"
   ;;
 
