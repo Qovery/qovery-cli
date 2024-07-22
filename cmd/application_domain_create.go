@@ -13,6 +13,7 @@ import (
 )
 
 var doNotGenerateCertificate bool
+var useCdn bool
 
 var applicationDomainCreateCmd = &cobra.Command{
 	Use:   "create",
@@ -70,8 +71,9 @@ var applicationDomainCreateCmd = &cobra.Command{
 
 		generateCertificate := !doNotGenerateCertificate
 		req := qovery.CustomDomainRequest{
-			Domain: applicationCustomDomain,
+			Domain:              applicationCustomDomain,
 			GenerateCertificate: generateCertificate,
+			UseCdn:              &useCdn,
 		}
 
 		createdDomain, _, err := client.CustomDomainAPI.CreateApplicationCustomDomain(context.Background(), application.Id).CustomDomainRequest(req).Execute()
@@ -82,7 +84,7 @@ var applicationDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Custom domain %s has been created (generate certificate: %s)", pterm.FgBlue.Sprintf(createdDomain.Domain),  pterm.FgBlue.Sprintf(strconv.FormatBool(createdDomain.GenerateCertificate))))
+		utils.Println(fmt.Sprintf("Custom domain %s has been created (generate certificate: %s)", pterm.FgBlue.Sprintf(createdDomain.Domain), pterm.FgBlue.Sprintf(strconv.FormatBool(createdDomain.GenerateCertificate))))
 	},
 }
 
@@ -94,6 +96,7 @@ func init() {
 	applicationDomainCreateCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
 	applicationDomainCreateCmd.Flags().StringVarP(&applicationCustomDomain, "domain", "", "", "Custom Domain <subdomain.domain.tld>")
 	applicationDomainCreateCmd.Flags().BoolVarP(&doNotGenerateCertificate, "do-not-generate-certificate", "", false, "Do Not Generate Certificate")
+	applicationDomainCreateCmd.Flags().BoolVarP(&useCdn, "is-behind-a-cdn", "", false, "Custom Domain is behind a CDN")
 
 	_ = applicationDomainCreateCmd.MarkFlagRequired("application")
 	_ = applicationDomainCreateCmd.MarkFlagRequired("domain")
