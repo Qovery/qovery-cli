@@ -21,6 +21,7 @@ var watchFlag bool
 var markdownFlag bool
 var jiraFlag bool
 var jsonFlag bool
+var servicesJson string
 
 var serviceListCmd = &cobra.Command{
 	Use:   "list",
