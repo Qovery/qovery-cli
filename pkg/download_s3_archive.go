@@ -46,13 +46,6 @@ func DownloadS3Archive(executionId string, directory string) {
 	organizationId := findOrganizationInTag(archiveResponse.Tags)
 	if organizationId == nil {
 		log.Warning("Could not find organization tags")
-		return
-	}
-
-	organization, err := utils.GetOrganizationById(*organizationId)
-	if err != nil {
-		log.Errorf("Cannot find organization with id %s: %v", *organizationId, err)
-		return
 	}
 
 	path := filepath.Join(directory, fileName)
@@ -61,10 +54,9 @@ func DownloadS3Archive(executionId string, directory string) {
 		location = "./" + path
 	}
 
-	utils.PrintlnInfo(fmt.Sprintf("The downloaded archive belongs to organization: '%s'", organization.Name))
 	utils.PrintlnInfo(fmt.Sprintf("Would you like to write the file in '%s' ?", location))
 	// check if it is the expected org
-	if !utils.Validate("organization") {
+	if !utils.Validate("") {
 		return
 	}
 
