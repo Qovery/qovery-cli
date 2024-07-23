@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/pterm/pterm"
 	"os"
@@ -37,6 +38,12 @@ var environmentDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
+		if servicesJson != "" && skipPausedServicesFlag {
+			utils.PrintlnError(fmt.Errorf("services and skip-paused-services flags are mutually exclusive"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
 		// wait until service is ready
 		for {
 			if utils.IsEnvironmentInATerminalState(envId, client) {
@@ -45,6 +52,25 @@ var environmentDeployCmd = &cobra.Command{
 
 			utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
 			time.Sleep(5 * time.Second)
+		}
+
+		if servicesJson != "" {
+			// convert servicesJson to DeployAllRequest
+			var deployAllRequest qovery.DeployAllRequest
+			err := json.Unmarshal([]byte(servicesJson), &deployAllRequest)
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			_, _, err = client.EnvironmentActionsAPI.DeployAllServices(context.Background(), envId).DeployAllRequest(deployAllRequest).Execute()
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+			utils.Println("Services are deploying!")
 		}
 
 		if skipPausedServicesFlag {
@@ -60,11 +86,11 @@ var environmentDeployCmd = &cobra.Command{
 			request := qovery.DeployAllRequest{}
 			// Adding services to be deployed
 			for _, applicationID := range servicesIDsToDeploy.ApplicationsIDs {
-				request.Applications = append(request.Applications, qovery.DeployAllRequestApplicationsInner {ApplicationId: applicationID})
+				request.Applications = append(request.Applications, qovery.DeployAllRequestApplicationsInner{ApplicationId: applicationID})
 				utils.Println(fmt.Sprintf("Application %s is deploying!", applicationID))
 			}
 			for _, containerID := range servicesIDsToDeploy.ContainersIDs {
-				request.Containers = append(request.Containers, qovery.DeployAllRequestContainersInner {Id: containerID})
+				request.Containers = append(request.Containers, qovery.DeployAllRequestContainersInner{Id: containerID})
 				utils.Println(fmt.Sprintf("Container %s is deploying!", containerID))
 			}
 			for _, helmID := range servicesIDsToDeploy.HelmsIDs {
@@ -80,14 +106,14 @@ var environmentDeployCmd = &cobra.Command{
 				utils.Println(fmt.Sprintf("Database %s is deploying!", databaseID))
 			}
 
-			_, _, err  = client.EnvironmentActionsAPI.DeployAllServices(context.Background(), envId).DeployAllRequest(request).Execute()
+			_, _, err = client.EnvironmentActionsAPI.DeployAllServices(context.Background(), envId).DeployAllRequest(request).Execute()
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
-		} else {
+		} else if servicesJson == "" {
 			// Deploy the whole env
 			_, _, err = client.EnvironmentActionsAPI.DeployEnvironment(context.Background(), envId).Execute()
 			if err != nil {
@@ -98,7 +124,6 @@ var environmentDeployCmd = &cobra.Command{
 			utils.Println("Environment is deploying!")
 		}
 
-
 		if watchFlag {
 			utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
 		}
@@ -107,19 +132,19 @@ var environmentDeployCmd = &cobra.Command{
 
 type Services struct {
 	ApplicationsIDs []string
-	ContainersIDs []string
-	HelmsIDs []string
-	JobsIDs []string
-	DatabasesIDs []string
+	ContainersIDs   []string
+	HelmsIDs        []string
+	JobsIDs         []string
+	DatabasesIDs    []string
 }
 
 func getEligibleServices(client *qovery.APIClient, envId string, servicesStatusesToExclude []qovery.StateEnum) (Services, error) {
-	nonStoppedServices := Services {
+	nonStoppedServices := Services{
 		ApplicationsIDs: make([]string, 0),
-		ContainersIDs: make([]string, 0),
-		HelmsIDs: make([]string, 0),
-		JobsIDs: make([]string, 0),
-		DatabasesIDs: make([]string, 0),
+		ContainersIDs:   make([]string, 0),
+		HelmsIDs:        make([]string, 0),
+		JobsIDs:         make([]string, 0),
+		DatabasesIDs:    make([]string, 0),
 	}
 	envStatuses, _, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
 	if err != nil {
@@ -161,6 +186,7 @@ func init() {
 	environmentDeployCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
 	environmentDeployCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	environmentDeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	environmentDeployCmd.Flags().StringVarP(&servicesJson, "services", "", "", "Services to deploy (JSON Format: https://api-doc.qovery.com/#tag/Environment-Actions/operation/deployAllServices)")
 	environmentDeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch environment status until it's ready or an error occurs")
 	environmentDeployCmd.Flags().BoolVarP(&skipPausedServicesFlag, "skip-paused-services", "", false, "Skip paused services: paused services won't be started / deployed")
 }
