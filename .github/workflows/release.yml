@@ -20,7 +20,7 @@ jobs:
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
       - name: Ensure tag match the current version
         run: |
-          if [ "v$(grep '// ci-version-check' pkg/version_test.go | sed -r 's/.+return\s"(.+)".+/\1/')" != "$(git describe --tags --abbrev=0)" ] ; then
+          if [ "v$(grep '// ci-version-check' pkg/version_test.go | sed -r 's/.+NewConstraint\("(.+)"\).+/\1/')" != "$(git describe --tags --abbrev=0)" ] ; then
               echo "Tag version do not match application version"
               exit 1
           fi
