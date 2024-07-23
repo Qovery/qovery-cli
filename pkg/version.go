@@ -13,7 +13,7 @@ import (
 )
 
 func GetCurrentVersion() *semver.Version {
-	return semver.New(0, 100, 0, "", "") // ci-version-check
+	return semver.New(0, 101, 0, "", "") // ci-version-check
 }
 
 func GetLatestOnlineVersionUrl() (string, error) {
