@@ -13,14 +13,14 @@ import (
 )
 
 func GetCurrentVersion() *semver.Version {
-	return semver.New(0, 101, 0, "", "") // ci-version-check
+	return semver.New(0, 100, 0, "", "")
 }
 
 func GetLatestOnlineVersionUrl() (string, error) {
 	url := "https://github.com/Qovery/qovery-cli/releases/latest"
 	resp, err := http.Get(url)
 	if err != nil {
-		return "", errors.New("Can't reach Github, please check your network connectivity. ")
+		return "", errors.New("can't reach Github, please check your network connectivity")
 	}
 
 	return resp.Request.URL.Path, nil

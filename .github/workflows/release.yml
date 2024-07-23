@@ -20,7 +20,7 @@ jobs:
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
       - name: Ensure tag match the current version
         run: |
-          if [ "v$(grep '// ci-version-check' pkg/version.go | sed -r 's/.+return\s"(.+)".+/\1/')" != "$(git describe --tags --abbrev=0)" ] ; then
+          if [ "v$(grep '// ci-version-check' pkg/version_test.go | sed -r 's/.+return\s"(.+)".+/\1/')" != "$(git describe --tags --abbrev=0)" ] ; then
               echo "Tag version do not match application version"
               exit 1
           fi
@@ -38,7 +38,7 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v1
         with:
-          version: 'v1.26.2'
+          version: "v1.26.2"
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
