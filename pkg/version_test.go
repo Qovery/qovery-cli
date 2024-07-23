@@ -8,7 +8,7 @@ import (
 
 func TestVersion(t *testing.T) {
 	// Increment version here when bumping CLI
-	c, err := semver.NewConstraint("0.103.0") // ci-version-check
+	c, err := semver.NewConstraint("0.101.0") // ci-version-check
 	if err != nil {
 		t.Errorf("Error parsing constraint: %s", err)
 	}

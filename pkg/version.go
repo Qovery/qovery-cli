@@ -13,7 +13,7 @@ import (
 )
 
 func GetCurrentVersion() *semver.Version {
-	return semver.New(0, 103, 0, "", "")
+	return semver.New(0, 101, 0, "", "")
 }
 
 func GetLatestOnlineVersionUrl() (string, error) {
