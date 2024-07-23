@@ -1,4 +1,4 @@
-FROM golang:1.21 as builder
+FROM public.ecr.aws/r3m4q3r9/pub-mirror-go:1.21.0 as builder
 
 # Set the working directory within the container
 WORKDIR /app
@@ -15,7 +15,7 @@ COPY . .
 # Build the Go application
 RUN go build -o qovery
 
-FROM debian:bookworm-slim as runner
+FROM public.ecr.aws/r3m4q3r9/pub-mirror-debian:bookworm-slim as runner
 
 RUN apt-get update && \
     apt-get -y upgrade && \
