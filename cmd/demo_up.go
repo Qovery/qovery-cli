@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"io"
@@ -16,6 +17,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"time"
 )
 
 var demoUpCmd = &cobra.Command{
@@ -82,13 +84,25 @@ var demoUpCmd = &cobra.Command{
 
 func uploadErrorLogs(tokenType utils.AccessTokenType, token utils.AccessToken, organization utils.Id, clusterName string, debugLogsPath string) {
 	type Payload struct {
-		Organization string
-		clusterName  string
-		Content      string
+		Organization string    `json:"organization"`
+		ClusterName  string    `json:"cluster_name"`
+		Content      string    `json:"content"`
+		Os           string    `json:"os"`
+		CpuArch      string    `json:"cpu_arch"`
+		CliVersion   string    `json:"cli_version"`
+		Timestamp    time.Time `json:"timestamp"`
 	}
 
 	content, _ := os.ReadFile(debugLogsPath)
-	payload, _ := json.Marshal(Payload{Organization: string(organization), clusterName: clusterName, Content: string(content)})
+	payload, _ := json.Marshal(Payload{
+		Organization: string(organization),
+		ClusterName:  clusterName,
+		Content:      string(content),
+		Os:           runtime.GOOS,
+		CpuArch:      runtime.GOARCH,
+		CliVersion:   pkg.Version,
+		Timestamp:    time.Now(),
+	})
 	client := utils.GetQoveryClient(tokenType, token)
 	url := fmt.Sprintf("%s/admin/demoDebugLog", client.GetConfig().Servers[0].URL)
 	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(payload))
