@@ -84,8 +84,14 @@ install_or_upgrade_helm_charts() {
       qovery qovery/qovery
   fi
 
-  set -x
-  helm upgrade --install --create-namespace ${HELM_DEBUG} --timeout=15m -n qovery -f values.yaml --wait --atomic qovery qovery/qovery
+  for i in $(seq 1 3); do
+    set -x
+    helm upgrade --install --create-namespace ${HELM_DEBUG} --timeout=15m -n qovery -f values.yaml --wait --atomic qovery qovery/qovery && break
+    set +x
+    echo "Install failed. Retrying in 10 seconds. To let the cluster initialize"
+    sleep 10
+  done
+
   set +x
 }
 
