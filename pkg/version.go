@@ -13,7 +13,7 @@ import (
 )
 
 // wil be replaced by CI by the latest git tag
-var Version = "0.101.0"
+var Version = "unknown"
 
 func GetCurrentVersion() (*semver.Version, error) {
 	version, err := semver.NewVersion(Version)
