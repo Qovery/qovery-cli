@@ -1,6 +1,8 @@
 builds:
   - main: main.go
     binary: qovery
+    ldflags:
+      - -s -w -X github.com/qovery/qovery-cli/pkg.Version={{ .Version }}
     goos:
       - darwin
       - linux

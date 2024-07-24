@@ -25,9 +25,16 @@ jobs:
       - name: Check out source code
         uses: actions/checkout@v3
 
+      - name: Fetch tags
+        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
+      - name: Set tag
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+
       - name: Build
-        run: CGO_ENABLED=0 go build .
-  
+        run: CGO_ENABLED=0 go build -ldflags "-X github.com/qovery/qovery-cli/pkg.Version=${{ steps.vars.outputs.tag }}" .
+
   test:
     runs-on: ubuntu-20.04
     steps:
@@ -58,6 +65,3 @@ jobs:
         with:
           version: latest
           args: --timeout 5m
-
-
-

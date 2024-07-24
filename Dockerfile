@@ -1,5 +1,7 @@
 FROM public.ecr.aws/r3m4q3r9/pub-mirror-go:1.21.0 as builder
 
+ARG APP_VERSION=unknown
+
 # Set the working directory within the container
 WORKDIR /app
 
@@ -13,7 +15,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go application
-RUN go build -o qovery
+RUN go build -o qovery -ldflags "-X github.com/qovery/qovery-cli/pkg.Version=$APP_VERSION"
 
 FROM public.ecr.aws/r3m4q3r9/pub-mirror-debian:bookworm-slim as runner
 
