@@ -4,6 +4,7 @@ import (
 	context2 "context"
 	"encoding/json"
 	"errors"
+	"github.com/qovery/qovery-client-go"
 	"os"
 	"strings"
 	"time"
@@ -290,6 +291,14 @@ func GetAuthorizationHeaderValue(tokenType AccessTokenType, token AccessToken) s
 	return string(tokenType) + " " + strings.TrimSpace(string(token))
 }
 
+func checkOrgaValid(orgaList *qovery.OrganizationResponseList) error {
+	if len(orgaList.GetResults()) == 0 {
+		return errors.New("you don't have any organization. Please create an account on https://start.qovery.com . ")
+	} else {
+		return nil
+	}
+}
+
 func GetAccessToken() (AccessTokenType, AccessToken, error) {
 	apiToken := os.Getenv("QOVERY_CLI_ACCESS_TOKEN")
 	if apiToken == "" {
@@ -311,8 +320,11 @@ func GetAccessToken() (AccessTokenType, AccessToken, error) {
 	}
 
 	// check the token is valid by trying to list the organizations
-	if _, _, err = GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute(); err == nil {
+	if orgaList, _, err := GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute(); err == nil {
 		// everything is fine, return the token
+		if err = checkOrgaValid(orgaList); err != nil {
+			return "", "", err
+		}
 		return "Bearer", token, nil
 	}
 
@@ -321,8 +333,12 @@ func GetAccessToken() (AccessTokenType, AccessToken, error) {
 		return "", "", err
 	}
 
-	if _, _, err = GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute(); err == nil {
+	if orgaList, _, err := GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute(); err == nil {
 		// everything is fine, return the token
+		if err = checkOrgaValid(orgaList); err != nil {
+			return "", "", err
+		}
+
 		return "Bearer", token, nil
 	}
 
