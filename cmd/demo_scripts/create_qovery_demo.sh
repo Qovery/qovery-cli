@@ -253,9 +253,11 @@ setup_network
 
 echo ''
 echo '""""""""""""""""""""""""""""""""""""""""""""'
-echo "Qovery demo cluster is now installed !!!!"
-echo "The kubeconfig is correctly set, so you can connect to it directly with kubectl or k9s from your local machine"
-echo "To delete/stop/start your cluster, use k3d cluster xxxx"
+echo "Qovery demo cluster is now installed on your machine!"
 echo ''
-echo "Go to https://console.qovery.com to create your first environment on this cluster '${CLUSTER_NAME}'"
+echo "- To stop/start your cluster, use 'k3d cluster start ${CLUSTER_NAME}'"
+echo "- To destroy your cluster locally, use 'qovery demo destroy'. Add the parameter '-d' to destroy also the setup on the Qovery console"
+echo "- The kubeconfig is correctly set, so you can connect to it directly with kubectl or k9s from your local machine"
+echo ''
+echo "Go to https://console.qovery.com to create your first environment on the cluster '${CLUSTER_NAME}'"
 echo '""""""""""""""""""""""""""""""""""""""""""""'
