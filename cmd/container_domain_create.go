@@ -70,8 +70,9 @@ var containerDomainCreateCmd = &cobra.Command{
 
 		generateCertificate := !doNotGenerateCertificate
 		req := qovery.CustomDomainRequest{
-			Domain: containerCustomDomain,
+			Domain:              containerCustomDomain,
 			GenerateCertificate: generateCertificate,
+			UseCdn:              &useCdn,
 		}
 
 		createdDomain, _, err := client.ContainerCustomDomainAPI.CreateContainerCustomDomain(context.Background(), container.Id).CustomDomainRequest(req).Execute()
@@ -82,7 +83,7 @@ var containerDomainCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Custom domain %s has been created (generate certificate: %s)", pterm.FgBlue.Sprintf(createdDomain.Domain),  pterm.FgBlue.Sprintf(strconv.FormatBool(createdDomain.GenerateCertificate))))
+		utils.Println(fmt.Sprintf("Custom domain %s has been created (generate certificate: %s)", pterm.FgBlue.Sprintf(createdDomain.Domain), pterm.FgBlue.Sprintf(strconv.FormatBool(createdDomain.GenerateCertificate))))
 	},
 }
 
@@ -94,6 +95,7 @@ func init() {
 	containerDomainCreateCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
 	containerDomainCreateCmd.Flags().StringVarP(&containerCustomDomain, "domain", "", "", "Custom Domain <subdomain.domain.tld>")
 	containerDomainCreateCmd.Flags().BoolVarP(&doNotGenerateCertificate, "do-not-generate-certificate", "", false, "Do Not Generate Certificate")
+	containerDomainCreateCmd.Flags().BoolVarP(&useCdn, "is-behind-a-cdn", "", false, "Custom Domain is behind a CDN")
 
 	_ = containerDomainCreateCmd.MarkFlagRequired("container")
 	_ = containerDomainCreateCmd.MarkFlagRequired("domain")

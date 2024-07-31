@@ -68,8 +68,9 @@ var containerDomainEditCmd = &cobra.Command{
 
 		generateCertificate := !doNotGenerateCertificate
 		req := qovery.CustomDomainRequest{
-			Domain: containerCustomDomain,
+			Domain:              containerCustomDomain,
 			GenerateCertificate: generateCertificate,
+			UseCdn:              &useCdn,
 		}
 
 		editedDomain, _, err := client.ContainerCustomDomainAPI.EditContainerCustomDomain(context.Background(), container.Id, customDomain.Id).CustomDomainRequest(req).Execute()
@@ -80,7 +81,7 @@ var containerDomainEditCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Custom domain %s has been edited (generate certificate: %s)", pterm.FgBlue.Sprintf(editedDomain.Domain),  pterm.FgBlue.Sprintf(strconv.FormatBool(editedDomain.GenerateCertificate))))
+		utils.Println(fmt.Sprintf("Custom domain %s has been edited (generate certificate: %s)", pterm.FgBlue.Sprintf(editedDomain.Domain), pterm.FgBlue.Sprintf(strconv.FormatBool(editedDomain.GenerateCertificate))))
 	},
 }
 
@@ -92,6 +93,7 @@ func init() {
 	containerDomainEditCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
 	containerDomainEditCmd.Flags().StringVarP(&containerCustomDomain, "domain", "", "", "Custom Domain <subdomain.domain.tld>")
 	containerDomainEditCmd.Flags().BoolVarP(&doNotGenerateCertificate, "do-not-generate-certificate", "", false, "Do Not Generate Certificate")
+	containerDomainEditCmd.Flags().BoolVarP(&useCdn, "is-behind-a-cdn", "", false, "Custom Domain is behind a CDN")
 
 	_ = containerDomainEditCmd.MarkFlagRequired("container")
 	_ = containerDomainEditCmd.MarkFlagRequired("domain")

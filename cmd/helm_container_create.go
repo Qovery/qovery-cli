@@ -71,6 +71,7 @@ var helmDomainCreateCmd = &cobra.Command{
 		req := qovery.CustomDomainRequest{
 			Domain:              helmCustomDomain,
 			GenerateCertificate: generateCertificate,
+			UseCdn:              &useCdn,
 		}
 
 		createdDomain, _, err := client.HelmCustomDomainAPI.CreateHelmCustomDomain(context.Background(), helm.Id).CustomDomainRequest(req).Execute()
@@ -93,6 +94,7 @@ func init() {
 	helmDomainCreateCmd.Flags().StringVarP(&helmName, "helm", "n", "", "helm Name")
 	helmDomainCreateCmd.Flags().StringVarP(&helmCustomDomain, "domain", "", "", "Custom Domain <subdomain.domain.tld>")
 	helmDomainCreateCmd.Flags().BoolVarP(&doNotGenerateCertificate, "do-not-generate-certificate", "", false, "Do Not Generate Certificate")
+	helmDomainCreateCmd.Flags().BoolVarP(&useCdn, "is-behind-a-cdn", "", false, "Custom Domain is behind a CDN")
 
 	_ = helmDomainCreateCmd.MarkFlagRequired("helm")
 	_ = helmDomainCreateCmd.MarkFlagRequired("domain")
