@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func deploy(url string, method string, dryRunDisabled bool, queryParams map[string]string) *http.Response {
+func execAdminRequest(url string, method string, dryRunDisabled bool, queryParams map[string]string) *http.Response {
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
 		utils.PrintlnError(err)
@@ -57,7 +57,7 @@ func ForceFailedDeploymentsToInternalErrorStatus(safeguardDuration time.Duration
 
 	durationIso8601 := fmt.Sprintf("PT%dM", nbMinutes)
 	queryParams := map[string]string{"safeguardDuration": durationIso8601}
-	res := deploy(utils.AdminUrl+"/deployment/forceFailedDeploymentsToInternalErrorStatus", http.MethodPost, true, queryParams)
+	res := execAdminRequest(utils.AdminUrl+"/deployment/forceFailedDeploymentsToInternalErrorStatus", http.MethodPost, true, queryParams)
 	if !strings.Contains(res.Status, "200") {
 		result, _ := io.ReadAll(res.Body)
 		log.Errorf("Could not force the deployments status : %s. %s", res.Status, string(result))

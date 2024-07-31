@@ -457,10 +457,10 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 }
 
 func (service AdminClusterBatchDeployServiceImpl) deployCluster(clusterId string) error {
-	response := deploy(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, true, map[string]string{})
+	response := execAdminRequest(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, true, map[string]string{})
 	if response.StatusCode == 401 {
 		DoRequestUserToAuthenticate(false)
-		response = deploy(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, true, map[string]string{})
+		response = execAdminRequest(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, true, map[string]string{})
 	}
 	if response.StatusCode != 200 {
 		result, _ := io.ReadAll(response.Body)
