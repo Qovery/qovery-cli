@@ -25,6 +25,8 @@ case $5 in
   ;;
 esac
 
+POWERSHELL_CMD='powershell.exe'
+
 get_or_create_on_premise_account() {
   accountId=$(curl -s --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' https://api.qovery.com/organization/"${ORGANIZATION_ID}"/onPremise/credentials | jq -r .results[0].id)
   if [ "$accountId" = "null" ]
@@ -104,7 +106,7 @@ setup_network() {
     # Wsl
     set -x
     sudo ip addr add 172.42.0.3/32 dev lo || true
-    powershell.exe -Command "Start-Process powershell -Verb RunAs -ArgumentList \"netsh interface ipv4 add address name='Loopback Pseudo-Interface 1' address=172.42.0.3 mask=255.255.255.255 skipassource=true\""
+    ${POWERSHELL_CMD} -Command "Start-Process powershell -Verb RunAs -ArgumentList \"netsh interface ipv4 add address name='Loopback Pseudo-Interface 1' address=172.42.0.3 mask=255.255.255.255 skipassource=true\""
   fi
   set +x
 }
@@ -195,6 +197,20 @@ install_deps() {
   else
     echo "Installing HELM"
     curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  fi
+
+  # Wsl
+  if grep -qi microsoft /proc/version; then
+    if which powershell.exe; then
+      echo "powershell is installed"
+      POWERSHELL_CMD='powershell.exe'
+    elif which /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe; then
+      echo "powershell is installed"
+      POWERSHELL_CMD='/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe'
+    else
+      echo "Cannot find powershell.exe, please be sure it is installed"
+      exit 1
+    fi
   fi
 
   echo "All dependencies are installed"
