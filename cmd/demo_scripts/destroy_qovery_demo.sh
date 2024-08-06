@@ -15,6 +15,20 @@ case $2 in
 esac
 DELETE_QOVERY_CONFIG=$4
 
+POWERSHELL_CMD='powershell.exe'
+if test -f /proc/version && grep -qi microsoft /proc/version; then
+  if which 'powershell.exe' >/dev/null; then
+    echo "powershell is installed"
+    POWERSHELL_CMD='powershell.exe'
+  elif which '/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe' >/dev/null; then
+    echo "powershell is installed"
+    POWERSHELL_CMD='/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe'
+  else
+    echo "Cannot find powershell.exe, please be sure it is installed"
+    exit 1
+  fi
+fi
+
 delete_qovery_demo_cluster() {
   clusterName=$1
   clusterId=$(curl -s -X GET --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' https://api.qovery.com/organization/"${ORGANIZATION_ID}"/cluster | jq -r '.results[] | select(.name=="'"$clusterName"'") | .id')
@@ -45,7 +59,7 @@ teardown_network() {
     # Wsl
     set -x
     sudo ip addr del 172.42.0.3/32 dev lo || true
-    powershell.exe -Command "Start-Process powershell -Verb RunAs -ArgumentList \"netsh interface ipv4 delete address name='Loopback Pseudo-Interface 1' address=172.42.0.3\""
+    ${POWERSHELL_CMD} -Command "Start-Process powershell -Verb RunAs -ArgumentList \"netsh interface ipv4 delete address name='Loopback Pseudo-Interface 1' address=172.42.0.3\""
   fi
   set +x
 }

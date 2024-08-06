@@ -199,12 +199,12 @@ install_deps() {
     curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
   fi
 
-  # Wsl
-  if grep -qi microsoft /proc/version; then
-    if which powershell.exe; then
+  # Wsl powershell
+  if test -f /proc/version && grep -qi microsoft /proc/version; then
+    if which 'powershell.exe' >/dev/null; then
       echo "powershell is installed"
       POWERSHELL_CMD='powershell.exe'
-    elif which /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe; then
+    elif which '/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe' >/dev/null; then
       echo "powershell is installed"
       POWERSHELL_CMD='/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe'
     else
