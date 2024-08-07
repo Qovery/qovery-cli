@@ -12,13 +12,10 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 )
 
-// wil be replaced by CI by the latest git tag
-var Version = "unknown"
-
 func GetCurrentVersion() (*semver.Version, error) {
-	version, err := semver.NewVersion(Version)
+	version, err := semver.NewVersion(utils.Version)
 	if err != nil {
-		return nil, fmt.Errorf("error trying to get semver from raw string `%s`, error: `%w`", Version, err)
+		return nil, fmt.Errorf("error trying to get semver from raw string `%s`, error: `%w`", utils.Version, err)
 	}
 
 	return version, nil
@@ -58,7 +55,7 @@ func CheckAvailableNewVersion() (bool, string, *semver.Version) {
 	}
 	currentVersion, err := GetCurrentVersion()
 	if err != nil {
-		return false, fmt.Sprintf("Error while trying to get the current version, mostlikely current version `%s` is not a valid semver string, error: `%s`", Version, err), nil
+		return false, fmt.Sprintf("Error while trying to get the current version, mostlikely current version `%s` is not a valid semver string, error: `%s`", utils.Version, err), nil
 	}
 	if latestOnlineVersion.GreaterThan(currentVersion) {
 		return true, fmt.Sprintf("A new version has been found %s, please upgrade it. \n"+

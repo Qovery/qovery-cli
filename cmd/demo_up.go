@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"io"
@@ -68,7 +67,7 @@ var demoUpCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-    cmdStr := `
+		cmdStr := `
 set -eu
 set -o pipefail
 %s %s %s %s %s %t 2>&1 | tee %s
@@ -105,7 +104,7 @@ func uploadErrorLogs(tokenType utils.AccessTokenType, token utils.AccessToken, o
 		Content:      string(content),
 		Os:           runtime.GOOS,
 		CpuArch:      runtime.GOARCH,
-		CliVersion:   pkg.Version,
+		CliVersion:   utils.Version,
 		Timestamp:    time.Now(),
 	})
 	client := utils.GetQoveryClient(tokenType, token)
