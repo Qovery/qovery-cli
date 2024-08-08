@@ -67,7 +67,12 @@ get_or_create_cluster() {
     --k3s-arg "--node-ip=172.42.0.3@server:0" \
     --k3s-arg "--disable=traefik@server:*" \
     --registry-create qovery-registry.lan \
-    --port "80:80@loadbalancer" --port "443:443@loadbalancer"
+    --port "80:80@loadbalancer" \
+    --port "443:443@loadbalancer" \
+    --port "5432:5432@loadbalancer" \
+    --port "6379:6379@loadbalancer" \
+    --port "3306:3306@loadbalancer" \
+    --port "27017:27017@loadbalancer"
   else
     k3d cluster start "$clusterName"
   fi
