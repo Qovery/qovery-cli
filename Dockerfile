@@ -15,7 +15,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go application
-RUN go build -o qovery -ldflags "-X github.com/qovery/qovery-cli/pkg.Version=$APP_VERSION"
+RUN go build -o qovery -ldflags "-X github.com/qovery/qovery-cli/utils.Version=$APP_VERSION"
 
 FROM public.ecr.aws/r3m4q3r9/pub-mirror-debian:bookworm-slim as runner
 
