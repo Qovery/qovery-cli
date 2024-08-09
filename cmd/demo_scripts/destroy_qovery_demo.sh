@@ -14,6 +14,7 @@ case $2 in
   ;;
 esac
 DELETE_QOVERY_CONFIG=$4
+API_URL="${5:-https://api.qovery.com}"
 
 POWERSHELL_CMD='powershell.exe'
 if test -f /proc/version && grep -qi microsoft /proc/version; then
@@ -31,11 +32,11 @@ fi
 
 delete_qovery_demo_cluster() {
   clusterName=$1
-  clusterId=$(curl -s -X GET --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' https://api.qovery.com/organization/"${ORGANIZATION_ID}"/cluster | jq -r '.results[] | select(.name=="'"$clusterName"'") | .id')
+  clusterId=$(curl -s -X GET --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' "${API_URL}"/organization/"${ORGANIZATION_ID}"/cluster | jq -r '.results[] | select(.name=="'"$clusterName"'") | .id')
 
   if [ -n "$clusterId" ]
   then
-    curl -s -X DELETE --fail-with-body -H "${AUTHORIZATION_HEADER}" 'https://api.qovery.com/organization/'"${ORGANIZATION_ID}"'/cluster/'"${clusterId}"'?deleteMode=DELETE_QOVERY_CONFIG' || true
+    curl -s -X DELETE --fail-with-body -H "${AUTHORIZATION_HEADER}" "${API_URL}"'/organization/'"${ORGANIZATION_ID}"'/cluster/'"${clusterId}"'?deleteMode=DELETE_QOVERY_CONFIG' || true
   fi
 }
 

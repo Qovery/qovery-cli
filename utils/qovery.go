@@ -52,7 +52,22 @@ func GetQoveryClient(tokenType AccessTokenType, token AccessToken) *qovery.APICl
 	conf.HTTPClient = &http.Client{
 		Timeout: time.Second * 60,
 	}
+	if overriddenApiUrl, ok := os.LookupEnv("QOVERY_CLI_API_URL"); ok {
+		conf.Servers = qovery.ServerConfigurations{
+			{
+				URL:         overriddenApiUrl,
+				Description: "Overridden api URL",
+			},
+		}
+	}
 	return qovery.NewAPIClient(conf)
+}
+
+func GetApiUrl() string {
+	if overriddenApiUrl, ok := os.LookupEnv("QOVERY_CLI_API_URL"); ok {
+		return overriddenApiUrl
+	}
+	return "https://api.qovery.com"
 }
 
 func SelectRole(organization *Organization) (*Role, error) {

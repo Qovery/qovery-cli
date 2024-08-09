@@ -70,9 +70,19 @@ var demoUpCmd = &cobra.Command{
 		cmdStr := `
 set -eu
 set -o pipefail
-%s %s %s %s %s %t 2>&1 | tee %s
+%s %s %s %s %s %t %s 2>&1 | tee %s
 `
-		cmdArgs := fmt.Sprintf(cmdStr, scriptPath, demoClusterName, strings.ToUpper(runtime.GOARCH), string(orgId), string(token), demoDebug, debugLogsPath)
+		cmdArgs := fmt.Sprintf(
+			cmdStr,
+			scriptPath,
+			demoClusterName,
+			strings.ToUpper(runtime.GOARCH),
+			string(orgId),
+			string(token),
+			demoDebug,
+			utils.GetApiUrl(),
+			debugLogsPath,
+		)
 		shCmd := exec.Command("/bin/bash", "-c", cmdArgs)
 		shCmd.Stdout = os.Stdout
 		shCmd.Stderr = os.Stderr
