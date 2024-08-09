@@ -50,7 +50,15 @@ var demoDestroyCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		shCmd := exec.Command("/bin/sh", scriptPath, demoClusterName, string(orgId), string(token), strconv.FormatBool(demoDeleteQoveryConfig))
+		shCmd := exec.Command(
+			"/bin/sh",
+			scriptPath,
+			demoClusterName,
+			string(orgId),
+			string(token),
+			strconv.FormatBool(demoDeleteQoveryConfig),
+			utils.GetApiUrl(),
+		)
 		shCmd.Stdout = os.Stdout
 		shCmd.Stderr = os.Stderr
 		if err := shCmd.Run(); err != nil {
