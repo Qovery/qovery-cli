@@ -2,6 +2,7 @@
 
 set -eu
 
+QOVERY_API_URL=${QOVERY_API_URL:='https://api.qovery.com'}
 CLUSTER_NAME=$1
 ARCH=$2
 ORGANIZATION_ID=$3
@@ -28,10 +29,10 @@ esac
 POWERSHELL_CMD='powershell.exe'
 
 get_or_create_on_premise_account() {
-  accountId=$(curl -s --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' https://api.qovery.com/organization/"${ORGANIZATION_ID}"/onPremise/credentials | jq -r .results[0].id)
+  accountId=$(curl -s --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' ${QOVERY_API_URL}/organization/"${ORGANIZATION_ID}"/onPremise/credentials | jq -r .results[0].id)
   if [ "$accountId" = "null" ]
   then
-    accountId=$(curl -s -X POST --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' -d '{"name": "on-premise"}' https://api.qovery.com/organization/"${ORGANIZATION_ID}"/onPremise/credentials | jq -r .id)
+    accountId=$(curl -s -X POST --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' -d '{"name": "on-premise"}' ${QOVERY_API_URL}/organization/"${ORGANIZATION_ID}"/onPremise/credentials | jq -r .id)
   fi
 
   echo "$accountId"
@@ -40,12 +41,12 @@ get_or_create_on_premise_account() {
 get_or_create_demo_cluster() {
   accountId=$1
   clusterName=$2
-  clusterId=$(curl -s -X GET --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' https://api.qovery.com/organization/"${ORGANIZATION_ID}"/cluster | jq -r '.results[] | select(.name=="'"$clusterName"'") | .id')
+  clusterId=$(curl -s -X GET --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' ${QOVERY_API_URL}/organization/"${ORGANIZATION_ID}"/cluster | jq -r '.results[] | select(.name=="'"$clusterName"'") | .id')
 
   if [ "$clusterId" = "" ]
   then
     payload='{"name":"'$2'","region":"on-premise","cloud_provider":"ON_PREMISE","kubernetes":"SELF_MANAGED", "production": false, "is_demo": true, "features":[],"cloud_provider_credentials":{"cloud_provider":"ON_PREMISE","credentials":{"id":"'${accountId}'","name":"on-premise"},"region":"unknown"}}'
-    clusterId=$(curl -s -X POST --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' -d "${payload}" https://api.qovery.com/organization/"${ORGANIZATION_ID}"/cluster | jq -r .id)
+    clusterId=$(curl -s -X POST --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' -d "${payload}" ${QOVERY_API_URL}/organization/"${ORGANIZATION_ID}"/cluster | jq -r .id)
   fi
 
   echo "$clusterId"
@@ -53,7 +54,7 @@ get_or_create_demo_cluster() {
 
 get_cluster_values() {
   clusterId=$1
-  curl -s -X GET --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/x-yaml' https://api.qovery.com/organization/"${ORGANIZATION_ID}"/cluster/"${clusterId}"/installationHelmValues
+  curl -s -X GET --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/x-yaml' ${QOVERY_API_URL}/organization/"${ORGANIZATION_ID}"/cluster/"${clusterId}"/installationHelmValues
 }
 
 get_or_create_cluster() {

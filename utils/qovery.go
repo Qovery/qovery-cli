@@ -47,6 +47,14 @@ const AdminUrl = "https://api-admin.qovery.com"
 func GetQoveryClient(tokenType AccessTokenType, token AccessToken) *qovery.APIClient {
 	conf := qovery.NewConfiguration()
 	conf.UserAgent = "CLI " + Version
+	if url := os.Getenv("QOVERY_API_URL"); url != "" {
+		conf.Servers = qovery.ServerConfigurations{
+			{
+				URL:         url,
+				Description: "No description provided",
+			},
+		}
+	}
 	conf.DefaultHeader["Authorization"] = GetAuthorizationHeaderValue(tokenType, token)
 	conf.Debug = variable.Verbose
 	conf.HTTPClient = &http.Client{

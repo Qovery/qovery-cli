@@ -2,6 +2,7 @@
 
 set -eu
 
+QOVERY_API_URL=${QOVERY_API_URL:='https://api.qovery.com'}
 CLUSTER_NAME=$1
 ORGANIZATION_ID=$2
 case $2 in
@@ -31,11 +32,11 @@ fi
 
 delete_qovery_demo_cluster() {
   clusterName=$1
-  clusterId=$(curl -s -X GET --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' https://api.qovery.com/organization/"${ORGANIZATION_ID}"/cluster | jq -r '.results[] | select(.name=="'"$clusterName"'") | .id')
+  clusterId=$(curl -s -X GET --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' ${QOVERY_API_URL}/organization/"${ORGANIZATION_ID}"/cluster | jq -r '.results[] | select(.name=="'"$clusterName"'") | .id')
 
   if [ -n "$clusterId" ]
   then
-    curl -s -X DELETE --fail-with-body -H "${AUTHORIZATION_HEADER}" 'https://api.qovery.com/organization/'"${ORGANIZATION_ID}"'/cluster/'"${clusterId}"'?deleteMode=DELETE_QOVERY_CONFIG' || true
+    curl -s -X DELETE --fail-with-body -H "${AUTHORIZATION_HEADER}" ${QOVERY_API_URL}'/organization/'"${ORGANIZATION_ID}"'/cluster/'"${clusterId}"'?deleteMode=DELETE_QOVERY_CONFIG' || true
   fi
 }
 
