@@ -64,7 +64,8 @@ func ExecLog(req *LogRequest) {
 
 func createLogWebsocket(req *LogRequest) (*websocket.Conn, error) {
 	wsURL, err := url.Parse(fmt.Sprintf(
-		"wss://ws.qovery.com/service/logs?service=%s&cluster=%s&environment=%s&organization=%s&project=%s",
+		"%s/service/logs?service=%s&cluster=%s&environment=%s&organization=%s&project=%s",
+		utils.WebsocketUrl(),
 		req.ServiceID,
 		req.ClusterID,
 		req.EnvironmentID,

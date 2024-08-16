@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"errors"
+	"fmt"
 	"github.com/appscode/go-querystring/query"
 	"net/http"
 	"net/url"
@@ -80,7 +81,7 @@ func createWebsocketConn(req *ShellRequest) (*websocket.Conn, error) {
 		return nil, err
 	}
 
-	wsURL, err := url.Parse("wss://ws.qovery.com/shell/exec")
+	wsURL, err := url.Parse(fmt.Sprintf("%s/shell/exec", utils.WebsocketUrl()))
 	if err != nil {
 		return nil, err
 	}

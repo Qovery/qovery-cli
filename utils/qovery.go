@@ -44,6 +44,13 @@ type Role struct {
 
 const AdminUrl = "https://api-admin.qovery.com"
 
+func WebsocketUrl() string {
+	if url := os.Getenv("QOVERY_WS_URL"); url != "" {
+		return url
+	}
+	return "wss://ws.qovery.com"
+}
+
 func GetQoveryClient(tokenType AccessTokenType, token AccessToken) *qovery.APIClient {
 	conf := qovery.NewConfiguration()
 	conf.UserAgent = "CLI " + Version

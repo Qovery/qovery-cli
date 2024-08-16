@@ -3,6 +3,7 @@ package pkg
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/appscode/go-querystring/query"
 	"github.com/gorilla/websocket"
 	"github.com/qovery/qovery-cli/utils"
@@ -25,7 +26,7 @@ func ExecListPods(req *PortForwardRequest) (*ListPodResponse, error) {
 		return nil, err
 	}
 
-	wsURL, err := url.Parse("wss://ws.qovery.com/service/pods")
+	wsURL, err := url.Parse(fmt.Sprintf("%s/service/pods", utils.WebsocketUrl()))
 	if err != nil {
 		return nil, err
 	}

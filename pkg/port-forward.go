@@ -60,7 +60,7 @@ func mkWebsocketConn(req *PortForwardRequest) (*WebsocketPortForward, error) {
 		return nil, err
 	}
 
-	wsURL, err := url.Parse("wss://ws.qovery.com/shell/portforward")
+	wsURL, err := url.Parse(fmt.Sprintf("%s/shell/portforward", utils.WebsocketUrl()))
 	if err != nil {
 		return nil, err
 	}
