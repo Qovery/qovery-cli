@@ -18,7 +18,7 @@ require (
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
-	github.com/posthog/posthog-go v0.0.0-20240327112532-87b23fe11103
+	github.com/posthog/posthog-go v1.2.19
 	github.com/pterm/pterm v0.12.79
 	github.com/qovery/qovery-client-go v0.0.0-20240722093023-66bc47fd14f7
 	github.com/sirupsen/logrus v1.9.3
@@ -40,7 +40,6 @@ require (
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gookit/color v1.5.4 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
