@@ -171,8 +171,8 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
-github.com/posthog/posthog-go v0.0.0-20240327112532-87b23fe11103 h1:YEWdfKVtz5Db85b8RLIZ1IY3PLSB1fW49hvK2yIL6JU=
-github.com/posthog/posthog-go v0.0.0-20240327112532-87b23fe11103/go.mod h1:QjlpryJtfYLrZF2GUkAhejH4E7WlDbdKkvOi5hLmkdg=
+github.com/posthog/posthog-go v1.2.20 h1:gH62ssImK6xRKbYgmaW+sIPqvXBtu6iYjRR3f4lLIoA=
+github.com/posthog/posthog-go v1.2.20/go.mod h1:QjlpryJtfYLrZF2GUkAhejH4E7WlDbdKkvOi5hLmkdg=
 github.com/pterm/pterm v0.12.27/go.mod h1:PhQ89w4i95rhgE+xedAoqous6K9X+r6aSOI2eFF7DZI=
 github.com/pterm/pterm v0.12.29/go.mod h1:WI3qxgvoQFFGKGjGnJR849gU0TsEOvKn5Q8LlY1U7lg=
 github.com/pterm/pterm v0.12.30/go.mod h1:MOqLIyMOgmTDz9yorcYbcw+HsgoZo3BQfg2wtl3HEFE=
@@ -182,10 +182,6 @@ github.com/pterm/pterm v0.12.36/go.mod h1:NjiL09hFhT/vWjQHSj1athJpx6H8cjpHXNAK5b
 github.com/pterm/pterm v0.12.40/go.mod h1:ffwPLwlbXxP+rxT0GsgDTzS3y3rmpAO1NMjUkGTYf8s=
 github.com/pterm/pterm v0.12.79 h1:lH3yrYMhdpeqX9y5Ep1u7DejyHy7NSQg9qrBjF9dFT4=
 github.com/pterm/pterm v0.12.79/go.mod h1:1v/gzOF1N0FsjbgTHZ1wVycRkKiatFvJSJC4IGaQAAo=
-github.com/qovery/qovery-client-go v0.0.0-20240624143902-e65493657bc3 h1:3kEhPPL61XafIobdUxPMZCqFDiRkp/a1FlT4jIrCJhA=
-github.com/qovery/qovery-client-go v0.0.0-20240624143902-e65493657bc3/go.mod h1:9eHj5a4EtXGIyfbvVL3HVYW9k7Xmiwi00OqHrP4dc10=
-github.com/qovery/qovery-client-go v0.0.0-20240722091047-2112666815f8 h1:k4jz1IepmpFHR6hoLIb8vy4ZbC/vAZmcKiElE+cQ0UE=
-github.com/qovery/qovery-client-go v0.0.0-20240722091047-2112666815f8/go.mod h1:9eHj5a4EtXGIyfbvVL3HVYW9k7Xmiwi00OqHrP4dc10=
 github.com/qovery/qovery-client-go v0.0.0-20240722093023-66bc47fd14f7 h1:vQVPYk6DlAE7z48iwiCEcvkoOJO20zS7iaSXtKwkOWc=
 github.com/qovery/qovery-client-go v0.0.0-20240722093023-66bc47fd14f7/go.mod h1:9eHj5a4EtXGIyfbvVL3HVYW9k7Xmiwi00OqHrP4dc10=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
