@@ -295,10 +295,9 @@ var clusterInstallCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			cluster = clusterRes
+			configureRegistry(client, cluster)
+			configureStorageClass(client, cluster)
 		}
-
-		configureRegistry(client, cluster)
-		configureStorageClass(client, cluster)
 
 		// Email selection for certificate
 		email := func() string {
@@ -570,8 +569,8 @@ func configureRegistry(client *qovery.APIClient, cluster *qovery.Cluster) {
 	}
 
 	configureContainerRegistryPrompt := promptui.Select{
-		Label: "You need to configure a container registry that Qovery will use to push images for your cluster. Do you want to do it now ?",
-		Items: []string{"Yes", "No"},
+		Label: "You need to configure a container registry that Qovery will use to push images for your cluster. Do you want to use as registry",
+		Items: []string{"Github", "a Generic One ?"},
 	}
 
 	_, configureContainerRegistry, err := configureContainerRegistryPrompt.Run()
@@ -579,10 +578,6 @@ func configureRegistry(client *qovery.APIClient, cluster *qovery.Cluster) {
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-	}
-
-	if configureContainerRegistry == "No" {
-		return
 	}
 
 	resp, _, err := client.ContainerRegistriesAPI.ListContainerRegistry(context.Background(), cluster.Organization.Id).Execute()
@@ -593,20 +588,32 @@ func configureRegistry(client *qovery.APIClient, cluster *qovery.Cluster) {
 	ix := slices.IndexFunc(resp.GetResults(), func(c qovery.ContainerRegistryResponse) bool { return c.Cluster != nil && c.Cluster.Id == cluster.Id })
 	cr := resp.Results[ix]
 
-	url, err := func() *promptui.Prompt {
-		return &promptui.Prompt{
-			Label:   "Url of your registry",
-			Default: "https://",
+	var url string
+	if configureContainerRegistry == "Github" {
+		url = "https://ghcr.io"
+	} else {
+		url, err = func() *promptui.Prompt {
+			return &promptui.Prompt{
+				Label:   "Url of your registry",
+				Default: "https://",
+			}
+		}().Run()
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
 		}
-	}().Run()
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(1)
 	}
 
 	login, err := func() *promptui.Prompt {
+		var label string
+		switch configureContainerRegistry {
+		case "Github":
+			label = "enter your Github username to login to the registry. It should be your Github username or Organisation name"
+		default:
+			label = "Username to use to login to your registry. For Github, "
+		}
 		return &promptui.Prompt{
-			Label:   "Username to use to login to your registry",
+			Label:   label,
 			Default: "",
 		}
 	}().Run()
@@ -616,8 +623,15 @@ func configureRegistry(client *qovery.APIClient, cluster *qovery.Cluster) {
 	}
 
 	password, err := func() *promptui.Prompt {
+		var label string
+		switch configureContainerRegistry {
+		case "Github":
+			label = "enter your Github personal access token (classic) to login to the registry. It must have write and delete packages permissions"
+		default:
+			label = "Password to use to login to your registry"
+		}
 		return &promptui.Prompt{
-			Label:   "Password to use to login to your registry",
+			Label:   label,
 			Default: "",
 		}
 	}().Run()
@@ -626,9 +640,17 @@ func configureRegistry(client *qovery.APIClient, cluster *qovery.Cluster) {
 		os.Exit(1)
 	}
 
+	var registryKind qovery.ContainerRegistryKindEnum
+	switch configureContainerRegistry {
+	case "Github":
+		registryKind = qovery.CONTAINERREGISTRYKINDENUM_GITHUB_CR
+	default:
+
+		registryKind = *cr.Kind
+	}
 	_, res, err := client.ContainerRegistriesAPI.EditContainerRegistry(context.Background(), cluster.Organization.Id, cr.Id).ContainerRegistryRequest(qovery.ContainerRegistryRequest{
 		Name:        *cr.Name,
-		Kind:        *cr.Kind,
+		Kind:        registryKind,
 		Description: cr.Description,
 		Url:         &url,
 		Config: qovery.ContainerRegistryRequestConfig{
