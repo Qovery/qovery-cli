@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/qovery/qovery-cli/pkg"
 	"os"
 	"path/filepath"
@@ -14,7 +15,8 @@ var downloadKubeconfigCmd = &cobra.Command{
 	Use:   "kubeconfig",
 	Short: "Retrieve kubeconfig with a cluster ID",
 	Run: func(cmd *cobra.Command, args []string) {
-		downloadKubeconfig(args)
+		validateKubeconfigFlags()
+		downloadKubeconfig()
 	},
 }
 
@@ -23,7 +25,14 @@ func init() {
 	clusterCmd.AddCommand(downloadKubeconfigCmd)
 }
 
-func downloadKubeconfig(args []string) {
+func validateKubeconfigFlags() {
+	if clusterId == "" {
+		utils.PrintlnError(fmt.Errorf("cluster ID is required (--cluster-id)"))
+		os.Exit(1)
+	}
+}
+
+func downloadKubeconfig() {
 	// download kubeconfig
 	kubeconfig := pkg.GetKubeconfigByClusterId(clusterId)
 

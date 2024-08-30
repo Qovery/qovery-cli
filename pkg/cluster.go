@@ -12,8 +12,11 @@ import (
 func GetKubeconfigByClusterId(clusterId string) string {
 	qoveryClient := GetQoveryClientInstance()
 
-	request := qoveryClient.ClustersAPI.GetClusterKubeconfig(context.Background(), "00000000-0000-0000-000000000000", clusterId)
-	request.WithTokenFromCli(true)
+	request := qoveryClient.ClustersAPI.GetClusterKubeconfig(
+		context.Background(),
+		"00000000-0000-0000-000000000000",
+		clusterId,
+	).WithTokenFromCli(true)
 	response, httpResponse, err := qoveryClient.ClustersAPI.GetClusterKubeconfigExecute(request)
 	if err != nil {
 		utils.PrintlnError(err)
