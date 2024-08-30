@@ -249,7 +249,12 @@ var clusterInstallCmd = &cobra.Command{
 				} else {
 					var items []string
 					for _, creds := range clusterCreds.Results {
-						items = append(items, creds.Name)
+						name, err := GetName(creds)
+						if err != nil {
+							utils.PrintlnError(err)
+							os.Exit(1)
+						}
+						items = append(items, name)
 					}
 					items = append(items, "Create new credentials")
 
@@ -274,6 +279,17 @@ var clusterInstallCmd = &cobra.Command{
 				return clusterCreds.Results[ix]
 			}()
 
+			credentialsId, err := GetId(credentials)
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+			}
+			credentialsName, err := GetName(credentials)
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+			}
+
 			selfManagedMode := qovery.KUBERNETESENUM_SELF_MANAGED
 			clusterRes, resp, err := client.ClustersAPI.CreateCluster(context.Background(), string(organization.ID)).ClusterRequest(qovery.ClusterRequest{
 				Name:          promptForClusterName("my-cluster"),
@@ -282,7 +298,7 @@ var clusterInstallCmd = &cobra.Command{
 				Kubernetes:    &selfManagedMode,
 				CloudProviderCredentials: &qovery.ClusterCloudProviderInfoRequest{
 					CloudProvider: &cloudProviderType,
-					Credentials:   &qovery.ClusterCloudProviderInfoCredentials{Id: &credentials.Id, Name: &credentials.Name},
+					Credentials:   &qovery.ClusterCloudProviderInfoCredentials{Id: &credentialsId, Name: &credentialsName},
 					Region:        clusterRegion,
 				},
 				Features: []qovery.ClusterRequestFeaturesInner{},
@@ -383,6 +399,32 @@ var clusterInstallCmd = &cobra.Command{
 
 		utils.CaptureWithEvent(cmd, utils.EndOfExecutionEventName)
 	},
+}
+
+func GetName(creds qovery.ClusterCredentials) (string, error) {
+	switch castedCreds := creds.GetActualInstance().(type) {
+	case *qovery.AwsClusterCredentials:
+		return castedCreds.GetName(), nil
+	case *qovery.ScalewayClusterCredentials:
+		return castedCreds.GetName(), nil
+	case *qovery.GenericClusterCredentials:
+		return castedCreds.GetName(), nil
+	default:
+		return "", errors.New("unknown credentials type")
+	}
+}
+
+func GetId(creds qovery.ClusterCredentials) (string, error) {
+	switch castedCreds := creds.GetActualInstance().(type) {
+	case *qovery.AwsClusterCredentials:
+		return castedCreds.GetId(), nil
+	case *qovery.ScalewayClusterCredentials:
+		return castedCreds.GetId(), nil
+	case *qovery.GenericClusterCredentials:
+		return castedCreds.GetId(), nil
+	default:
+		return "", errors.New("unknown credentials type")
+	}
 }
 
 func createCredentials(client *qovery.APIClient, orgaId string, providerType qovery.CloudProviderEnum) *qovery.ClusterCredentials {
