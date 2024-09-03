@@ -75,7 +75,6 @@ func PrintClustersTable(clusters []ClusterDetails) error {
 		"ClusterCreatedAt",
 		"ClusterLastDeployedAt",
 	}, data)
-
 	if err != nil {
 		return fmt.Errorf("cannot print clusters %s", err)
 	}
@@ -170,7 +169,7 @@ func (service AdminClusterListServiceImpl) fetchClustersEligibleToUpdate() ([]Cl
 func (service AdminClusterListServiceImpl) filterByPredicates(clusters []ClusterDetails, filters map[string]string) []ClusterDetails {
 	var filteredClusters []ClusterDetails
 	for _, cluster := range clusters {
-		var matchAllFilters = true
+		matchAllFilters := true
 		for filterProperty, filterValue := range filters {
 			filterValuesSet := service.filterValueToHashSet(filterValue)
 			clusterProperty := reflect.Indirect(reflect.ValueOf(cluster)).FieldByName(filterProperty)
@@ -259,7 +258,7 @@ func NewAdminClusterBatchDeployServiceImpl(
 	if parallelRun > 20 {
 		utils.Println("")
 		utils.Println(fmt.Sprintf("Please increase the cluster engine autoscaler to %d, then type 'yes' to continue", parallelRun))
-		var validated = utils.Validate("autoscaler-increase")
+		validated := utils.Validate("autoscaler-increase")
 		if !validated {
 			utils.Println("Exiting")
 			return nil, fmt.Errorf("exit on autoscaler validation failed")
@@ -268,13 +267,13 @@ func NewAdminClusterBatchDeployServiceImpl(
 	}
 
 	var newK8sVersion *string = nil
-	var upgradeMode = false
+	upgradeMode := false
 	if newK8sversionStr != "" {
 		newK8sVersion = &newK8sversionStr
 		upgradeMode = true
 	}
 
-	var completeBatchBeforeContinue = true
+	completeBatchBeforeContinue := true
 	if executionMode == "on-the-fly" &&
 		// Do not authorize "on-the-fly" for upgrade mode, it's too risky
 		!upgradeMode {
@@ -321,11 +320,11 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 	// store final state of clusters in a hashmap
 	var processedClusters []ClusterDetails
 	// store the current status for each cluster deployed, to be able to execute next parallel runs
-	var currentDeployingClustersByClusterId = make(map[string]ClusterDetails)
+	currentDeployingClustersByClusterId := make(map[string]ClusterDetails)
 	// clusters having a non-terminal state when trying to deploy them
 	var pendingClusters []ClusterDetails
 
-	var indexCurrentClusterToDeploy = -1
+	indexCurrentClusterToDeploy := -1
 	for {
 		// fetch Qovery client
 		qoveryClient, err := getQoveryClient()
@@ -334,13 +333,13 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 		}
 
 		// boolean to wait for current batch to continue, according to 'execution-mode' command flag
-		var waitToTriggerCluster = false
+		waitToTriggerCluster := false
 		if service.CompleteBatchBeforeContinue && indexCurrentClusterToDeploy != -1 {
 			if len(currentDeployingClustersByClusterId) > 0 {
 				waitToTriggerCluster = true
 			} else {
 				utils.Println(fmt.Sprintf("Do you want to continue next batch of %d deployments ?", service.ParallelRun))
-				var validated = utils.Validate("deploy")
+				validated := utils.Validate("deploy")
 				if !validated {
 					utils.Println("Exiting")
 					return nil, fmt.Errorf("user stopped the command after batch terminated")
@@ -355,9 +354,9 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 				indexCurrentClusterToDeploy += 1
 
 				// check status in case a deployment has occurred in the meantime
-				var cluster = clusters[indexCurrentClusterToDeploy]
+				cluster := clusters[indexCurrentClusterToDeploy]
 
-				clusterStatus, response, err := RetryQoveryClientApiRequestOnUnauthorized(func(needToRefetchClient bool) (*qovery.ClusterStatusGet, *http.Response, error) {
+				clusterStatus, response, err := RetryQoveryClientApiRequestOnUnauthorized(func(needToRefetchClient bool) (*qovery.ClusterStatus, *http.Response, error) {
 					if needToRefetchClient {
 						client, errQoveryClient := getQoveryClient()
 						if errQoveryClient != nil {
@@ -388,7 +387,7 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 					cluster.CurrentStatus = "DEPLOYING"
 					currentDeployingClustersByClusterId[cluster.ClusterId] = cluster
 				} else {
-					var status = fmt.Sprintf("%v", *clusterStatus.Status) // only solution to get the underlying enum's string value
+					status := fmt.Sprintf("%v", *clusterStatus.Status) // only solution to get the underlying enum's string value
 					utils.Println(fmt.Sprintf("[Organization '%s' - Cluster '%s'] - Cluster's state is '%s' (not a terminal state), sending it to waiting queue to be processed later", cluster.OrganizationName, cluster.ClusterName, status))
 					pendingClusters = append(pendingClusters, cluster)
 				}
@@ -411,7 +410,7 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 		// wait for clusters statuses
 		var clustersToRemoveFromMap []string
 		for clusterId, cluster := range currentDeployingClustersByClusterId {
-			clusterStatus, response, err := RetryQoveryClientApiRequestOnUnauthorized(func(needToRefetchClient bool) (*qovery.ClusterStatusGet, *http.Response, error) {
+			clusterStatus, response, err := RetryQoveryClientApiRequestOnUnauthorized(func(needToRefetchClient bool) (*qovery.ClusterStatus, *http.Response, error) {
 				if needToRefetchClient {
 					client, errQoveryClient := getQoveryClient()
 					if errQoveryClient != nil {
@@ -426,7 +425,7 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 			}
 
 			// set cluster status
-			var status = fmt.Sprintf("%v", *clusterStatus.Status) // only solution to get the underlying enum's string value
+			status := fmt.Sprintf("%v", *clusterStatus.Status) // only solution to get the underlying enum's string value
 			cluster.CurrentStatus = status
 			// Mark the deployment as finished only if terminal state OR status is "INTERNAL_ERROR" (specific case)
 			if utils.IsTerminalClusterState(*clusterStatus.Status) || cluster.CurrentStatus == "INTERNAL_ERROR" {
