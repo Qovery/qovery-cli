@@ -12,8 +12,10 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/pkg/usercontext"
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var clusterUpgradeCmd = &cobra.Command{
@@ -30,7 +32,7 @@ var clusterUpgradeCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		orgId, err := getOrganizationContextResourceId(client, organizationName)
+		orgId, err := usercontext.GetOrganizationContextResourceId(client, organizationName)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)

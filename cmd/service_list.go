@@ -4,13 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-errors/errors"
 	"os"
 	"strings"
 
-	"github.com/qovery/qovery-cli/utils"
+	"github.com/go-errors/errors"
+
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/pkg/usercontext"
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var id string
@@ -149,7 +152,7 @@ var serviceListCmd = &cobra.Command{
 }
 
 func getOrganizationProjectEnvironmentContextResourcesIds(qoveryAPIClient *qovery.APIClient) (string, string, string, error) {
-	organizationId, err := getOrganizationContextResourceId(qoveryAPIClient, organizationName)
+	organizationId, err := usercontext.GetOrganizationContextResourceId(qoveryAPIClient, organizationName)
 
 	if err != nil {
 		return "", "", "", err
@@ -171,7 +174,7 @@ func getOrganizationProjectEnvironmentContextResourcesIds(qoveryAPIClient *qover
 }
 
 func getOrganizationProjectContextResourcesIds(qoveryAPIClient *qovery.APIClient) (string, string, error) {
-	organizationId, err := getOrganizationContextResourceId(qoveryAPIClient, organizationName)
+	organizationId, err := usercontext.GetOrganizationContextResourceId(qoveryAPIClient, organizationName)
 
 	if err != nil {
 		return "", "", err
@@ -184,31 +187,6 @@ func getOrganizationProjectContextResourcesIds(qoveryAPIClient *qovery.APIClient
 	}
 
 	return organizationId, projectId, nil
-}
-
-func getOrganizationContextResourceId(qoveryAPIClient *qovery.APIClient, organizationName string) (string, error) {
-	if strings.TrimSpace(organizationName) == "" {
-		id, _, err := utils.CurrentOrganization(true)
-		if err != nil {
-			return "", err
-		}
-
-		return string(id), nil
-	}
-
-	// find organization by name
-	organizations, _, err := qoveryAPIClient.OrganizationMainCallsAPI.ListOrganization(context.Background()).Execute()
-
-	if err != nil {
-		return "", err
-	}
-
-	organization := utils.FindByOrganizationName(organizations.GetResults(), organizationName)
-	if organization == nil {
-		return "", errors.Errorf("organization %s not found", organizationName)
-	}
-
-	return organization.Id, nil
 }
 
 func getProjectContextResourceId(qoveryAPIClient *qovery.APIClient, projectName string, organizationId string) (string, error) {

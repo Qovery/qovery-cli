@@ -6,8 +6,10 @@ import (
 	"github.com/qovery/qovery-client-go"
 	"os"
 
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/pkg/usercontext"
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var clusterListCmd = &cobra.Command{
@@ -25,7 +27,7 @@ var clusterListCmd = &cobra.Command{
 
 		client := utils.GetQoveryClient(tokenType, token)
 
-		orgId, err := getOrganizationContextResourceId(client, organizationName)
+		orgId, err := usercontext.GetOrganizationContextResourceId(client, organizationName)
 
 		if err != nil {
 			utils.PrintlnError(err)
