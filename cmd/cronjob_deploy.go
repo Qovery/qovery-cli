@@ -60,7 +60,7 @@ var cronjobDeployCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -73,7 +73,7 @@ var cronjobDeployCmd = &cobra.Command{
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
-			utils.Println(fmt.Sprintf("Deploying cronjobs %s in progress..", pterm.FgBlue.Sprintf(cronjobNames)))
+			utils.Println(fmt.Sprintf("Deploying cronjobs %s in progress..", pterm.FgBlue.Sprintf("%s", cronjobNames)))
 
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
@@ -136,9 +136,9 @@ var cronjobDeployCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Cronjob %s deployed!", pterm.FgBlue.Sprintf(cronjobName)))
+			utils.Println(fmt.Sprintf("Cronjob %s deployed!", pterm.FgBlue.Sprintf("%s", cronjobName)))
 		} else {
-			utils.Println(fmt.Sprintf("Deploying cronjob %s in progress..", pterm.FgBlue.Sprintf(cronjobName)))
+			utils.Println(fmt.Sprintf("Deploying cronjob %s in progress..", pterm.FgBlue.Sprintf("%s", cronjobName)))
 		}
 	},
 }

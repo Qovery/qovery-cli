@@ -6,8 +6,9 @@ import (
 	"os"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var cronjobEnvAliasCreateCmd = &cobra.Command{
@@ -57,7 +58,7 @@ var cronjobEnvAliasCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Alias %s has been created", pterm.FgBlue.Sprintf(utils.Alias)))
+		utils.Println(fmt.Sprintf("Alias %s has been created", pterm.FgBlue.Sprintf("%s", utils.Alias)))
 	},
 }
 

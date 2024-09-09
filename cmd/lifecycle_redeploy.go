@@ -5,8 +5,9 @@ import (
 	"github.com/pterm/pterm"
 	"os"
 
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var lifecycleRedeployCmd = &cobra.Command{
@@ -48,7 +49,7 @@ var lifecycleRedeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		msg, err := utils.RedeployService(client, envId, lifecycle.LifecycleJobResponse.Id, lifecycle.LifecycleJobResponse.Name,  utils.JobType, watchFlag)
+		msg, err := utils.RedeployService(client, envId, lifecycle.LifecycleJobResponse.Id, lifecycle.LifecycleJobResponse.Name, utils.JobType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -62,9 +63,9 @@ var lifecycleRedeployCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Lifecycle %s redeployed!", pterm.FgBlue.Sprintf(lifecycleName)))
+			utils.Println(fmt.Sprintf("Lifecycle %s redeployed!", pterm.FgBlue.Sprintf("%s", lifecycleName)))
 		} else {
-			utils.Println(fmt.Sprintf("Redeploying lifecycle %s in progress..", pterm.FgBlue.Sprintf(lifecycleName)))
+			utils.Println(fmt.Sprintf("Redeploying lifecycle %s in progress..", pterm.FgBlue.Sprintf("%s", lifecycleName)))
 		}
 	},
 }

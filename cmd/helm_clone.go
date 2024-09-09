@@ -8,9 +8,10 @@ import (
 	"io"
 	"os"
 
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var helmCloneCmd = &cobra.Command{
@@ -97,10 +98,9 @@ var helmCloneCmd = &cobra.Command{
 			name = clonedService.Name
 		}
 
-		utils.Println(fmt.Sprintf("Helm %s cloned!", pterm.FgBlue.Sprintf(name)))
+		utils.Println(fmt.Sprintf("Helm %s cloned!", pterm.FgBlue.Sprintf("%s", name)))
 	},
 }
-
 
 func init() {
 	helmCmd.AddCommand(helmCloneCmd)

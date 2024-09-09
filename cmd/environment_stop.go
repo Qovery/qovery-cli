@@ -7,9 +7,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var environmentStopCmd = &cobra.Command{
@@ -40,7 +41,7 @@ var environmentStopCmd = &cobra.Command{
 				break
 			}
 
-			utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+			utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 			time.Sleep(5 * time.Second)
 		}
 		_, _, err = client.EnvironmentActionsAPI.StopEnvironment(context.Background(), envId).Execute()

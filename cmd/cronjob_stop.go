@@ -54,7 +54,7 @@ var cronjobStopCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -78,7 +78,7 @@ var cronjobStopCmd = &cobra.Command{
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
 			} else {
-				utils.Println(fmt.Sprintf("Stopping cronjobs %s in progress..", pterm.FgBlue.Sprintf(cronjobNames)))
+				utils.Println(fmt.Sprintf("Stopping cronjobs %s in progress..", pterm.FgBlue.Sprintf("%s", cronjobNames)))
 			}
 
 			if err != nil {
@@ -121,9 +121,9 @@ var cronjobStopCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Cronjob %s stopped!", pterm.FgBlue.Sprintf(cronjobName)))
+			utils.Println(fmt.Sprintf("Cronjob %s stopped!", pterm.FgBlue.Sprintf("%s", cronjobName)))
 		} else {
-			utils.Println(fmt.Sprintf("Stopping cronjob %s in progress..", pterm.FgBlue.Sprintf(cronjobName)))
+			utils.Println(fmt.Sprintf("Stopping cronjob %s in progress..", pterm.FgBlue.Sprintf("%s", cronjobName)))
 		}
 	},
 }

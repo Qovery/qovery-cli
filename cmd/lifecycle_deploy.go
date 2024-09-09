@@ -60,7 +60,7 @@ var lifecycleDeployCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -73,7 +73,7 @@ var lifecycleDeployCmd = &cobra.Command{
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
-			utils.Println(fmt.Sprintf("Deploying lifecycles %s in progress..", pterm.FgBlue.Sprintf(lifecycleNames)))
+			utils.Println(fmt.Sprintf("Deploying lifecycles %s in progress..", pterm.FgBlue.Sprintf("%s", lifecycleNames)))
 
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
@@ -136,9 +136,9 @@ var lifecycleDeployCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Lifecycle %s deployed!", pterm.FgBlue.Sprintf(lifecycleName)))
+			utils.Println(fmt.Sprintf("Lifecycle %s deployed!", pterm.FgBlue.Sprintf("%s", lifecycleName)))
 		} else {
-			utils.Println(fmt.Sprintf("Deploying lifecycle %s in progress..", pterm.FgBlue.Sprintf(lifecycleName)))
+			utils.Println(fmt.Sprintf("Deploying lifecycle %s in progress..", pterm.FgBlue.Sprintf("%s", lifecycleName)))
 		}
 	},
 }

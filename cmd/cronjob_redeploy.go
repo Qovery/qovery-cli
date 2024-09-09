@@ -5,8 +5,9 @@ import (
 	"github.com/pterm/pterm"
 	"os"
 
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var cronjobRedeployCmd = &cobra.Command{
@@ -62,9 +63,9 @@ var cronjobRedeployCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Cronjob %s redeployed!", pterm.FgBlue.Sprintf(cronjobName)))
+			utils.Println(fmt.Sprintf("Cronjob %s redeployed!", pterm.FgBlue.Sprintf("%s", cronjobName)))
 		} else {
-			utils.Println(fmt.Sprintf("Redeploying cronjob %s in progress..", pterm.FgBlue.Sprintf(cronjobName)))
+			utils.Println(fmt.Sprintf("Redeploying cronjob %s in progress..", pterm.FgBlue.Sprintf("%s", cronjobName)))
 		}
 	},
 }

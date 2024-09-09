@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var applicationCancelCmd = &cobra.Command{
@@ -61,7 +62,7 @@ var applicationCancelCmd = &cobra.Command{
 			return
 		}
 
-		utils.Println(fmt.Sprintf("Application %s deployment cancelled!", pterm.FgBlue.Sprintf(applicationName)))
+		utils.Println(fmt.Sprintf("Application %s deployment cancelled!", pterm.FgBlue.Sprintf("%s", applicationName)))
 	},
 }
 

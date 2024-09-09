@@ -10,9 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var skipPausedServicesFlag bool
@@ -53,7 +54,7 @@ var environmentDeployCmd = &cobra.Command{
 				break
 			}
 
-			utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+			utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 			time.Sleep(5 * time.Second)
 		}
 

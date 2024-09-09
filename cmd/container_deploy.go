@@ -54,7 +54,7 @@ var containerDeployCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -67,7 +67,7 @@ var containerDeployCmd = &cobra.Command{
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
-			utils.Println(fmt.Sprintf("Deploying containers %s in progress..", pterm.FgBlue.Sprintf(containerNames)))
+			utils.Println(fmt.Sprintf("Deploying containers %s in progress..", pterm.FgBlue.Sprintf("%s", containerNames)))
 
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
@@ -115,9 +115,9 @@ var containerDeployCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Container %s deployed!", pterm.FgBlue.Sprintf(containerName)))
+			utils.Println(fmt.Sprintf("Container %s deployed!", pterm.FgBlue.Sprintf("%s", containerName)))
 		} else {
-			utils.Println(fmt.Sprintf("Deploying container %s in progress..", pterm.FgBlue.Sprintf(containerName)))
+			utils.Println(fmt.Sprintf("Deploying container %s in progress..", pterm.FgBlue.Sprintf("%s", containerName)))
 		}
 	},
 }

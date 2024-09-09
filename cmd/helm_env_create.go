@@ -6,8 +6,9 @@ import (
 	"os"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var helmEnvCreateCmd = &cobra.Command{
@@ -49,7 +50,7 @@ var helmEnvCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateEnvironmentVariable(client, projectId, envId, helm.Id, utils.HelmScope,  utils.Key, utils.Value, utils.IsSecret)
+		err = utils.CreateEnvironmentVariable(client, projectId, envId, helm.Id, utils.HelmScope, utils.Key, utils.Value, utils.IsSecret)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -57,7 +58,7 @@ var helmEnvCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Environment variable %s has been created", pterm.FgBlue.Sprintf(utils.Key)))
+		utils.Println(fmt.Sprintf("Environment variable %s has been created", pterm.FgBlue.Sprintf("%s", utils.Key)))
 	},
 }
 

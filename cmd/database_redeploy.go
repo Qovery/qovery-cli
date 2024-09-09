@@ -6,8 +6,9 @@ import (
 	"os"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var databaseRedeployCmd = &cobra.Command{
@@ -63,9 +64,9 @@ var databaseRedeployCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Database %s redeployed!", pterm.FgBlue.Sprintf(databaseName)))
+			utils.Println(fmt.Sprintf("Database %s redeployed!", pterm.FgBlue.Sprintf("%s", databaseName)))
 		} else {
-			utils.Println(fmt.Sprintf("Redeploying database %s in progress..", pterm.FgBlue.Sprintf(databaseName)))
+			utils.Println(fmt.Sprintf("Redeploying database %s in progress..", pterm.FgBlue.Sprintf("%s", databaseName)))
 		}
 	},
 }

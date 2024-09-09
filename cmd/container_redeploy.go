@@ -6,8 +6,9 @@ import (
 	"os"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var containerRedeployCmd = &cobra.Command{
@@ -63,9 +64,9 @@ var containerRedeployCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Container %s redeployed!", pterm.FgBlue.Sprintf(containerName)))
+			utils.Println(fmt.Sprintf("Container %s redeployed!", pterm.FgBlue.Sprintf("%s", containerName)))
 		} else {
-			utils.Println(fmt.Sprintf("Redeploying container %s in progress..", pterm.FgBlue.Sprintf(containerName)))
+			utils.Println(fmt.Sprintf("Redeploying container %s in progress..", pterm.FgBlue.Sprintf("%s", containerName)))
 		}
 	},
 }

@@ -8,8 +8,9 @@ import (
 	"strconv"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var helmDomainEditCmd = &cobra.Command{
@@ -81,7 +82,7 @@ var helmDomainEditCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Custom domain %s has been edited (generate certificate: %s)", pterm.FgBlue.Sprintf(editedDomain.Domain), pterm.FgBlue.Sprintf(strconv.FormatBool(editedDomain.GenerateCertificate))))
+		utils.Println(fmt.Sprintf("Custom domain %s has been edited (generate certificate: %s)", pterm.FgBlue.Sprintf("%s", editedDomain.Domain), pterm.FgBlue.Sprintf("%s", strconv.FormatBool(editedDomain.GenerateCertificate))))
 	},
 }
 

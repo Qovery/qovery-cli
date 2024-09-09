@@ -54,7 +54,7 @@ var helmDeleteCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -85,7 +85,7 @@ var helmDeleteCmd = &cobra.Command{
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
 			} else {
-				utils.Println(fmt.Sprintf("Deleting helms %s in progress..", pterm.FgBlue.Sprintf(helmNames)))
+				utils.Println(fmt.Sprintf("Deleting helms %s in progress..", pterm.FgBlue.Sprintf("%s", helmNames)))
 			}
 
 			if err != nil {
@@ -128,9 +128,9 @@ var helmDeleteCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Helm %s deleted!", pterm.FgBlue.Sprintf(helmName)))
+			utils.Println(fmt.Sprintf("Helm %s deleted!", pterm.FgBlue.Sprintf("%s", helmName)))
 		} else {
-			utils.Println(fmt.Sprintf("Deleting helm %s in progress..", pterm.FgBlue.Sprintf(helmName)))
+			utils.Println(fmt.Sprintf("Deleting helm %s in progress..", pterm.FgBlue.Sprintf("%s", helmName)))
 		}
 	},
 }

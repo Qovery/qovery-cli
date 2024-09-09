@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var databaseDeployCmd = &cobra.Command{
@@ -60,7 +61,7 @@ var databaseDeployCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -73,7 +74,7 @@ var databaseDeployCmd = &cobra.Command{
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
-			utils.Println(fmt.Sprintf("Deploying databases %s in progress..", pterm.FgBlue.Sprintf(databaseNames)))
+			utils.Println(fmt.Sprintf("Deploying databases %s in progress..", pterm.FgBlue.Sprintf("%s", databaseNames)))
 
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
@@ -105,9 +106,9 @@ var databaseDeployCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Database %s deployed!", pterm.FgBlue.Sprintf(databaseName)))
+			utils.Println(fmt.Sprintf("Database %s deployed!", pterm.FgBlue.Sprintf("%s", databaseName)))
 		} else {
-			utils.Println(fmt.Sprintf("Deploying database %s in progress..", pterm.FgBlue.Sprintf(databaseName)))
+			utils.Println(fmt.Sprintf("Deploying database %s in progress..", pterm.FgBlue.Sprintf("%s", databaseName)))
 		}
 	},
 }

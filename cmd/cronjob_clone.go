@@ -8,9 +8,10 @@ import (
 	"os"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var cronjobCloneCmd = &cobra.Command{
@@ -97,7 +98,7 @@ var cronjobCloneCmd = &cobra.Command{
 			name = clonedService.CronJobResponse.Name
 		}
 
-		utils.Println(fmt.Sprintf("Job %s cloned!", pterm.FgBlue.Sprintf(name)))
+		utils.Println(fmt.Sprintf("Job %s cloned!", pterm.FgBlue.Sprintf("%s", name)))
 	},
 }
 

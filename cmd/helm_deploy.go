@@ -7,9 +7,10 @@ import (
 	"github.com/qovery/qovery-client-go"
 	"time"
 
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var helmDeployCmd = &cobra.Command{
@@ -53,7 +54,7 @@ var helmDeployCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -66,7 +67,7 @@ var helmDeployCmd = &cobra.Command{
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
-			utils.Println(fmt.Sprintf("Deploying helms %s in progress..", pterm.FgBlue.Sprintf(helmNames)))
+			utils.Println(fmt.Sprintf("Deploying helms %s in progress..", pterm.FgBlue.Sprintf("%s", helmNames)))
 
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
@@ -107,10 +108,9 @@ var helmDeployCmd = &cobra.Command{
 			mValuesOverrideCommitId = &valuesOverrideCommitId
 		}
 
-
 		req := qovery.HelmDeployRequest{
-			ChartVersion: mChartVersion,
-			GitCommitId: mCommitId,
+			ChartVersion:              mChartVersion,
+			GitCommitId:               mCommitId,
 			ValuesOverrideGitCommitId: mValuesOverrideCommitId,
 		}
 
@@ -128,9 +128,9 @@ var helmDeployCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("helm %s deployed!", pterm.FgBlue.Sprintf(helmName)))
+			utils.Println(fmt.Sprintf("helm %s deployed!", pterm.FgBlue.Sprintf("%s", helmName)))
 		} else {
-			utils.Println(fmt.Sprintf("Deploying helm %s in progress..", pterm.FgBlue.Sprintf(helmName)))
+			utils.Println(fmt.Sprintf("Deploying helm %s in progress..", pterm.FgBlue.Sprintf("%s", helmName)))
 		}
 	},
 }

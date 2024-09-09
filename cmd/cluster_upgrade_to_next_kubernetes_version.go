@@ -119,9 +119,9 @@ var clusterUpgradeCmd = &cobra.Command{
 				time.Sleep(5 * time.Second)
 			}
 
-			utils.Println(fmt.Sprintf("Cluster %s upgraded!", pterm.FgBlue.Sprintf(clusterName)))
+			utils.Println(fmt.Sprintf("Cluster %s upgraded!", pterm.FgBlue.Sprintf("%s", clusterName)))
 		} else {
-			utils.Println(fmt.Sprintf("Upgrading cluster %s in progress..", pterm.FgBlue.Sprintf(clusterName)))
+			utils.Println(fmt.Sprintf("Upgrading cluster %s in progress..", pterm.FgBlue.Sprintf("%s", clusterName)))
 		}
 	},
 }
