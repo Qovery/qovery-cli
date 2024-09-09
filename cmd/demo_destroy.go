@@ -3,13 +3,14 @@ package cmd
 import (
 	_ "embed"
 	"fmt"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strconv"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var demoDestroyCmd = &cobra.Command{
@@ -72,7 +73,7 @@ func init() {
 	}
 
 	var demoDestroyCmd = demoDestroyCmd
-	demoDestroyCmd.Flags().StringVarP(&demoClusterName, "cluster-name", "c", "local-demo-"+userName, "The name of the cluster to create")
+	demoDestroyCmd.Flags().StringVarP(&demoClusterName, "cluster-name", "c", "local-demo-"+userName, "The name of the cluster to destroy")
 	demoDestroyCmd.Flags().BoolVarP(&demoDeleteQoveryConfig, "delete-qovery-config", "d", false, "Delete the config on Qovery side as well (environments and associated cluster)")
 
 	demoCmd.AddCommand(demoDestroyCmd)

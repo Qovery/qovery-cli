@@ -1,13 +1,14 @@
 package cmd
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/qovery/qovery-client-go"
 	"os"
 
 	"github.com/spf13/cobra"
 
+	"github.com/qovery/qovery-cli/pkg/cluster"
+	"github.com/qovery/qovery-cli/pkg/promptuifactory"
 	"github.com/qovery/qovery-cli/pkg/usercontext"
 	"github.com/qovery/qovery-cli/utils"
 )
@@ -26,22 +27,15 @@ var clusterListCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-
-		orgId, err := usercontext.GetOrganizationContextResourceId(client, organizationName)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		clusters, _, err := client.ClustersAPI.ListOrganizationCluster(context.Background(), orgId).Execute()
+		organizationId, err := usercontext.GetOrganizationContextResourceId(client, organizationName)
 
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
+
+		clusters, err := cluster.NewClusterService(client, &promptuifactory.PromptUiFactoryImpl{}).ListClusters(organizationId)
 
 		if jsonFlag {
 			utils.Println(getClusterJsonOutput(clusters.GetResults()))
@@ -49,7 +43,6 @@ var clusterListCmd = &cobra.Command{
 		}
 
 		var data [][]string
-
 		for _, cluster := range clusters.GetResults() {
 			data = append(data, []string{cluster.Id, cluster.Name, "cluster",
 				utils.GetClusterStatusTextWithColor(*cluster.Status), cluster.UpdatedAt.String()})
