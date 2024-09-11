@@ -53,14 +53,17 @@ var helmUpdateCmd = &cobra.Command{
 
 		var ports []qovery.HelmPortRequestPortsInner
 		for _, p := range helm.Ports {
-			ports = append(ports, qovery.HelmPortRequestPortsInner{
-				Name:         p.Name,
-				InternalPort: p.InternalPort,
-				ExternalPort: p.ExternalPort,
-				ServiceName:  p.ServiceName,
-				Namespace:    p.Namespace,
-				Protocol:     &p.Protocol,
-			})
+			if p.HelmPortResponseWithServiceName != nil {
+				portWithServiceName := p.HelmPortResponseWithServiceName
+				ports = append(ports, qovery.HelmPortRequestPortsInner{
+					Name:         portWithServiceName.Name,
+					InternalPort: portWithServiceName.InternalPort,
+					ExternalPort: portWithServiceName.ExternalPort,
+					ServiceName:  &portWithServiceName.ServiceName,
+					Namespace:    portWithServiceName.Namespace,
+					Protocol:     &portWithServiceName.Protocol,
+				})
+			}
 		}
 
 		source, err := GetHelmSource(helm, chartName, chartVersion, charGitCommitBranch)
