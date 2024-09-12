@@ -62,14 +62,17 @@ This option "--disable-dry-run" is mandatory to trigger the deployments
 
 > Examples
 ----------
+* Redeploy only 2 clusters and ensure they are non production
+qovery admin cluster deploy -f ClusterName="ClusterA,ClusterB" -f IsProduction=false
+
 * Upgrade cluster having id "80981324-b6u7-400b-97fc-e2173d46a00e" to kube version "1.28" with refreshing statuses locally every "100" seconds
-"qovery admin cluster deploy -f ClusterId=80981324-b6u7-400b-97fc-e2173d46a00e --new-k8s-version=1.28 --refresh-delay=100 --disable-dry-run"
+qovery admin cluster deploy -f ClusterId=80981324-b6u7-400b-97fc-e2173d46a00e --new-k8s-version=1.28 --refresh-delay=100 --disable-dry-run
 
 * Upgrade by batch of "8" parallel runs every "1.27" Kubernetes "Production" clusters on "AWS" to kubernetes version "1.28"  with refreshing statuses locally every "100" seconds
-"qovery admin cluster deploy -f IsProduction=true --parallel-run=8 --refresh-delay=100 -f ClusterK8sVersion=1.27 --new-k8s-version=1.28 -f ClusterType=AWS" --disable-dry-run
+qovery admin cluster deploy -f IsProduction=true --parallel-run=8 --refresh-delay=100 -f ClusterK8sVersion=1.27 --new-k8s-version=1.28 -f ClusterType=AWS --disable-dry-run
 
 * Redeploy by batch of "9" parallel runs every "1.27" Kubernetes clusters on "GCP" that have the last deployment status to "DEPLOYMENT_ERROR"
-"qovery admin cluster deploy -f ClusterType=GCP --parallel-run=9 -f ClusterK8sVersion=1.27 -f CurrentStatus=DEPLOYMENT_ERROR --disable-dry-run"
+qovery admin cluster deploy -f ClusterType=GCP --parallel-run=9 -f ClusterK8sVersion=1.27 -f CurrentStatus=DEPLOYMENT_ERROR --disable-dry-run
 `,
 		Run: func(cmd *cobra.Command, args []string) {
 			deployClusters()
