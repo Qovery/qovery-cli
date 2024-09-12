@@ -186,16 +186,6 @@ github.com/pterm/pterm v0.12.36/go.mod h1:NjiL09hFhT/vWjQHSj1athJpx6H8cjpHXNAK5b
 github.com/pterm/pterm v0.12.40/go.mod h1:ffwPLwlbXxP+rxT0GsgDTzS3y3rmpAO1NMjUkGTYf8s=
 github.com/pterm/pterm v0.12.79 h1:lH3yrYMhdpeqX9y5Ep1u7DejyHy7NSQg9qrBjF9dFT4=
 github.com/pterm/pterm v0.12.79/go.mod h1:1v/gzOF1N0FsjbgTHZ1wVycRkKiatFvJSJC4IGaQAAo=
-github.com/qovery/qovery-client-go v0.0.0-20240722093023-66bc47fd14f7 h1:vQVPYk6DlAE7z48iwiCEcvkoOJO20zS7iaSXtKwkOWc=
-github.com/qovery/qovery-client-go v0.0.0-20240722093023-66bc47fd14f7/go.mod h1:9eHj5a4EtXGIyfbvVL3HVYW9k7Xmiwi00OqHrP4dc10=
-github.com/qovery/qovery-client-go v0.0.0-20240829125759-9d70b41b65c9 h1:Rl08uwi1qnz1NEQPCqagb4RXer0v8c7hXaxeuT3m4Dw=
-github.com/qovery/qovery-client-go v0.0.0-20240829125759-9d70b41b65c9/go.mod h1:9eHj5a4EtXGIyfbvVL3HVYW9k7Xmiwi00OqHrP4dc10=
-github.com/qovery/qovery-client-go v0.0.0-20240830090110-fb1c0bfbd6a3 h1:syZqo0Gz4SDltjaI/4WqL9ukrIi91HBlE3fCcEnO2yQ=
-github.com/qovery/qovery-client-go v0.0.0-20240830090110-fb1c0bfbd6a3/go.mod h1:9eHj5a4EtXGIyfbvVL3HVYW9k7Xmiwi00OqHrP4dc10=
-github.com/qovery/qovery-client-go v0.0.0-20240902075110-0be722dd0782 h1:q0F+BWSN1KK0ihrYIuL6mRv5FBvQXhdxVQOcOZS8Avw=
-github.com/qovery/qovery-client-go v0.0.0-20240902075110-0be722dd0782/go.mod h1:9eHj5a4EtXGIyfbvVL3HVYW9k7Xmiwi00OqHrP4dc10=
-github.com/qovery/qovery-client-go v0.0.0-20240906095121-caf9fd671ddc h1:7cH7cMOC/if11ilun+n8813F8BWczG1eOudGGg8K17g=
-github.com/qovery/qovery-client-go v0.0.0-20240906095121-caf9fd671ddc/go.mod h1:9eHj5a4EtXGIyfbvVL3HVYW9k7Xmiwi00OqHrP4dc10=
 github.com/qovery/qovery-client-go v0.0.0-20240911090006-e50e357fd37b h1:LG73JA4vQNCKzOmxT92NtNGZpymUdh/TNpBD3vAPwgo=
 github.com/qovery/qovery-client-go v0.0.0-20240911090006-e50e357fd37b/go.mod h1:9eHj5a4EtXGIyfbvVL3HVYW9k7Xmiwi00OqHrP4dc10=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
@@ -266,8 +256,8 @@ golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.1.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.5.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.20.0 h1:Od9JTbYCk261bKm4M/mw7AklTlFYIa0bIp9BgSm1S8Y=
-golang.org/x/sys v0.20.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
+golang.org/x/sys v0.25.0 h1:r+8e+loiHxRqhXVl6ML1nO3l1+oFoWbnlu2Ehimmi34=
+golang.org/x/sys v0.25.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
