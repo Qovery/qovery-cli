@@ -54,7 +54,7 @@ var applicationDeleteCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -77,7 +77,7 @@ var applicationDeleteCmd = &cobra.Command{
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
 			} else {
-				utils.Println(fmt.Sprintf("Deleting applications %s in progress..", pterm.FgBlue.Sprintf(applicationNames)))
+				utils.Println(fmt.Sprintf("Deleting applications %s in progress..", pterm.FgBlue.Sprintf("%s", applicationNames)))
 			}
 
 			if err != nil {
@@ -124,9 +124,9 @@ var applicationDeleteCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Application %s deleted!", pterm.FgBlue.Sprintf(applicationName)))
+			utils.Println(fmt.Sprintf("Application %s deleted!", pterm.FgBlue.Sprintf("%s", applicationName)))
 		} else {
-			utils.Println(fmt.Sprintf("Deleting application %s in progress..", pterm.FgBlue.Sprintf(applicationName)))
+			utils.Println(fmt.Sprintf("Deleting application %s in progress..", pterm.FgBlue.Sprintf("%s", applicationName)))
 		}
 	},
 }

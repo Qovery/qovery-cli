@@ -103,7 +103,7 @@ var lifecycleUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Lifecycle %s updated!", pterm.FgBlue.Sprintf(lifecycleName)))
+		utils.Println(fmt.Sprintf("Lifecycle %s updated!", pterm.FgBlue.Sprintf("%s", lifecycleName)))
 	},
 }
 

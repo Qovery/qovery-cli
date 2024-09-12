@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var cronjobCancelCmd = &cobra.Command{
@@ -48,7 +49,7 @@ var cronjobCancelCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		msg, err := utils.CancelServiceDeployment(client, envId, cronjob.CronJobResponse.Id , utils.JobType, watchFlag)
+		msg, err := utils.CancelServiceDeployment(client, envId, cronjob.CronJobResponse.Id, utils.JobType, watchFlag)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -61,7 +62,7 @@ var cronjobCancelCmd = &cobra.Command{
 			return
 		}
 
-		utils.Println(fmt.Sprintf("Cronjob %s deployment cancelled!", pterm.FgBlue.Sprintf(cronjobName)))
+		utils.Println(fmt.Sprintf("Cronjob %s deployment cancelled!", pterm.FgBlue.Sprintf("%s", cronjobName)))
 	},
 }
 

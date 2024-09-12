@@ -54,7 +54,7 @@ var containerStopCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -78,7 +78,7 @@ var containerStopCmd = &cobra.Command{
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
 			} else {
-				utils.Println(fmt.Sprintf("Stopping containers %s in progress..", pterm.FgBlue.Sprintf(containerNames)))
+				utils.Println(fmt.Sprintf("Stopping containers %s in progress..", pterm.FgBlue.Sprintf("%s", containerNames)))
 			}
 
 			if err != nil {
@@ -121,9 +121,9 @@ var containerStopCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Container %s stopped!", pterm.FgBlue.Sprintf(containerName)))
+			utils.Println(fmt.Sprintf("Container %s stopped!", pterm.FgBlue.Sprintf("%s", containerName)))
 		} else {
-			utils.Println(fmt.Sprintf("Stopping container %s in progress..", pterm.FgBlue.Sprintf(containerName)))
+			utils.Println(fmt.Sprintf("Stopping container %s in progress..", pterm.FgBlue.Sprintf("%s", containerName)))
 		}
 	},
 }

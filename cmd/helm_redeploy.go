@@ -6,8 +6,9 @@ import (
 	"os"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var helmRedeployCmd = &cobra.Command{
@@ -63,9 +64,9 @@ var helmRedeployCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Helm %s redeployed!", pterm.FgBlue.Sprintf(helmName)))
+			utils.Println(fmt.Sprintf("Helm %s redeployed!", pterm.FgBlue.Sprintf("%s", helmName)))
 		} else {
-			utils.Println(fmt.Sprintf("Redeploying helm %s in progress..", pterm.FgBlue.Sprintf(helmName)))
+			utils.Println(fmt.Sprintf("Redeploying helm %s in progress..", pterm.FgBlue.Sprintf("%s", helmName)))
 		}
 	},
 }

@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 	"io"
 	"os"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var helmUpdateCmd = &cobra.Command{
@@ -110,7 +111,7 @@ var helmUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("helm %s updated!", pterm.FgBlue.Sprintf(helmName)))
+		utils.Println(fmt.Sprintf("helm %s updated!", pterm.FgBlue.Sprintf("%s", helmName)))
 	},
 }
 

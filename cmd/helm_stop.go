@@ -55,7 +55,7 @@ var helmStopCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -87,7 +87,7 @@ var helmStopCmd = &cobra.Command{
 			if watchFlag {
 				utils.WatchEnvironment(envId, qovery.STATEENUM_STOPPED, client)
 			} else {
-				utils.Println(fmt.Sprintf("Stopping helms %s in progress..", pterm.FgBlue.Sprintf(helmNames)))
+				utils.Println(fmt.Sprintf("Stopping helms %s in progress..", pterm.FgBlue.Sprintf("%s", helmNames)))
 			}
 
 			if err != nil {
@@ -130,9 +130,9 @@ var helmStopCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Helm %s stopped!", pterm.FgBlue.Sprintf(helmName)))
+			utils.Println(fmt.Sprintf("Helm %s stopped!", pterm.FgBlue.Sprintf("%s", helmName)))
 		} else {
-			utils.Println(fmt.Sprintf("Stopping helm %s in progress..", pterm.FgBlue.Sprintf(helmName)))
+			utils.Println(fmt.Sprintf("Stopping helm %s in progress..", pterm.FgBlue.Sprintf("%s", helmName)))
 		}
 	},
 }

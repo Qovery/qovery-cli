@@ -119,8 +119,7 @@ func NewAdminClusterListServiceImpl(filters map[string]string) (*AdminClusterLis
 					keys[i] = k
 					i++
 				}
-				err := fmt.Sprintf("Filter property '%s' not available: valid values are: "+strings.Join(keys, ", "), key)
-				return nil, fmt.Errorf(err)
+				return nil, fmt.Errorf("Filter property '%s' not available: valid values are: "+strings.Join(keys, ", "), key)
 			}
 		}
 	}
@@ -158,7 +157,7 @@ func (service AdminClusterListServiceImpl) fetchClustersEligibleToUpdate() ([]Cl
 		return nil, err
 	}
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf(fmt.Sprintf("cannot fetch clusters (status_code=%d)", res.StatusCode))
+		return nil, fmt.Errorf("cannot fetch clusters (status_code=%d)", res.StatusCode)
 	}
 
 	list := ListOfClustersEligibleToUpdate{}

@@ -103,7 +103,7 @@ var cronjobUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Cronjob %s updated!", pterm.FgBlue.Sprintf(cronjobName)))
+		utils.Println(fmt.Sprintf("Cronjob %s updated!", pterm.FgBlue.Sprintf("%s", cronjobName)))
 	},
 }
 

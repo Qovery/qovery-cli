@@ -1009,20 +1009,21 @@ func GetEnvironmentStatusWithColor(statuses []qovery.EnvironmentStatus, serviceI
 }
 
 func GetStatusTextWithColor(s qovery.StateEnum) string {
+	var state = string(s)
 	var statusMsg string
 
 	if s == qovery.STATEENUM_DEPLOYED || s == qovery.STATEENUM_RESTARTED {
-		statusMsg = pterm.FgGreen.Sprintf(string(s))
+		statusMsg = pterm.FgGreen.Sprintf("%s", state)
 	} else if strings.HasSuffix(string(s), "ERROR") {
-		statusMsg = pterm.FgRed.Sprintf(string(s))
+		statusMsg = pterm.FgRed.Sprintf("%s", state)
 	} else if strings.HasSuffix(string(s), "ING") {
-		statusMsg = pterm.FgLightBlue.Sprintf(string(s))
+		statusMsg = pterm.FgLightBlue.Sprintf("%s", state)
 	} else if strings.HasSuffix(string(s), "QUEUED") {
-		statusMsg = pterm.FgLightYellow.Sprintf(string(s))
+		statusMsg = pterm.FgLightYellow.Sprintf("%s", state)
 	} else if s == qovery.STATEENUM_READY {
-		statusMsg = pterm.FgYellow.Sprintf(string(s))
+		statusMsg = pterm.FgYellow.Sprintf("%s", state)
 	} else if s == qovery.STATEENUM_STOPPED {
-		statusMsg = pterm.FgYellow.Sprintf(string(s))
+		statusMsg = pterm.FgYellow.Sprintf("%s", state)
 	} else {
 		statusMsg = string(s)
 	}
@@ -1033,20 +1034,21 @@ func GetStatusTextWithColor(s qovery.StateEnum) string {
 func GetClusterStatusTextWithColor(s qovery.ClusterStateEnum) string {
 	var statusMsg string
 
+	state := string(s)
 	if s == qovery.CLUSTERSTATEENUM_DEPLOYED || s == qovery.CLUSTERSTATEENUM_RESTARTED {
-		statusMsg = pterm.FgGreen.Sprintf(string(s))
-	} else if strings.HasSuffix(string(s), "ERROR") || s == qovery.CLUSTERSTATEENUM_INVALID_CREDENTIALS {
-		statusMsg = pterm.FgRed.Sprintf(string(s))
-	} else if strings.HasSuffix(string(s), "ING") {
-		statusMsg = pterm.FgLightBlue.Sprintf(string(s))
-	} else if strings.HasSuffix(string(s), "QUEUED") {
-		statusMsg = pterm.FgLightYellow.Sprintf(string(s))
+		statusMsg = pterm.FgGreen.Sprintf("%s", state)
+	} else if strings.HasSuffix(state, "ERROR") || s == qovery.CLUSTERSTATEENUM_INVALID_CREDENTIALS {
+		statusMsg = pterm.FgRed.Sprintf("%s", state)
+	} else if strings.HasSuffix(state, "ING") {
+		statusMsg = pterm.FgLightBlue.Sprintf("%s", state)
+	} else if strings.HasSuffix(state, "QUEUED") {
+		statusMsg = pterm.FgLightYellow.Sprintf("%s", state)
 	} else if s == qovery.CLUSTERSTATEENUM_READY {
-		statusMsg = pterm.FgYellow.Sprintf(string(s))
+		statusMsg = pterm.FgYellow.Sprintf("%s", state)
 	} else if s == qovery.CLUSTERSTATEENUM_STOPPED {
-		statusMsg = pterm.FgYellow.Sprintf(string(s))
+		statusMsg = pterm.FgYellow.Sprintf("%s", state)
 	} else {
-		statusMsg = string(s)
+		statusMsg = state
 	}
 
 	return statusMsg

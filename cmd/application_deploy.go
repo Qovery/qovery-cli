@@ -54,7 +54,7 @@ var applicationDeployCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -67,7 +67,7 @@ var applicationDeployCmd = &cobra.Command{
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
-			utils.Println(fmt.Sprintf("Deploying applications %s in progress..", pterm.FgBlue.Sprintf(applicationNames)))
+			utils.Println(fmt.Sprintf("Deploying applications %s in progress..", pterm.FgBlue.Sprintf("%s", applicationNames)))
 
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
@@ -115,9 +115,9 @@ var applicationDeployCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Application %s deployed!", pterm.FgBlue.Sprintf(applicationName)))
+			utils.Println(fmt.Sprintf("Application %s deployed!", pterm.FgBlue.Sprintf("%s", applicationName)))
 		} else {
-			utils.Println(fmt.Sprintf("Deploying application %s in progress..", pterm.FgBlue.Sprintf(applicationName)))
+			utils.Println(fmt.Sprintf("Deploying application %s in progress..", pterm.FgBlue.Sprintf("%s", applicationName)))
 		}
 	},
 }

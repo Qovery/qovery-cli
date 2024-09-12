@@ -6,7 +6,7 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 )
 
-func ListClusters(listService AdminClusterListService) error {
+func ListAllClusters(listService AdminClusterListService) error {
 	clusters, err := listService.SelectClusters()
 	if err != nil {
 		return err

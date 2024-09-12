@@ -54,7 +54,7 @@ var databaseDeleteCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -78,7 +78,7 @@ var databaseDeleteCmd = &cobra.Command{
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
 			} else {
-				utils.Println(fmt.Sprintf("Deleting databases %s in progress..", pterm.FgBlue.Sprintf(databaseNames)))
+				utils.Println(fmt.Sprintf("Deleting databases %s in progress..", pterm.FgBlue.Sprintf("%s", databaseNames)))
 			}
 
 			if err != nil {
@@ -121,9 +121,9 @@ var databaseDeleteCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Database %s deleted!", pterm.FgBlue.Sprintf(databaseName)))
+			utils.Println(fmt.Sprintf("Database %s deleted!", pterm.FgBlue.Sprintf("%s", databaseName)))
 		} else {
-			utils.Println(fmt.Sprintf("Deleting database %s in progress..", pterm.FgBlue.Sprintf(databaseName)))
+			utils.Println(fmt.Sprintf("Deleting database %s in progress..", pterm.FgBlue.Sprintf("%s", databaseName)))
 		}
 	},
 }

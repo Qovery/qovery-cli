@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var helmCancelCmd = &cobra.Command{
@@ -61,7 +62,7 @@ var helmCancelCmd = &cobra.Command{
 			return
 		}
 
-		utils.Println(fmt.Sprintf("helm %s deployment cancelled!", pterm.FgBlue.Sprintf(helmName)))
+		utils.Println(fmt.Sprintf("helm %s deployment cancelled!", pterm.FgBlue.Sprintf("%s", helmName)))
 	},
 }
 

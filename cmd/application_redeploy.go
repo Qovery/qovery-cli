@@ -6,8 +6,9 @@ import (
 	"os"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var applicationRedeployCmd = &cobra.Command{
@@ -63,9 +64,9 @@ var applicationRedeployCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Application %s redeployed!", pterm.FgBlue.Sprintf(applicationName)))
+			utils.Println(fmt.Sprintf("Application %s redeployed!", pterm.FgBlue.Sprintf("%s", applicationName)))
 		} else {
-			utils.Println(fmt.Sprintf("Redeploying application %s in progress..", pterm.FgBlue.Sprintf(applicationName)))
+			utils.Println(fmt.Sprintf("Redeploying application %s in progress..", pterm.FgBlue.Sprintf("%s", applicationName)))
 		}
 	},
 }

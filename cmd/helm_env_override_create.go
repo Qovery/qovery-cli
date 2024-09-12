@@ -6,8 +6,9 @@ import (
 	"os"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var helmEnvOverrideCreateCmd = &cobra.Command{
@@ -57,7 +58,7 @@ var helmEnvOverrideCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("%s has been overidden", pterm.FgBlue.Sprintf(utils.Key)))
+		utils.Println(fmt.Sprintf("%s has been overidden", pterm.FgBlue.Sprintf("%s", utils.Key)))
 	},
 }
 

@@ -54,7 +54,7 @@ var cronjobDeleteCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -77,7 +77,7 @@ var cronjobDeleteCmd = &cobra.Command{
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
 			} else {
-				utils.Println(fmt.Sprintf("Deleting cronjobs %s in progress..", pterm.FgBlue.Sprintf(cronjobNames)))
+				utils.Println(fmt.Sprintf("Deleting cronjobs %s in progress..", pterm.FgBlue.Sprintf("%s", cronjobNames)))
 			}
 
 			if err != nil {
@@ -120,9 +120,9 @@ var cronjobDeleteCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Cronjob %s deleted!", pterm.FgBlue.Sprintf(cronjobName)))
+			utils.Println(fmt.Sprintf("Cronjob %s deleted!", pterm.FgBlue.Sprintf("%s", cronjobName)))
 		} else {
-			utils.Println(fmt.Sprintf("Deleting cronjob %s in progress..", pterm.FgBlue.Sprintf(cronjobName)))
+			utils.Println(fmt.Sprintf("Deleting cronjob %s in progress..", pterm.FgBlue.Sprintf("%s", cronjobName)))
 		}
 	},
 }

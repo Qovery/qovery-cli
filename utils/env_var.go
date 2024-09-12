@@ -170,11 +170,11 @@ func CreateEnvironmentVariable(
 	}
 
 	variableRequest := qovery.VariableRequest{
-		Key:       key,
-		Value:     value,
-		MountPath: qovery.NullableString{},
-		IsSecret:  isSecret,
-		VariableScope: parentScope,
+		Key:              key,
+		Value:            value,
+		MountPath:        qovery.NullableString{},
+		IsSecret:         isSecret,
+		VariableScope:    parentScope,
 		VariableParentId: parentId,
 	}
 
@@ -196,14 +196,15 @@ func UpdateEnvironmentVariable(
 
 	envVar := FindEnvironmentVariableByKey(key, envVars)
 	if envVar == nil {
-		return fmt.Errorf("environment variable %s not found", pterm.FgRed.Sprintf(key))
+		errorKey := pterm.FgRed.Sprintf("%s", key)
+		return fmt.Errorf("environment variable %s not found", errorKey)
 	}
 
-    // fmt.Printf(envVar.Id)
+	// fmt.Printf(envVar.Id)
 	variableId := envVar.Id
 	variableEditRequest := qovery.VariableEditRequest{
-		Key:       key,
-		Value:     value,
+		Key:   key,
+		Value: value,
 	}
 
 	_, _, err = client.VariableMainCallsAPI.EditVariable(context.Background(), variableId).VariableEditRequest(variableEditRequest).Execute()
@@ -239,7 +240,7 @@ func ListEnvironmentVariables(
 	if res == nil {
 		return nil, errors.New("invalid service type")
 	}
-	
+
 	return res.GetResults(), nil
 }
 
@@ -264,7 +265,8 @@ func getParentIdByScope(scope string, projectId string, environmentId string, se
 		return projectId, qovery.APIVARIABLESCOPEENUM_PROJECT, nil
 	case "ENVIRONMENT":
 		return environmentId, qovery.APIVARIABLESCOPEENUM_ENVIRONMENT, nil
-	case "APPLICATION":return serviceId, qovery.APIVARIABLESCOPEENUM_APPLICATION, nil
+	case "APPLICATION":
+		return serviceId, qovery.APIVARIABLESCOPEENUM_APPLICATION, nil
 	case "CONTAINER":
 		return serviceId, qovery.APIVARIABLESCOPEENUM_CONTAINER, nil
 	case "JOB":
@@ -285,7 +287,7 @@ func DeleteVariable(client *qovery.APIClient, serviceId string, serviceType Serv
 
 	envVar := FindEnvironmentVariableByKey(key, envVars)
 	if envVar == nil {
-		return fmt.Errorf("environment variable %s not found", pterm.FgRed.Sprintf(key))
+		return fmt.Errorf("environment variable %s not found", pterm.FgRed.Sprintf("%s", key))
 	}
 
 	_, err = client.VariableMainCallsAPI.DeleteVariable(context.Background(), envVar.Id).Execute()
@@ -300,8 +302,8 @@ func CreateEnvironmentVariableAlias(
 	alias string,
 ) error {
 	variableAliasRequest := qovery.VariableAliasRequest{
-		Key: alias,
-		AliasScope: aliasScope,
+		Key:           alias,
+		AliasScope:    aliasScope,
 		AliasParentId: aliasParentId,
 	}
 
@@ -336,7 +338,7 @@ func CreateAlias(
 		return CreateEnvironmentVariableAlias(client, parentId, parentScope, envVar.Id, alias)
 	}
 
-	return fmt.Errorf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key))
+	return fmt.Errorf("Environment variable or secret %s not found", pterm.FgRed.Sprintf("%s", key))
 }
 
 func CreateEnvironmentVariableOverride(
@@ -347,8 +349,8 @@ func CreateEnvironmentVariableOverride(
 	value string,
 ) error {
 	variableOverrideRequest := qovery.VariableOverrideRequest{
-		Value: value,
-		OverrideScope: overrideScope,
+		Value:            value,
+		OverrideScope:    overrideScope,
 		OverrideParentId: overrideParentId,
 	}
 
@@ -383,7 +385,7 @@ func CreateOverride(
 		return CreateEnvironmentVariableOverride(client, parentId, parentScope, envVar.Id, value)
 	}
 
-	return fmt.Errorf("Environment variable or secret %s not found", pterm.FgRed.Sprintf(key))
+	return fmt.Errorf("Environment variable or secret %s not found", pterm.FgRed.Sprintf("%s", key))
 }
 
 func insertAtIndex(src string, insert string, index int) string {

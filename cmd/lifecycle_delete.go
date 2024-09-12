@@ -54,7 +54,7 @@ var lifecycleDeleteCmd = &cobra.Command{
 					break
 				}
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf(envId)))
+				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -78,7 +78,7 @@ var lifecycleDeleteCmd = &cobra.Command{
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
 			} else {
-				utils.Println(fmt.Sprintf("Deleting lifecycle jobs %s in progress..", pterm.FgBlue.Sprintf(lifecycleNames)))
+				utils.Println(fmt.Sprintf("Deleting lifecycle jobs %s in progress..", pterm.FgBlue.Sprintf("%s", lifecycleNames)))
 			}
 
 			if err != nil {
@@ -121,9 +121,9 @@ var lifecycleDeleteCmd = &cobra.Command{
 		}
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Lifecycle %s deleted!", pterm.FgBlue.Sprintf(lifecycleName)))
+			utils.Println(fmt.Sprintf("Lifecycle %s deleted!", pterm.FgBlue.Sprintf("%s", lifecycleName)))
 		} else {
-			utils.Println(fmt.Sprintf("Deleting lifecycle %s in progress..", pterm.FgBlue.Sprintf(lifecycleName)))
+			utils.Println(fmt.Sprintf("Deleting lifecycle %s in progress..", pterm.FgBlue.Sprintf("%s", lifecycleName)))
 		}
 	},
 }

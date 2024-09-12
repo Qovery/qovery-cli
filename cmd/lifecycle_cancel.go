@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var lifecycleCancelCmd = &cobra.Command{
@@ -61,7 +62,7 @@ var lifecycleCancelCmd = &cobra.Command{
 			return
 		}
 
-		utils.Println(fmt.Sprintf("Lifecycle %s deployment cancelled!", pterm.FgBlue.Sprintf(lifecycleName)))
+		utils.Println(fmt.Sprintf("Lifecycle %s deployment cancelled!", pterm.FgBlue.Sprintf("%s", lifecycleName)))
 	},
 }
 
