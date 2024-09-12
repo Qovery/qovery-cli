@@ -10,6 +10,7 @@ require (
 	github.com/fatih/color v1.16.0
 	github.com/go-errors/errors v1.5.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.1
 	github.com/hashicorp/vault/api v1.13.0
 	github.com/jarcoal/httpmock v1.3.1
@@ -19,7 +20,7 @@ require (
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
-	github.com/posthog/posthog-go v0.0.0-20240327112532-87b23fe11103
+	github.com/posthog/posthog-go v1.2.21
 	github.com/pterm/pterm v0.12.79
 	github.com/qovery/qovery-client-go v0.0.0-20240911090006-e50e357fd37b
 	github.com/sirupsen/logrus v1.9.3
@@ -43,7 +44,6 @@ require (
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gookit/color v1.5.4 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
