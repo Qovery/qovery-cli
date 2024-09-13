@@ -3,14 +3,14 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-client-go"
-	"github.com/spf13/cobra"
 	"io"
 	"os"
 
+	"github.com/pkg/errors"
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
+	"github.com/qovery/qovery-client-go"
+	"github.com/spf13/cobra"
 )
 
 var containerUpdateCmd = &cobra.Command{
@@ -28,7 +28,6 @@ var containerUpdateCmd = &cobra.Command{
 
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -36,7 +35,6 @@ var containerUpdateCmd = &cobra.Command{
 		}
 
 		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -104,7 +102,6 @@ var containerUpdateCmd = &cobra.Command{
 		}
 
 		_, res, err := client.ContainerMainCallsAPI.EditContainer(context.Background(), container.Id).ContainerRequest(req).Execute()
-
 		if err != nil {
 			// print http body error message
 			if res.StatusCode != 200 {

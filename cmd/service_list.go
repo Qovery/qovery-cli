@@ -9,11 +9,10 @@ import (
 
 	"github.com/go-errors/errors"
 
+	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-
 	"github.com/qovery/qovery-cli/pkg/usercontext"
-	"github.com/qovery/qovery-cli/utils"
 )
 
 var id string
@@ -249,6 +248,81 @@ func getEnvironmentContextResourceId(qoveryAPIClient *qovery.APIClient, environm
 	return environment.Id, nil
 }
 
+func getServiceContextResourceId(qoveryAPIClient *qovery.APIClient, serviceName string, environmentId string) (*utils.Service, error) {
+	if strings.TrimSpace(serviceName) == "" {
+		service, err := utils.CurrentService(true)
+		if err != nil {
+			return nil, err
+		}
+
+		return service, nil
+	}
+
+	if strings.TrimSpace(environmentId) == "" {
+		// avoid making a call to the API if the environment id is not set
+		return nil, nil
+	}
+
+	// try to get service if application
+	application, _ := getApplicationContextResource(qoveryAPIClient, serviceName, environmentId)
+	if application != nil {
+		return &utils.Service{
+			ID:   utils.Id(application.Id),
+			Name: utils.Name(application.Name),
+			Type: utils.ApplicationType,
+		}, nil
+	}
+
+	// try to get service if container
+	container, _ := getContainerContextResource(qoveryAPIClient, serviceName, environmentId)
+	if container != nil {
+		return &utils.Service{
+			ID:   utils.Id(container.Id),
+			Name: utils.Name(container.Name),
+			Type: utils.ContainerType,
+		}, nil
+	}
+
+	// try to get service if job
+	job, _ := getJobContextResource(qoveryAPIClient, serviceName, environmentId)
+	if job != nil && job.CronJobResponse != nil {
+		return &utils.Service{
+			ID:   utils.Id(job.CronJobResponse.Id),
+			Name: utils.Name(job.CronJobResponse.Name),
+			Type: utils.JobType,
+		}, nil
+	}
+	if job != nil && job.LifecycleJobResponse != nil {
+		return &utils.Service{
+			ID:   utils.Id(job.LifecycleJobResponse.Id),
+			Name: utils.Name(job.LifecycleJobResponse.Name),
+			Type: utils.JobType,
+		}, nil
+	}
+
+	// try to get service if helm
+	helm, _ := getHelmContextResource(qoveryAPIClient, serviceName, environmentId)
+	if helm != nil {
+		return &utils.Service{
+			ID:   utils.Id(helm.Id),
+			Name: utils.Name(helm.Name),
+			Type: utils.HelmType,
+		}, nil
+	}
+
+	// try to get service if database
+	database, _ := getDatabaseContextResource(qoveryAPIClient, serviceName, environmentId)
+	if database != nil {
+		return &utils.Service{
+			ID:   utils.Id(database.Id),
+			Name: utils.Name(database.Name),
+			Type: utils.DatabaseType,
+		}, nil
+	}
+
+	return nil, errors.Errorf("service %s not found", serviceName)
+}
+
 func getApplicationContextResource(qoveryAPIClient *qovery.APIClient, applicationName string, environmentId string) (*qovery.Application, error) {
 	if strings.TrimSpace(environmentId) == "" {
 		// avoid making a call to the API if the environment id is not set
@@ -269,6 +343,28 @@ func getApplicationContextResource(qoveryAPIClient *qovery.APIClient, applicatio
 	}
 
 	return application, nil
+}
+
+func getDatabaseContextResource(qoveryAPIClient *qovery.APIClient, databaseName string, environmentId string) (*qovery.Database, error) {
+	if strings.TrimSpace(environmentId) == "" {
+		// avoid making a call to the API if the environment id is not set
+		return nil, nil
+	}
+
+	// find database id by name
+	databases, _, err := qoveryAPIClient.DatabasesAPI.ListDatabase(context.Background(), environmentId).Execute()
+
+	if err != nil {
+		return nil, err
+	}
+
+	database := utils.FindByDatabaseName(databases.GetResults(), databaseName)
+
+	if database == nil {
+		return nil, errors.Errorf("application %s not found", applicationName)
+	}
+
+	return database, nil
 }
 
 func getContainerContextResource(qoveryAPIClient *qovery.APIClient, containerName string, environmentId string) (*qovery.ContainerResponse, error) {
