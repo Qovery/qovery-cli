@@ -12,6 +12,7 @@ import (
 
 	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
+	"github.com/qovery/qovery-cli/pkg/usercontext"
 )
 
 var shellCmd = &cobra.Command{
@@ -22,7 +23,26 @@ var shellCmd = &cobra.Command{
 
 		var shellRequest *pkg.ShellRequest
 		var err error
-		if len(args) > 0 {
+		if strings.TrimSpace(organizationName) != "" || strings.TrimSpace(projectName) != "" || strings.TrimSpace(environmentName) != "" || strings.TrimSpace(serviceName) != "" {
+			if strings.TrimSpace(organizationName) == "" {
+				utils.PrintlnError(errors.New("organization name is required"))
+				return
+			}
+			if strings.TrimSpace(projectName) == "" {
+				utils.PrintlnError(errors.New("project name is required"))
+				return
+			}
+			if strings.TrimSpace(environmentName) == "" {
+				utils.PrintlnError(errors.New("environment name is required"))
+				return
+			}
+			if strings.TrimSpace(serviceName) == "" {
+				utils.PrintlnError(errors.New("service name is required"))
+				return
+			}
+
+			shellRequest, err = shellRequestWithContextFlags()
+		} else if len(args) == 1 {
 			shellRequest, err = shellRequestWithApplicationUrl(args)
 		} else {
 			shellRequest, err = shellRequestWithoutArg()
@@ -35,11 +55,69 @@ var shellCmd = &cobra.Command{
 		pkg.ExecShell(shellRequest)
 	},
 }
+
 var (
 	command          []string
 	podName          string
 	podContainerName string
 )
+
+func shellRequestWithContextFlags() (*pkg.ShellRequest, error) {
+	tokenType, token, err := utils.GetAccessToken()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	client := utils.GetQoveryClient(tokenType, token)
+
+	organizationID, err := usercontext.GetOrganizationContextResourceId(client, organizationName)
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	projectID, err := getProjectContextResourceId(client, projectName, organizationID)
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	environmentID, err := getEnvironmentContextResourceId(client, environmentName, projectID)
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	environment, err := utils.GetEnvironmentById(environmentID)
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	service, err := getServiceContextResourceId(client, serviceName, environmentID)
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	return &pkg.ShellRequest{
+		ServiceID:      utils.Id(service.ID),
+		ProjectID:      utils.Id(projectID),
+		OrganizationID: utils.Id(organizationID),
+		EnvironmentID:  utils.Id(environmentID),
+		ClusterID:      environment.ClusterID,
+		PodName:        podName,
+		ContainerName:  podContainerName,
+		Command:        command,
+	}, nil
+}
 
 func shellRequestWithoutArg() (*pkg.ShellRequest, error) {
 	useContext := false
@@ -150,7 +228,7 @@ func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequ
 }
 
 func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
-	var url = args[0]
+	url := args[0]
 	url = strings.Replace(url, "https://console.qovery.com/", "", 1)
 	url = strings.Replace(url, "https://new.console.qovery.com/", "", 1)
 	urlSplit := strings.Split(url, "/")
@@ -159,19 +237,19 @@ func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 		return nil, errors.New("Wrong URL format: " + url)
 	}
 
-	var organizationId = urlSplit[1]
+	organizationId := urlSplit[1]
 	organization, err := utils.GetOrganizationById(organizationId)
 	if err != nil {
 		return nil, err
 	}
 
-	var projectId = urlSplit[3]
+	projectId := urlSplit[3]
 	project, err := utils.GetProjectById(projectId)
 	if err != nil {
 		return nil, err
 	}
 
-	var environmentId = urlSplit[5]
+	environmentId := urlSplit[5]
 	environment, err := utils.GetEnvironmentById(environmentId)
 	if err != nil {
 		return nil, err
@@ -183,7 +261,7 @@ func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 	}
 
 	var service utils.Service
-	var serviceId = urlSplit[7]
+	serviceId := urlSplit[7]
 	for _, envService := range environmentServices {
 		if envService.ID == serviceId {
 			switch envService.Type {
@@ -262,10 +340,18 @@ func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
 }
 
 func init() {
-	var shellCmd = shellCmd
+	shellCmd := shellCmd
 	shellCmd.Flags().StringSliceVarP(&command, "command", "c", []string{"sh"}, "command to launch inside the pod")
+	shellCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	shellCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	shellCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	shellCmd.Flags().StringVarP(&serviceName, "service", "", "", "Service Name")
 	shellCmd.Flags().StringVarP(&podName, "pod", "p", "", "pod name where to exec into")
 	shellCmd.Flags().StringVar(&podContainerName, "container", "", "container name inside the pod")
+	shellCmd.Example = "qovery shell\n" +
+		"qovery shell <qovery_console_service_url>\n" +
+		"qovery shell --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>\n" +
+		"qovery shell --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name> --pod <pod_name> --container <container_name> --command <command>"
 
 	rootCmd.AddCommand(shellCmd)
 }
