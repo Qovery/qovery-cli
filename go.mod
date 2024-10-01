@@ -70,6 +70,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
+	github.com/tonistiigi/go-rosetta v0.0.0-20220804170347-3f4430f2d346 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
