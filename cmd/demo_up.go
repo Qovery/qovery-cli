@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+	"github.com/tonistiigi/go-rosetta"
 	"io"
 	"net/http"
 	"os"
@@ -72,7 +73,7 @@ set -eu
 set -o pipefail
 %s %s %s %s %s %t 2>&1 | tee %s
 `
-		cmdArgs := fmt.Sprintf(cmdStr, scriptPath, demoClusterName, strings.ToUpper(runtime.GOARCH), string(orgId), string(token), demoDebug, debugLogsPath)
+		cmdArgs := fmt.Sprintf(cmdStr, scriptPath, demoClusterName, detectArchitecture(), string(orgId), string(token), demoDebug, debugLogsPath)
 		shCmd := exec.Command("/bin/bash", "-c", cmdArgs)
 		shCmd.Stdout = os.Stdout
 		shCmd.Stderr = os.Stderr
@@ -84,6 +85,16 @@ set -o pipefail
 
 		utils.CaptureWithEvent(cmd, utils.EndOfExecutionEventName)
 	},
+}
+
+// Only needed due to MacOs when rosetta (x86_64 emulation on ARM64) is turned on.
+// otherwise GOARCH runtime variable is enough to detect the correct arch
+func detectArchitecture() string {
+	if runtime.GOOS != "darwin" {
+		return strings.ToUpper(runtime.GOARCH)
+	}
+
+	return strings.ToUpper(rosetta.NativeArch())
 }
 
 func uploadErrorLogs(tokenType utils.AccessTokenType, token utils.AccessToken, organization utils.Id, clusterName string, debugLogsPath string) {
