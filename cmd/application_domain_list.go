@@ -53,7 +53,7 @@ var applicationDomainListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		customDomains, _, err := client.CustomDomainAPI.ListApplicationCustomDomain(context.Background(), application.Id).Execute()
+		customDomains, _, err := client.ApplicationCustomDomainAPI.ListApplicationCustomDomain(context.Background(), application.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)

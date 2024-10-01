@@ -50,7 +50,7 @@ var applicationDomainDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		customDomains, _, err := client.CustomDomainAPI.ListApplicationCustomDomain(context.Background(), application.Id).Execute()
+		customDomains, _, err := client.ApplicationCustomDomainAPI.ListApplicationCustomDomain(context.Background(), application.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -65,7 +65,7 @@ var applicationDomainDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		_, err = client.CustomDomainAPI.DeleteCustomDomain(context.Background(), application.Id, customDomain.Id).Execute()
+		_, err = client.ApplicationCustomDomainAPI.DeleteCustomDomain(context.Background(), application.Id, customDomain.Id).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
