@@ -357,3 +357,143 @@ func TestReuseExistingCluster(t *testing.T) {
 		assert.Nil(t, err)
 	})
 }
+
+func TestStripQoverySection(t *testing.T) {
+	helmValues := `
+services:
+  qovery:
+    qovery-cluster-agent:
+      enabled: true
+    qovery-shell-agent:
+      enabled: true
+    qovery-engine:
+      enabled: true
+    qovery-priority-class:
+      enabled: true
+  ingress:
+    ingress-nginx:
+      enabled: true
+  dns:
+    external-dns:
+      enabled: true
+  logging:
+    loki:
+      enabled: true
+    promtail:
+      enabled: true
+  certificates:
+    cert-manager:
+      enabled: true
+    cert-manager-configs:
+      enabled: true
+    qovery-cert-manager-webhook:
+      enabled: true
+  observability:
+    metrics-server:
+      enabled: true
+  aws:
+    q-storageclass-aws:
+      enabled: true
+    aws-ebs-csi-driver:
+      enabled: false
+    aws-load-balancer-controller:
+      enabled: false
+  gcp:
+    q-storageclass-gcp:
+      enabled: false
+  scaleway:
+    q-storageclass-scaleway:
+      enabled: false
+qovery:
+  clusterId: &clusterId set-by-customer
+  clusterShortId: &clusterShortId set-by-customer
+  organizationId: &organizationId set-by-customer
+  jwtToken: &jwtToken set-by-customer
+  rootDomain: &rootDomain set-by-customer
+  domain: &domain set-by-customer
+  domainWildcard: &domainWildcard set-by-customer
+  qoveryDnsUrl: &qoveryDnsUrl set-by-customer
+  agentGatewayUrl: &agentGatewayUrl set-by-customer
+  engineGatewayUrl: &engineGatewayUrl set-by-customer
+  lokiUrl: &lokiUrl set-by-customer
+  promtailLokiUrl: &promtailLokiUrl set-by-customer
+  acmeEmailAddr: &acmeEmailAddr set-by-customer
+  externalDnsPrefix: &externalDnsPrefix set-by-customer
+  architectures: &architectures set-by-customer
+  engineVersion: &engineVersion set-by-customer
+  shellAgentVersion: &shellAgentVersion set-by-customer
+  clusterAgentVersion: &clusterAgentVersion set-by-customer
+qovery-cluster-agent:
+  fullnameOverride: qovery-shell-agent
+  image:
+    tag: *clusterAgentVersion
+  environmentVariables:
+    CLUSTER_ID: *clusterId
+    CLUSTER_JWT_TOKEN: *jwtToken
+    GRPC_SERVER: *agentGatewayUrl
+    LOKI_URL: *lokiUrl
+    ORGANIZATION_ID: *organizationId
+  useSelfSignCertificate: true
+`
+	resultHelmValues := `
+services:
+  qovery:
+    qovery-cluster-agent:
+      enabled: true
+    qovery-shell-agent:
+      enabled: true
+    qovery-engine:
+      enabled: true
+    qovery-priority-class:
+      enabled: true
+  ingress:
+    ingress-nginx:
+      enabled: true
+  dns:
+    external-dns:
+      enabled: true
+  logging:
+    loki:
+      enabled: true
+    promtail:
+      enabled: true
+  certificates:
+    cert-manager:
+      enabled: true
+    cert-manager-configs:
+      enabled: true
+    qovery-cert-manager-webhook:
+      enabled: true
+  observability:
+    metrics-server:
+      enabled: true
+  aws:
+    q-storageclass-aws:
+      enabled: true
+    aws-ebs-csi-driver:
+      enabled: false
+    aws-load-balancer-controller:
+      enabled: false
+  gcp:
+    q-storageclass-gcp:
+      enabled: false
+  scaleway:
+    q-storageclass-scaleway:
+      enabled: false
+qovery-cluster-agent:
+  fullnameOverride: qovery-shell-agent
+  image:
+    tag: *clusterAgentVersion
+  environmentVariables:
+    CLUSTER_ID: *clusterId
+    CLUSTER_JWT_TOKEN: *jwtToken
+    GRPC_SERVER: *agentGatewayUrl
+    LOKI_URL: *lokiUrl
+    ORGANIZATION_ID: *organizationId
+  useSelfSignCertificate: true
+`
+	t.Run("Should strip qovery section for yanl file", func(t *testing.T) {
+		ret := stripQoverySection(helmValues)
+		assert.Equal(t, resultHelmValues, ret)
+	})
+}
