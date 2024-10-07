@@ -6,6 +6,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/qovery/qovery-cli/pkg/cluster"
@@ -153,31 +154,26 @@ func (service *InstallSelfManagedClusterService) InstallCluster() (*string, erro
 	if err != nil {
 		return nil, err
 	}
-	clusterHelmValuesContent := *resultClusterHelmValuesContent
+	helmValues := *resultClusterHelmValuesContent
 
 	// inject the email for Cert Manager
-	clusterHelmValuesContent = strings.ReplaceAll(clusterHelmValuesContent, "acme@qovery.com", email)
-
-	finalClusterHelmValuesContent := fmt.Sprintf("%s\n", clusterHelmValuesContent)
+	helmValues = strings.ReplaceAll(helmValues, "acme@qovery.com", email)
+	helmValues = fmt.Sprintf("%s\n", helmValues)
 
 	// trim lines if they start with "qovery:" or if they contain "set-by-customer"
-	content, err := service.selfManagedClusterService.GetBaseHelmValuesContent(cloudProviderType)
+	qoveryHelmValues, err := service.selfManagedClusterService.GetBaseHelmValuesContent(cloudProviderType)
 	if err != nil {
 		return nil, err
 	}
-	for _, line := range strings.Split(*content, "\n") {
-		if strings.HasPrefix(line, "qovery:") || strings.Contains(line, "set-by-customer") {
-			continue
-		}
-		finalClusterHelmValuesContent += line + "\n"
-	}
+
+	helmValues += stripQoverySection(*qoveryHelmValues)
 
 	if strings.Contains(kubernetesType, "Azure") {
-		contentWithAKSValues, err := injectAzureAKSValues(finalClusterHelmValuesContent)
+		contentWithAKSValues, err := injectAzureAKSValues(helmValues)
 		if err != nil {
 			return nil, err
 		}
-		finalClusterHelmValuesContent = *contentWithAKSValues
+		helmValues = *contentWithAKSValues
 	}
 
 	// generate the helm values file and output it to the user to ./values-<cluster-name>.yaml
@@ -198,7 +194,7 @@ func (service *InstallSelfManagedClusterService) InstallCluster() (*string, erro
 		return nil, err
 	}
 
-	err = service.fileWriterService.WriteFile(helmValuesFileName, []byte(finalClusterHelmValuesContent), 0644)
+	err = service.fileWriterService.WriteFile(helmValuesFileName, []byte(helmValues), 0644)
 
 	if err != nil {
 		return nil, err
@@ -207,6 +203,14 @@ func (service *InstallSelfManagedClusterService) InstallCluster() (*string, erro
 	outputCommandsToInstallQoveryOnCluster(helmValuesFileName)
 
 	return nil, nil
+}
+
+func stripQoverySection(qoveryHelmValues string) string {
+	// Erase the qovery: yaml section to replace it with correct fetched values for this cluster
+	// We can't use yaml parser here, because the yaml file contains anchor (&toto *toto) and parsing it will cause those
+	// anchors to be replaced with the incorrect values...
+	re := regexp.MustCompile("(?m)^qovery:\n( .*\n)+")
+	return re.ReplaceAllString(qoveryHelmValues, "")
 }
 
 func outputCommandsToInstallQoveryOnCluster(helmValuesFileName string) {
