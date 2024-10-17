@@ -1,14 +1,10 @@
 package cmd
 
 import (
-	"context"
-	"github.com/go-errors/errors"
-	"io"
 	"os"
-	"strings"
 
+	"github.com/qovery/qovery-cli/pkg/environment"
 	"github.com/qovery/qovery-cli/utils"
-	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 )
 
@@ -34,56 +30,9 @@ var environmentCloneCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		req := qovery.CloneEnvironmentRequest{
-			Name:                newEnvironmentName,
-			ApplyDeploymentRule: &applyDeploymentRule,
-		}
+		var newEnvId = environment.EnvironmentClone(client, organizationName, projectName, environmentName, newEnvironmentName, clusterName, environmentType, applyDeploymentRule, orgId, envId)
 
-		if clusterName != "" {
-			clusters, _, err := client.ClustersAPI.ListOrganizationCluster(context.Background(), orgId).Execute()
-
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-
-			if err == nil {
-				for _, c := range clusters.GetResults() {
-					if strings.EqualFold(c.Name, clusterName) {
-						req.ClusterId = &c.Id
-						break
-					}
-				}
-			}
-		}
-
-		if environmentType != "" {
-			switch strings.ToUpper(environmentType) {
-			case "DEVELOPMENT":
-				req.Mode = qovery.EnvironmentModeEnum.Ptr(qovery.ENVIRONMENTMODEENUM_DEVELOPMENT)
-			case "PRODUCTION":
-				req.Mode = qovery.EnvironmentModeEnum.Ptr(qovery.ENVIRONMENTMODEENUM_PRODUCTION)
-			case "STAGING":
-				req.Mode = qovery.EnvironmentModeEnum.Ptr(qovery.ENVIRONMENTMODEENUM_STAGING)
-			}
-		}
-
-		_, res, err := client.EnvironmentActionsAPI.CloneEnvironment(context.Background(), envId).CloneEnvironmentRequest(req).Execute()
-
-		if err != nil {
-			// print http body error message
-			if res != nil  && !strings.Contains(res.Status, "200") {
-				result, _ := io.ReadAll(res.Body)
-				utils.PrintlnError(errors.Errorf("status code: %s ; body: %s", res.Status, string(result)))
-			}
-
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		utils.Println("Environment is cloned!")
+		utils.Println("your new environment ID is: " + newEnvId.Id)
 	},
 }
 
