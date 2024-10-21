@@ -104,15 +104,27 @@ func checkEnv() {
 		os.Exit(1)
 		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
+
+	if _, ok := os.LookupEnv("BASTION_ADDR"); !ok {
+		log.Error("You must set the bastion address (BASTION_ADDR).")
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
 }
 
 func setupSSHConnection(ctx context.Context) (*exec.Cmd, error) {
+	bastionAddress, ok := os.LookupEnv("BASTION_ADDR")
+	if !ok {
+		log.Error("You must set the bastion address (BASTION_ADDR).")
+		os.Exit(1)
+	}
+
 	sshArgs := []string{
 		"-N", "-D", "1080",
 		"-o", "ServerAliveInterval=10",
 		"-o", "ServerAliveCountMax=3",
 		"-o", "TCPKeepAlive=yes",
-		"root@bastion.z6d9f665a.rustrocks.space",
+		fmt.Sprintf("root@%s", bastionAddress),
 		"-p", "2222",
 	}
 
