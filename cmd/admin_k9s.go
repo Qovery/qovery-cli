@@ -1,14 +1,21 @@
 package cmd
 
 import (
+	"context"
+	"fmt"
+	"net"
 	"os"
 	"os/exec"
+	"syscall"
+	"time"
 
 	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
+
+var doNotConnectToBastion bool
 
 var k9sCmd = &cobra.Command{
 	Use:   "k9s",
@@ -20,6 +27,7 @@ var k9sCmd = &cobra.Command{
 
 func init() {
 	adminCmd.AddCommand(k9sCmd)
+	k9sCmd.Flags().BoolVarP(&doNotConnectToBastion, "no-bastion", "", false, "do not connect to the bastion")
 }
 
 func launchK9s(args []string) {
@@ -30,9 +38,21 @@ func launchK9s(args []string) {
 		return
 	}
 
+	if !doNotConnectToBastion {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		sshCmd, err := setupSSHConnection(ctx)
+		if err != nil {
+			log.Errorf("Failed to kill SSH process: %v", err)
+			// continue anyway
+		}
+		defer cleanupSSHConnection(sshCmd)
+	}
+
 	clusterId := args[0]
-	vars := pkg.GetVarsByClusterId(clusterId)
-	if len(vars) == 0 {
+	vars, err := pkg.GetVarsByClusterId(clusterId)
+	if len(vars) == 0 || err != nil {
 		return
 	}
 
@@ -64,7 +84,7 @@ func launchK9s(args []string) {
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
 
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		log.Error("Can't launch k9s : " + err.Error())
 	}
@@ -83,5 +103,96 @@ func checkEnv() {
 		log.Error("You must set vault token env variable (VAULT_TOKEN).")
 		os.Exit(1)
 		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	if _, ok := os.LookupEnv("BASTION_ADDR"); !ok {
+		log.Error("You must set the bastion address (BASTION_ADDR).")
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+}
+
+func setupSSHConnection(ctx context.Context) (*exec.Cmd, error) {
+	bastionAddress, ok := os.LookupEnv("BASTION_ADDR")
+	if !ok {
+		log.Error("You must set the bastion address (BASTION_ADDR).")
+		os.Exit(1)
+	}
+
+	sshArgs := []string{
+		"-N", "-D", "1080",
+		"-o", "ServerAliveInterval=10",
+		"-o", "ServerAliveCountMax=3",
+		"-o", "TCPKeepAlive=yes",
+		fmt.Sprintf("root@%s", bastionAddress),
+		"-p", "2222",
+	}
+
+	sshCmd := exec.CommandContext(ctx, "ssh", sshArgs...)
+	if err := sshCmd.Start(); err != nil {
+		return nil, fmt.Errorf("error starting SSH command: %w", err)
+	}
+
+	if err := waitForSSHConnection(ctx, "localhost:1080", 30*time.Second); err != nil {
+		err := sshCmd.Process.Kill()
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("error waiting for SSH connection: %w", err)
+	}
+
+	log.Info("SSH connection established successfully")
+	if err := os.Setenv("HTTPS_PROXY", "socks5://localhost:1080"); err != nil {
+		err := sshCmd.Process.Kill()
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("failed to set HTTPS_PROXY: %w", err)
+	}
+
+	return sshCmd, nil
+}
+
+func cleanupSSHConnection(sshCmd *exec.Cmd) {
+	if sshCmd != nil && sshCmd.Process != nil {
+		log.Info("Terminating SSH process...")
+		if err := sshCmd.Process.Signal(syscall.SIGTERM); err != nil {
+			log.Errorf("Failed to terminate SSH process: %v", err)
+			if err := sshCmd.Process.Kill(); err != nil {
+				log.Errorf("Failed to kill SSH process: %v", err)
+			}
+		}
+		_, _ = sshCmd.Process.Wait()
+		log.Info("SSH process terminated")
+	}
+
+	if err := os.Unsetenv("HTTPS_PROXY"); err != nil {
+		log.Errorf("Failed to unset HTTPS_PROXY: %v", err)
+	} else {
+		log.Info("HTTPS_PROXY has been unset")
+	}
+}
+
+func waitForSSHConnection(ctx context.Context, address string, timeout time.Duration) error {
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	timeoutChan := time.After(timeout)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-timeoutChan:
+			return fmt.Errorf("timeout waiting for SSH connection")
+		case <-ticker.C:
+			if conn, err := net.DialTimeout("tcp", address, time.Second); err == nil {
+				err := conn.Close()
+				if err != nil {
+					return err
+				}
+				return nil
+			}
+		}
 	}
 }

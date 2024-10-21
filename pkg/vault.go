@@ -3,6 +3,7 @@ package pkg
 import (
 	b64 "encoding/base64"
 	"encoding/json"
+	"errors"
 	"os"
 
 	"github.com/hashicorp/vault/api"
@@ -29,19 +30,17 @@ func connectToVault() *api.Client {
 	return client
 }
 
-func GetVarsByClusterId(clusterID string) []utils.Var {
+func GetVarsByClusterId(clusterID string) ([]utils.Var, error) {
 	client := connectToVault()
 
 	result, err := client.Logical().Read("/official-clusters-access/data/" + clusterID)
 	if err != nil {
 		log.Error(err)
-		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		return nil, err
 	}
 	if result == nil {
 		log.Error("Cluster information are not found")
-		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		return nil, errors.New("cluster information are not found")
 	}
 
 	var vaultVars []utils.Var
@@ -57,19 +56,19 @@ func GetVarsByClusterId(clusterID string) []utils.Var {
 			jsonStr, err := json.Marshal(value)
 			if err != nil {
 				log.Error("Can't convert to json GOOGLE_CREDENTIALS")
-				return []utils.Var{}
+				return []utils.Var{}, nil
 			}
 			vaultVars = append(vaultVars, utils.Var{Key: "GOOGLE_CREDENTIALS", Value: string(jsonStr)})
 		case "kubeconfig_b64", "KUBECONFIG_b64":
 			decodedValue, encErr := b64.StdEncoding.DecodeString(value.(string))
 			if encErr != nil {
 				log.Error("Can't decode KUBECONFIG")
-				return []utils.Var{}
+				return []utils.Var{}, nil
 			}
 			filePath := utils.WriteInFile(clusterID, "kubeconfig", decodedValue)
 			vaultVars = append(vaultVars, utils.Var{Key: "KUBECONFIG", Value: filePath})
 		}
 	}
 
-	return vaultVars
+	return vaultVars, nil
 }
