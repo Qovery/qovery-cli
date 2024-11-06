@@ -44,7 +44,8 @@ func launchK9s(args []string) {
 
 		sshCmd, err := setupSSHConnection(ctx)
 		if err != nil {
-			log.Errorf("Failed to kill SSH process: %v", err)
+			log.Errorf("Failed to setup SSH connection: %v", err)
+			log.Warnf("Connection failure might be due to issues with your SSH configuration. Consider checking and updating your ~/.ssh/known_hosts file to ensure the host is trusted.")
 			// continue anyway
 		}
 		defer cleanupSSHConnection(sshCmd)
@@ -130,7 +131,7 @@ func setupSSHConnection(ctx context.Context) (*exec.Cmd, error) {
 
 	sshCmd := exec.CommandContext(ctx, "ssh", sshArgs...)
 	if err := sshCmd.Start(); err != nil {
-		return nil, fmt.Errorf("error starting SSH command: %w", err)
+		return nil, fmt.Errorf("error starting SSH command: %v", err)
 	}
 
 	if err := waitForSSHConnection(ctx, "localhost:1080", 30*time.Second); err != nil {
@@ -138,7 +139,7 @@ func setupSSHConnection(ctx context.Context) (*exec.Cmd, error) {
 		if err != nil {
 			return nil, err
 		}
-		return nil, fmt.Errorf("error waiting for SSH connection: %w", err)
+		return nil, fmt.Errorf("error waiting for SSH connection: %v", err)
 	}
 
 	log.Info("SSH connection established successfully")
@@ -147,7 +148,7 @@ func setupSSHConnection(ctx context.Context) (*exec.Cmd, error) {
 		if err != nil {
 			return nil, err
 		}
-		return nil, fmt.Errorf("failed to set HTTPS_PROXY: %w", err)
+		return nil, fmt.Errorf("failed to set HTTPS_PROXY: %v", err)
 	}
 
 	return sshCmd, nil
