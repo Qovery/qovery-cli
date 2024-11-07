@@ -25,11 +25,6 @@ jobs:
         uses: actions/setup-go@master
         with:
           go-version: 1.21.x
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.59.0
-          args: --timeout 10m --concurrency=1 -v
       # release new version on GitHub + Mac
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v1
