@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	jwtKid     string
 	clusterId  string
 	projectId  string
 	lockReason string
