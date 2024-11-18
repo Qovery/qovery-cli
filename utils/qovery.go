@@ -2104,7 +2104,7 @@ func DeployService(client *qovery.APIClient, envId string, serviceId string, ser
 		case DatabaseType:
 			for _, database := range statuses.GetDatabases() {
 				if database.Id == serviceId && IsTerminalState(database.State) {
-					_, _, err := client.DatabaseActionsAPI.DeployDatabase(context.Background(), serviceId).Execute()
+					_, resp, err := client.DatabaseActionsAPI.DeployDatabase(context.Background(), serviceId).Execute()
 					if err != nil {
 						return "", toHttpResponseError(resp)
 					}
@@ -2120,7 +2120,7 @@ func DeployService(client *qovery.APIClient, envId string, serviceId string, ser
 			for _, container := range statuses.GetContainers() {
 				if container.Id == serviceId && IsTerminalState(container.State) {
 					req := request.(qovery.ContainerDeployRequest)
-					_, _, err := client.ContainerActionsAPI.DeployContainer(context.Background(), serviceId).ContainerDeployRequest(req).Execute()
+					_, resp, err := client.ContainerActionsAPI.DeployContainer(context.Background(), serviceId).ContainerDeployRequest(req).Execute()
 					if err != nil {
 						return "", toHttpResponseError(resp)
 					}
@@ -2136,7 +2136,7 @@ func DeployService(client *qovery.APIClient, envId string, serviceId string, ser
 			for _, job := range statuses.GetJobs() {
 				if job.Id == serviceId && IsTerminalState(job.State) {
 					req := request.(qovery.JobDeployRequest)
-					_, _, err := client.JobActionsAPI.DeployJob(context.Background(), serviceId).JobDeployRequest(req).Execute()
+					_, resp, err := client.JobActionsAPI.DeployJob(context.Background(), serviceId).JobDeployRequest(req).Execute()
 					if err != nil {
 						return "", toHttpResponseError(resp)
 					}
@@ -2152,7 +2152,7 @@ func DeployService(client *qovery.APIClient, envId string, serviceId string, ser
 			for _, helm := range statuses.GetHelms() {
 				if helm.Id == serviceId && IsTerminalState(helm.State) {
 					req := request.(qovery.HelmDeployRequest)
-					_, _, err := client.HelmActionsAPI.DeployHelm(context.Background(), serviceId).HelmDeployRequest(req).Execute()
+					_, resp, err := client.HelmActionsAPI.DeployHelm(context.Background(), serviceId).HelmDeployRequest(req).Execute()
 					if err != nil {
 						return "", toHttpResponseError(resp)
 					}
