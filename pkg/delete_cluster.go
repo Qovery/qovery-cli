@@ -13,23 +13,6 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 )
 
-func DeleteClusterById(clusterId string, dryRunDisabled bool) {
-	utils.CheckAdminUrl()
-
-	utils.DryRunPrint(dryRunDisabled)
-	if utils.Validate("delete") {
-		res := httpDelete(utils.AdminUrl+"/cluster/"+clusterId, http.MethodDelete, dryRunDisabled)
-
-		if !dryRunDisabled {
-			fmt.Println("Cluster with id " + clusterId + " deletable.")
-		} else if !strings.Contains(res.Status, "200") {
-			result, _ := io.ReadAll(res.Body)
-			log.Errorf("Could not delete cluster with id %s : %s. %s", clusterId, res.Status, string(result))
-		} else {
-			fmt.Println("Cluster with id " + clusterId + " deleted.")
-		}
-	}
-}
 func DeleteClusterUnDeployedInError() {
 	utils.CheckAdminUrl()
 
