@@ -317,7 +317,7 @@ func getQoveryClient() (*qovery.APIClient, error) {
 
 func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetails) (*ClusterBatchDeployResult, error) {
 	if !service.DryRunDisabled {
-		utils.Println("dry-run-disabled is false: following information is purely indicative, no cluster will be deployed at all")
+		utils.Println("dry-run-disabled is false: trigger cluster deployment dry-run mode (no changes will be made)")
 	}
 
 	// store final state of clusters in a hashmap
@@ -376,16 +376,14 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 				// Trigger a deployment only when the target status is in terminal state
 				if utils.IsTerminalClusterState(*clusterStatus.Status) {
 					utils.Println(fmt.Sprintf("[Organization '%s' - Cluster '%s'] - Starting deployment - https://console.qovery.com/organization/%s/cluster/%s/logs", cluster.OrganizationName, cluster.ClusterName, cluster.OrganizationId, cluster.ClusterId))
-					if service.DryRunDisabled {
-						var err error
-						if service.UpgradeClusterNewK8sVersion != nil {
-							err = service.upgradeCluster(cluster.ClusterId, *service.UpgradeClusterNewK8sVersion)
-						} else {
-							err = service.deployCluster(cluster.ClusterId)
-						}
-						if err != nil {
-							utils.Println(fmt.Sprintf("[Organization '%s' - Cluster '%s'] - Error on deploy: %s ", cluster.OrganizationName, cluster.ClusterName, err))
-						}
+					var err error
+					if service.UpgradeClusterNewK8sVersion != nil {
+						err = service.upgradeCluster(cluster.ClusterId, *service.UpgradeClusterNewK8sVersion, service.DryRunDisabled)
+					} else {
+						err = service.deployCluster(cluster.ClusterId, service.DryRunDisabled)
+					}
+					if err != nil {
+						utils.Println(fmt.Sprintf("[Organization '%s' - Cluster '%s'] - Error on deploy: %s ", cluster.OrganizationName, cluster.ClusterName, err))
 					}
 					cluster.CurrentStatus = "DEPLOYING"
 					currentDeployingClustersByClusterId[cluster.ClusterId] = cluster
@@ -458,11 +456,11 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 	}, nil
 }
 
-func (service AdminClusterBatchDeployServiceImpl) deployCluster(clusterId string) error {
-	response := execAdminRequest(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, true, map[string]string{})
+func (service AdminClusterBatchDeployServiceImpl) deployCluster(clusterId string, dryRunDisabled bool) error {
+	response := execAdminRequest(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, dryRunDisabled, map[string]string{})
 	if response.StatusCode == 401 {
 		DoRequestUserToAuthenticate(false)
-		response = execAdminRequest(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, true, map[string]string{})
+		response = execAdminRequest(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, dryRunDisabled, map[string]string{})
 	}
 	if response.StatusCode != 200 {
 		result, _ := io.ReadAll(response.Body)
@@ -471,14 +469,14 @@ func (service AdminClusterBatchDeployServiceImpl) deployCluster(clusterId string
 	return nil
 }
 
-func (service AdminClusterBatchDeployServiceImpl) upgradeCluster(clusterId string, targetVersion string) error {
+func (service AdminClusterBatchDeployServiceImpl) upgradeCluster(clusterId string, targetVersion string, dryRunDisabled bool) error {
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)
 	}
 
-	body := bytes.NewBuffer([]byte(fmt.Sprintf("{ \"metadata\": { \"dry_run_deploy\": false, \"target_version\": \"%s\" } }", targetVersion)))
+	body := bytes.NewBuffer([]byte(fmt.Sprintf("{ \"metadata\": { \"dry_run_deploy\": \"%s\", \"target_version\": \"%s\" } }", strconv.FormatBool(!dryRunDisabled), targetVersion)))
 	request, err := http.NewRequest(http.MethodPost, utils.AdminUrl+"/cluster/update/"+clusterId, body)
 	if err != nil {
 		return err
