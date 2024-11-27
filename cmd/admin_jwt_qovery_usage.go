@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	adminJwtCmd = &cobra.Command{
-		Use:   "jwt",
-		Short: "Manage JWT associated to clusters",
+	adminJwtForQoveryUsageCmd = &cobra.Command{
+		Use:   "jwt-qovery-usage",
+		Short: "Manage JWT for qovery usage ",
 		Run: func(cmd *cobra.Command, args []string) {
 			utils.Capture(cmd)
 
@@ -24,5 +24,5 @@ var (
 )
 
 func init() {
-	adminCmd.AddCommand(adminJwtCmd)
+	adminCmd.AddCommand(adminJwtForQoveryUsageCmd)
 }
