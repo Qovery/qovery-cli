@@ -1,15 +1,18 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"syscall"
 	"time"
 
-	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -52,8 +55,8 @@ func launchK9s(args []string) {
 	}
 
 	clusterId := args[0]
-	vars, err := pkg.GetVarsByClusterId(clusterId)
-	if len(vars) == 0 || err != nil {
+	vars := getClusterCredentials(clusterId)
+	if len(vars) == 0 {
 		return
 	}
 
@@ -85,7 +88,7 @@ func launchK9s(args []string) {
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
 
-	err = cmd.Run()
+	err := cmd.Run()
 	if err != nil {
 		log.Error("Can't launch k9s : " + err.Error())
 	}
@@ -94,18 +97,6 @@ func launchK9s(args []string) {
 }
 
 func checkEnv() {
-	if _, ok := os.LookupEnv("VAULT_ADDR"); !ok {
-		log.Error("You must set vault address env variable (VAULT_ADDR).")
-		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-	}
-
-	if _, ok := os.LookupEnv("VAULT_TOKEN"); !ok {
-		log.Error("You must set vault token env variable (VAULT_TOKEN).")
-		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-	}
-
 	if _, ok := os.LookupEnv("BASTION_ADDR"); !ok {
 		log.Error("You must set the bastion address (BASTION_ADDR).")
 		os.Exit(1)
@@ -197,4 +188,67 @@ func waitForSSHConnection(ctx context.Context, address string, timeout time.Dura
 			}
 		}
 	}
+}
+
+func getClusterCredentials(clusterId string) []utils.Var {
+	tokenType, token, err := utils.GetAccessToken()
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(0)
+	}
+
+	url := fmt.Sprintf("%s/cluster/%s/credential", utils.AdminUrl, clusterId)
+	req, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer([]byte("{}")))
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	body, _ := io.ReadAll(res.Body)
+	if res.StatusCode != http.StatusOK {
+		err := fmt.Errorf("error uploading debug logs: %s %s", res.Status, body)
+		utils.PrintlnError(err)
+		log.Fatal(err)
+	}
+
+	payload := map[string]string{}
+	err = json.Unmarshal(body, &payload)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var clusterCreds []utils.Var
+	for key, value := range payload {
+		switch key {
+		case "access_key_id":
+			clusterCreds = append(clusterCreds, utils.Var{Key: "AWS_ACCESS_KEY_ID", Value: value})
+		case "region":
+			clusterCreds = append(clusterCreds, utils.Var{Key: "AWS_DEFAULT_REGION", Value: value})
+		case "scaleway_access_key":
+			clusterCreds = append(clusterCreds, utils.Var{Key: "SCW_ACCESS_KEY", Value: value})
+		case "scaleway_secret_key":
+			clusterCreds = append(clusterCreds, utils.Var{Key: "SCW_SECRET_KEY", Value: value})
+		case "scaleway_project_id":
+			clusterCreds = append(clusterCreds, utils.Var{Key: "SCW_PROJECT_ID", Value: value})
+		case "scaleway_organization_id":
+			clusterCreds = append(clusterCreds, utils.Var{Key: "SCW_ORGANIZATION_ID", Value: value})
+		case "AWS_SECRET_ACCESS_KEY", "secret_access_key":
+			clusterCreds = append(clusterCreds, utils.Var{Key: "AWS_SECRET_ACCESS_KEY", Value: value})
+		case "json_credentials":
+			filepath := utils.WriteInFile(clusterId, "google_creds.json", []byte(value))
+
+			clusterCreds = append(clusterCreds, utils.Var{Key: "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE", Value: filepath})
+			clusterCreds = append(clusterCreds, utils.Var{Key: "GOOGLE_CREDENTIALS", Value: value})
+		case "kubeconfig":
+			filePath := utils.WriteInFile(clusterId, "kubeconfig", []byte(value))
+			clusterCreds = append(clusterCreds, utils.Var{Key: "KUBECONFIG", Value: filePath})
+		}
+	}
+	return clusterCreds
 }
