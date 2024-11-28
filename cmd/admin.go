@@ -12,6 +12,7 @@ var (
 	lockReason       string
 	orgaErr          error
 	dryRun           bool
+	noConfirm        bool
 	version          string
 	versionErr       error
 	ageInDay         int

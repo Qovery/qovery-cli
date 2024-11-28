@@ -6,7 +6,7 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 )
 
-func DeployClustersByBatch(listService AdminClusterListService, deployService AdminClusterBatchDeployService) error {
+func DeployClustersByBatch(listService AdminClusterListService, deployService AdminClusterBatchDeployService, noConfirm bool) error {
 	clusters, err := listService.SelectClusters()
 	if err != nil {
 		return err
@@ -20,11 +20,13 @@ func DeployClustersByBatch(listService AdminClusterListService, deployService Ad
 
 	deployService.PrintParameters()
 
-	utils.Println("Do you want to continue deploy process ?")
-	var validated = utils.Validate("deploy")
-	if !validated {
-		utils.Println("Exiting: Validation failed")
-		return nil
+	if !noConfirm {
+		utils.Println("Do you want to continue deploy process ?")
+		var validated = utils.Validate("deploy")
+		if !validated {
+			utils.Println("Exiting: Validation failed")
+			return nil
+		}
 	}
 
 	deployResult, err := deployService.Deploy(clusters)

@@ -241,6 +241,8 @@ type AdminClusterBatchDeployServiceImpl struct {
 	UpgradeClusterNewK8sVersion *string
 	// UpgradeMode indicates if the cluster needs to be upgraded
 	UpgradeMode bool
+	// NoConfirm do not prompt for any confirmation
+	NoConfirm bool
 }
 
 func NewAdminClusterBatchDeployServiceImpl(
@@ -249,6 +251,7 @@ func NewAdminClusterBatchDeployServiceImpl(
 	refreshDelay int,
 	executionMode string,
 	newK8sversionStr string,
+	noConfirm bool,
 ) (*AdminClusterBatchDeployServiceImpl, error) {
 	// set at least 1 parallel run
 	if parallelRun < 1 {
@@ -258,7 +261,7 @@ func NewAdminClusterBatchDeployServiceImpl(
 	if parallelRun > 100 {
 		parallelRun = 100
 	}
-	if parallelRun > 20 {
+	if parallelRun > 20 && !noConfirm {
 		utils.Println("")
 		utils.Println(fmt.Sprintf("Please increase the cluster engine autoscaler to %d, then type 'yes' to continue", parallelRun))
 		validated := utils.Validate("autoscaler-increase")
