@@ -257,10 +257,6 @@ func NewAdminClusterBatchDeployServiceImpl(
 	if parallelRun < 1 {
 		parallelRun = 1
 	}
-	// set maximum 100 parallel runs
-	if parallelRun > 100 {
-		parallelRun = 100
-	}
 	if parallelRun > 20 && !noConfirm {
 		utils.Println("")
 		utils.Println(fmt.Sprintf("Please increase the cluster engine autoscaler to %d, then type 'yes' to continue", parallelRun))
@@ -404,12 +400,8 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 		}
 
 		// sleep some time before fetching statuses
-		if service.DryRunDisabled {
-			utils.Println(fmt.Sprintf("Checking clusters' status in %d seconds", service.RefreshDelay))
-			time.Sleep(time.Duration(service.RefreshDelay) * time.Second)
-		} else {
-			time.Sleep(time.Duration(1) * time.Second)
-		}
+		utils.Println(fmt.Sprintf("Checking clusters' status in %d seconds", service.RefreshDelay))
+		time.Sleep(time.Duration(service.RefreshDelay) * time.Second)
 
 		// wait for clusters statuses
 		var clustersToRemoveFromMap []string
