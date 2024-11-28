@@ -86,6 +86,7 @@ qovery admin cluster deploy -f ClusterType=GCP --parallel-run=9 -f ClusterK8sVer
 )
 
 func init() {
+	adminClusterDeployCmd.Flags().BoolVarP(&noConfirm, "no-confirm", "c", false, "Do not prompt for confirmation")
 	adminClusterDeployCmd.Flags().BoolVarP(&dryRun, "disable-dry-run", "y", false, "Disable dry run mode")
 	adminClusterDeployCmd.Flags().IntVarP(&parallelRuns, "parallel-run", "n", 5, "Number of clusters to update in parallel - must be set between 1 and 20")
 	adminClusterDeployCmd.Flags().IntVarP(&refreshDelay, "refresh-delay", "r", 30, "Time in seconds to wait before checking clusters status during deployment - must be between [5-120]")
@@ -111,14 +112,14 @@ func deployClusters() {
 		os.Exit(1)
 		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
-	deployService, err := pkg.NewAdminClusterBatchDeployServiceImpl(dryRun, parallelRuns, refreshDelay, executionMode, newK8sVersion)
+	deployService, err := pkg.NewAdminClusterBatchDeployServiceImpl(dryRun, parallelRuns, refreshDelay, executionMode, newK8sVersion, noConfirm)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
 		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
-	err = pkg.DeployClustersByBatch(listService, deployService)
+	err = pkg.DeployClustersByBatch(listService, deployService, noConfirm)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
