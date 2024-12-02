@@ -127,18 +127,16 @@ func setupSSHConnection(ctx context.Context) (*exec.Cmd, error) {
 	}
 
 	if err := waitForSSHConnection(ctx, "localhost:1080", 30*time.Second); err != nil {
-		err := sshCmd.Process.Kill()
-		if err != nil {
-			return nil, err
+		if killErr := sshCmd.Process.Kill(); killErr != nil {
+			log.Errorf("failed to kill SSH process: %v", killErr)
 		}
 		return nil, fmt.Errorf("error waiting for SSH connection: %v", err)
 	}
 
 	log.Info("SSH connection established successfully")
 	if err := os.Setenv("HTTPS_PROXY", "socks5://localhost:1080"); err != nil {
-		err := sshCmd.Process.Kill()
-		if err != nil {
-			return nil, err
+		if killErr := sshCmd.Process.Kill(); killErr != nil {
+			log.Errorf("failed to kill SSH process: %v", killErr)
 		}
 		return nil, fmt.Errorf("failed to set HTTPS_PROXY: %v", err)
 	}
