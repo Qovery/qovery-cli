@@ -73,7 +73,6 @@ var applicationUpdateCmd = &cobra.Command{
 			},
 			BuildMode:           application.BuildMode,
 			DockerfilePath:      application.DockerfilePath,
-			BuildpackLanguage:   application.BuildpackLanguage,
 			Cpu:                 application.Cpu,
 			Memory:              application.Memory,
 			MinRunningInstances: application.MinRunningInstances,
