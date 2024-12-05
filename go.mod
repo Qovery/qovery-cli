@@ -23,11 +23,11 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/posthog/posthog-go v1.2.24
 	github.com/pterm/pterm v0.12.79
-	github.com/qovery/qovery-client-go v0.0.0-20240918181134-faa9e7a86f41
+	github.com/qovery/qovery-client-go v0.0.0-20241203095515-b7bfff7f6c11
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/tonistiigi/go-rosetta v0.0.0-20220804170347-3f4430f2d346
 	github.com/xlab/treeprint v1.2.0
 	golang.org/x/net v0.29.0

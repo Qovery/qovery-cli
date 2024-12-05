@@ -200,11 +200,14 @@ func UpdateEnvironmentVariable(
 		return fmt.Errorf("environment variable %s not found", errorKey)
 	}
 
+	nullableValue := qovery.NullableString{}
+	nullableValue.Set(&value)
+
 	// fmt.Printf(envVar.Id)
 	variableId := envVar.Id
 	variableEditRequest := qovery.VariableEditRequest{
 		Key:   key,
-		Value: value,
+		Value: nullableValue,
 	}
 
 	_, _, err = client.VariableMainCallsAPI.EditVariable(context.Background(), variableId).VariableEditRequest(variableEditRequest).Execute()
