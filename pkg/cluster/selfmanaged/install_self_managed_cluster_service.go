@@ -265,7 +265,7 @@ func injectAzureAKSValues(clusterHelmValuesContent string) (*string, error) {
 		ingressNginxController["service"] = map[string]interface{}{
 			"externalTrafficPolicy": "Local",
 			"annotations": map[string]interface{}{
-				"service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+				"service.beta.kubernetes.io/azure-load-balancer-internal": "false",
 			},
 		}
 	} else {
@@ -274,11 +274,11 @@ func injectAzureAKSValues(clusterHelmValuesContent string) (*string, error) {
 
 		if ingressNginxControllerService["annotations"] == nil {
 			ingressNginxControllerService["annotations"] = map[string]interface{}{
-				"service.beta.kubernetes.io/azure-load-balancer-internal": "true",
+				"service.beta.kubernetes.io/azure-load-balancer-internal": "false",
 			}
 		} else {
 			ingressNginxControllerServiceAnnotations := ingressNginxControllerService["annotations"].(map[string]interface{})
-			ingressNginxControllerServiceAnnotations["service.beta.kubernetes.io/azure-load-balancer-internal"] = "true"
+			ingressNginxControllerServiceAnnotations["service.beta.kubernetes.io/azure-load-balancer-internal"] = "false"
 		}
 	}
 

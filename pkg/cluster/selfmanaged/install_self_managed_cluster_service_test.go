@@ -153,7 +153,7 @@ ingress-nginx:
     controller:
         service:
             annotations:
-                service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+                service.beta.kubernetes.io/azure-load-balancer-internal: "false"
             externalTrafficPolicy: Local
         useComponentLabel: true
     fullnameOverride: ingress-nginx
@@ -219,15 +219,11 @@ ingress-nginx:
     controller:
         service:
             annotations:
-                service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+                service.beta.kubernetes.io/azure-load-balancer-internal: "false"
             externalTrafficPolicy: Local
         useComponentLabel: true
     fullnameOverride: ingress-nginx
 `
-		/*
-			"\ningress-nginx:\n    controller:\n        service:\n            externalTrafficPolicy: Local\n            annotations:\n                service.beta.kubernetes.io/azure-load-balancer-internal: \"true\"\n        useComponentLabel: true\n    fullnameOverride: ingress-nginx\n"
-			"\ningress-nginx:\n    controller:\n        service:\n            annotations:\n                service.beta.kubernetes.io/azure-load-balancer-internal: \"true\"\n            externalTrafficPolicy: Local\n"
-		*/
 		assert.Contains(t, expectedYamlNginxIngress, fileWriterService.FileContentWritten)
 	})
 	t.Run("Should succeed to create a new AKS self managed cluster when ingress-nginx.controller.service is defined with annotations", func(t *testing.T) {
@@ -290,15 +286,11 @@ ingress-nginx:
     controller:
         service:
             annotations:
-                service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+                service.beta.kubernetes.io/azure-load-balancer-internal: "false"
             externalTrafficPolicy: Local
         useComponentLabel: true
     fullnameOverride: ingress-nginx
 `
-		/*
-			"\ningress-nginx:\n    controller:\n        service:\n            annotations:\n                custom-annotation: \"value\"\n                service.beta.kubernetes.io/azure-load-balancer-internal: \"true\"\n            externalTrafficPolicy: Local\n        useComponentLabel: true\n    fullnameOverride: ingress-nginx\n"
-			"\ningress-nginx:\n    controller:\n        service:\n            annotations:\n                custom-annotation: value\n                service.beta.kubernetes.io/azure-load-balancer-internal: \"true\"\n            enabled: true\n            externalTrafficPolicy: Local\n"
-		*/
 		assert.Contains(t, expectedYamlNginxIngress, fileWriterService.FileContentWritten)
 	})
 }
