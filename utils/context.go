@@ -2,6 +2,7 @@ package utils
 
 import (
 	context2 "context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"github.com/qovery/qovery-client-go"
@@ -305,6 +306,10 @@ func GetAccessToken() (AccessTokenType, AccessToken, error) {
 		apiToken = os.Getenv("Q_CLI_ACCESS_TOKEN")
 	}
 	if apiToken != "" {
+		_, err := base64.StdEncoding.DecodeString(strings.Split(apiToken, ".")[0])
+		if err == nil {
+			return "Bearer", AccessToken(apiToken), nil
+		}
 		return "Token", AccessToken(apiToken), nil
 	}
 
