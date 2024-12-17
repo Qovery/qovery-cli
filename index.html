@@ -12,7 +12,13 @@ echo ""
 
 repo="Qovery/qovery-cli"
 output_tgz="/tmp/qovery.tgz"
-dest_binary="/usr/local/bin"
+if ! command -v sudo 2>&1 >/dev/null
+then
+    dest_binary="."
+else
+    dest_binary="/usr/local/bin"
+fi
+
 os=$(uname | tr '[:upper:]' '[:lower:]')
 case "$(uname -m)" in
   x86_64 | amd64)
@@ -38,11 +44,11 @@ test -f $output_tgz && rm -f $output_tgz
 curl -o $output_tgz -sOL "https://github.com/${repo}/releases/download/${latest_tag}/qovery-cli_${version}_${os}_${arch}.tar.gz"
 
 echo "[+] Uncompressing qovery binary in $dest_binary directory (sudo permissions are required)"
-if [ "$EUID" -ne 0 ]
+if ! command -v sudo 2>&1 >/dev/null
 then
-  sudo tar -xzf $output_tgz -C $dest_binary qovery
+    tar -xzf $output_tgz -C $dest_binary qovery
 else
-  tar -xzf $output_tgz -C $dest_binary qovery
+    sudo tar -xzf $output_tgz -C $dest_binary qovery
 fi
 rm -f $output_tgz
 
