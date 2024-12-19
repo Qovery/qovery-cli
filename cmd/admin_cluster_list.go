@@ -53,7 +53,7 @@ func init() {
 }
 
 func listClusters() {
-	utils.CheckAdminUrl()
+	utils.GetAdminUrl()
 
 	listService, err := pkg.NewAdminClusterListServiceImpl(filters)
 	if err != nil {

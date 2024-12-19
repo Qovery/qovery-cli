@@ -10,7 +10,7 @@ import (
 )
 
 func PublishEnvironmentDeploymentRules() error {
-	utils.CheckAdminUrl()
+	utils.GetAdminUrl()
 
 	utils.Println("Publishing environment deployment rules to scheduler...")
 	err := callPublishEnvironmentDeploymentRulesApi()
@@ -28,7 +28,7 @@ func callPublishEnvironmentDeploymentRulesApi() error {
 		os.Exit(0)
 	}
 
-	url := fmt.Sprintf("%s/environmentDeploymentRules/pushToScheduler", utils.AdminUrl)
+	url := fmt.Sprintf("%s/environmentDeploymentRules/pushToScheduler", utils.GetAdminUrl())
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		log.Fatal(err)

@@ -31,15 +31,13 @@ func init() {
 }
 
 func listJwts() {
-	utils.CheckAdminUrl()
-
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)
 	}
 
-	url := fmt.Sprintf("%s/clusters/%s/jwts", utils.AdminUrl, clusterId)
+	url := fmt.Sprintf("%s/clusters/%s/jwts", utils.GetAdminUrl(), clusterId)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)

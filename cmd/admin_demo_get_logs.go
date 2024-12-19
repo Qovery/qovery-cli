@@ -36,7 +36,7 @@ var (
 				os.Exit(1)
 			}
 
-			url := fmt.Sprintf("%s/demoDebugLog", utils.AdminUrl)
+			url := fmt.Sprintf("%s/demoDebugLog", utils.GetAdminUrl())
 			req, _ := http.NewRequest(http.MethodGet, url, bytes.NewReader([]byte{}))
 			query := req.URL.Query()
 			query.Add("filename", args[0])

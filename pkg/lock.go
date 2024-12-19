@@ -15,7 +15,7 @@ import (
 )
 
 func LockedClusters() {
-	utils.CheckAdminUrl()
+	utils.GetAdminUrl()
 
 	res := listLockedClusters()
 
@@ -53,7 +53,7 @@ func LockedClusters() {
 }
 
 func LockById(clusterId string, reason string) {
-	utils.CheckAdminUrl()
+	utils.GetAdminUrl()
 
 	if reason == "" {
 		log.Errorf("Lock reason is required")
@@ -73,7 +73,7 @@ func LockById(clusterId string, reason string) {
 }
 
 func UnockById(clusterId string) {
-	utils.CheckAdminUrl()
+	utils.GetAdminUrl()
 
 	if utils.Validate("unlock") {
 		res := updateLockById(clusterId, "", http.MethodDelete)
@@ -94,7 +94,7 @@ func listLockedClusters() *http.Response {
 		os.Exit(0)
 	}
 
-	url := fmt.Sprintf("%s/cluster/lock", utils.AdminUrl)
+	url := fmt.Sprintf("%s/cluster/lock", utils.GetAdminUrl())
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -125,7 +125,7 @@ func updateLockById(clusterId string, reason string, method string) *http.Respon
 		log.Fatal(err)
 	}
 
-	url := fmt.Sprintf("%s/cluster/lock/%s", utils.AdminUrl, clusterId)
+	url := fmt.Sprintf("%s/cluster/lock/%s", utils.GetAdminUrl(), clusterId)
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
 		log.Fatal(err)

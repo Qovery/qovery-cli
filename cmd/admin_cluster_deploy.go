@@ -98,7 +98,7 @@ func init() {
 }
 
 func deployClusters() {
-	utils.CheckAdminUrl()
+	utils.GetAdminUrl()
 
 	// if no filter is set, enforce to select only RUNNING clusters to avoid mistakes (e.g deploying a stopped cluster)
 	_, containsKey := filters["CurrentStatus"]

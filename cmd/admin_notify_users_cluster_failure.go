@@ -29,7 +29,7 @@ func init() {
 }
 
 func notifyUsersClusterFailure() {
-	utils.CheckAdminUrl()
+	utils.GetAdminUrl()
 
 	err := pkg.NotifyUsersClusterFailure(&clusterId)
 	if err != nil {

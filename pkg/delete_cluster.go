@@ -14,11 +14,10 @@ import (
 )
 
 func DeleteClusterById(clusterId string, dryRunDisabled bool) {
-	utils.CheckAdminUrl()
 
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("delete") {
-		res := httpDelete(utils.AdminUrl+"/cluster/"+clusterId, http.MethodDelete, dryRunDisabled)
+		res := httpDelete(utils.GetAdminUrl()+"/cluster/"+clusterId, http.MethodDelete, dryRunDisabled)
 
 		if !dryRunDisabled {
 			fmt.Println("Cluster with id " + clusterId + " deletable.")
@@ -31,10 +30,9 @@ func DeleteClusterById(clusterId string, dryRunDisabled bool) {
 	}
 }
 func DeleteClusterUnDeployedInError() {
-	utils.CheckAdminUrl()
 
 	if utils.Validate("delete") {
-		res := httpDelete(utils.AdminUrl+"/cluster/deleteNotDeployedInErrorClusters", http.MethodPost, true)
+		res := httpDelete(utils.GetAdminUrl()+"/cluster/deleteNotDeployedInErrorClusters", http.MethodPost, true)
 
 		if !strings.Contains(res.Status, "200") {
 			result, _ := io.ReadAll(res.Body)
@@ -47,7 +45,6 @@ func DeleteClusterUnDeployedInError() {
 }
 
 func DeleteOldClustersWithInvalidCredentials(ageInDay int, dryRunDisabled bool) {
-	utils.CheckAdminUrl()
 
 	if utils.Validate("delete") {
 
@@ -62,7 +59,7 @@ func DeleteOldClustersWithInvalidCredentials(ageInDay int, dryRunDisabled bool) 
 			return
 		}
 
-		res := deleteWithBody(utils.AdminUrl+"/cluster/deleteOldClustersWithInvalidCredentials", http.MethodPost, true, bytes.NewBuffer(requestBody))
+		res := deleteWithBody(utils.GetAdminUrl()+"/cluster/deleteOldClustersWithInvalidCredentials", http.MethodPost, true, bytes.NewBuffer(requestBody))
 
 		if !strings.Contains(res.Status, "200") {
 			result, _ := io.ReadAll(res.Body)

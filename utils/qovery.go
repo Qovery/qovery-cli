@@ -42,8 +42,6 @@ type Role struct {
 	Name Name
 }
 
-const AdminUrl = "https://api-admin.qovery.com"
-
 func WebsocketUrl() string {
 	if url := os.Getenv("QOVERY_WS_URL"); url != "" {
 		return url
@@ -781,12 +779,14 @@ func GetJobById(id string) (*Job, error) {
 	return nil, errors.New("Invalid job response")
 }
 
-func CheckAdminUrl() {
-	if _, ok := os.LookupEnv("ADMIN_URL"); !ok {
-		log.Error("You must set the Qovery admin root url (ADMIN_URL).")
+func GetAdminUrl() string {
+	url, ok := os.LookupEnv("ADMIN_URL")
+	if !ok {
+		log.Fatal("You must set the Qovery admin root url (ADMIN_URL).")
 		os.Exit(1)
 		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
+	return url
 }
 
 func DeleteEnvironmentVariable(application Id, key string) error {
