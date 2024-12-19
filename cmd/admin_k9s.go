@@ -195,7 +195,7 @@ func getClusterCredentials(clusterId string) []utils.Var {
 		os.Exit(0)
 	}
 
-	url := fmt.Sprintf("%s/cluster/%s/credential", utils.AdminUrl, clusterId)
+	url := fmt.Sprintf("%s/cluster/%s/credential", utils.GetAdminUrl(), clusterId)
 	req, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer([]byte("{}")))
 	if err != nil {
 		log.Fatal(err)

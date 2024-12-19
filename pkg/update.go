@@ -12,11 +12,10 @@ import (
 )
 
 func UpdateById(clusterId string, dryRunDisabled bool, version string) {
-	utils.CheckAdminUrl()
 
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("update") {
-		res := update(utils.AdminUrl+"/cluster/update/"+clusterId, http.MethodPost, dryRunDisabled, version, "", 0)
+		res := update(utils.GetAdminUrl()+"/cluster/update/"+clusterId, http.MethodPost, dryRunDisabled, version, "", 0)
 
 		if !strings.Contains(res.Status, "200") {
 			result, _ := io.ReadAll(res.Body)
@@ -30,11 +29,10 @@ func UpdateById(clusterId string, dryRunDisabled bool, version string) {
 }
 
 func UpdateAll(dryRunDisabled bool, version string, providerKind string, parallelRun int) {
-	utils.CheckAdminUrl()
 
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("update") {
-		res := update(utils.AdminUrl+"/cluster/update", http.MethodPost, dryRunDisabled, version, providerKind, parallelRun)
+		res := update(utils.GetAdminUrl()+"/cluster/update", http.MethodPost, dryRunDisabled, version, providerKind, parallelRun)
 		result, _ := io.ReadAll(res.Body)
 		if strings.Contains(res.Status, "40") || strings.Contains(res.Status, "50") {
 			log.Errorf("Could not update clusters : %s. %s", res.Status, string(result))

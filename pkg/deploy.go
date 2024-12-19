@@ -57,7 +57,7 @@ func ForceFailedDeploymentsToInternalErrorStatus(safeguardDuration time.Duration
 
 	durationIso8601 := fmt.Sprintf("PT%dM", nbMinutes)
 	queryParams := map[string]string{"safeguardDuration": durationIso8601}
-	res := execAdminRequest(utils.AdminUrl+"/deployment/forceFailedDeploymentsToInternalErrorStatus", http.MethodPost, true, queryParams)
+	res := execAdminRequest(utils.GetAdminUrl()+"/deployment/forceFailedDeploymentsToInternalErrorStatus", http.MethodPost, true, queryParams)
 	if !strings.Contains(res.Status, "200") {
 		result, _ := io.ReadAll(res.Body)
 		log.Errorf("Could not force the deployments status : %s. %s", res.Status, string(result))

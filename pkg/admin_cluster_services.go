@@ -144,7 +144,7 @@ func (service AdminClusterListServiceImpl) fetchClustersEligibleToUpdate() ([]Cl
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodGet, utils.AdminUrl+"/listClustersEligibleToUpdate", nil)
+	req, err := http.NewRequest(http.MethodGet, utils.GetAdminUrl()+"/listClustersEligibleToUpdate", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -452,10 +452,11 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 }
 
 func (service AdminClusterBatchDeployServiceImpl) deployCluster(clusterId string, dryRunDisabled bool) error {
-	response := execAdminRequest(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, dryRunDisabled, map[string]string{})
+	adminUrl := utils.GetAdminUrl()
+	response := execAdminRequest(adminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, dryRunDisabled, map[string]string{})
 	if response.StatusCode == 401 {
 		DoRequestUserToAuthenticate(false)
-		response = execAdminRequest(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, dryRunDisabled, map[string]string{})
+		response = execAdminRequest(adminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, dryRunDisabled, map[string]string{})
 	}
 	if response.StatusCode != 200 {
 		result, _ := io.ReadAll(response.Body)
@@ -471,8 +472,10 @@ func (service AdminClusterBatchDeployServiceImpl) upgradeCluster(clusterId strin
 		os.Exit(0)
 	}
 
+	adminUrl := utils.GetAdminUrl()
+
 	body := bytes.NewBuffer([]byte(fmt.Sprintf("{ \"metadata\": { \"dry_run_deploy\": \"%s\", \"target_version\": \"%s\" } }", strconv.FormatBool(!dryRunDisabled), targetVersion)))
-	request, err := http.NewRequest(http.MethodPost, utils.AdminUrl+"/cluster/update/"+clusterId, body)
+	request, err := http.NewRequest(http.MethodPost, adminUrl+"/cluster/update/"+clusterId, body)
 	if err != nil {
 		return err
 	}
@@ -487,7 +490,7 @@ func (service AdminClusterBatchDeployServiceImpl) upgradeCluster(clusterId strin
 
 	if response.StatusCode == 401 {
 		DoRequestUserToAuthenticate(false)
-		request, err = http.NewRequest(http.MethodPost, utils.AdminUrl+"/cluster/update/"+clusterId, body)
+		request, err = http.NewRequest(http.MethodPost, adminUrl+"/cluster/update/"+clusterId, body)
 		if err != nil {
 			return err
 		}

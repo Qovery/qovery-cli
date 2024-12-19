@@ -28,15 +28,13 @@ func init() {
 }
 
 func deleteJwt() {
-	utils.CheckAdminUrl()
-
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)
 	}
 
-	url := fmt.Sprintf("%s/clusters/jwts/%s", utils.AdminUrl, jwtKid)
+	url := fmt.Sprintf("%s/clusters/jwts/%s", utils.GetAdminUrl(), jwtKid)
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		log.Fatal(err)

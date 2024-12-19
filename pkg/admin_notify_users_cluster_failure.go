@@ -19,7 +19,7 @@ func NotifyUsersClusterFailure(clusterId *string) error {
 		body = `{"all_failing_clusters": true}`
 	}
 
-	notifiedClustersResponse, err := postWithBody(utils.AdminUrl+"/cluster/notifyFailedClustersAdmins", body)
+	notifiedClustersResponse, err := postWithBody(utils.GetAdminUrl()+"/cluster/notifyFailedClustersAdmins", body)
 	if err != nil {
 		return err
 	}

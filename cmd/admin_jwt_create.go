@@ -32,15 +32,13 @@ func init() {
 }
 
 func createJwt() {
-	utils.CheckAdminUrl()
-
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)
 	}
 
-	url := fmt.Sprintf("%s/clusters/%s/jwts", utils.AdminUrl, clusterId)
+	url := fmt.Sprintf("%s/clusters/%s/jwts", utils.GetAdminUrl(), clusterId)
 	req, err := http.NewRequest(http.MethodPost, url,  bytes.NewBuffer([]byte("{  }")))
 	if err != nil {
 		log.Fatal(err)

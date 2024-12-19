@@ -32,15 +32,13 @@ func init() {
 }
 
 func listJwtsForQoveryUsage() {
-	utils.CheckAdminUrl()
-
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)
 	}
 
-	url := fmt.Sprintf("%s/jwts", utils.AdminUrl)
+	url := fmt.Sprintf("%s/jwts", utils.GetAdminUrl())
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -72,13 +70,12 @@ func listJwtsForQoveryUsage() {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
-	format := "%s\t | %s\t | %s\t | %s\t | %s\n"
-	_, _ = fmt.Fprintf(w, format, "", "key_id", "descripton", "jwt payload", "created_at")
 	for idx, jwtForQoveryUsage := range resp.Results {
 		_, jwtPayload, err := DecodeJWT(jwtForQoveryUsage.Jwt)
 		if err != nil {
 			log.Fatal(err)
 		}
+		_, _ = fmt.Fprintln(w, "\t")
 		_, _ = fmt.Fprintln(w, "Field\t | Value")
 		_, _ = fmt.Fprintln(w, "------\t | ------")
 

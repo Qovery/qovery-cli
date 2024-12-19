@@ -12,11 +12,9 @@ import (
 )
 
 func DeleteProjectById(projectId string, dryRunDisabled bool) {
-	utils.CheckAdminUrl()
-
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("delete") {
-		res := httpDelete(utils.AdminUrl+"/project/"+projectId, http.MethodDelete, dryRunDisabled)
+		res := httpDelete(utils.GetAdminUrl()+"/project/"+projectId, http.MethodDelete, dryRunDisabled)
 
 		if !dryRunDisabled {
 			fmt.Println("Project with id " + projectId + " deletable.")

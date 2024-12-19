@@ -25,10 +25,8 @@ type ArchiveResponse struct {
 }
 
 func DownloadS3Archive(executionId string, directory string) {
-	utils.CheckAdminUrl()
-
 	fileName := executionId + ".tgz"
-	res := download(utils.AdminUrl+"/getS3ArchiveObject", fileName)
+	res := download(utils.GetAdminUrl()+"/getS3ArchiveObject", fileName)
 
 	if !strings.Contains(res.Status, "200") {
 		result, _ := io.ReadAll(res.Body)

@@ -35,8 +35,6 @@ func init() {
 }
 
 func createJwtForQoveryUsage() {
-	utils.CheckAdminUrl()
-
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
 		utils.PrintlnError(err)
@@ -66,7 +64,7 @@ func createJwtForQoveryUsage() {
 		Description:      description,
 	})
 
-	url := fmt.Sprintf("%s/jwts", utils.AdminUrl)
+	url := fmt.Sprintf("%s/jwts", utils.GetAdminUrl())
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(payload))
 	if err != nil {
 		log.Fatal(err)

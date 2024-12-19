@@ -13,11 +13,11 @@ import (
 )
 
 func DeleteOrganizationByClusterId(clusterId string, dryRunDisabled bool) {
-	utils.CheckAdminUrl()
+	utils.GetAdminUrl()
 
 	utils.DryRunPrint(dryRunDisabled)
 	if utils.Validate("delete") {
-		res := httpDelete(utils.AdminUrl+"/organization?clusterId="+clusterId, http.MethodDelete, dryRunDisabled)
+		res := httpDelete(utils.GetAdminUrl()+"/organization?clusterId="+clusterId, http.MethodDelete, dryRunDisabled)
 
 		if !dryRunDisabled {
 			fmt.Println("Organization owning cluster" + clusterId + " deletable.")
