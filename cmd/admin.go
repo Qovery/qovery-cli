@@ -21,6 +21,7 @@ var (
 	rootDns          string
 	additionalClaims string
 	description      string
+	lockTtlInDays    int32
 	adminCmd         = &cobra.Command{Use: "admin", Hidden: true}
 )
 
