@@ -1,7 +1,6 @@
 package pkg
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -52,41 +51,6 @@ func LockedClusters() {
 	w.Flush()
 }
 
-func LockById(clusterId string, reason string) {
-	utils.GetAdminUrl()
-
-	if reason == "" {
-		log.Errorf("Lock reason is required")
-		return
-	}
-
-	if utils.Validate("lock") {
-		res := updateLockById(clusterId, reason, http.MethodPost)
-
-		if res.StatusCode != http.StatusOK {
-			result, _ := io.ReadAll(res.Body)
-			log.Errorf("Could not lock cluster : %s. %s", res.Status, string(result))
-		} else {
-			fmt.Println("Cluster locked.")
-		}
-	}
-}
-
-func UnockById(clusterId string) {
-	utils.GetAdminUrl()
-
-	if utils.Validate("unlock") {
-		res := updateLockById(clusterId, "", http.MethodDelete)
-
-		if res.StatusCode != http.StatusOK {
-			result, _ := io.ReadAll(res.Body)
-			log.Errorf("Could not unlock cluster : %s. %s", res.Status, string(result))
-		} else {
-			fmt.Println("Cluster unlocked.")
-		}
-	}
-}
-
 func listLockedClusters() *http.Response {
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
@@ -96,37 +60,6 @@ func listLockedClusters() *http.Response {
 
 	url := fmt.Sprintf("%s/cluster/lock", utils.GetAdminUrl())
 	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
-	req.Header.Set("Content-Type", "application/json")
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return res
-}
-
-func updateLockById(clusterId string, reason string, method string) *http.Response {
-	tokenType, token, err := utils.GetAccessToken()
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(0)
-	}
-
-	payload := map[string]string{}
-	if method == http.MethodPost {
-		payload["reason"] = reason
-	}
-	body, err := json.Marshal(payload)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	url := fmt.Sprintf("%s/cluster/lock/%s", utils.GetAdminUrl(), clusterId)
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
 		log.Fatal(err)
 	}
