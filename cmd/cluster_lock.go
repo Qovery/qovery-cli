@@ -23,7 +23,7 @@ var clusterLockCmd = &cobra.Command{
 func init() {
 	clusterLockCmd.Flags().StringVarP(&clusterId, "cluster-id", "c", "", "Cluster ID")
 	clusterLockCmd.Flags().StringVarP(&lockReason, "reason", "r", "", "Reason")
-	clusterLockCmd.Flags().Int32VarP(&lockTtlInDays, "ttl-in-days", "d", -1, "TTL in days")
+	clusterLockCmd.Flags().Int32VarP(&lockTtlInDays, "ttl-in-days", "d", -1, " Time-to-live (TTL) for the lock in days (1 to 5 days)")
 
 	_ = clusterLockCmd.MarkFlagRequired("cluster-id")
 	_ = clusterLockCmd.MarkFlagRequired("reason")
