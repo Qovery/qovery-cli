@@ -114,6 +114,7 @@ func setupSSHConnection(ctx context.Context) (*exec.Cmd, error) {
 	sshArgs := []string{
 		"-N", "-D", "1080",
 		"-o", "StrictHostKeychecking=no",
+		"-o", "UserKnownHostsFile=/dev/null",
 		"-o", "ServerAliveInterval=10",
 		"-o", "ServerAliveCountMax=3",
 		"-o", "TCPKeepAlive=yes",
