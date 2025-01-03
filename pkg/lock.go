@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"text/tabwriter"
 	"time"
 
@@ -31,6 +32,7 @@ func LockedClusters() {
 			OwnerName string    `json:"owner_name"`
 			Reason    string    `json:"reason"`
 			LockedAt  time.Time `json:"locked_at"`
+			TtlInDays *int      `json:"ttl_in_days"`
 		} `json:"results"`
 	}{}
 
@@ -43,10 +45,15 @@ func LockedClusters() {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
-	format := "%s\t | %s\t | %s\t | %s\t | %s\n"
-	fmt.Fprintf(w, format, "", "cluster_id", "locked_at", "locked_by", "reason")
+	format := "%s\t | %s\t | %s\t | %s\t | %s\t | %s\n"
+	fmt.Fprintf(w, format, "", "cluster_id", "locked_at", "locked_by", "reason", "ttl_in_days")
 	for idx, lock := range resp.Results {
-		fmt.Fprintf(w, format, fmt.Sprintf("%d", idx+1), lock.ClusterId, lock.LockedAt.Format(time.RFC1123), lock.OwnerName, lock.Reason)
+		ttlInDay := "infinite"
+		if lock.TtlInDays != nil {
+			ttlInDay = strconv.Itoa(*lock.TtlInDays)
+		}
+
+		fmt.Fprintf(w, format, fmt.Sprintf("%d", idx+1), lock.ClusterId, lock.LockedAt.Format(time.RFC1123), lock.OwnerName, lock.Reason, ttlInDay)
 	}
 	w.Flush()
 }
