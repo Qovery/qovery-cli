@@ -23,15 +23,15 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/posthog/posthog-go v1.2.24
 	github.com/pterm/pterm v0.12.79
-	github.com/qovery/qovery-client-go v0.0.0-20241227140826-136a47d7533e
+	github.com/qovery/qovery-client-go v0.0.0-20250113080924-e5f48269228f
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.10.0
 	github.com/tonistiigi/go-rosetta v0.0.0-20220804170347-3f4430f2d346
 	github.com/xlab/treeprint v1.2.0
-	golang.org/x/net v0.29.0
-	golang.org/x/sys v0.25.0
+	golang.org/x/net v0.34.0
+	golang.org/x/sys v0.29.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -61,6 +61,6 @@ require (
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	golang.org/x/term v0.24.0 // indirect
-	golang.org/x/text v0.18.0 // indirect
+	golang.org/x/term v0.28.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 )
