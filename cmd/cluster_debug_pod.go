@@ -22,7 +22,7 @@ var clusterDebugPodCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		if organizationId != "" {
+		if organizationId == "" {
 			organizationId, err = usercontext.GetOrganizationContextResourceId(client, organizationName)
 			if err != nil {
 				utils.PrintlnError(err)
