@@ -11,8 +11,8 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/qovery/qovery-cli/pkg"
-	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-cli/pkg/usercontext"
+	"github.com/qovery/qovery-cli/utils"
 )
 
 var shellCmd = &cobra.Command{
@@ -52,7 +52,7 @@ var shellCmd = &cobra.Command{
 			return
 		}
 
-		pkg.ExecShell(shellRequest)
+		pkg.ExecShell(shellRequest, "/shell/exec")
 	},
 }
 
