@@ -22,11 +22,13 @@ var clusterDebugPodCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		organizationId, err := usercontext.GetOrganizationContextResourceId(client, organizationName)
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		if organizationId != "" {
+			organizationId, err = usercontext.GetOrganizationContextResourceId(client, organizationName)
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
 		}
 
 		flavor := "REGULAR_PRIVILEGE"
@@ -65,7 +67,9 @@ var nodeSelector string
 
 func init() {
 	clusterCmd.AddCommand(clusterDebugPodCmd)
+	clusterDebugPodCmd.Flags().StringVarP(&organizationId, "organization-id", "o", "", "Organization ID")
 	clusterDebugPodCmd.Flags().StringVarP(&clusterId, "cluster-id", "c", "", "Cluster ID")
 	clusterDebugPodCmd.Flags().StringVarP(&nodeSelector, "node-selector", "n", "", "Specify a node selector for the debug pod to be started on")
 	clusterDebugPodCmd.Flags().BoolVarP(&fullPriviledge, "full-privilege", "p", false, "Start a full privileged debug pod which has access to host machine. ")
+	_ = clusterDebugPodCmd.MarkFlagRequired("cluster-id")
 }
