@@ -16,6 +16,10 @@ import (
 
 const StdinBufferSize = 4096
 
+type TerminalSize interface {
+	SetTtySize(width uint16, height uint16)
+}
+
 type ShellRequest struct {
 	ServiceID      utils.Id `url:"service"`
 	EnvironmentID  utils.Id `url:"environment"`
@@ -29,7 +33,12 @@ type ShellRequest struct {
 	TtyHeight      uint16   `url:"tty_height"`
 }
 
-func ExecShell(req *ShellRequest) {
+func (s *ShellRequest) SetTtySize(width uint16, height uint16) {
+	s.TtyWidth = width
+	s.TtyHeight = height
+}
+
+func ExecShell(req TerminalSize, path string) {
 	currentConsole := console.Current()
 	defer func() {
 		_ = currentConsole.Reset()
@@ -39,10 +48,9 @@ func ExecShell(req *ShellRequest) {
 	if err != nil {
 		log.Fatal("Cannot get terminal size", err)
 	}
-	req.TtyWidth = winSize.Width
-	req.TtyHeight = winSize.Height
+	req.SetTtySize(winSize.Width, winSize.Height)
 
-	wsConn, err := createWebsocketConn(req)
+	wsConn, err := createWebsocketConn(req, path)
 	if err != nil {
 		log.Fatal("error while creating websocket connection", err)
 	}
@@ -75,13 +83,13 @@ func ExecShell(req *ShellRequest) {
 	}
 }
 
-func createWebsocketConn(req *ShellRequest) (*websocket.Conn, error) {
+func createWebsocketConn(req interface{}, path string) (*websocket.Conn, error) {
 	command, err := query.Values(req)
 	if err != nil {
 		return nil, err
 	}
 
-	wsURL, err := url.Parse(fmt.Sprintf("%s/shell/exec", utils.WebsocketUrl()))
+	wsURL, err := url.Parse(fmt.Sprintf("%s%s", utils.WebsocketUrl(), path))
 	if err != nil {
 		return nil, err
 	}
