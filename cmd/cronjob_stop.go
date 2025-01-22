@@ -38,18 +38,13 @@ var cronjobStopCmd = &cobra.Command{
 				}).
 				Execute()
 			checkError(err)
+			utils.Println(fmt.Sprintf("Request to stop cronjob(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", cronjobName, cronjobNames)))
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
-			} else {
-				if cronjobName != "" {
-					utils.Println(fmt.Sprintf("Request to stop cronjob %s has been queued...", pterm.FgBlue.Sprintf("%s", cronjobName)))
-				} else {
-					utils.Println(fmt.Sprintf("Request to stop cronjobs %s has been queued...", pterm.FgBlue.Sprintf("%s", cronjobNames)))
-				}
 			}
 			return
 		}
-		// TODO once deployment queue is enabled for all organizations, remove the following code block
+		// TODO(ENG-1883) once deployment queue is enabled for all organizations, remove the following code block
 
 		if cronjobNames != "" {
 			// wait until service is ready

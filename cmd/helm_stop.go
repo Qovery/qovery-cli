@@ -38,19 +38,14 @@ var helmStopCmd = &cobra.Command{
 				}).
 				Execute()
 			checkError(err)
+			utils.Println(fmt.Sprintf("Request to stop helm(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", helmName, helmNames)))
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
-			} else {
-				if helmName != "" {
-					utils.Println(fmt.Sprintf("Request to stop helm %s has been queued...", pterm.FgBlue.Sprintf("%s", helmName)))
-				} else {
-					utils.Println(fmt.Sprintf("Request to stop helms %s has been queued...", pterm.FgBlue.Sprintf("%s", helmNames)))
-				}
 			}
 			return
 		}
 
-		// TODO once deployment queue is enabled for all organizations, remove the following code block
+		// TODO(ENG-1883) once deployment queue is enabled for all organizations, remove the following code block
 		if helmNames != "" {
 			// wait until service is ready
 			for {

@@ -39,19 +39,14 @@ var databaseStopCmd = &cobra.Command{
 				}).
 				Execute()
 			checkError(err)
+			utils.Println(fmt.Sprintf("Request to stop databases %s has been queued...", pterm.FgBlue.Sprintf("%s%s", databaseName, databaseNames)))
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
-			} else {
-				if databaseName != "" {
-					utils.Println(fmt.Sprintf("Request to stop database %s has been queued...", pterm.FgBlue.Sprintf("%s", databaseName)))
-				} else {
-					utils.Println(fmt.Sprintf("Request to stop databases %s has been queued...", pterm.FgBlue.Sprintf("%s", databaseNames)))
-				}
 			}
 			return
 		}
 
-		// TODO once deployment queue is enabled for all organizations, remove the following code block
+		// TODO(ENG-1883) once deployment queue is enabled for all organizations, remove the following code block
 
 		if databaseNames != "" {
 			// wait until service is ready

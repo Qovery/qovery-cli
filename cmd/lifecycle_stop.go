@@ -39,19 +39,14 @@ var lifecycleStopCmd = &cobra.Command{
 				}).
 				Execute()
 			checkError(err)
+			utils.Println(fmt.Sprintf("Request to stop lifecyclejob(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", lifecycleName, lifecycleNames)))
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
-			} else {
-				if lifecycleName != "" {
-					utils.Println(fmt.Sprintf("Request to stop lifecyclejob %s has been queued...", pterm.FgBlue.Sprintf("%s", lifecycleName)))
-				} else {
-					utils.Println(fmt.Sprintf("Request to stop lifecyclejobs %s has been queued...", pterm.FgBlue.Sprintf("%s", lifecycleNames)))
-				}
 			}
 			return
 		}
 
-		// TODO once deployment queue is enabled for all organizations, remove the following code block
+		// TODO(ENG-1883) once deployment queue is enabled for all organizations, remove the following code block
 
 		if lifecycleNames != "" {
 			// wait until service is ready

@@ -38,7 +38,7 @@ var environmentStopCmd = &cobra.Command{
 			return
 		}
 
-		// TODO once deployment queue is enabled for all organizations, remove the following code block
+		// TODO(ENG-1883) once deployment queue is enabled for all organizations, remove the following code block
 
 		// wait until service is ready
 		for {

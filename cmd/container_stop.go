@@ -37,14 +37,9 @@ var containerStopCmd = &cobra.Command{
 				}).
 				Execute()
 			checkError(err)
+			utils.Println(fmt.Sprintf("Request to stop container(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", containerName, containerNames)))
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
-			} else {
-				if containerName != "" {
-					utils.Println(fmt.Sprintf("Request to stop container %s has been queued...", pterm.FgBlue.Sprintf("%s", containerName)))
-				} else {
-					utils.Println(fmt.Sprintf("Request to stop containers %s has been queued...", pterm.FgBlue.Sprintf("%s", containerNames)))
-				}
 			}
 			return
 		}

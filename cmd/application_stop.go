@@ -37,19 +37,14 @@ var applicationStopCmd = &cobra.Command{
 				}).
 				Execute()
 			checkError(err)
+			utils.Println(fmt.Sprintf("Request to stop application(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", applicationName, applicationNames)))
 			if watchFlag {
 				utils.WatchEnvironment(envId, "unused", client)
-			} else {
-				if applicationName != "" {
-					utils.Println(fmt.Sprintf("Request to stop application %s has been queued...", pterm.FgBlue.Sprintf("%s", applicationName)))
-				} else {
-					utils.Println(fmt.Sprintf("Request to stop applications %s has been queued...", pterm.FgBlue.Sprintf("%s", applicationNames)))
-				}
 			}
 			return
 		}
 
-		// TODO once deployment queue is enabled for all organizations, remove the following code block
+		// TODO(ENG-1883) once deployment queue is enabled for all organizations, remove the following code block
 		applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
 		checkError(err)
 
