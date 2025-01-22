@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/qovery/qovery-client-go"
 	"os"
 	"strings"
 	"time"
@@ -20,32 +21,32 @@ var databaseStopCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
 
-		if databaseName == "" && databaseNames == "" {
-			utils.PrintlnError(fmt.Errorf("use either --database \"<database name>\" or --databases \"<database1 name>, <database2 name>\" but not both at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if databaseName != "" && databaseNames != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --database and --databases at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		validateDatabaseArguments(databaseName, databaseNames)
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		organizationId, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		checkError(err)
+
+		if isDeploymentQueueEnabledForOrganization(organizationId) {
+			serviceIds := buildServiceIdsFromDatabaseNames(client, envId, databaseName, databaseNames)
+			_, err := client.EnvironmentActionsAPI.
+				StopSelectedServices(context.Background(), envId).
+				EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+					DatabaseIds: serviceIds,
+				}).
+				Execute()
+			checkError(err)
+			utils.Println(fmt.Sprintf("Request to stop databases %s has been queued...", pterm.FgBlue.Sprintf("%s%s", databaseName, databaseNames)))
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			}
+			return
 		}
+
+		// TODO(ENG-1883) once deployment queue is enabled for all organizations, remove the following code block
 
 		if databaseNames != "" {
 			// wait until service is ready
@@ -126,6 +127,57 @@ var databaseStopCmd = &cobra.Command{
 			utils.Println(fmt.Sprintf("Stopping database %s in progress..", pterm.FgBlue.Sprintf("%s", databaseName)))
 		}
 	},
+}
+
+func buildServiceIdsFromDatabaseNames(
+	client *qovery.APIClient,
+	environmentId string,
+	databaseName string,
+	databaseNames string,
+) []string {
+	var serviceIds []string
+	databases, _, err := client.DatabasesAPI.ListDatabase(context.Background(), environmentId).Execute()
+	checkError(err)
+
+	if databaseName != "" {
+		database := utils.FindByDatabaseName(databases.GetResults(), databaseName)
+		if database == nil {
+			utils.PrintlnError(fmt.Errorf("database %s not found", databaseName))
+			utils.PrintlnInfo("You can list all databases with: qovery database list")
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+		serviceIds = append(serviceIds, database.Id)
+	}
+	if databaseNames != "" {
+		for _, databaseName := range strings.Split(databaseNames, ",") {
+			trimmedDatabaseName := strings.TrimSpace(databaseName)
+			database := utils.FindByDatabaseName(databases.GetResults(), trimmedDatabaseName)
+			if database == nil {
+				utils.PrintlnError(fmt.Errorf("database %s not found", databaseName))
+				utils.PrintlnInfo("You can list all databases with: qovery database list")
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+			serviceIds = append(serviceIds, database.Id)
+		}
+	}
+
+	return serviceIds
+}
+
+func validateDatabaseArguments(databaseName string, databaseNames string) {
+	if databaseName == "" && databaseNames == "" {
+		utils.PrintlnError(fmt.Errorf("use either --database \"<database name>\" or --databases \"<database1 name>, <database2 name>\" but not both at the same time"))
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	if databaseName != "" && databaseNames != "" {
+		utils.PrintlnError(fmt.Errorf("you can't use --database and --databases at the same time"))
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
 }
 
 func init() {

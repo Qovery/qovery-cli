@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"github.com/qovery/qovery-client-go"
 	"os"
 	"strings"
 	"time"
@@ -20,32 +22,31 @@ var lifecycleStopCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
 
-		if lifecycleName == "" && lifecycleNames == "" {
-			utils.PrintlnError(fmt.Errorf("use either --lifecycle \"<lifecycle name>\" or --lifecycles \"<lifecycle1 name>, <lifecycle2 name>\" but not both at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if lifecycleName != "" && lifecycleNames != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --lifecycle and --lifecycles at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		validateLifecycleArguments(lifecycleName, lifecycleNames)
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		organizationId, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		checkError(err)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		if isDeploymentQueueEnabledForOrganization(organizationId) {
+			serviceIds := buildServiceIdsFromLifecycleNames(client, envId, lifecycleName, lifecycleNames)
+			_, err := client.EnvironmentActionsAPI.
+				StopSelectedServices(context.Background(), envId).
+				EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+					JobIds: serviceIds,
+				}).
+				Execute()
+			checkError(err)
+			utils.Println(fmt.Sprintf("Request to stop lifecyclejob(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", lifecycleName, lifecycleNames)))
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			}
+			return
 		}
+
+		// TODO(ENG-1883) once deployment queue is enabled for all organizations, remove the following code block
 
 		if lifecycleNames != "" {
 			// wait until service is ready
@@ -126,6 +127,57 @@ var lifecycleStopCmd = &cobra.Command{
 			utils.Println(fmt.Sprintf("Stopping lifecycle %s in progress..", pterm.FgBlue.Sprintf("%s", lifecycleName)))
 		}
 	},
+}
+
+func buildServiceIdsFromLifecycleNames(
+	client *qovery.APIClient,
+	environmentId string,
+	lifecycleName string,
+	lifecycleNames string,
+) []string {
+	var serviceIds []string
+	lifecycles, _, err := client.JobsAPI.ListJobs(context.Background(), environmentId).Execute()
+	checkError(err)
+
+	if lifecycleName != "" {
+		lifecycle := utils.FindByJobName(lifecycles.GetResults(), lifecycleName)
+		if lifecycle == nil || lifecycle.LifecycleJobResponse == nil {
+			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
+			utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+		serviceIds = append(serviceIds, lifecycle.LifecycleJobResponse.Id)
+	}
+	if lifecycleNames != "" {
+		for _, lifecycleName := range strings.Split(lifecycleNames, ",") {
+			trimmedLifecycleName := strings.TrimSpace(lifecycleName)
+			lifecycle := utils.FindByJobName(lifecycles.GetResults(), trimmedLifecycleName)
+			if lifecycle == nil || lifecycle.LifecycleJobResponse == nil {
+				utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
+				utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+			serviceIds = append(serviceIds, lifecycle.LifecycleJobResponse.Id)
+		}
+	}
+
+	return serviceIds
+}
+
+func validateLifecycleArguments(lifecycleName string, lifecycleNames string) {
+	if lifecycleName == "" && lifecycleNames == "" {
+		utils.PrintlnError(fmt.Errorf("use either --lifecycle \"<lifecycle name>\" or --lifecycles \"<lifecycle1 name>, <lifecycle2 name>\" but not both at the same time"))
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	if lifecycleName != "" && lifecycleNames != "" {
+		utils.PrintlnError(fmt.Errorf("you can't use --lifecycle and --lifecycles at the same time"))
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
 }
 
 func init() {

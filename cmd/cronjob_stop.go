@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"github.com/qovery/qovery-client-go"
 	"os"
 	"strings"
 	"time"
@@ -20,32 +22,29 @@ var cronjobStopCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if cronjobName == "" && cronjobNames == "" {
-			utils.PrintlnError(fmt.Errorf("use either --cronjob \"<cronjob name>\" or --cronjobs \"<cronjob1 name>, <cronjob2 name>\" but not both at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if cronjobName != "" && cronjobNames != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --cronjob and --cronjobs at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
+		validateCronjobArguments(cronjobName, cronjobNames)
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		organizationId, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		checkError(err)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		if isDeploymentQueueEnabledForOrganization(organizationId) {
+			serviceIds := buildServiceIdsFromCronjobNames(client, envId, cronjobName, cronjobNames)
+			_, err := client.EnvironmentActionsAPI.
+				StopSelectedServices(context.Background(), envId).
+				EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+					JobIds: serviceIds,
+				}).
+				Execute()
+			checkError(err)
+			utils.Println(fmt.Sprintf("Request to stop cronjob(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", cronjobName, cronjobNames)))
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			}
+			return
 		}
+		// TODO(ENG-1883) once deployment queue is enabled for all organizations, remove the following code block
 
 		if cronjobNames != "" {
 			// wait until service is ready
@@ -126,6 +125,57 @@ var cronjobStopCmd = &cobra.Command{
 			utils.Println(fmt.Sprintf("Stopping cronjob %s in progress..", pterm.FgBlue.Sprintf("%s", cronjobName)))
 		}
 	},
+}
+
+func buildServiceIdsFromCronjobNames(
+	client *qovery.APIClient,
+	environmentId string,
+	cronjobName string,
+	cronjobNames string,
+) []string {
+	var serviceIds []string
+	cronjobs, _, err := client.JobsAPI.ListJobs(context.Background(), environmentId).Execute()
+	checkError(err)
+
+	if cronjobName != "" {
+		cronjob := utils.FindByJobName(cronjobs.GetResults(), cronjobName)
+		if cronjob == nil || cronjob.CronJobResponse == nil {
+			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
+			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+		serviceIds = append(serviceIds, cronjob.CronJobResponse.Id)
+	}
+	if cronjobNames != "" {
+		for _, cronjobName := range strings.Split(cronjobNames, ",") {
+			trimmedCronjobName := strings.TrimSpace(cronjobName)
+			cronjob := utils.FindByJobName(cronjobs.GetResults(), trimmedCronjobName)
+			if cronjob == nil || cronjob.CronJobResponse == nil {
+				utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
+				utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+			serviceIds = append(serviceIds, cronjob.CronJobResponse.Id)
+		}
+	}
+
+	return serviceIds
+}
+
+func validateCronjobArguments(cronJobName string, cronJobNames string) {
+	if cronJobName == "" && cronJobNames == "" {
+		utils.PrintlnError(fmt.Errorf("use either --cronjob \"<cronjob name>\" or --cronjobs \"<cronjob1 name>, <cronjob2 name>\" but not both at the same time"))
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	if cronJobName != "" && cronJobNames != "" {
+		utils.PrintlnError(fmt.Errorf("you can't use --cronjob and --cronjobs at the same time"))
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
 }
 
 func init() {
