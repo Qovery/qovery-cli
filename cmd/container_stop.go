@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/qovery/qovery-client-go"
 	"os"
 	"strings"
 	"time"
@@ -20,31 +21,32 @@ var containerStopCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if containerName == "" && containerNames == "" {
-			utils.PrintlnError(fmt.Errorf("use either --container \"<container name>\" or --containers \"<container1 name>, <container2 name>\" but not both at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if containerName != "" && containerNames != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --container and --containers at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
+		validateContainerArguments(containerName, containerNames)
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		organizationId, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		checkError(err)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		if isDeploymentQueueEnabledForOrganization(organizationId) {
+			serviceIds := buildServiceIdsFromContainerNames(client, envId, containerName, containerNames)
+			_, err := client.EnvironmentActionsAPI.
+				StopSelectedServices(context.Background(), envId).
+				EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+					ContainerIds: serviceIds,
+				}).
+				Execute()
+			checkError(err)
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			} else {
+				if containerName != "" {
+					utils.Println(fmt.Sprintf("Request to stop container %s has been queued...", pterm.FgBlue.Sprintf("%s", containerName)))
+				} else {
+					utils.Println(fmt.Sprintf("Request to stop containers %s has been queued...", pterm.FgBlue.Sprintf("%s", containerNames)))
+				}
+			}
+			return
 		}
 
 		if containerNames != "" {
@@ -126,6 +128,57 @@ var containerStopCmd = &cobra.Command{
 			utils.Println(fmt.Sprintf("Stopping container %s in progress..", pterm.FgBlue.Sprintf("%s", containerName)))
 		}
 	},
+}
+
+func buildServiceIdsFromContainerNames(
+	client *qovery.APIClient,
+	environmentId string,
+	containerName string,
+	containerNames string,
+) []string {
+	var serviceIds []string
+	containers, _, err := client.ContainersAPI.ListContainer(context.Background(), environmentId).Execute()
+	checkError(err)
+
+	if containerName != "" {
+		container := utils.FindByContainerName(containers.GetResults(), containerName)
+		if container == nil {
+			utils.PrintlnError(fmt.Errorf("container %s not found", containerName))
+			utils.PrintlnInfo("You can list all containers with: qovery container list")
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+		serviceIds = append(serviceIds, container.Id)
+	}
+	if containerNames != "" {
+		for _, containerName := range strings.Split(containerNames, ",") {
+			trimmedContainerName := strings.TrimSpace(containerName)
+			container := utils.FindByContainerName(containers.GetResults(), trimmedContainerName)
+			if container == nil {
+				utils.PrintlnError(fmt.Errorf("container %s not found", containerName))
+				utils.PrintlnInfo("You can list all containers with: qovery container list")
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+			serviceIds = append(serviceIds, container.Id)
+		}
+	}
+
+	return serviceIds
+}
+
+func validateContainerArguments(containerName string, containerNames string) {
+	if containerName == "" && containerNames == "" {
+		utils.PrintlnError(fmt.Errorf("use either --container \"<container name>\" or --containers \"<container1 name>, <container2 name>\" but not both at the same time"))
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	if containerName != "" && containerNames != "" {
+		utils.PrintlnError(fmt.Errorf("you can't use --container and --containers at the same time"))
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
 }
 
 func init() {

@@ -21,33 +21,36 @@ var helmStopCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
 
-		if helmName == "" && helmNames == "" {
-			utils.PrintlnError(fmt.Errorf("use either --helm \"<helm name>\" or --helms \"<helm1 name>, <helm2 name>\" but not both at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if helmName != "" && helmNames != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --helm and --helms at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		validateHelmArguments(helmName, helmNames)
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		organizationId, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		checkError(err)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		if isDeploymentQueueEnabledForOrganization(organizationId) {
+			serviceIds := buildServiceIdsFromHelmNames(client, envId, helmName, helmNames)
+			_, err := client.EnvironmentActionsAPI.
+				StopSelectedServices(context.Background(), envId).
+				EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+					HelmIds: serviceIds,
+				}).
+				Execute()
+			checkError(err)
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			} else {
+				if helmName != "" {
+					utils.Println(fmt.Sprintf("Request to stop helm %s has been queued...", pterm.FgBlue.Sprintf("%s", helmName)))
+				} else {
+					utils.Println(fmt.Sprintf("Request to stop helms %s has been queued...", pterm.FgBlue.Sprintf("%s", helmNames)))
+				}
+			}
+			return
 		}
 
+		// TODO once deployment queue is enabled for all organizations, remove the following code block
 		if helmNames != "" {
 			// wait until service is ready
 			for {
@@ -135,6 +138,57 @@ var helmStopCmd = &cobra.Command{
 			utils.Println(fmt.Sprintf("Stopping helm %s in progress..", pterm.FgBlue.Sprintf("%s", helmName)))
 		}
 	},
+}
+
+func buildServiceIdsFromHelmNames(
+	client *qovery.APIClient,
+	environmentId string,
+	helmName string,
+	helmNames string,
+) []string {
+	var serviceIds []string
+	helms, _, err := client.HelmsAPI.ListHelms(context.Background(), environmentId).Execute()
+	checkError(err)
+
+	if helmName != "" {
+		helm := utils.FindByHelmName(helms.GetResults(), helmName)
+		if helm == nil {
+			utils.PrintlnError(fmt.Errorf("helm %s not found", helmName))
+			utils.PrintlnInfo("You can list all helms with: qovery helm list")
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+		serviceIds = append(serviceIds, helm.Id)
+	}
+	if helmNames != "" {
+		for _, helmName := range strings.Split(helmNames, ",") {
+			trimmedHelmName := strings.TrimSpace(helmName)
+			helm := utils.FindByHelmName(helms.GetResults(), trimmedHelmName)
+			if helm == nil {
+				utils.PrintlnError(fmt.Errorf("helm %s not found", helmName))
+				utils.PrintlnInfo("You can list all helms with: qovery helm list")
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+			serviceIds = append(serviceIds, helm.Id)
+		}
+	}
+
+	return serviceIds
+}
+
+func validateHelmArguments(helmName string, helmNames string) {
+	if helmName == "" && helmNames == "" {
+		utils.PrintlnError(fmt.Errorf("use either --helm \"<helm name>\" or --helms \"<helm1 name>, <helm2 name>\" but not both at the same time"))
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+
+	if helmName != "" && helmNames != "" {
+		utils.PrintlnError(fmt.Errorf("you can't use --helm and --helms at the same time"))
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
 }
 
 func init() {

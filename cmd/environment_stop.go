@@ -20,20 +20,25 @@ var environmentStopCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		organizationId, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		checkError(err)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		if isDeploymentQueueEnabledForOrganization(organizationId) {
+
+			_, _, err = client.EnvironmentActionsAPI.StopEnvironment(context.Background(), envId).Execute()
+			checkError(err)
+			utils.Println("Environment stop request has been queued.")
+
+			if watchFlag {
+				utils.WatchEnvironment(envId, "unused", client)
+			}
+			return
 		}
+
+		// TODO once deployment queue is enabled for all organizations, remove the following code block
 
 		// wait until service is ready
 		for {
