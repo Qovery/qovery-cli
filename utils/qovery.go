@@ -1415,6 +1415,12 @@ func GetServiceNameByIdAndType(client *qovery.APIClient, serviceId string, servi
 			return ""
 		}
 		return GetJobName(job)
+	case "HELM":
+		helm, _, err := client.HelmMainCallsAPI.GetHelm(context.Background(), serviceId).Execute()
+		if err != nil {
+			return ""
+		}
+		return helm.GetName()
 	default:
 		return "Unknown"
 	}

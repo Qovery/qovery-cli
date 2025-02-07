@@ -3,12 +3,12 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-client-go"
 	"os"
 	"strconv"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
+	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 )
 
@@ -49,8 +49,9 @@ var environmentStageListCmd = &cobra.Command{
 
 		for _, stage := range stages.GetResults() {
 			pterm.DefaultSection.WithBottomPadding(0).Println("deployment stage " + strconv.Itoa(int(stage.GetDeploymentOrder()+1)) + ": \"" + stage.GetName() + "\"")
+			utils.Println("Stage id: " + stage.GetId())
 			if stage.GetDescription() != "" {
-				pterm.Println(stage.GetDescription())
+				utils.Println(stage.GetDescription())
 			}
 
 			utils.Println("")
