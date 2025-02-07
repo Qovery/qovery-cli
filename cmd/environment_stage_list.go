@@ -7,9 +7,8 @@ import (
 	"strconv"
 
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-client-go"
-
 	"github.com/qovery/qovery-cli/utils"
+	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 )
 
