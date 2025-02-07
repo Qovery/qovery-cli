@@ -49,9 +49,9 @@ var environmentStageListCmd = &cobra.Command{
 
 		for _, stage := range stages.GetResults() {
 			pterm.DefaultSection.WithBottomPadding(0).Println("deployment stage " + strconv.Itoa(int(stage.GetDeploymentOrder()+1)) + ": \"" + stage.GetName() + "\"")
-			pterm.Println("Stage id: " + stage.GetId())
+			utils.Println("Stage id: " + stage.GetId())
 			if stage.GetDescription() != "" {
-				pterm.Println(stage.GetDescription())
+				utils.Println(stage.GetDescription())
 			}
 
 			utils.Println("")
