@@ -368,7 +368,7 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 					}
 					return qoveryClient.ClustersAPI.GetClusterStatus(context.Background(), cluster.OrganizationId, cluster.ClusterId).Execute()
 				})
-				if response.StatusCode > 200 || err != nil {
+				if response == nil || response.StatusCode > 200 || err != nil {
 					return nil, err
 				}
 
@@ -416,7 +416,7 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 				}
 				return qoveryClient.ClustersAPI.GetClusterStatus(context.Background(), cluster.OrganizationId, cluster.ClusterId).Execute()
 			})
-			if response.StatusCode > 200 || err != nil {
+			if response == nil || response.StatusCode > 200 || err != nil {
 				return nil, err
 			}
 
