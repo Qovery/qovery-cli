@@ -204,6 +204,26 @@ func CreateEnvironmentVariable(
 	return err
 }
 
+func CreateProjectVariable(
+	client *qovery.APIClient,
+	projectId string,
+	key string,
+	value string,
+	isSecret bool,
+) error {
+	variableRequest := qovery.VariableRequest{
+		Key:              key,
+		Value:            value,
+		MountPath:        qovery.NullableString{},
+		IsSecret:         isSecret,
+		VariableScope:    qovery.APIVARIABLESCOPEENUM_PROJECT,
+		VariableParentId: projectId,
+	}
+
+	_, _, err := client.VariableMainCallsAPI.CreateVariable(context.Background()).VariableRequest(variableRequest).Execute()
+	return err
+}
+
 func UpdateServiceVariable(
 	client *qovery.APIClient,
 	key string,
@@ -251,6 +271,36 @@ func UpdateEnvironmentVariable(
 	if envVar == nil {
 		errorKey := pterm.FgRed.Sprintf("%s", key)
 		return fmt.Errorf("environment variable %s not found", errorKey)
+	}
+
+	nullableValue := qovery.NullableString{}
+	nullableValue.Set(&value)
+
+	variableId := envVar.Id
+	variableEditRequest := qovery.VariableEditRequest{
+		Key:   key,
+		Value: nullableValue,
+	}
+
+	_, _, err = client.VariableMainCallsAPI.EditVariable(context.Background(), variableId).VariableEditRequest(variableEditRequest).Execute()
+	return err
+}
+
+func UpdateProjectVariable(
+	client *qovery.APIClient,
+	projectId string,
+	key string,
+	value string,
+) error {
+	envVars, err := ListProjectVariables(client, projectId)
+	if err != nil {
+		return err
+	}
+
+	envVar := FindEnvironmentVariableByKey(key, envVars)
+	if envVar == nil {
+		errorKey := pterm.FgRed.Sprintf("%s", key)
+		return fmt.Errorf("project variable %s not found", errorKey)
 	}
 
 	nullableValue := qovery.NullableString{}
@@ -316,6 +366,23 @@ func ListEnvironmentVariables(
 	return res.GetResults(), nil
 }
 
+func ListProjectVariables(
+	client *qovery.APIClient,
+	projectId string,
+) ([]qovery.VariableResponse, error) {
+	request := client.VariableMainCallsAPI.ListVariables(context.Background())
+	res, _, err := request.ParentId(projectId).Scope(qovery.APIVARIABLESCOPEENUM_PROJECT).Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	if res == nil {
+		return nil, errors.New("invalid project")
+	}
+
+	return res.GetResults(), nil
+}
+
 func ServiceTypeToScope(serviceType ServiceType) (qovery.APIVariableScopeEnum, error) {
 	switch serviceType {
 	case ApplicationType:
@@ -367,6 +434,21 @@ func DeleteServiceVariable(client *qovery.APIClient, serviceId string, serviceTy
 
 func DeleteEnvironmentVar(client *qovery.APIClient, environmentId string, key string) error {
 	envVars, err := ListEnvironmentVariables(client, environmentId)
+	if err != nil {
+		return err
+	}
+
+	envVar := FindEnvironmentVariableByKey(key, envVars)
+	if envVar == nil {
+		return fmt.Errorf("environment variable %s not found", pterm.FgRed.Sprintf("%s", key))
+	}
+
+	_, err = client.VariableMainCallsAPI.DeleteVariable(context.Background(), envVar.Id).Execute()
+	return err
+}
+
+func DeleteProjectVar(client *qovery.APIClient, projectId string, key string) error {
+	envVars, err := ListProjectVariables(client, projectId)
 	if err != nil {
 		return err
 	}
@@ -453,6 +535,32 @@ func CreateEnvironmentAlias(
 	}
 
 	return fmt.Errorf("Environment variable or secret %s not found", pterm.FgRed.Sprintf("%s", key))
+}
+
+func CreateProjectAlias(
+	client *qovery.APIClient,
+	projectId string,
+	key string,
+	alias string,
+) error {
+	envVars, err := ListProjectVariables(client, projectId)
+	if err != nil {
+		return err
+	}
+
+	envVar := FindEnvironmentVariableByKey(key, envVars)
+
+	parentId, parentScope, err := getParentIdByScope("PROJECT", projectId, "", "")
+	if err != nil {
+		return err
+	}
+
+	if envVar != nil {
+		// create alias for environment variable
+		return CreateEnvironmentVariableAlias(client, parentId, parentScope, envVar.Id, alias)
+	}
+
+	return fmt.Errorf("Project variable or secret %s not found", pterm.FgRed.Sprintf("%s", key))
 }
 
 func CreateEnvironmentVariableOverride(
