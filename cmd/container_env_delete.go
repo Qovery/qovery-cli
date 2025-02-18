@@ -50,7 +50,7 @@ var containerEnvDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.DeleteVariable(client, container.Id, utils.ContainerType, utils.Key)
+		err = utils.DeleteServiceVariable(client, container.Id, utils.ContainerType, utils.Key)
 
 		if err != nil {
 			utils.PrintlnError(err)

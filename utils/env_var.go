@@ -153,7 +153,7 @@ func FromEnvironmentVariableToEnvVarLineOutput(envVar qovery.VariableResponse) E
 	}
 }
 
-func CreateEnvironmentVariable(
+func CreateServiceVariable(
 	client *qovery.APIClient,
 	projectId string,
 	environmentId string,
@@ -182,14 +182,14 @@ func CreateEnvironmentVariable(
 	return err
 }
 
-func UpdateEnvironmentVariable(
+func UpdateServiceVariable(
 	client *qovery.APIClient,
 	key string,
 	value string,
 	serviceId string,
 	serviceType ServiceType,
 ) error {
-	envVars, err := ListEnvironmentVariables(client, serviceId, serviceType)
+	envVars, err := ListServiceVariables(client, serviceId, serviceType)
 	if err != nil {
 		return err
 	}
@@ -224,7 +224,7 @@ func FindEnvironmentVariableByKey(key string, envVars []qovery.VariableResponse)
 	return nil
 }
 
-func ListEnvironmentVariables(
+func ListServiceVariables(
 	client *qovery.APIClient,
 	serviceId string,
 	serviceType ServiceType,
@@ -281,9 +281,8 @@ func getParentIdByScope(scope string, projectId string, environmentId string, se
 	return "", qovery.APIVARIABLESCOPEENUM_BUILT_IN, fmt.Errorf("scope %s not supported", scope)
 }
 
-func DeleteVariable(client *qovery.APIClient, serviceId string, serviceType ServiceType, key string) error {
-
-	envVars, err := ListEnvironmentVariables(client, serviceId, serviceType)
+func DeleteServiceVariable(client *qovery.APIClient, serviceId string, serviceType ServiceType, key string) error {
+	envVars, err := ListServiceVariables(client, serviceId, serviceType)
 	if err != nil {
 		return err
 	}
@@ -314,7 +313,7 @@ func CreateEnvironmentVariableAlias(
 	return err
 }
 
-func CreateAlias(
+func CreateServiceAlias(
 	client *qovery.APIClient,
 	projectId string,
 	environmentId string,
@@ -324,7 +323,7 @@ func CreateAlias(
 	alias string,
 	scope string,
 ) error {
-	envVars, err := ListEnvironmentVariables(client, serviceId, serviceType)
+	envVars, err := ListServiceVariables(client, serviceId, serviceType)
 	if err != nil {
 		return err
 	}
@@ -361,7 +360,7 @@ func CreateEnvironmentVariableOverride(
 	return err
 }
 
-func CreateOverride(
+func CreateServiceOverride(
 	client *qovery.APIClient,
 	projectId string,
 	environmentId string,
@@ -371,7 +370,7 @@ func CreateOverride(
 	value string,
 	scope string,
 ) error {
-	envVars, err := ListEnvironmentVariables(client, serviceId, serviceType)
+	envVars, err := ListServiceVariables(client, serviceId, serviceType)
 	if err != nil {
 		return err
 	}

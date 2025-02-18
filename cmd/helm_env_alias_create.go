@@ -50,7 +50,7 @@ var helmEnvAliasCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateAlias(client, projectId, envId, helm.Id, utils.HelmType, utils.Key, utils.Alias, utils.HelmScope)
+		err = utils.CreateServiceAlias(client, projectId, envId, helm.Id, utils.HelmType, utils.Key, utils.Alias, utils.HelmScope)
 
 		if err != nil {
 			utils.PrintlnError(err)

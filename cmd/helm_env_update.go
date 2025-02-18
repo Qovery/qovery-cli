@@ -50,7 +50,7 @@ var helmEnvUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.UpdateEnvironmentVariable(client, utils.Key, utils.Value, helm.Id, utils.HelmType)
+		err = utils.UpdateServiceVariable(client, utils.Key, utils.Value, helm.Id, utils.HelmType)
 
 		if err != nil {
 			utils.PrintlnError(err)

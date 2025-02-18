@@ -50,7 +50,7 @@ var containerEnvUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.UpdateEnvironmentVariable(client, utils.Key, utils.Value, container.Id, utils.ContainerType)
+		err = utils.UpdateServiceVariable(client, utils.Key, utils.Value, container.Id, utils.ContainerType)
 
 		if err != nil {
 			utils.PrintlnError(err)

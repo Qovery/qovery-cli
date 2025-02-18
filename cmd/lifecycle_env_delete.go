@@ -50,7 +50,7 @@ var lifecycleEnvDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.DeleteVariable(client, lifecycle.LifecycleJobResponse.Id, utils.JobType, utils.Key)
+		err = utils.DeleteServiceVariable(client, lifecycle.LifecycleJobResponse.Id, utils.JobType, utils.Key)
 
 		if err != nil {
 			utils.PrintlnError(err)

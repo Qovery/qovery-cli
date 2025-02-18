@@ -50,7 +50,7 @@ var containerEnvCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateEnvironmentVariable(client, projectId, envId, container.Id, utils.ContainerScope, utils.Key, utils.Value, utils.IsSecret)
+		err = utils.CreateServiceVariable(client, projectId, envId, container.Id, utils.ContainerScope, utils.Key, utils.Value, utils.IsSecret)
 
 		if err != nil {
 			utils.PrintlnError(err)
