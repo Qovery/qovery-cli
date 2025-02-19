@@ -50,7 +50,7 @@ var cronjobEnvCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateEnvironmentVariable(client, projectId, envId, cronjob.CronJobResponse.Id, utils.JobScope, utils.Key, utils.Value, utils.IsSecret)
+		err = utils.CreateServiceVariable(client, projectId, envId, cronjob.CronJobResponse.Id, utils.JobScope, utils.Key, utils.Value, utils.IsSecret)
 
 		if err != nil {
 			utils.PrintlnError(err)

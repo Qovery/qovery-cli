@@ -50,7 +50,7 @@ var helmEnvOverrideCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateOverride(client, projectId, envId, helm.Id, utils.HelmType, utils.Key, utils.Value, utils.HelmScope)
+		err = utils.CreateServiceOverride(client, projectId, envId, helm.Id, utils.HelmType, utils.Key, utils.Value, utils.HelmScope)
 
 		if err != nil {
 			utils.PrintlnError(err)

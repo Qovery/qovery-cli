@@ -50,7 +50,7 @@ var lifecycleEnvUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.UpdateEnvironmentVariable(client, utils.Key, utils.Value, lifecycle.LifecycleJobResponse.Id, utils.JobType)
+		err = utils.UpdateServiceVariable(client, utils.Key, utils.Value, lifecycle.LifecycleJobResponse.Id, utils.JobType)
 
 		if err != nil {
 			utils.PrintlnError(err)

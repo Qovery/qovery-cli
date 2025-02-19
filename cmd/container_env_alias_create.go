@@ -50,7 +50,7 @@ var containerEnvAliasCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateAlias(client, projectId, envId, container.Id, utils.ContainerType, utils.Key, utils.Alias, utils.ContainerScope)
+		err = utils.CreateServiceAlias(client, projectId, envId, container.Id, utils.ContainerType, utils.Key, utils.Alias, utils.ContainerScope)
 
 		if err != nil {
 			utils.PrintlnError(err)

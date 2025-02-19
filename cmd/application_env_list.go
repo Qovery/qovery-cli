@@ -49,7 +49,7 @@ var applicationEnvListCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		envVars, err := utils.ListEnvironmentVariables(
+		envVars, err := utils.ListServiceVariables(
 			client,
 			application.Id,
 			utils.ApplicationType,

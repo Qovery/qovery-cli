@@ -50,7 +50,7 @@ var cronjobEnvDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.DeleteVariable(client, cronjob.CronJobResponse.Id, utils.JobType, utils.Key)
+		err = utils.DeleteServiceVariable(client, cronjob.CronJobResponse.Id, utils.JobType, utils.Key)
 
 		if err != nil {
 			utils.PrintlnError(err)

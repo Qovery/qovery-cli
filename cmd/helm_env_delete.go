@@ -50,7 +50,7 @@ var helmEnvDeleteCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.DeleteVariable(client, helm.Id, utils.HelmType, utils.Key)
+		err = utils.DeleteServiceVariable(client, helm.Id, utils.HelmType, utils.Key)
 
 		if err != nil {
 			utils.PrintlnError(err)

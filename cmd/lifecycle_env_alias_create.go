@@ -50,7 +50,7 @@ var lifecycleEnvAliasCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateAlias(client, projectId, envId, lifecycle.LifecycleJobResponse.Id, utils.JobType, utils.Key, utils.Alias, utils.JobScope)
+		err = utils.CreateServiceAlias(client, projectId, envId, lifecycle.LifecycleJobResponse.Id, utils.JobType, utils.Key, utils.Alias, utils.JobScope)
 
 		if err != nil {
 			utils.PrintlnError(err)
