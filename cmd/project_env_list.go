@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"context"
-	"os"
-
 	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -16,37 +14,18 @@ var projectEnvListCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
 
 		client := utils.GetQoveryClient(tokenType, token)
 		organizationId, _, _, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
 
 		projects, _, err := client.ProjectsAPI.ListProject(context.Background(), organizationId).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
 
 		project := utils.FindByProjectName(projects.GetResults(), projectName)
 		envVars, err := utils.ListProjectVariables(client, project.Id)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
 
 		envVarLines := utils.NewEnvVarLines()
 		var variables []utils.EnvVarLineOutput
@@ -63,12 +42,7 @@ var projectEnvListCmd = &cobra.Command{
 		}
 
 		err = utils.PrintTable(envVarLines.Header(utils.PrettyPrint), envVarLines.Lines(utils.ShowValues, utils.PrettyPrint))
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
 	},
 }
 
