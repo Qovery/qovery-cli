@@ -27,7 +27,6 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().BoolVar(&variable.Verbose, "verbose", false, "Verbose output")
-	rootCmd.PersistentFlags().BoolVar(&variable.NoTrack, "notrack", false, "Do not track the command execution in Qovery telemetry")
 }
 
 func initConfig() {
