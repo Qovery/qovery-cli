@@ -3,10 +3,11 @@ package cmd
 import (
 	//	"github.com/getsentry/sentry-go"
 	//	"github.com/qovery/qovery-cli/pkg"
+	"os"
+
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-cli/variable"
 	"github.com/spf13/cobra"
-	"os"
 	//	"time"
 )
 
@@ -26,6 +27,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().BoolVar(&variable.Verbose, "verbose", false, "Verbose output")
+	rootCmd.PersistentFlags().BoolVar(&variable.NoTrack, "notrack", false, "Do not track the command execution in Qovery telemetry")
 }
 
 func initConfig() {

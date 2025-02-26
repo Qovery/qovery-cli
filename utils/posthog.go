@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/posthog/posthog-go"
+	"github.com/qovery/qovery-cli/variable"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -15,6 +16,12 @@ const EndOfExecutionEventName = "cli-command-execution-end"
 const EndOfExecutionErrorEventName = "cli-command-execution-error"
 
 func Capture(command *cobra.Command) {
+
+	// Do not track the command execution in Qovery telemetry
+	if flag := command.Flags().Lookup(variable.NoTrackFlag); flag != nil {
+		return
+	}
+
 	CaptureWithEvent(command, DefaultEventName)
 }
 
