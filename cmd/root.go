@@ -3,10 +3,11 @@ package cmd
 import (
 	//	"github.com/getsentry/sentry-go"
 	//	"github.com/qovery/qovery-cli/pkg"
+	"os"
+
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-cli/variable"
 	"github.com/spf13/cobra"
-	"os"
 	//	"time"
 )
 
