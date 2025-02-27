@@ -18,7 +18,7 @@ const EndOfExecutionErrorEventName = "cli-command-execution-error"
 func Capture(command *cobra.Command) {
 
 	// Do not track the command execution in Qovery telemetry
-	if flag := os.Getenv("QOVERY_TELEMETRY"); flag == "false" || flag == "FALSE" {
+	if flag := os.Getenv("QOVERY_TELEMETRY"); strings.ToLower(flag) == "false" {
 		return
 	}
 
