@@ -227,6 +227,8 @@ func getClusterCredentials(clusterId string) []utils.Var {
 		switch key {
 		case "access_key_id":
 			clusterCreds = append(clusterCreds, utils.Var{Key: "AWS_ACCESS_KEY_ID", Value: value})
+		case "aws_session_token":
+			clusterCreds = append(clusterCreds, utils.Var{Key: "AWS_SESSION_TOKEN", Value: value})
 		case "region":
 			clusterCreds = append(clusterCreds, utils.Var{Key: "AWS_DEFAULT_REGION", Value: value})
 		case "scaleway_access_key":
