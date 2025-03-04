@@ -92,7 +92,7 @@ var environmentDeployCmd = &cobra.Command{
 			// Deploy the whole env
 			_, _, err = client.EnvironmentActionsAPI.DeployEnvironment(context.Background(), envId).Execute()
 			checkError(err)
-			utils.Println(fmt.Sprintf("Request to deploy environment has been queued.."))
+			utils.Println("Request to deploy environment has been queued..")
 		}
 
 		if watchFlag {
