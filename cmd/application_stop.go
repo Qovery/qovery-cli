@@ -40,7 +40,6 @@ var applicationStopCmd = &cobra.Command{
 			time.Sleep(5 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
 			utils.WatchEnvironment(envId, "unused", client)
 		}
-		return
 	},
 }
 
