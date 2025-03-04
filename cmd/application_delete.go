@@ -3,8 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
-	"strings"
+	"github.com/qovery/qovery-client-go"
 	"time"
 
 	"github.com/pterm/pterm"
@@ -20,113 +19,27 @@ var applicationDeleteCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
 
-		if applicationName == "" && applicationNames == "" {
-			utils.PrintlnError(fmt.Errorf("use either --application \"<app name>\" or --applications \"<app1 name>, <app2 name>\" but not both at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if applicationName != "" && applicationNames != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --application and --applications at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		validateApplicationArguments(applicationName, applicationNames)
 
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		checkError(err)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if applicationNames != "" {
-			// wait until service is ready
-			for {
-				if utils.IsEnvironmentInATerminalState(envId, client) {
-					break
-				}
-
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
-				time.Sleep(5 * time.Second)
-			}
-
-			applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
-
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-
-			var serviceIds []string
-			for _, applicationName := range strings.Split(applicationNames, ",") {
-				trimmedApplicationName := strings.TrimSpace(applicationName)
-				serviceIds = append(serviceIds, utils.FindByApplicationName(applications.GetResults(), trimmedApplicationName).Id)
-			}
-
-			// stop multiple services
-			_, err = utils.DeleteServices(client, envId, serviceIds, utils.ApplicationType)
-			if watchFlag {
-				utils.WatchEnvironment(envId, "unused", client)
-			} else {
-				utils.Println(fmt.Sprintf("Deleting applications %s in progress..", pterm.FgBlue.Sprintf("%s", applicationNames)))
-			}
-
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-
-			return
-		}
-
-		applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		application := utils.FindByApplicationName(applications.GetResults(), applicationName)
-
-		if application == nil {
-			utils.PrintlnError(fmt.Errorf("application %s not found", applicationName))
-			utils.PrintlnInfo("You can list all applications with: qovery application list")
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		msg, err := utils.DeleteService(client, envId, application.Id, utils.ApplicationType, watchFlag)
-
+		serviceIds := buildServiceIdsFromApplicationNames(client, envId, applicationName, applicationNames)
+		// stop multiple services
+		_, err = client.EnvironmentActionsAPI.
+			DeleteSelectedServices(context.Background(), envId).
+			EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+				ApplicationIds: serviceIds,
+			}).
+			Execute()
+		checkError(err)
+		utils.Println(fmt.Sprintf("Request to delete application(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", applicationName, applicationNames)))
 		if watchFlag {
+			time.Sleep(5 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
 			utils.WatchEnvironment(envId, "unused", client)
-		}
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if msg != "" {
-			utils.PrintlnInfo(msg)
-			return
-		}
-
-		if watchFlag {
-			utils.Println(fmt.Sprintf("Application %s deleted!", pterm.FgBlue.Sprintf("%s", applicationName)))
-		} else {
-			utils.Println(fmt.Sprintf("Deleting application %s in progress..", pterm.FgBlue.Sprintf("%s", applicationName)))
 		}
 	},
 }
