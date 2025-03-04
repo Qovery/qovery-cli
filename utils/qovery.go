@@ -1604,27 +1604,14 @@ func GetJobName(job *qovery.JobResponse) string {
 	return ""
 }
 
-func DeployDatabases(client *qovery.APIClient, envId string, databaseNames string) error {
-	if databaseNames == "" {
+func DeployDatabases(client *qovery.APIClient, envId string, databaseList []*qovery.Database) error {
+	if len(databaseList) == 0 {
 		return nil
 	}
 
 	var databasesToDeploy []string
 
-	databases, _, err := client.DatabasesAPI.ListDatabase(context.Background(), envId).Execute()
-
-	if err != nil {
-		return err
-	}
-
-	for _, databaseName := range strings.Split(databaseNames, ",") {
-		trimmedDatabaseName := strings.TrimSpace(databaseName)
-		database := FindByDatabaseName(databases.GetResults(), trimmedDatabaseName)
-
-		if database == nil {
-			return fmt.Errorf("database %s not found", trimmedDatabaseName)
-		}
-
+	for _, database := range databaseList {
 		databasesToDeploy = append(databasesToDeploy, database.Id)
 	}
 

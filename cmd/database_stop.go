@@ -129,13 +129,13 @@ var databaseStopCmd = &cobra.Command{
 	},
 }
 
-func buildServiceIdsFromDatabaseNames(
+func buildDatabaseListFromDatabaseNames(
 	client *qovery.APIClient,
 	environmentId string,
 	databaseName string,
 	databaseNames string,
-) []string {
-	var serviceIds []string
+) []*qovery.Database {
+	var databaseList []*qovery.Database
 	databases, _, err := client.DatabasesAPI.ListDatabase(context.Background(), environmentId).Execute()
 	checkError(err)
 
@@ -147,7 +147,7 @@ func buildServiceIdsFromDatabaseNames(
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
-		serviceIds = append(serviceIds, database.Id)
+		databaseList = append(databaseList, database)
 	}
 	if databaseNames != "" {
 		for _, databaseName := range strings.Split(databaseNames, ",") {
@@ -159,10 +159,25 @@ func buildServiceIdsFromDatabaseNames(
 				os.Exit(1)
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
-			serviceIds = append(serviceIds, database.Id)
+			databaseList = append(databaseList, database)
 		}
 	}
 
+	return databaseList
+}
+
+func buildServiceIdsFromDatabaseNames(
+	client *qovery.APIClient,
+	environmentId string,
+	databaseName string,
+	databaseNames string,
+) []string {
+	databaseList := buildDatabaseListFromDatabaseNames(client, environmentId, databaseName, databaseNames)
+	serviceIds := make([]string, len(databaseList))
+
+	for i, item := range databaseList {
+		serviceIds[i] = item.Id
+	}
 	return serviceIds
 }
 
