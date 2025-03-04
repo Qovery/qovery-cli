@@ -125,13 +125,13 @@ var containerStopCmd = &cobra.Command{
 	},
 }
 
-func buildServiceIdsFromContainerNames(
+func buildContainerListFromContainerNames(
 	client *qovery.APIClient,
 	environmentId string,
 	containerName string,
 	containerNames string,
-) []string {
-	var serviceIds []string
+) []*qovery.ContainerResponse {
+	var containerList []*qovery.ContainerResponse
 	containers, _, err := client.ContainersAPI.ListContainer(context.Background(), environmentId).Execute()
 	checkError(err)
 
@@ -143,7 +143,7 @@ func buildServiceIdsFromContainerNames(
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
-		serviceIds = append(serviceIds, container.Id)
+		containerList = append(containerList, container)
 	}
 	if containerNames != "" {
 		for _, containerName := range strings.Split(containerNames, ",") {
@@ -155,10 +155,25 @@ func buildServiceIdsFromContainerNames(
 				os.Exit(1)
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
-			serviceIds = append(serviceIds, container.Id)
+			containerList = append(containerList, container)
 		}
 	}
 
+	return containerList
+}
+
+func buildServiceIdsFromContainerNames(
+	client *qovery.APIClient,
+	environmentId string,
+	containerName string,
+	containerNames string,
+) []string {
+	containerList := buildContainerListFromContainerNames(client, environmentId, containerName, containerNames)
+	serviceIds := make([]string, len(containerList))
+
+	for i, item := range containerList {
+		serviceIds[i] = item.Id
+	}
 	return serviceIds
 }
 

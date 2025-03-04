@@ -29,8 +29,12 @@ var applicationDeployCmd = &cobra.Command{
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to deploy application(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", applicationName, applicationNames)))
 		if watchFlag {
-			time.Sleep(5 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
-			utils.WatchEnvironment(envId, "unused", client)
+			time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
+			if len(applicationList) == 1 {
+				utils.WatchApplication(applicationList[0].Id, envId, client)
+			} else {
+				utils.WatchEnvironment(envId, "unused", client)
+			}
 		}
 	},
 }

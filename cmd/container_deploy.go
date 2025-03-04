@@ -1,16 +1,12 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
-	"os"
-	"time"
-
 	"github.com/pterm/pterm"
+	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-
-	"github.com/qovery/qovery-cli/utils"
+	"time"
 )
 
 var containerDeployCmd = &cobra.Command{
@@ -20,104 +16,28 @@ var containerDeployCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if containerName == "" && containerNames == "" {
-			utils.PrintlnError(fmt.Errorf("use either --container \"<container name>\" or --containers \"<container1 name>, <container2 name>\" but not both at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if containerName != "" && containerNames != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --container and --containers at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
+		validateContainerArguments(containerName, containerNames)
 
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		checkError(err)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		// deploy multiple services
+		containerList := buildContainerListFromContainerNames(client, envId, containerName, containerNames)
 
-		if containerNames != "" {
-			// wait until service is ready
-			for {
-				if utils.IsEnvironmentInATerminalState(envId, client) {
-					break
-				}
+		err = utils.DeployContainers(client, envId, containerList, containerTag)
 
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
-				time.Sleep(5 * time.Second)
-			}
-
-			// deploy multiple services
-			err := utils.DeployContainers(client, envId, containerNames, containerTag)
-
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-
-			utils.Println(fmt.Sprintf("Deploying containers %s in progress..", pterm.FgBlue.Sprintf("%s", containerNames)))
-
-			if watchFlag {
-				utils.WatchEnvironment(envId, "unused", client)
-			}
-
-			return
-		}
-
-		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		container := utils.FindByContainerName(containers.GetResults(), containerName)
-
-		if container == nil {
-			utils.PrintlnError(fmt.Errorf("container %s not found", containerName))
-			utils.PrintlnInfo("You can list all containers with: qovery container list")
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		req := qovery.ContainerDeployRequest{
-			ImageTag: container.Tag,
-		}
-
-		if containerTag != "" {
-			req.ImageTag = containerTag
-		}
-
-		msg, err := utils.DeployService(client, envId, container.Id, utils.ContainerType, req, watchFlag)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if msg != "" {
-			utils.PrintlnInfo(msg)
-			return
-		}
+		checkError(err)
+		utils.Println(fmt.Sprintf("Request to deploy container(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", containerName, containerNames)))
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Container %s deployed!", pterm.FgBlue.Sprintf("%s", containerName)))
-		} else {
-			utils.Println(fmt.Sprintf("Deploying container %s in progress..", pterm.FgBlue.Sprintf("%s", containerName)))
+			time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
+			if len(containerList) == 1 {
+				utils.WatchContainer(containerList[0].Id, envId, client)
+			} else {
+				utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
+			}
 		}
 	},
 }
