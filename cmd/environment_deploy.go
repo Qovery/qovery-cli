@@ -4,14 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/pterm/pterm"
+	"github.com/qovery/qovery-client-go"
+	"github.com/spf13/cobra"
 	"os"
 	"slices"
 	"strings"
 	"time"
-
-	"github.com/qovery/qovery-client-go"
-	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/utils"
 )
@@ -25,20 +23,10 @@ var environmentDeployCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
+		checkError(err)
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
 
 		if (servicesJson != "" || applicationNames != "" || containerNames != "" || lifecycleNames != "" ||
 			cronjobNames != "" || helmNames != "") && skipPausedServicesFlag {
@@ -48,98 +36,67 @@ var environmentDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		// wait until service is ready
-		for {
-			if utils.IsEnvironmentInATerminalState(envId, client) {
-				break
-			}
-
-			utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
-			time.Sleep(5 * time.Second)
-		}
-
 		if servicesJson != "" {
 			// convert servicesJson to DeployAllRequest
 			var deployAllRequest qovery.DeployAllRequest
 			err := json.Unmarshal([]byte(servicesJson), &deployAllRequest)
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
+			checkError(err)
 
 			_, _, err = client.EnvironmentActionsAPI.DeployAllServices(context.Background(), envId).DeployAllRequest(deployAllRequest).Execute()
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-			utils.Println("Services are deploying!")
+			checkError(err)
+
+			utils.Println("Request to deploy services has been queued..")
 		} else if applicationNames != "" || containerNames != "" || lifecycleNames != "" || cronjobNames != "" || helmNames != "" {
 			deploymentRequest := getDeploymentRequestForMultipleServices(client, envId, applicationNames, containerNames, lifecycleNames, cronjobNames, helmNames)
 			_, _, err = client.EnvironmentActionsAPI.DeployAllServices(context.Background(), envId).DeployAllRequest(deploymentRequest).Execute()
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
+			checkError(err)
 
-			utils.Println("Services are deploying!")
+			utils.Println("Request to deploy services has been queued..")
 		}
 
 		if skipPausedServicesFlag {
 			// Paused services shouldn't be deployed, let's gather services status
 			servicesIDsToDeploy, err := getEligibleServices(client, envId, []qovery.StateEnum{qovery.STATEENUM_STOPPED})
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
+			checkError(err)
 
 			// Deploy the non stopped services from the env
 			request := qovery.DeployAllRequest{}
 			// Adding services to be deployed
 			for _, applicationID := range servicesIDsToDeploy.ApplicationsIDs {
 				request.Applications = append(request.Applications, qovery.DeployAllRequestApplicationsInner{ApplicationId: applicationID})
-				utils.Println(fmt.Sprintf("Application %s is deploying!", applicationID))
+				utils.Println(fmt.Sprintf("Request to deploy application %s has been queued..", applicationID))
 			}
 			for _, containerID := range servicesIDsToDeploy.ContainersIDs {
 				request.Containers = append(request.Containers, qovery.DeployAllRequestContainersInner{Id: containerID})
-				utils.Println(fmt.Sprintf("Container %s is deploying!", containerID))
+				utils.Println(fmt.Sprintf("Request to deploy container %s has been queued..", containerID))
+
 			}
 			for _, helmID := range servicesIDsToDeploy.HelmsIDs {
 				request.Helms = append(request.Helms, qovery.DeployAllRequestHelmsInner{Id: &helmID})
-				utils.Println(fmt.Sprintf("Helm %s is deploying!", helmID))
+				utils.Println(fmt.Sprintf("Request to deploy helm %s has been queued..", helmID))
 			}
 			for _, jobID := range servicesIDsToDeploy.JobsIDs {
 				request.Jobs = append(request.Jobs, qovery.DeployAllRequestJobsInner{Id: &jobID})
-				utils.Println(fmt.Sprintf("Job %s is deploying!", jobID))
+				utils.Println(fmt.Sprintf("Request to deploy job %s has been queued..", jobID))
 			}
 			for _, databaseID := range servicesIDsToDeploy.DatabasesIDs {
 				request.Databases = append(request.Databases, databaseID)
-				utils.Println(fmt.Sprintf("Database %s is deploying!", databaseID))
+				utils.Println(fmt.Sprintf("Request to deploy database %s has been queued..", databaseID))
 			}
 
 			_, _, err = client.EnvironmentActionsAPI.DeployAllServices(context.Background(), envId).DeployAllRequest(request).Execute()
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
+			checkError(err)
 
 		} else if servicesJson == "" && applicationNames == "" && containerNames == "" && lifecycleNames == "" &&
 			cronjobNames == "" && helmNames == "" {
 			// Deploy the whole env
 			_, _, err = client.EnvironmentActionsAPI.DeployEnvironment(context.Background(), envId).Execute()
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-			utils.Println("Environment is deploying!")
+			checkError(err)
+			utils.Println(fmt.Sprintf("Request to deploy environment has been queued.."))
 		}
 
 		if watchFlag {
+			time.Sleep(5 * time.Second)
 			utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
 		}
 	},
