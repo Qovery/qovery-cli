@@ -27,7 +27,10 @@ var applicationStopCmd = &cobra.Command{
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 		checkError(err)
 
-		serviceIds := buildServiceIdsFromApplicationNames(client, envId, applicationName, applicationNames)
+		applicationList := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)
+		serviceIds := utils.Map(applicationList, func(application *qovery.Application) string {
+			return application.Id
+		})
 		_, err = client.EnvironmentActionsAPI.
 			StopSelectedServices(context.Background(), envId).
 			EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -78,21 +81,6 @@ func buildApplicationListFromApplicationNames(
 	}
 
 	return applicationList
-}
-
-func buildServiceIdsFromApplicationNames(
-	client *qovery.APIClient,
-	environmentId string,
-	applicationName string,
-	applicationNames string,
-) []string {
-	applicationList := buildApplicationListFromApplicationNames(client, environmentId, applicationName, applicationNames)
-	serviceIds := make([]string, len(applicationList))
-
-	for i, item := range applicationList {
-		serviceIds[i] = item.Id
-	}
-	return serviceIds
 }
 
 func isDeploymentQueueEnabledForOrganization(organizationId string) bool {

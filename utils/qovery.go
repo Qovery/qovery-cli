@@ -1501,26 +1501,14 @@ func DeployContainers(client *qovery.APIClient, envId string, containerList []*q
 	return deployAllServices(client, envId, req)
 }
 
-func DeployJobs(client *qovery.APIClient, envId string, jobNames string, commitId string, tag string) error {
-	if jobNames == "" {
+func DeployJobs(client *qovery.APIClient, envId string, jobList []*qovery.JobResponse, commitId string, tag string) error {
+	if len(jobList) == 0 {
 		return nil
 	}
 
 	var jobsToDeploy []qovery.DeployAllRequestJobsInner
 
-	jobs, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
-
-	if err != nil {
-		return err
-	}
-
-	for _, applicationName := range strings.Split(jobNames, ",") {
-		trimmedJobName := strings.TrimSpace(applicationName)
-		job := FindByJobName(jobs.GetResults(), trimmedJobName)
-
-		if job == nil {
-			return fmt.Errorf("job %s not found", trimmedJobName)
-		}
+	for _, job := range jobList {
 
 		var docker = GetJobDocker(job)
 		var image = GetJobImage(job)
@@ -1625,26 +1613,14 @@ func DeployDatabases(client *qovery.APIClient, envId string, databaseList []*qov
 	return deployAllServices(client, envId, req)
 }
 
-func DeployHelms(client *qovery.APIClient, envId string, helmNames string, chartVersion string, chartGitCommitId string, valuesOverrideCommitId string) error {
-	if helmNames == "" {
+func DeployHelms(client *qovery.APIClient, envId string, helmList []*qovery.HelmResponse, chartVersion string, chartGitCommitId string, valuesOverrideCommitId string) error {
+	if len(helmList) == 0 {
 		return nil
 	}
 
 	var helmsToDeploy []qovery.DeployAllRequestHelmsInner
 
-	helms, _, err := client.HelmsAPI.ListHelms(context.Background(), envId).Execute()
-
-	if err != nil {
-		return err
-	}
-
-	for _, helmName := range strings.Split(helmNames, ",") {
-		trimmedHelmName := strings.TrimSpace(helmName)
-		helm := FindByHelmName(helms.GetResults(), trimmedHelmName)
-
-		if helm == nil {
-			return fmt.Errorf("helm %s not found", trimmedHelmName)
-		}
+	for _, helm := range helmList {
 
 		var gitSource = GetGitSource(helm)
 		var helmRepositorySource = GetHelmRepository(helm)

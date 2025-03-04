@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/pterm/pterm"
+	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 	"time"
 
@@ -33,7 +34,7 @@ var applicationDeployCmd = &cobra.Command{
 			if len(applicationList) == 1 {
 				utils.WatchApplication(applicationList[0].Id, envId, client)
 			} else {
-				utils.WatchEnvironment(envId, "unused", client)
+				utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
 			}
 		}
 	},

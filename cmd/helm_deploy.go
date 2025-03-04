@@ -1,16 +1,13 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-client-go"
 	"time"
 
-	"github.com/spf13/cobra"
-	"os"
-
 	"github.com/qovery/qovery-cli/utils"
+	"github.com/spf13/cobra"
 )
 
 var helmDeployCmd = &cobra.Command{
@@ -20,117 +17,25 @@ var helmDeployCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if helmName == "" && helmNames == "" {
-			utils.PrintlnError(fmt.Errorf("use either --helm \"<helm name>\" or --helms \"<helm1 name>, <helm2 name>\" but not both at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if helmName != "" && helmNames != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --helm and --helms at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
+		validateHelmArguments(helmName, helmNames)
 
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		checkError(err)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if helmNames != "" {
-			// wait until service is ready
-			for {
-				if utils.IsEnvironmentInATerminalState(envId, client) {
-					break
-				}
-
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
-				time.Sleep(5 * time.Second)
-			}
-
-			// deploy multiple services
-			err := utils.DeployHelms(client, envId, helmNames, chartVersion, chartGitCommitId, valuesOverrideCommitId)
-
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-
-			utils.Println(fmt.Sprintf("Deploying helms %s in progress..", pterm.FgBlue.Sprintf("%s", helmNames)))
-
-			if watchFlag {
-				utils.WatchEnvironment(envId, "unused", client)
-			}
-
-			return
-		}
-
-		helms, _, err := client.HelmsAPI.ListHelms(context.Background(), envId).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		helm := utils.FindByHelmName(helms.GetResults(), helmName)
-
-		if helm == nil {
-			utils.PrintlnError(fmt.Errorf("helm %s not found", helmName))
-			utils.PrintlnInfo("You can list all helms with: qovery helm list")
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		var mCommitId *string
-		var mChartVersion *string
-		var mValuesOverrideCommitId *string
-		if chartGitCommitId != "" {
-			mCommitId = &chartGitCommitId
-		}
-
-		if chartVersion != "" {
-			mChartVersion = &chartVersion
-		}
-
-		if valuesOverrideCommitId != "" {
-			mValuesOverrideCommitId = &valuesOverrideCommitId
-		}
-
-		req := qovery.HelmDeployRequest{
-			ChartVersion:              mChartVersion,
-			GitCommitId:               mCommitId,
-			ValuesOverrideGitCommitId: mValuesOverrideCommitId,
-		}
-
-		msg, err := utils.DeployService(client, envId, helm.Id, utils.HelmType, req, watchFlag)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if msg != "" {
-			utils.PrintlnInfo(msg)
-			return
-		}
+		helmList := buildHelmListFromHelmNames(client, envId, helmName, helmNames)
+		err = utils.DeployHelms(client, envId, helmList, chartVersion, chartGitCommitId, valuesOverrideCommitId)
+		checkError(err)
+		utils.Println(fmt.Sprintf("Request to deploy helm(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", helmName, helmNames)))
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("helm %s deployed!", pterm.FgBlue.Sprintf("%s", helmName)))
-		} else {
-			utils.Println(fmt.Sprintf("Deploying helm %s in progress..", pterm.FgBlue.Sprintf("%s", helmName)))
+			time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
+			if len(helmList) == 1 {
+				utils.WatchHelm(helmList[0].Id, envId, client)
+			} else {
+				utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
+			}
 		}
 	},
 }

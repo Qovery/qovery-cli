@@ -31,7 +31,10 @@ var lifecycleStopCmd = &cobra.Command{
 		checkError(err)
 
 		if isDeploymentQueueEnabledForOrganization(organizationId) {
-			serviceIds := buildServiceIdsFromLifecycleNames(client, envId, lifecycleName, lifecycleNames)
+			serviceIds := utils.Map(buildLifecycleListFromLifecycleNames(client, envId, lifecycleName, lifecycleNames),
+				func(lifecycle *qovery.JobResponse) string {
+					return utils.GetJobId(lifecycle)
+				})
 			_, err := client.EnvironmentActionsAPI.
 				StopSelectedServices(context.Background(), envId).
 				EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -129,13 +132,13 @@ var lifecycleStopCmd = &cobra.Command{
 	},
 }
 
-func buildServiceIdsFromLifecycleNames(
+func buildLifecycleListFromLifecycleNames(
 	client *qovery.APIClient,
 	environmentId string,
 	lifecycleName string,
 	lifecycleNames string,
-) []string {
-	var serviceIds []string
+) []*qovery.JobResponse {
+	var lifecycleList []*qovery.JobResponse
 	lifecycles, _, err := client.JobsAPI.ListJobs(context.Background(), environmentId).Execute()
 	checkError(err)
 
@@ -147,7 +150,7 @@ func buildServiceIdsFromLifecycleNames(
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
-		serviceIds = append(serviceIds, lifecycle.LifecycleJobResponse.Id)
+		lifecycleList = append(lifecycleList, lifecycle)
 	}
 	if lifecycleNames != "" {
 		for _, lifecycleName := range strings.Split(lifecycleNames, ",") {
@@ -159,11 +162,11 @@ func buildServiceIdsFromLifecycleNames(
 				os.Exit(1)
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
-			serviceIds = append(serviceIds, lifecycle.LifecycleJobResponse.Id)
+			lifecycleList = append(lifecycleList, lifecycle)
 		}
 	}
 
-	return serviceIds
+	return lifecycleList
 }
 
 func validateLifecycleArguments(lifecycleName string, lifecycleNames string) {
