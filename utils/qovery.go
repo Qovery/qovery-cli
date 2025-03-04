@@ -1438,26 +1438,14 @@ func GetDeploymentStageId(client *qovery.APIClient, serviceId string) string {
 	return sourceDeploymentStage.Id
 }
 
-func DeployApplications(client *qovery.APIClient, envId string, applicationNames string, commitId string) error {
-	if applicationNames == "" {
+func DeployApplications(client *qovery.APIClient, envId string, applicationList []*qovery.Application, commitId string) error {
+	if len(applicationList) == 0 {
 		return nil
 	}
 
 	var applicationsToDeploy []qovery.DeployAllRequestApplicationsInner
 
-	applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
-
-	if err != nil {
-		return err
-	}
-
-	for _, applicationName := range strings.Split(applicationNames, ",") {
-		trimmedApplicationName := strings.TrimSpace(applicationName)
-		application := FindByApplicationName(applications.GetResults(), trimmedApplicationName)
-
-		if application == nil {
-			return fmt.Errorf("application %s not found", trimmedApplicationName)
-		}
+	for _, application := range applicationList {
 
 		// if commitId is not set, use the deployed commit id
 		applicationCommitId := application.GitRepository.DeployedCommitId

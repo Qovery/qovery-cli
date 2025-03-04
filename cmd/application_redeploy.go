@@ -3,10 +3,10 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
-
 	"github.com/pterm/pterm"
+	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+	"time"
 
 	"github.com/qovery/qovery-cli/utils"
 )
@@ -18,55 +18,25 @@ var applicationRedeployCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
 
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		checkError(err)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		application := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)[0]
 
-		applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
+		deployRequest := qovery.DeployRequest{GitCommitId: *application.GitRepository.DeployedCommitId}
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		application := utils.FindByApplicationName(applications.GetResults(), applicationName)
-
-		if application == nil {
-			utils.PrintlnError(fmt.Errorf("application %s not found", applicationName))
-			utils.PrintlnInfo("You can list all applications with: qovery application list")
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		msg, err := utils.RedeployService(client, envId, application.Id, application.Name, utils.ApplicationType, watchFlag)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if msg != "" {
-			utils.PrintlnInfo(msg)
-			return
-		}
+		_, _, err = client.ApplicationActionsAPI.DeployApplication(context.Background(), application.Id).
+			DeployRequest(deployRequest).
+			Execute()
+		checkError(err)
+		utils.Println(fmt.Sprintf("Request to redeploy application(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", applicationName, applicationNames)))
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Application %s redeployed!", pterm.FgBlue.Sprintf("%s", applicationName)))
-		} else {
-			utils.Println(fmt.Sprintf("Redeploying application %s in progress..", pterm.FgBlue.Sprintf("%s", applicationName)))
+			time.Sleep(5 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
+			utils.WatchApplication(application.Id, envId, client)
 		}
 	},
 }

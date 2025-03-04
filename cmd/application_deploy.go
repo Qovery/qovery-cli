@@ -1,14 +1,10 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
-	"os"
-	"time"
-
 	"github.com/pterm/pterm"
-	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+	"time"
 
 	"github.com/qovery/qovery-cli/utils"
 )
@@ -20,105 +16,23 @@ var applicationDeployCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if applicationName == "" && applicationNames == "" {
-			utils.PrintlnError(fmt.Errorf("use either --application \"<app name>\" or --applications \"<app1 name>, <app2 name>\" but not both at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if applicationName != "" && applicationNames != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --application and --applications at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
+		validateApplicationArguments(applicationName, applicationNames)
 
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		checkError(err)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if applicationNames != "" {
-			// wait until service is ready
-			for {
-				if utils.IsEnvironmentInATerminalState(envId, client) {
-					break
-				}
-
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
-				time.Sleep(5 * time.Second)
-			}
-
-			// deploy multiple services
-			err := utils.DeployApplications(client, envId, applicationNames, applicationCommitId)
-
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-
-			utils.Println(fmt.Sprintf("Deploying applications %s in progress..", pterm.FgBlue.Sprintf("%s", applicationNames)))
-
-			if watchFlag {
-				utils.WatchEnvironment(envId, "unused", client)
-			}
-
-			return
-		}
-
-		applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		application := utils.FindByApplicationName(applications.GetResults(), applicationName)
-
-		if application == nil {
-			utils.PrintlnError(fmt.Errorf("application %s not found", applicationName))
-			utils.PrintlnInfo("You can list all applications with: qovery application list")
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		req := qovery.DeployRequest{
-			GitCommitId: *application.GitRepository.DeployedCommitId,
-		}
-
-		if applicationCommitId != "" {
-			req.GitCommitId = applicationCommitId
-		}
-
-		msg, err := utils.DeployService(client, envId, application.Id, utils.ApplicationType, req, watchFlag)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if msg != "" {
-			utils.PrintlnInfo(msg)
-			return
-		}
-
+		// deploy multiple services
+		applicationList := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)
+		err = utils.DeployApplications(client, envId, applicationList, applicationCommitId)
+		checkError(err)
+		utils.Println(fmt.Sprintf("Request to deploy application(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", applicationName, applicationNames)))
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Application %s deployed!", pterm.FgBlue.Sprintf("%s", applicationName)))
-		} else {
-			utils.Println(fmt.Sprintf("Deploying application %s in progress..", pterm.FgBlue.Sprintf("%s", applicationName)))
+			time.Sleep(5 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
+			utils.WatchEnvironment(envId, "unused", client)
 		}
+		return
 	},
 }
 
