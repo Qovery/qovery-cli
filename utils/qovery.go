@@ -1470,26 +1470,13 @@ func DeployApplications(client *qovery.APIClient, envId string, applicationList 
 	return deployAllServices(client, envId, req)
 }
 
-func DeployContainers(client *qovery.APIClient, envId string, containerNames string, tag string) error {
-	if containerNames == "" {
+func DeployContainers(client *qovery.APIClient, envId string, containerList []*qovery.ContainerResponse, tag string) error {
+	if len(containerList) == 0 {
 		return nil
 	}
 
 	var containersToDeploy []qovery.DeployAllRequestContainersInner
-
-	containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
-
-	if err != nil {
-		return err
-	}
-
-	for _, containerName := range strings.Split(containerNames, ",") {
-		trimmedContainerName := strings.TrimSpace(containerName)
-		container := FindByContainerName(containers.GetResults(), trimmedContainerName)
-
-		if container == nil {
-			return fmt.Errorf("container %s not found", trimmedContainerName)
-		}
+	for _, container := range containerList {
 
 		// if tag is not set, use the deployed commit id
 		containerTag := container.Tag
@@ -1617,27 +1604,14 @@ func GetJobName(job *qovery.JobResponse) string {
 	return ""
 }
 
-func DeployDatabases(client *qovery.APIClient, envId string, databaseNames string) error {
-	if databaseNames == "" {
+func DeployDatabases(client *qovery.APIClient, envId string, databaseList []*qovery.Database) error {
+	if len(databaseList) == 0 {
 		return nil
 	}
 
 	var databasesToDeploy []string
 
-	databases, _, err := client.DatabasesAPI.ListDatabase(context.Background(), envId).Execute()
-
-	if err != nil {
-		return err
-	}
-
-	for _, databaseName := range strings.Split(databaseNames, ",") {
-		trimmedDatabaseName := strings.TrimSpace(databaseName)
-		database := FindByDatabaseName(databases.GetResults(), trimmedDatabaseName)
-
-		if database == nil {
-			return fmt.Errorf("database %s not found", trimmedDatabaseName)
-		}
-
+	for _, database := range databaseList {
 		databasesToDeploy = append(databasesToDeploy, database.Id)
 	}
 

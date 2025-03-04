@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
-	"os"
+	"github.com/qovery/qovery-client-go"
 	"time"
 
 	"github.com/pterm/pterm"
@@ -19,97 +18,30 @@ var databaseDeployCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
 
-		if databaseName == "" && databaseNames == "" {
-			utils.PrintlnError(fmt.Errorf("use either --database \"<database name>\" or --databases \"<database1 name>, <database2 name>\" but not both at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if databaseName != "" && databaseNames != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --database and --databases at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		validateDatabaseArguments(databaseName, databaseNames)
 
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		checkError(err)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		databaseList := buildDatabaseListFromDatabaseNames(client, envId, databaseName, databaseNames)
 
-		databases, _, err := client.DatabasesAPI.ListDatabase(context.Background(), envId).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if databaseNames != "" {
-			// wait until service is ready
-			for {
-				if utils.IsEnvironmentInATerminalState(envId, client) {
-					break
-				}
-
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
-				time.Sleep(5 * time.Second)
-			}
-
-			// deploy multiple services
-			err := utils.DeployDatabases(client, envId, databaseNames)
-
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-
-			utils.Println(fmt.Sprintf("Deploying databases %s in progress..", pterm.FgBlue.Sprintf("%s", databaseNames)))
-
-			if watchFlag {
-				utils.WatchEnvironment(envId, "unused", client)
-			}
-
-			return
-		}
-
-		database := utils.FindByDatabaseName(databases.GetResults(), databaseName)
-
-		if database == nil {
-			utils.PrintlnError(fmt.Errorf("database %s not found", databaseName))
-			utils.PrintlnInfo("You can list all databases with: qovery database list")
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		msg, err := utils.DeployService(client, envId, database.Id, utils.DatabaseType, nil, watchFlag)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if msg != "" {
-			utils.PrintlnInfo(msg)
-			return
-		}
+		// deploy multiple services
+		err = utils.DeployDatabases(client, envId, databaseList)
+		checkError(err)
+		utils.Println(fmt.Sprintf("Request to deploy database(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", databaseName, databaseNames)))
 
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Database %s deployed!", pterm.FgBlue.Sprintf("%s", databaseName)))
-		} else {
-			utils.Println(fmt.Sprintf("Deploying database %s in progress..", pterm.FgBlue.Sprintf("%s", databaseName)))
+			time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
+			if len(databaseList) == 1 {
+				utils.WatchDatabase(databaseList[0].Id, envId, client)
+			} else {
+				utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
+			}
 		}
+
 	},
 }
 
