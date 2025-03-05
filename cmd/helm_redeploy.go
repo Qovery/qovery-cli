@@ -3,9 +3,8 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
-
 	"github.com/pterm/pterm"
+	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -17,57 +16,19 @@ var helmRedeployCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		client := utils.GetQoveryClientPanicInCaseOfError()
+		validateHelmArguments(helmName, helmNames)
+		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
-		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		helmList := buildHelmListFromHelmNames(client, envId, helmName, helmNames)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		helms, _, err := client.HelmsAPI.ListHelms(context.Background(), envId).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		helm := utils.FindByHelmName(helms.GetResults(), helmName)
-
-		if helm == nil {
-			utils.PrintlnError(fmt.Errorf("helm %s not found", helmName))
-			utils.PrintlnInfo("You can list all helms with: qovery helm list")
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		msg, err := utils.RedeployService(client, envId, helm.Id, helm.Name, utils.HelmType, watchFlag)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if msg != "" {
-			utils.PrintlnInfo(msg)
-			return
-		}
-
-		if watchFlag {
-			utils.Println(fmt.Sprintf("Helm %s redeployed!", pterm.FgBlue.Sprintf("%s", helmName)))
-		} else {
-			utils.Println(fmt.Sprintf("Redeploying helm %s in progress..", pterm.FgBlue.Sprintf("%s", helmName)))
-		}
+		_, _, err := client.HelmActionsAPI.
+			DeployHelm(context.Background(), helmList[0].Id).
+			HelmDeployRequest(qovery.HelmDeployRequest{}).
+			Execute()
+		checkError(err)
+		utils.Println(fmt.Sprintf("Request to redeploy helm(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", helmName, helmNames)))
+		WatchHelmDeployment(client, envId, helmList, watchFlag, qovery.STATEENUM_RESTARTED)
 	},
 }
 

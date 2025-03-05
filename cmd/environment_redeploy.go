@@ -2,15 +2,10 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"github.com/pterm/pterm"
-	"os"
-	"time"
-
+	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-
-	"github.com/qovery/qovery-cli/utils"
+	"time"
 )
 
 var environmentRedeployCmd = &cobra.Command{
@@ -19,43 +14,15 @@ var environmentRedeployCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		// wait until service is ready
-		for {
-			if utils.IsEnvironmentInATerminalState(envId, client) {
-				break
-			}
-
-			utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
-			time.Sleep(5 * time.Second)
-		}
-
-		_, _, err = client.EnvironmentActionsAPI.DeployEnvironment(context.Background(), envId).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		utils.Println("Environment is redeploying!")
-
+		client := utils.GetQoveryClientPanicInCaseOfError()
+		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
+		_, _, err := client.EnvironmentActionsAPI.
+			DeployEnvironment(context.Background(), envId).
+			Execute()
+		checkError(err)
+		utils.Println("Request to redeploy environment has been queued..")
 		if watchFlag {
+			time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
 			utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
 		}
 	},

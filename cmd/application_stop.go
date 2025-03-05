@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/pterm/pterm"
+	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 	"os"
 	"strings"
-	"time"
-
-	"github.com/qovery/qovery-cli/utils"
 )
 
 var applicationStopCmd = &cobra.Command{
@@ -19,19 +17,15 @@ var applicationStopCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
-		checkError(err)
+		client := utils.GetQoveryClientPanicInCaseOfError()
 		validateApplicationArguments(applicationName, applicationNames)
-
-		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-		checkError(err)
+		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		applicationList := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)
 		serviceIds := utils.Map(applicationList, func(application *qovery.Application) string {
 			return application.Id
 		})
-		_, err = client.EnvironmentActionsAPI.
+		_, err := client.EnvironmentActionsAPI.
 			StopSelectedServices(context.Background(), envId).
 			EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
 				ApplicationIds: serviceIds,
@@ -39,10 +33,7 @@ var applicationStopCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to stop application(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", applicationName, applicationNames)))
-		if watchFlag {
-			time.Sleep(5 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
-			utils.WatchEnvironment(envId, "unused", client)
-		}
+		WatchApplicationDeployment(client, envId, applicationList, watchFlag, qovery.STATEENUM_STOPPED)
 	},
 }
 
@@ -83,11 +74,6 @@ func buildApplicationListFromApplicationNames(
 	return applicationList
 }
 
-func isDeploymentQueueEnabledForOrganization(organizationId string) bool {
-	return organizationId == "3f421018-8edf-4a41-bb86-bec62791b6dc" || // backdev
-		organizationId == "3d542888-3d2c-474a-b1ad-712556db66da" // QSandbox
-}
-
 func validateApplicationArguments(applicationName string, applicationNames string) {
 	if applicationName == "" && applicationNames == "" {
 		utils.PrintlnError(fmt.Errorf("use either --application \"<app name>\" or --applications \"<app1 name>, <app2 name>\" but not both at the same time"))
@@ -103,11 +89,7 @@ func validateApplicationArguments(applicationName string, applicationNames strin
 }
 
 func checkError(err error) {
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-	}
+	utils.CheckError(err)
 }
 
 func init() {

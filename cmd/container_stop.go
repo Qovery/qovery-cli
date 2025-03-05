@@ -4,12 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/qovery/qovery-client-go"
+	"github.com/spf13/cobra"
 	"os"
 	"strings"
-	"time"
-
-	"github.com/pterm/pterm"
-	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/utils"
 )
@@ -20,111 +17,22 @@ var containerStopCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
-		checkError(err)
+		client := utils.GetQoveryClientPanicInCaseOfError()
 		validateContainerArguments(containerName, containerNames)
+		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
-		client := utils.GetQoveryClient(tokenType, token)
-		organizationId, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-		checkError(err)
-
-		if isDeploymentQueueEnabledForOrganization(organizationId) {
-			serviceIds := utils.Map(buildContainerListFromContainerNames(client, envId, containerName, containerNames),
-				func(container *qovery.ContainerResponse) string {
+		containerList := buildContainerListFromContainerNames(client, envId, containerName, containerNames)
+		_, err := client.EnvironmentActionsAPI.
+			StopSelectedServices(context.Background(), envId).
+			EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
+				ContainerIds: utils.Map(containerList, func(container *qovery.ContainerResponse) string {
 					return container.Id
-				})
-			_, err := client.EnvironmentActionsAPI.
-				StopSelectedServices(context.Background(), envId).
-				EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
-					ContainerIds: serviceIds,
-				}).
-				Execute()
-			checkError(err)
-			utils.Println(fmt.Sprintf("Request to stop container(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", containerName, containerNames)))
-			if watchFlag {
-				utils.WatchEnvironment(envId, "unused", client)
-			}
-			return
-		}
-
-		if containerNames != "" {
-			// wait until service is ready
-			for {
-				if utils.IsEnvironmentInATerminalState(envId, client) {
-					break
-				}
-
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
-				time.Sleep(5 * time.Second)
-			}
-
-			containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
-
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-
-			var serviceIds []string
-			for _, containerName := range strings.Split(containerNames, ",") {
-				trimmedContainerName := strings.TrimSpace(containerName)
-				serviceIds = append(serviceIds, utils.FindByContainerName(containers.GetResults(), trimmedContainerName).Id)
-			}
-
-			// stop multiple services
-			_, err = utils.StopServices(client, envId, serviceIds, utils.ContainerType)
-
-			if watchFlag {
-				utils.WatchEnvironment(envId, "unused", client)
-			} else {
-				utils.Println(fmt.Sprintf("Stopping containers %s in progress..", pterm.FgBlue.Sprintf("%s", containerNames)))
-			}
-
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-
-			return
-		}
-
-		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		container := utils.FindByContainerName(containers.GetResults(), containerName)
-
-		if container == nil {
-			utils.PrintlnError(fmt.Errorf("container %s not found", containerName))
-			utils.PrintlnInfo("You can list all containers with: qovery container list")
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		msg, err := utils.StopService(client, envId, container.Id, utils.ContainerType, watchFlag)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if msg != "" {
-			utils.PrintlnInfo(msg)
-			return
-		}
-
-		if watchFlag {
-			utils.Println(fmt.Sprintf("Container %s stopped!", pterm.FgBlue.Sprintf("%s", containerName)))
-		} else {
-			utils.Println(fmt.Sprintf("Stopping container %s in progress..", pterm.FgBlue.Sprintf("%s", containerName)))
-		}
+				}),
+			}).
+			Execute()
+		checkError(err)
+		utils.Println(fmt.Sprintf("Request to stop container(s) %s has been queued...", containerName))
+		WatchContainerDeployment(client, envId, containerList, watchFlag, qovery.STATEENUM_STOPPED)
 	},
 }
 

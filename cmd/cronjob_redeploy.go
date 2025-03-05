@@ -1,10 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/pterm/pterm"
-	"os"
-
+	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -16,57 +16,17 @@ var cronjobRedeployCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		client := utils.GetQoveryClientPanicInCaseOfError()
+		validateCronjobArguments(cronjobName, cronjobNames)
+		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
+		cronJobList := buildCronJobListFromCronjobNames(client, envId, cronjobName, cronjobNames)
 
-		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		cronjobs, err := ListCronjobs(envId, client)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		cronjob := utils.FindByJobName(cronjobs, cronjobName)
-
-		if cronjob == nil || cronjob.CronJobResponse == nil {
-			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
-			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		msg, err := utils.RedeployService(client, envId, cronjob.CronJobResponse.Id, cronjob.CronJobResponse.Name, utils.JobType, watchFlag)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if msg != "" {
-			utils.PrintlnInfo(msg)
-			return
-		}
-
-		if watchFlag {
-			utils.Println(fmt.Sprintf("Cronjob %s redeployed!", pterm.FgBlue.Sprintf("%s", cronjobName)))
-		} else {
-			utils.Println(fmt.Sprintf("Redeploying cronjob %s in progress..", pterm.FgBlue.Sprintf("%s", cronjobName)))
-		}
+		_, _, err := client.JobActionsAPI.DeployJob(context.Background(), utils.GetJobId(cronJobList[0])).
+			JobDeployRequest(qovery.JobDeployRequest{}).
+			Execute()
+		checkError(err)
+		utils.Println(fmt.Sprintf("Request to redeploy cronjob(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", cronjobName, cronjobNames)))
+		WatchJobDeployment(client, envId, cronJobList, watchFlag, qovery.STATEENUM_RESTARTED)
 	},
 }
 

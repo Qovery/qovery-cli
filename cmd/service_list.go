@@ -9,10 +9,10 @@ import (
 
 	"github.com/go-errors/errors"
 
+	"github.com/qovery/qovery-cli/pkg/usercontext"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"github.com/qovery/qovery-cli/pkg/usercontext"
 )
 
 var id string
@@ -170,6 +170,12 @@ func getOrganizationProjectEnvironmentContextResourcesIds(qoveryAPIClient *qover
 	}
 
 	return organizationId, projectId, environmentId, nil
+}
+
+func getEnvironmentIdFromContextPanicInCaseOfError(client *qovery.APIClient) string {
+	_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+	checkError(err)
+	return envId
 }
 
 func getOrganizationProjectContextResourcesIds(qoveryAPIClient *qovery.APIClient) (string, string, error) {
