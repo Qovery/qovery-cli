@@ -3,9 +3,8 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
-
 	"github.com/pterm/pterm"
+	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -17,57 +16,17 @@ var containerRedeployCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		client := utils.GetQoveryClientPanicInCaseOfError()
+		validateContainerArguments(containerName, containerNames)
+		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
-		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		containerList := buildContainerListFromContainerNames(client, envId, containerName, containerNames)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		container := utils.FindByContainerName(containers.GetResults(), containerName)
-
-		if container == nil {
-			utils.PrintlnError(fmt.Errorf("container %s not found", containerName))
-			utils.PrintlnInfo("You can list all containers with: qovery container list")
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		msg, err := utils.RedeployService(client, envId, container.Id, container.Name, utils.ContainerType, watchFlag)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if msg != "" {
-			utils.PrintlnInfo(msg)
-			return
-		}
-
-		if watchFlag {
-			utils.Println(fmt.Sprintf("Container %s redeployed!", pterm.FgBlue.Sprintf("%s", containerName)))
-		} else {
-			utils.Println(fmt.Sprintf("Redeploying container %s in progress..", pterm.FgBlue.Sprintf("%s", containerName)))
-		}
+		_, _, err := client.ContainerActionsAPI.DeployContainer(context.Background(), containerList[0].Id).
+			ContainerDeployRequest(qovery.ContainerDeployRequest{}).Execute()
+		checkError(err)
+		utils.Println(fmt.Sprintf("Request to redeploy container(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", containerName, containerNames)))
+		WatchContainerDeployment(client, envId, containerList, watchFlag, qovery.STATEENUM_RESTARTED)
 	},
 }
 
