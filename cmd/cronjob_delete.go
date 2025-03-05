@@ -28,7 +28,7 @@ var cronjobDeleteCmd = &cobra.Command{
 			}).
 			Execute()
 		checkError(err)
-		WatchCronJobDeployment(client, envId, cronJobList, watchFlag, qovery.STATEENUM_DELETED)
+		WatchJobDeployment(client, envId, cronJobList, watchFlag, qovery.STATEENUM_DELETED)
 	},
 }
 
