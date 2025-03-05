@@ -31,7 +31,10 @@ var databaseStopCmd = &cobra.Command{
 		checkError(err)
 
 		if isDeploymentQueueEnabledForOrganization(organizationId) {
-			serviceIds := buildServiceIdsFromDatabaseNames(client, envId, databaseName, databaseNames)
+			serviceIds := utils.Map(buildDatabaseListFromDatabaseNames(client, envId, databaseName, databaseNames),
+				func(database *qovery.Database) string {
+					return database.Id
+				})
 			_, err := client.EnvironmentActionsAPI.
 				StopSelectedServices(context.Background(), envId).
 				EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -164,21 +167,6 @@ func buildDatabaseListFromDatabaseNames(
 	}
 
 	return databaseList
-}
-
-func buildServiceIdsFromDatabaseNames(
-	client *qovery.APIClient,
-	environmentId string,
-	databaseName string,
-	databaseNames string,
-) []string {
-	databaseList := buildDatabaseListFromDatabaseNames(client, environmentId, databaseName, databaseNames)
-	serviceIds := make([]string, len(databaseList))
-
-	for i, item := range databaseList {
-		serviceIds[i] = item.Id
-	}
-	return serviceIds
 }
 
 func validateDatabaseArguments(databaseName string, databaseNames string) {

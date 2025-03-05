@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/qovery/qovery-client-go"
 	"os"
 	"time"
 
 	"github.com/pterm/pterm"
 
-	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -20,23 +20,8 @@ var lifecycleDeployCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if lifecycleName == "" && lifecycleNames == "" {
-			utils.PrintlnError(fmt.Errorf("use either --lifecycle \"<container name>\" or --lifecycles \"<container1 name>, <container2 name>\" but not both at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if lifecycleName != "" && lifecycleNames != "" {
-			utils.PrintlnError(fmt.Errorf("you can't use --lifecycle and --lifecycles at the same time"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		checkError(err)
+		validateLifecycleArguments(lifecycleName, lifecycleNames)
 
 		if lifecycleTag != "" && lifecycleCommitId != "" {
 			utils.PrintlnError(fmt.Errorf("you can't use --tag and --commit-id at the same time"))
@@ -46,99 +31,19 @@ var lifecycleDeployCmd = &cobra.Command{
 
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		checkError(err)
 
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if lifecycleNames != "" {
-			// wait until service is ready
-			for {
-				if utils.IsEnvironmentInATerminalState(envId, client) {
-					break
-				}
-
-				utils.Println(fmt.Sprintf("Waiting for environment %s to be ready..", pterm.FgBlue.Sprintf("%s", envId)))
-				time.Sleep(5 * time.Second)
-			}
-
-			// deploy multiple services
-			err := utils.DeployJobs(client, envId, lifecycleNames, lifecycleCommitId, lifecycleTag)
-
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
-
-			utils.Println(fmt.Sprintf("Deploying lifecycles %s in progress..", pterm.FgBlue.Sprintf("%s", lifecycleNames)))
-
-			if watchFlag {
-				utils.WatchEnvironment(envId, "unused", client)
-			}
-
-			return
-		}
-
-		lifecycles, err := ListLifecycleJobs(envId, client)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		lifecycle := utils.FindByJobName(lifecycles, lifecycleName)
-
-		if lifecycle == nil || lifecycle.LifecycleJobResponse == nil {
-			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
-			utils.PrintlnInfo("You can list all lifecycle jobs with: qovery lifecycle list")
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		var docker = utils.GetJobDocker(lifecycle)
-		var image = utils.GetJobImage(lifecycle)
-
-		var req qovery.JobDeployRequest
-
-		if docker != nil {
-			req = qovery.JobDeployRequest{
-				GitCommitId: docker.GitRepository.DeployedCommitId,
-			}
-
-			if lifecycleCommitId != "" {
-				req.GitCommitId = &lifecycleCommitId
-			}
-		} else {
-			req = qovery.JobDeployRequest{
-				ImageTag: &image.Tag,
-			}
-
-			if lifecycleTag != "" {
-				req.ImageTag = &lifecycleTag
-			}
-		}
-
-		msg, err := utils.DeployService(client, envId, lifecycle.LifecycleJobResponse.Id, utils.JobType, req, watchFlag)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if msg != "" {
-			utils.PrintlnInfo(msg)
-			return
-		}
-
+		lifecyleList := buildLifecycleListFromLifecycleNames(client, envId, lifecycleName, lifecycleNames)
+		err = utils.DeployJobs(client, envId, lifecyleList, lifecycleCommitId, lifecycleTag)
+		checkError(err)
+		utils.Println(fmt.Sprintf("Request to deploy cronjob(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", cronjobName, cronjobNames)))
 		if watchFlag {
-			utils.Println(fmt.Sprintf("Lifecycle %s deployed!", pterm.FgBlue.Sprintf("%s", lifecycleName)))
-		} else {
-			utils.Println(fmt.Sprintf("Deploying lifecycle %s in progress..", pterm.FgBlue.Sprintf("%s", lifecycleName)))
+			time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
+			if len(lifecyleList) == 1 {
+				utils.WatchJob(utils.GetJobId(lifecyleList[0]), envId, client)
+			} else {
+				utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
+			}
 		}
 	},
 }

@@ -27,7 +27,10 @@ var applicationDeleteCmd = &cobra.Command{
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 		checkError(err)
 
-		serviceIds := buildServiceIdsFromApplicationNames(client, envId, applicationName, applicationNames)
+		applicationList := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)
+		serviceIds := utils.Map(applicationList, func(application *qovery.Application) string {
+			return application.Id
+		})
 		// stop multiple services
 		_, err = client.EnvironmentActionsAPI.
 			DeleteSelectedServices(context.Background(), envId).

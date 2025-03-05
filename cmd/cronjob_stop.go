@@ -30,7 +30,10 @@ var cronjobStopCmd = &cobra.Command{
 		checkError(err)
 
 		if isDeploymentQueueEnabledForOrganization(organizationId) {
-			serviceIds := buildServiceIdsFromCronjobNames(client, envId, cronjobName, cronjobNames)
+			serviceIds := utils.Map(buildCronJobListFromCronjobNames(client, envId, cronjobName, cronjobNames),
+				func(cronjob *qovery.JobResponse) string {
+					return utils.GetJobId(cronjob)
+				})
 			_, err := client.EnvironmentActionsAPI.
 				StopSelectedServices(context.Background(), envId).
 				EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -127,13 +130,13 @@ var cronjobStopCmd = &cobra.Command{
 	},
 }
 
-func buildServiceIdsFromCronjobNames(
+func buildCronJobListFromCronjobNames(
 	client *qovery.APIClient,
 	environmentId string,
 	cronjobName string,
 	cronjobNames string,
-) []string {
-	var serviceIds []string
+) []*qovery.JobResponse {
+	var cronjobList []*qovery.JobResponse
 	cronjobs, _, err := client.JobsAPI.ListJobs(context.Background(), environmentId).Execute()
 	checkError(err)
 
@@ -145,7 +148,7 @@ func buildServiceIdsFromCronjobNames(
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
-		serviceIds = append(serviceIds, cronjob.CronJobResponse.Id)
+		cronjobList = append(cronjobList, cronjob)
 	}
 	if cronjobNames != "" {
 		for _, cronjobName := range strings.Split(cronjobNames, ",") {
@@ -157,11 +160,11 @@ func buildServiceIdsFromCronjobNames(
 				os.Exit(1)
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
-			serviceIds = append(serviceIds, cronjob.CronJobResponse.Id)
+			cronjobList = append(cronjobList, cronjob)
 		}
 	}
 
-	return serviceIds
+	return cronjobList
 }
 
 func validateCronjobArguments(cronJobName string, cronJobNames string) {

@@ -30,7 +30,10 @@ var helmStopCmd = &cobra.Command{
 		checkError(err)
 
 		if isDeploymentQueueEnabledForOrganization(organizationId) {
-			serviceIds := buildServiceIdsFromHelmNames(client, envId, helmName, helmNames)
+			serviceIds := utils.Map(buildHelmListFromHelmNames(client, envId, helmName, helmNames),
+				func(helm *qovery.HelmResponse) string {
+					return helm.Id
+				})
 			_, err := client.EnvironmentActionsAPI.
 				StopSelectedServices(context.Background(), envId).
 				EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -135,13 +138,13 @@ var helmStopCmd = &cobra.Command{
 	},
 }
 
-func buildServiceIdsFromHelmNames(
+func buildHelmListFromHelmNames(
 	client *qovery.APIClient,
 	environmentId string,
 	helmName string,
 	helmNames string,
-) []string {
-	var serviceIds []string
+) []*qovery.HelmResponse {
+	var helmList []*qovery.HelmResponse
 	helms, _, err := client.HelmsAPI.ListHelms(context.Background(), environmentId).Execute()
 	checkError(err)
 
@@ -153,7 +156,7 @@ func buildServiceIdsFromHelmNames(
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
-		serviceIds = append(serviceIds, helm.Id)
+		helmList = append(helmList, helm)
 	}
 	if helmNames != "" {
 		for _, helmName := range strings.Split(helmNames, ",") {
@@ -165,11 +168,11 @@ func buildServiceIdsFromHelmNames(
 				os.Exit(1)
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
-			serviceIds = append(serviceIds, helm.Id)
+			helmList = append(helmList, helm)
 		}
 	}
 
-	return serviceIds
+	return helmList
 }
 
 func validateHelmArguments(helmName string, helmNames string) {

@@ -29,7 +29,10 @@ var containerStopCmd = &cobra.Command{
 		checkError(err)
 
 		if isDeploymentQueueEnabledForOrganization(organizationId) {
-			serviceIds := buildServiceIdsFromContainerNames(client, envId, containerName, containerNames)
+			serviceIds := utils.Map(buildContainerListFromContainerNames(client, envId, containerName, containerNames),
+				func(container *qovery.ContainerResponse) string {
+					return container.Id
+				})
 			_, err := client.EnvironmentActionsAPI.
 				StopSelectedServices(context.Background(), envId).
 				EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -160,21 +163,6 @@ func buildContainerListFromContainerNames(
 	}
 
 	return containerList
-}
-
-func buildServiceIdsFromContainerNames(
-	client *qovery.APIClient,
-	environmentId string,
-	containerName string,
-	containerNames string,
-) []string {
-	containerList := buildContainerListFromContainerNames(client, environmentId, containerName, containerNames)
-	serviceIds := make([]string, len(containerList))
-
-	for i, item := range containerList {
-		serviceIds[i] = item.Id
-	}
-	return serviceIds
 }
 
 func validateContainerArguments(containerName string, containerNames string) {
