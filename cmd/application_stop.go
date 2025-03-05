@@ -74,11 +74,6 @@ func buildApplicationListFromApplicationNames(
 	return applicationList
 }
 
-func isDeploymentQueueEnabledForOrganization(organizationId string) bool {
-	return organizationId == "3f421018-8edf-4a41-bb86-bec62791b6dc" || // backdev
-		organizationId == "3d542888-3d2c-474a-b1ad-712556db66da" // QSandbox
-}
-
 func validateApplicationArguments(applicationName string, applicationNames string) {
 	if applicationName == "" && applicationNames == "" {
 		utils.PrintlnError(fmt.Errorf("use either --application \"<app name>\" or --applications \"<app1 name>, <app2 name>\" but not both at the same time"))
