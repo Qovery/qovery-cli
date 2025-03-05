@@ -22,11 +22,8 @@ var environmentDeployCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
-		checkError(err)
-		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-		checkError(err)
+		client := utils.GetQoveryClientPanicInCaseOfError()
+		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		if (servicesJson != "" || applicationNames != "" || containerNames != "" || lifecycleNames != "" ||
 			cronjobNames != "" || helmNames != "") && skipPausedServicesFlag {
@@ -48,7 +45,7 @@ var environmentDeployCmd = &cobra.Command{
 			utils.Println("Request to deploy services has been queued..")
 		} else if applicationNames != "" || containerNames != "" || lifecycleNames != "" || cronjobNames != "" || helmNames != "" {
 			deploymentRequest := getDeploymentRequestForMultipleServices(client, envId, applicationNames, containerNames, lifecycleNames, cronjobNames, helmNames)
-			_, _, err = client.EnvironmentActionsAPI.DeployAllServices(context.Background(), envId).DeployAllRequest(deploymentRequest).Execute()
+			_, _, err := client.EnvironmentActionsAPI.DeployAllServices(context.Background(), envId).DeployAllRequest(deploymentRequest).Execute()
 			checkError(err)
 
 			utils.Println("Request to deploy services has been queued..")
@@ -90,13 +87,13 @@ var environmentDeployCmd = &cobra.Command{
 		} else if servicesJson == "" && applicationNames == "" && containerNames == "" && lifecycleNames == "" &&
 			cronjobNames == "" && helmNames == "" {
 			// Deploy the whole env
-			_, _, err = client.EnvironmentActionsAPI.DeployEnvironment(context.Background(), envId).Execute()
+			_, _, err := client.EnvironmentActionsAPI.DeployEnvironment(context.Background(), envId).Execute()
 			checkError(err)
 			utils.Println("Request to deploy environment has been queued..")
 		}
 
 		if watchFlag {
-			time.Sleep(5 * time.Second)
+			time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent
 			utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
 		}
 	},
