@@ -31,11 +31,11 @@ var cronjobDeployCmd = &cobra.Command{
 		err := utils.DeployJobs(client, envId, cronJobList, cronjobCommitId, cronjobTag)
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to deploy cronjob(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", cronjobName, cronjobNames)))
-		WatchCronJobDeployment(client, envId, cronJobList, watchFlag, qovery.STATEENUM_DEPLOYED)
+		WatchJobDeployment(client, envId, cronJobList, watchFlag, qovery.STATEENUM_DEPLOYED)
 	},
 }
 
-func WatchCronJobDeployment(
+func WatchJobDeployment(
 	client *qovery.APIClient,
 	envId string,
 	cronJobs []*qovery.JobResponse,

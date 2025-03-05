@@ -2,11 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-client-go"
 	"os"
-	"time"
-
-	"github.com/pterm/pterm"
 
 	"github.com/spf13/cobra"
 
@@ -19,9 +17,9 @@ var lifecycleDeployCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
-		checkError(err)
+		client := utils.GetQoveryClientPanicInCaseOfError()
 		validateLifecycleArguments(lifecycleName, lifecycleNames)
+		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		if lifecycleTag != "" && lifecycleCommitId != "" {
 			utils.PrintlnError(fmt.Errorf("you can't use --tag and --commit-id at the same time"))
@@ -29,22 +27,11 @@ var lifecycleDeployCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-		checkError(err)
-
 		lifecyleList := buildLifecycleListFromLifecycleNames(client, envId, lifecycleName, lifecycleNames)
-		err = utils.DeployJobs(client, envId, lifecyleList, lifecycleCommitId, lifecycleTag)
+		err := utils.DeployJobs(client, envId, lifecyleList, lifecycleCommitId, lifecycleTag)
 		checkError(err)
-		utils.Println(fmt.Sprintf("Request to deploy cronjob(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", cronjobName, cronjobNames)))
-		if watchFlag {
-			time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
-			if len(lifecyleList) == 1 {
-				utils.WatchJob(utils.GetJobId(lifecyleList[0]), envId, client)
-			} else {
-				utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
-			}
-		}
+		utils.Println(fmt.Sprintf("Request to deploy lifecycle job(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", lifecycleName, lifecycleNames)))
+		WatchJobDeployment(client, envId, lifecyleList, watchFlag, qovery.STATEENUM_DEPLOYED)
 	},
 }
 

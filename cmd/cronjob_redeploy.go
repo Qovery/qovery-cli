@@ -26,7 +26,7 @@ var cronjobRedeployCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to redeploy cronjob(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", cronjobName, cronjobNames)))
-		WatchCronJobDeployment(client, envId, cronJobList, watchFlag, qovery.STATEENUM_RESTARTED)
+		WatchJobDeployment(client, envId, cronJobList, watchFlag, qovery.STATEENUM_RESTARTED)
 	},
 }
 

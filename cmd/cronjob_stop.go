@@ -34,7 +34,7 @@ var cronjobStopCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to stop cronjob(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", cronjobName, cronjobNames)))
-		WatchCronJobDeployment(client, envId, cronJobList, watchFlag, qovery.STATEENUM_STOPPED)
+		WatchJobDeployment(client, envId, cronJobList, watchFlag, qovery.STATEENUM_STOPPED)
 	},
 }
 
