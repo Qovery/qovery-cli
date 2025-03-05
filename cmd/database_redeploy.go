@@ -3,9 +3,8 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
-
 	"github.com/pterm/pterm"
+	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -17,57 +16,17 @@ var databaseRedeployCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		client := utils.GetQoveryClientPanicInCaseOfError()
+		validateDatabaseArguments(databaseName, databaseNames)
+		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
-		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		databases, _, err := client.DatabasesAPI.ListDatabase(context.Background(), envId).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		database := utils.FindByDatabaseName(databases.GetResults(), databaseName)
-
-		if database == nil {
-			utils.PrintlnError(fmt.Errorf("database %s not found", databaseName))
-			utils.PrintlnInfo("You can list all databases with: qovery database list")
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		msg, err := utils.RedeployService(client, envId, database.Id, database.Name, utils.DatabaseType, watchFlag)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
-
-		if msg != "" {
-			utils.PrintlnInfo(msg)
-			return
-		}
-
-		if watchFlag {
-			utils.Println(fmt.Sprintf("Database %s redeployed!", pterm.FgBlue.Sprintf("%s", databaseName)))
-		} else {
-			utils.Println(fmt.Sprintf("Redeploying database %s in progress..", pterm.FgBlue.Sprintf("%s", databaseName)))
-		}
+		databaseList := buildDatabaseListFromDatabaseNames(client, envId, databaseName, databaseNames)
+		_, _, err := client.DatabaseActionsAPI.
+			DeployDatabase(context.Background(), databaseList[0].Id).
+			Execute()
+		checkError(err)
+		utils.Println(fmt.Sprintf("Request to redeploy database(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", databaseName, databaseNames)))
+		WatchDatabaseDeployment(client, envId, databaseList, watchFlag, qovery.STATEENUM_RESTARTED)
 	},
 }
 
