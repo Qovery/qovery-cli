@@ -16,28 +16,34 @@ var applicationDeployCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
-		checkError(err)
+		client := utils.GetQoveryClientPanicInCaseOfError()
 		validateApplicationArguments(applicationName, applicationNames)
-
-		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-		checkError(err)
+		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		// deploy multiple services
 		applicationList := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)
-		err = utils.DeployApplications(client, envId, applicationList, applicationCommitId)
+		err := utils.DeployApplications(client, envId, applicationList, applicationCommitId)
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to deploy application(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", applicationName, applicationNames)))
-		if watchFlag {
-			time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
-			if len(applicationList) == 1 {
-				utils.WatchApplication(applicationList[0].Id, envId, client)
-			} else {
-				utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
-			}
-		}
+		WatchApplicationDeployment(client, envId, applicationList, watchFlag, qovery.STATEENUM_DEPLOYED)
 	},
+}
+
+func WatchApplicationDeployment(
+	client *qovery.APIClient,
+	envId string,
+	applications []*qovery.Application,
+	watchFlag bool,
+	finalServiceState qovery.StateEnum,
+) {
+	if watchFlag {
+		time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
+		if len(applications) == 1 {
+			utils.WatchApplication(applications[0].Id, envId, client)
+		} else {
+			utils.WatchEnvironment(envId, finalServiceState, client)
+		}
+	}
 }
 
 func init() {

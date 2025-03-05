@@ -49,6 +49,20 @@ func WebsocketUrl() string {
 	return "wss://ws.qovery.com"
 }
 
+func GetQoveryClientPanicInCaseOfError() *qovery.APIClient {
+	tokenType, token, err := GetAccessToken()
+	CheckError(err)
+	return GetQoveryClient(tokenType, token)
+}
+
+func CheckError(err error) {
+	if err != nil {
+		PrintlnError(err)
+		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+	}
+}
+
 func GetQoveryClient(tokenType AccessTokenType, token AccessToken) *qovery.APIClient {
 	conf := qovery.NewConfiguration()
 	conf.UserAgent = "CLI " + Version
