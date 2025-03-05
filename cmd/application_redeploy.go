@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/pterm/pterm"
+	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"time"
-
-	"github.com/qovery/qovery-cli/utils"
 )
 
 var applicationRedeployCmd = &cobra.Command{
@@ -17,27 +15,18 @@ var applicationRedeployCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
-		checkError(err)
+		client := utils.GetQoveryClientPanicInCaseOfError()
+		validateApplicationArguments(applicationName, applicationNames)
+		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
-		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-		checkError(err)
+		applicationList := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)
 
-		application := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)[0]
-
-		deployRequest := qovery.DeployRequest{GitCommitId: *application.GitRepository.DeployedCommitId}
-
-		_, _, err = client.ApplicationActionsAPI.DeployApplication(context.Background(), application.Id).
-			DeployRequest(deployRequest).
+		_, _, err := client.ApplicationActionsAPI.DeployApplication(context.Background(), applicationList[0].Id).
+			DeployRequest(qovery.DeployRequest{GitCommitId: *applicationList[0].GitRepository.DeployedCommitId}).
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to redeploy application(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", applicationName, applicationNames)))
-
-		if watchFlag {
-			time.Sleep(5 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
-			utils.WatchApplication(application.Id, envId, client)
-		}
+		WatchApplicationDeployment(client, envId, applicationList, watchFlag, qovery.STATEENUM_RESTARTED)
 	},
 }
 
