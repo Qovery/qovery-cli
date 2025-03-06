@@ -215,7 +215,9 @@ func (service *SelfManagedClusterServiceImpl) GetInstallationHelmValues(organiza
 
 func getName(creds *qovery.ClusterCredentials) (string, error) {
 	switch castedCreds := creds.GetActualInstance().(type) {
-	case *qovery.AwsClusterCredentials:
+	case *qovery.AwsStaticClusterCredentials:
+		return castedCreds.GetName(), nil
+	case *qovery.AwsRoleClusterCredentials:
 		return castedCreds.GetName(), nil
 	case *qovery.ScalewayClusterCredentials:
 		return castedCreds.GetName(), nil
@@ -228,7 +230,9 @@ func getName(creds *qovery.ClusterCredentials) (string, error) {
 
 func getId(creds *qovery.ClusterCredentials) (string, error) {
 	switch castedCreds := creds.GetActualInstance().(type) {
-	case *qovery.AwsClusterCredentials:
+	case *qovery.AwsStaticClusterCredentials:
+		return castedCreds.GetId(), nil
+	case *qovery.AwsRoleClusterCredentials:
 		return castedCreds.GetId(), nil
 	case *qovery.ScalewayClusterCredentials:
 		return castedCreds.GetId(), nil

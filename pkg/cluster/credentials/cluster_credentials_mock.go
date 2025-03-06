@@ -55,7 +55,7 @@ func mockCreateCloudProviderCredentials[T any](organization *qovery.Organization
 			var response qovery.ClusterCredentials
 			switch cloudProviderTypeUrl {
 			case "aws":
-				response = qovery.ClusterCredentials{AwsClusterCredentials: &qovery.AwsClusterCredentials{
+				response = qovery.ClusterCredentials{AwsStaticClusterCredentials: &qovery.AwsStaticClusterCredentials{
 					Id:         generatedUuid,
 					Name:       credentialsName,
 					ObjectType: "AWS",
@@ -101,6 +101,6 @@ type ClusterCredentialsServiceMock struct {
 func (mock *ClusterCredentialsServiceMock) ListClusterCredentials(organizationID string, cloudProviderType qovery.CloudProviderEnum) (*qovery.ClusterCredentialsResponseList, error) {
 	return mock.ResultListClusterCredentials()
 }
-func (mock *ClusterCredentialsServiceMock) AskToCreateCredentials(organizationID string, cloudProviderType qovery.CloudProviderEnum, ) (*qovery.ClusterCredentials, error) {
+func (mock *ClusterCredentialsServiceMock) AskToCreateCredentials(organizationID string, cloudProviderType qovery.CloudProviderEnum) (*qovery.ClusterCredentials, error) {
 	return mock.ResultAskToCreateCredentials()
 }
