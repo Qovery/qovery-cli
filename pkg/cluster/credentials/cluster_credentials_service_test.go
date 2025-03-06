@@ -95,7 +95,7 @@ func TestAwsCredentials(t *testing.T) {
 		// then
 		assert.Nil(t, err)
 		assert.NotNil(t, credentials)
-		var createdCredentials = allCredentialsById[credentials.AwsClusterCredentials.Id].(qovery.AwsCredentialsRequest)
+		var createdCredentials = allCredentialsById[credentials.AwsStaticClusterCredentials.Id].(qovery.AwsCredentialsRequest).AwsStaticCredentialsRequest
 		assert.Equal(t, "aws-credentials", createdCredentials.Name)
 		assert.Equal(t, "aws-access-key", createdCredentials.AccessKeyId)
 		assert.Equal(t, "aws-secret-key", createdCredentials.SecretAccessKey)
@@ -160,7 +160,7 @@ func TestAwsCredentials(t *testing.T) {
 		MockListCloudProviderCredentials(
 			organization,
 			&qovery.ClusterCredentialsResponseList{Results: []qovery.ClusterCredentials{
-				{AwsClusterCredentials: &qovery.AwsClusterCredentials{Id: "id", Name: "AWS Credentials"}},
+				{AwsStaticClusterCredentials: &qovery.AwsStaticClusterCredentials{Id: "id", Name: "AWS Credentials"}},
 			}},
 			"aws",
 		)

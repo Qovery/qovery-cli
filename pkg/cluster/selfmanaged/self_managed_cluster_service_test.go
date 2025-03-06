@@ -33,7 +33,7 @@ func TestCreateCluster(t *testing.T) {
 		var clusterCredentialsService = mockCredentials.ClusterCredentialsServiceMock{
 			ResultListClusterCredentials: func() (*qovery.ClusterCredentialsResponseList, error) {
 				return &qovery.ClusterCredentialsResponseList{Results: []qovery.ClusterCredentials{
-					{AwsClusterCredentials: &qovery.AwsClusterCredentials{Id: "id-credentials", Name: "AWS credentials"}},
+					{AwsStaticClusterCredentials: &qovery.AwsStaticClusterCredentials{Id: "id-credentials", Name: "AWS credentials"}},
 				}}, nil
 			},
 			ResultAskToCreateCredentials: func() (*qovery.ClusterCredentials, error) {

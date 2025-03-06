@@ -13,7 +13,7 @@ import (
 
 type ClusterCredentialsService interface {
 	ListClusterCredentials(organizationID string, cloudProviderType qovery.CloudProviderEnum) (*qovery.ClusterCredentialsResponseList, error)
-	AskToCreateCredentials(organizationID string, cloudProviderType qovery.CloudProviderEnum, ) (*qovery.ClusterCredentials, error)
+	AskToCreateCredentials(organizationID string, cloudProviderType qovery.CloudProviderEnum) (*qovery.ClusterCredentials, error)
 }
 
 type ClusterCredentialsServiceImpl struct {
@@ -114,9 +114,11 @@ func (service *ClusterCredentialsServiceImpl) AskToCreateCredentials(
 		}
 
 		creds, resp, err := service.client.CloudProviderCredentialsAPI.CreateAWSCredentials(context.Background(), organizationID).AwsCredentialsRequest(qovery.AwsCredentialsRequest{
-			Name:            credentialsName,
-			AccessKeyId:     accessKey,
-			SecretAccessKey: secretKey,
+			AwsStaticCredentialsRequest: &qovery.AwsStaticCredentialsRequest{
+				Name:            credentialsName,
+				AccessKeyId:     accessKey,
+				SecretAccessKey: secretKey,
+			},
 		}).Execute()
 		if err != nil || resp.StatusCode >= 400 {
 			body, _ := io.ReadAll(resp.Body)
@@ -192,4 +194,3 @@ func (service *ClusterCredentialsServiceImpl) AskToCreateCredentials(
 
 	return nil, fmt.Errorf("unhandled cloud provider type during credentials creation: %s", cloudProviderType)
 }
-
