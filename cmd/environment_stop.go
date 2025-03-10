@@ -16,19 +16,17 @@ var environmentStopCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
-		checkError(err)
+		client := utils.GetQoveryClientPanicInCaseOfError()
+		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
-		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		_, _, err := client.EnvironmentActionsAPI.
+			StopEnvironment(context.Background(), envId).
+			Execute()
 		checkError(err)
-
-		_, _, err = client.EnvironmentActionsAPI.StopEnvironment(context.Background(), envId).Execute()
-		checkError(err)
-		utils.Println("Environment stop request has been queued.")
+		utils.Println("Environment stop request has been queued..")
 
 		if watchFlag {
-			time.Sleep(5 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
+			time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
 			utils.WatchEnvironment(envId, qovery.STATEENUM_STOPPED, client)
 		}
 	},

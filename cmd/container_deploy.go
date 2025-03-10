@@ -15,31 +15,34 @@ var containerDeployCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
-		checkError(err)
+		client := utils.GetQoveryClientPanicInCaseOfError()
 		validateContainerArguments(containerName, containerNames)
-
-		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-		checkError(err)
+		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		// deploy multiple services
 		containerList := buildContainerListFromContainerNames(client, envId, containerName, containerNames)
-
-		err = utils.DeployContainers(client, envId, containerList, containerTag)
-
+		err := utils.DeployContainers(client, envId, containerList, containerTag)
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to deploy container(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", containerName, containerNames)))
-
-		if watchFlag {
-			time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
-			if len(containerList) == 1 {
-				utils.WatchContainer(containerList[0].Id, envId, client)
-			} else {
-				utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
-			}
-		}
+		WatchContainerDeployment(client, envId, containerList, watchFlag, qovery.STATEENUM_DEPLOYED)
 	},
+}
+
+func WatchContainerDeployment(
+	client *qovery.APIClient,
+	envId string,
+	containers []*qovery.ContainerResponse,
+	watchFlag bool,
+	finalServiceState qovery.StateEnum,
+) {
+	if watchFlag {
+		time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
+		if len(containers) == 1 {
+			utils.WatchContainer(containers[0].Id, envId, client)
+		} else {
+			utils.WatchEnvironment(envId, finalServiceState, client)
+		}
+	}
 }
 
 func init() {
