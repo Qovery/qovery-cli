@@ -45,39 +45,41 @@ func NewInstallSelfManagedClusterService(
 func (service *InstallSelfManagedClusterService) InstallCluster() (*string, error) {
 	utils.Println("")
 	utils.PrintlnInfo(`The following procedure allows you to generate the values files and the helm command necessary to install Qovery on your cluster. You can find more information on our public documentation: https://hub.qovery.com/docs/getting-started/install-qovery/kubernetes/quickstart/`)
+	cloudProviderPairList := []struct {
+		Name  string
+		Value qovery.CloudVendorEnum
+	}{
+		{"Your AWS EKS cluster", qovery.CLOUDVENDORENUM_AWS},
+		{"Your GCP GKE cluster", qovery.CLOUDVENDORENUM_GCP},
+		{"Your Scaleway Kapsule cluster", qovery.CLOUDVENDORENUM_SCW},
+		{"Your Azure AKS cluster", qovery.CLOUDVENDORENUM_AZURE},
+		{"Your OVH kube cluster", qovery.CLOUDVENDORENUM_OVH},
+		{"Your Digital Ocean kube cluster", qovery.CLOUDVENDORENUM_DO},
+		{"Your Oracle Cloud kube cluster", qovery.CLOUDVENDORENUM_ORACLE},
+		{"Your Hetzner kube cluster", qovery.CLOUDVENDORENUM_HETZNER},
+		{"Your IBM Cloud kube cluster", qovery.CLOUDVENDORENUM_IBM},
+		{"Your Civo K3S cluster", qovery.CLOUDVENDORENUM_CIVO},
+		{"Your Local Machine", qovery.CLOUDVENDORENUM_ON_PREMISE},
+		{"Other", qovery.CLOUDVENDORENUM_ON_PREMISE},
+	}
 
 	utils.Println("Cluster Type:")
+	keys := make([]string, len(cloudProviderPairList))
+	for i, pair := range cloudProviderPairList {
+		keys[i] = pair.Name
+	}
 	_, kubernetesType, err := service.promptUiFactory.RunSelectWithSize("Select where you want to install Qovery on",
-		[]string{
-			"Your AWS EKS cluster",
-			"Your GCP GKE cluster",
-			"Your Scaleway Kapsule cluster",
-			"Your Azure AKS cluster",
-			"Your OVH kuke cluster",
-			"Your Digital Ocean kube cluster",
-			"Your Civo K3S cluster",
-			"Your Local Machine",
-			"Other",
-		},
-		10)
+		keys,
+		len(keys),
+	)
 	if err != nil {
 		return nil, err
 	}
-
-	var cloudProviderType qovery.CloudProviderEnum
-	if strings.Contains(kubernetesType, "AWS") {
-		cloudProviderType = qovery.CLOUDPROVIDERENUM_AWS
-	} else if strings.Contains(kubernetesType, "GCP") {
-		cloudProviderType = qovery.CLOUDPROVIDERENUM_GCP
-	} else if strings.Contains(kubernetesType, "Scaleway") {
-		cloudProviderType = qovery.CLOUDPROVIDERENUM_SCW
-	} else if strings.Contains(kubernetesType, "Local Machine") {
+	if strings.Contains(kubernetesType, "Local Machine") {
 		indicationMessage := "Please use `qovery demo up` to create a demo cluster on your local machine"
 		return &indicationMessage, nil
-	} else {
-		cloudProviderType = qovery.CLOUDPROVIDERENUM_ON_PREMISE
 	}
-
+	cloudVendor := getCloudVendor(cloudProviderPairList, kubernetesType)
 	organization, err := service.organizationService.AskUserToSelectOrganization()
 	if err != nil {
 		return nil, err
@@ -95,7 +97,7 @@ func (service *InstallSelfManagedClusterService) InstallCluster() (*string, erro
 
 	var selfManagedClusters []qovery.Cluster
 	for _, cluster := range clusters.GetResults() {
-		if *cluster.Kubernetes == qovery.KUBERNETESENUM_SELF_MANAGED && cluster.CloudProvider == cloudProviderType {
+		if *cluster.Kubernetes == qovery.KUBERNETESENUM_SELF_MANAGED && cluster.CloudProvider == cloudVendor {
 			selfManagedClusters = append(selfManagedClusters, cluster)
 		}
 	}
@@ -131,7 +133,7 @@ func (service *InstallSelfManagedClusterService) InstallCluster() (*string, erro
 
 	// We need to create & configure the cluster
 	if cluster == nil {
-		createdCluster, err := service.selfManagedClusterService.Create(organization.ID, cloudProviderType)
+		createdCluster, err := service.selfManagedClusterService.Create(organization.ID, cloudVendor)
 		if err != nil {
 			return nil, err
 		}
@@ -161,7 +163,7 @@ func (service *InstallSelfManagedClusterService) InstallCluster() (*string, erro
 	helmValues = fmt.Sprintf("%s\n", helmValues)
 
 	// trim lines if they start with "qovery:" or if they contain "set-by-customer"
-	qoveryHelmValues, err := service.selfManagedClusterService.GetBaseHelmValuesContent(cloudProviderType)
+	qoveryHelmValues, err := service.selfManagedClusterService.GetBaseHelmValuesContent(mapCloudVendorToCloudProviderType(cloudVendor))
 	if err != nil {
 		return nil, err
 	}
@@ -203,6 +205,18 @@ func (service *InstallSelfManagedClusterService) InstallCluster() (*string, erro
 	outputCommandsToInstallQoveryOnCluster(helmValuesFileName)
 
 	return nil, nil
+}
+
+func getCloudVendor(list []struct {
+	Name  string
+	Value qovery.CloudVendorEnum
+}, kubernetesType string) qovery.CloudVendorEnum {
+	for _, pair := range list {
+		if pair.Name == kubernetesType {
+			return pair.Value
+		}
+	}
+	return qovery.CLOUDVENDORENUM_ON_PREMISE
 }
 
 func stripQoverySection(qoveryHelmValues string) string {

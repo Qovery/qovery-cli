@@ -49,8 +49,8 @@ func TestInstallNewCluster(t *testing.T) {
 			},
 		}
 		var selfManagedService = SelfManagedClusterServiceMock{
-			ResultCreate: func(organizationId string, cloudProviderType qovery.CloudProviderEnum) (*qovery.Cluster, error) {
-				return CreateSelfManagedTestCluster(testOrganization, cloudProviderType), nil
+			ResultCreate: func(organizationId string, cloudVendor qovery.CloudVendorEnum) (*qovery.Cluster, error) {
+				return CreateSelfManagedTestCluster(testOrganization, cloudVendor), nil
 			},
 			ResultConfigure: func() error {
 				return nil
@@ -103,8 +103,8 @@ func TestInstallAzureCluster(t *testing.T) {
 			},
 		}
 		var selfManagedService = SelfManagedClusterServiceMock{
-			ResultCreate: func(organizationId string, cloudProviderType qovery.CloudProviderEnum) (*qovery.Cluster, error) {
-				return CreateSelfManagedTestCluster(testOrganization, cloudProviderType), nil
+			ResultCreate: func(organizationId string, cloudVendor qovery.CloudVendorEnum) (*qovery.Cluster, error) {
+				return CreateSelfManagedTestCluster(testOrganization, cloudVendor), nil
 			},
 			ResultConfigure: func() error {
 				return nil
@@ -169,8 +169,8 @@ ingress-nginx:
 			},
 		}
 		var selfManagedService = SelfManagedClusterServiceMock{
-			ResultCreate: func(organizationId string, cloudProviderType qovery.CloudProviderEnum) (*qovery.Cluster, error) {
-				return CreateSelfManagedTestCluster(testOrganization, cloudProviderType), nil
+			ResultCreate: func(organizationId string, cloudVendor qovery.CloudVendorEnum) (*qovery.Cluster, error) {
+				return CreateSelfManagedTestCluster(testOrganization, cloudVendor), nil
 			},
 			ResultConfigure: func() error {
 				return nil
@@ -235,8 +235,8 @@ ingress-nginx:
 			},
 		}
 		var selfManagedService = SelfManagedClusterServiceMock{
-			ResultCreate: func(organizationId string, cloudProviderType qovery.CloudProviderEnum) (*qovery.Cluster, error) {
-				return CreateSelfManagedTestCluster(testOrganization, cloudProviderType), nil
+			ResultCreate: func(organizationId string, cloudVendor qovery.CloudVendorEnum) (*qovery.Cluster, error) {
+				return CreateSelfManagedTestCluster(testOrganization, cloudVendor), nil
 			},
 			ResultConfigure: func() error {
 				return nil
@@ -298,14 +298,14 @@ func TestReuseExistingCluster(t *testing.T) {
 	t.Run("Should succeed to reuse an existing self managed cluster", func(t *testing.T) {
 		// given
 		var testOrganization = organization.CreateTestOrganization()
-		var testSelfManagedCluster = CreateSelfManagedTestCluster(testOrganization, qovery.CLOUDPROVIDERENUM_AWS)
+		var testSelfManagedCluster = CreateSelfManagedTestCluster(testOrganization, qovery.CLOUDVENDORENUM_AWS)
 		var organizationService = organization.OrganizationServiceMock{
 			ResultAskUserToSelectOrganization: func() (*organization.OrganizationDto, error) {
 				return &organization.OrganizationDto{ID: testOrganization.Id, Name: testOrganization.Name}, nil
 			},
 		}
 		var selfManagedService = SelfManagedClusterServiceMock{
-			ResultCreate: func(organizationId string, cloudProviderType qovery.CloudProviderEnum) (*qovery.Cluster, error) {
+			ResultCreate: func(organizationId string, cloudVendor qovery.CloudVendorEnum) (*qovery.Cluster, error) {
 				return nil, errors.New("should not create self managed cluster")
 			},
 			ResultConfigure: func() error {

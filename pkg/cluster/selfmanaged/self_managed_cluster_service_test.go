@@ -57,7 +57,7 @@ func TestCreateCluster(t *testing.T) {
 		)
 
 		// when
-		var cluster, err = service.Create(organization.Id, qovery.CLOUDPROVIDERENUM_AWS)
+		var cluster, err = service.Create(organization.Id, qovery.CLOUDVENDORENUM_AWS)
 
 		// then
 		assert.Nil(t, err)
@@ -104,7 +104,7 @@ func TestCreateCluster(t *testing.T) {
 		)
 
 		// when
-		var cluster, err = service.Create(organization.Id, qovery.CLOUDPROVIDERENUM_ON_PREMISE)
+		var cluster, err = service.Create(organization.Id, qovery.CLOUDVENDORENUM_ON_PREMISE)
 
 		// then
 		assert.Nil(t, err)
@@ -119,7 +119,7 @@ func TestConfigureCluster(t *testing.T) {
 
 		// mocks
 		var cluster = mockCluster.CreateTestCluster(mockOrganization.CreateTestOrganization())
-		cluster.SetCloudProvider(qovery.CLOUDPROVIDERENUM_ON_PREMISE)
+		cluster.SetCloudProvider(qovery.CLOUDVENDORENUM_ON_PREMISE)
 
 		// given
 		var clusterService = mockCluster.ClusterServiceMock{}
