@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/qovery/qovery-client-go"
 	"io"
 	"math"
 	"net/http"
 	"strings"
+
+	"github.com/fatih/color"
+	"github.com/qovery/qovery-client-go"
 
 	"github.com/qovery/qovery-cli/pkg/cluster"
 	"github.com/qovery/qovery-cli/pkg/cluster/containerregistry"
@@ -19,7 +20,7 @@ import (
 )
 
 type SelfManagedClusterService interface {
-	Create(organizationID string, cloudProviderType qovery.CloudProviderEnum) (*qovery.Cluster, error)
+	Create(organizationID string, cloudVendor qovery.CloudVendorEnum) (*qovery.Cluster, error)
 	Configure(cluster *qovery.Cluster) error
 	GetInstallationHelmValues(organizationId string, clusterId string) (*string, error)
 	GetBaseHelmValuesContent(kubernetesType qovery.CloudProviderEnum) (*string, error)
@@ -51,9 +52,9 @@ func NewSelfManagedClusterService(
 
 func (service *SelfManagedClusterServiceImpl) Create(
 	organizationID string,
-	cloudProviderType qovery.CloudProviderEnum,
+	cloudVendor qovery.CloudVendorEnum,
 ) (*qovery.Cluster, error) {
-
+	cloudProviderType := mapCloudVendorToCloudProviderType(cloudVendor)
 	clusterRegion, err := service.findClusterRegion(cloudProviderType)
 	if err != nil {
 		return nil, err
@@ -81,7 +82,7 @@ func (service *SelfManagedClusterServiceImpl) Create(
 	cluster, resp, err := service.client.ClustersAPI.CreateCluster(context.Background(), organizationID).ClusterRequest(qovery.ClusterRequest{
 		Name:          newClusterName,
 		Region:        *clusterRegion,
-		CloudProvider: cloudProviderType,
+		CloudProvider: cloudVendor,
 		Kubernetes:    &selfManagedMode,
 		CloudProviderCredentials: &qovery.ClusterCloudProviderInfoRequest{
 			CloudProvider: &cloudProviderType,
@@ -101,7 +102,7 @@ func (service *SelfManagedClusterServiceImpl) Create(
 
 func (service *SelfManagedClusterServiceImpl) Configure(cluster *qovery.Cluster) error {
 	// early return for cluster types != On Premise
-	if cluster.CloudProvider != qovery.CLOUDPROVIDERENUM_ON_PREMISE {
+	if mapCloudVendorToCloudProviderType(cluster.CloudProvider) != qovery.CLOUDPROVIDERENUM_ON_PREMISE {
 		return nil
 	}
 
@@ -277,4 +278,26 @@ func (service *SelfManagedClusterServiceImpl) GetBaseHelmValuesContent(kubernete
 
 	s := string(body)
 	return &s, nil
+}
+
+func mapCloudVendorToCloudProviderType(vendor qovery.CloudVendorEnum) qovery.CloudProviderEnum {
+	switch vendor {
+	case qovery.CLOUDVENDORENUM_AWS:
+		return qovery.CLOUDPROVIDERENUM_AWS
+	case qovery.CLOUDVENDORENUM_GCP:
+		return qovery.CLOUDPROVIDERENUM_GCP
+	case qovery.CLOUDVENDORENUM_SCW:
+		return qovery.CLOUDPROVIDERENUM_SCW
+	case qovery.CLOUDVENDORENUM_AZURE,
+		qovery.CLOUDVENDORENUM_OVH,
+		qovery.CLOUDVENDORENUM_DO,
+		qovery.CLOUDVENDORENUM_ORACLE,
+		qovery.CLOUDVENDORENUM_HETZNER,
+		qovery.CLOUDVENDORENUM_IBM,
+		qovery.CLOUDVENDORENUM_CIVO,
+		qovery.CLOUDVENDORENUM_ON_PREMISE:
+		return qovery.CLOUDPROVIDERENUM_ON_PREMISE
+	default:
+		return qovery.CLOUDPROVIDERENUM_ON_PREMISE
+	}
 }
