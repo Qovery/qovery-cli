@@ -5,13 +5,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/qovery/qovery-cli/utils"
 )
 
 type ArchiveTagsResponse struct {
@@ -31,6 +32,7 @@ func DownloadS3Archive(executionId string, directory string) {
 	if !strings.Contains(res.Status, "200") {
 		result, _ := io.ReadAll(res.Body)
 		log.Errorf("Could not download archive for key %s: %s. %s", fileName, res.Status, string(result))
+		log.Info("For cluster execution id be sure to remove the last part (it's a timestamp)")
 		return
 	}
 
