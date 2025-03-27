@@ -38,6 +38,7 @@ type ClusterDetails struct {
 	IsProduction          bool   `json:"is_production"`
 	CurrentStatus         string `json:"current_status"`
 	HasKarpenter          bool   `json:"has_karpenter"`
+	HasPendingUpdate      bool   `json:"has_pending_update"`
 }
 
 // PrintClustersTable global method to output clusters table
@@ -60,6 +61,7 @@ func PrintClustersTable(clusters []ClusterDetails) error {
 			strconv.FormatBool(cluster.HasKarpenter),
 			cluster.ClusterCreatedAt,
 			cluster.ClusterLastDeployedAt,
+			strconv.FormatBool(cluster.HasPendingUpdate),
 		})
 	}
 
@@ -77,6 +79,7 @@ func PrintClustersTable(clusters []ClusterDetails) error {
 		"HasKarpenter",
 		"ClusterCreatedAt",
 		"ClusterLastDeployedAt",
+		"HasPendingUpdate",
 	}, data)
 	if err != nil {
 		return fmt.Errorf("cannot print clusters %s", err)
@@ -97,6 +100,7 @@ var allowedFilterProperties = map[string]bool{
 	"Mode":              true,
 	"IsProduction":      true,
 	"HasKarpenter":      true,
+	"HasPendingUpdate":  true,
 }
 
 type AdminClusterListService interface {
@@ -178,7 +182,7 @@ func (service AdminClusterListServiceImpl) filterByPredicates(clusters []Cluster
 			clusterProperty := reflect.Indirect(reflect.ValueOf(cluster)).FieldByName(filterProperty)
 
 			// hack for IsProduction field (boolean needs to be converted to string)
-			if filterProperty == "IsProduction" || filterProperty == "HasKarpenter" {
+			if filterProperty == "IsProduction" || filterProperty == "HasKarpenter" || filterProperty == "HasPendingUpdate" {
 				boolToString := strconv.FormatBool(clusterProperty.Bool())
 				if _, ok := filterValuesSet[boolToString]; !ok {
 					matchAllFilters = false
