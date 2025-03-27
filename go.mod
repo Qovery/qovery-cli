@@ -1,6 +1,7 @@
 module github.com/qovery/qovery-cli
 
 go 1.21
+toolchain go1.24.1
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
@@ -30,8 +31,8 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/tonistiigi/go-rosetta v0.0.0-20220804170347-3f4430f2d346
 	github.com/xlab/treeprint v1.2.0
-	golang.org/x/net v0.34.0
-	golang.org/x/sys v0.29.0
+	golang.org/x/net v0.38.0
+	golang.org/x/sys v0.31.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -61,6 +62,6 @@ require (
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	golang.org/x/term v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 )
