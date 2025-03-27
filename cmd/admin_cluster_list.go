@@ -30,6 +30,7 @@ The fields usable as filters are the following ones:
 * Mode
 * IsProduction
 * CurrentStatus
+* HasPendingUpdate
 
 Not implemented yet: filtering from last deployed date or created date
 
