@@ -182,7 +182,7 @@ func (service AdminClusterListServiceImpl) filterByPredicates(clusters []Cluster
 			clusterProperty := reflect.Indirect(reflect.ValueOf(cluster)).FieldByName(filterProperty)
 
 			// hack for IsProduction field (boolean needs to be converted to string)
-			if filterProperty == "IsProduction" || filterProperty == "HasKarpenter" {
+			if filterProperty == "IsProduction" || filterProperty == "HasKarpenter" || filterProperty == "HasPendingUpdate" {
 				boolToString := strconv.FormatBool(clusterProperty.Bool())
 				if _, ok := filterValuesSet[boolToString]; !ok {
 					matchAllFilters = false
