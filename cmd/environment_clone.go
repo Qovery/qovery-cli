@@ -69,6 +69,18 @@ var environmentCloneCmd = &cobra.Command{
 			}
 		}
 
+		if targetProjectName != "" {
+			targetProjectId, err := getProjectContextResourceId(client, targetProjectName, orgId)
+
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+
+			req.ProjectId = &targetProjectId
+		}
+
 		_, res, err := client.EnvironmentActionsAPI.CloneEnvironment(context.Background(), envId).CloneEnvironmentRequest(req).Execute()
 
 		if err != nil {
@@ -96,6 +108,7 @@ func init() {
 	environmentCloneCmd.Flags().StringVarP(&clusterName, "cluster", "c", "", "Cluster Name where to clone the environment")
 	environmentCloneCmd.Flags().StringVarP(&environmentType, "environment-type", "t", "", "Environment type for the new environment (DEVELOPMENT|STAGING|PRODUCTION)")
 	environmentCloneCmd.Flags().BoolVarP(&applyDeploymentRule, "apply-deployment-rule", "", false, "Enable applying deployment rules on the new environment instead of having a pristine clone. Default: false")
+	environmentCloneCmd.Flags().StringVarP(&targetProjectName, "target-project", "", "", "Target Project Name")
 
 	_ = environmentCloneCmd.MarkFlagRequired("new-environment-name")
 }
