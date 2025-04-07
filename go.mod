@@ -1,6 +1,7 @@
 module github.com/qovery/qovery-cli
 
 go 1.21
+toolchain go1.24.1
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
@@ -31,7 +32,7 @@ require (
 	github.com/tonistiigi/go-rosetta v0.0.0-20220804170347-3f4430f2d346
 	github.com/xlab/treeprint v1.2.0
 	golang.org/x/net v0.34.0
-	golang.org/x/sys v0.29.0
+	golang.org/x/sys v0.32.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
