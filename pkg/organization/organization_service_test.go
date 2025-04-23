@@ -76,7 +76,7 @@ func TestAskUserToSelectOrganization(t *testing.T) {
 
 		// then
 		assert.NotNil(t, err)
-		assert.Equal(t, err.Error(), "Error when listing organizations: 400 (response status = 400)")
+		assert.Equal(t, err.Error(), "Error when listing organizations: 400 Bad Request (response status = 400 Bad Request)")
 	})
 	t.Run("Should fail if no organization found", func(t *testing.T) {
 		httpmock.Activate()
