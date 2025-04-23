@@ -6,3 +6,7 @@ updates:
       interval: 'daily'
     open-pull-requests-limit: 20
     rebase-strategy: auto
+    groups:
+        all:
+            name: 'All dependencies'
+            update_types: [all]
