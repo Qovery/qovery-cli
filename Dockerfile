@@ -1,4 +1,4 @@
-FROM public.ecr.aws/r3m4q3r9/pub-mirror-go:1.21.0 as builder
+FROM public.ecr.aws/r3m4q3r9/pub-mirror-go:1.24.2 as builder
 
 ARG APP_VERSION=unknown
 
