@@ -15,7 +15,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -36,7 +36,7 @@ jobs:
         run: CGO_ENABLED=0 go build -ldflags "-X github.com/qovery/qovery-cli/utils.Version=${{ steps.vars.outputs.tag }}" .
 
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Set up Go
         uses: actions/setup-go@v3

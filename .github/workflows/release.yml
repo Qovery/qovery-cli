@@ -6,7 +6,7 @@ on:
 
 jobs:
   release-and-packages:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -53,7 +53,7 @@ jobs:
           force_push: "true"
   # GitHub action usage
   container:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
