@@ -19,6 +19,7 @@ import (
 )
 
 var doNotConnectToBastion bool
+var readWriteMode bool
 
 var k9sCmd = &cobra.Command{
 	Use:   "k9s",
@@ -30,7 +31,8 @@ var k9sCmd = &cobra.Command{
 
 func init() {
 	adminCmd.AddCommand(k9sCmd)
-	k9sCmd.Flags().BoolVarP(&doNotConnectToBastion, "no-bastion", "", false, "do not connect to the bastion")
+	k9sCmd.Flags().BoolVarP(&doNotConnectToBastion, "no-bastion", "n", false, "do not connect to the bastion")
+	k9sCmd.Flags().BoolVarP(&readWriteMode, "read-write", "w", false, "run k9s in read-write mode (default is read-only)")
 }
 
 func launchK9s(args []string) {
@@ -83,7 +85,17 @@ func launchK9s(args []string) {
 	utils.GenerateExportEnvVarsScript(vars, args[0])
 
 	log.Info("Launching k9s.")
-	cmd := exec.Command("k9s")
+
+	var k9sArgs []string
+	// Run in read-only mode by default unless read-write flag is provided
+	if !readWriteMode {
+		k9sArgs = append(k9sArgs, "--readonly")
+		log.Info("Running k9s in read-only mode. Use --read-write flag to enable write operations.")
+	} else {
+		log.Info("Running k9s in read-write mode.")
+	}
+
+	cmd := exec.Command("k9s", k9sArgs...)
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
