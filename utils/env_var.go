@@ -28,6 +28,11 @@ type EnvVarLines struct {
 	lines map[string][]EnvVarLineOutput
 }
 
+type Var struct {
+	Key   string
+	Value string
+}
+
 func NewEnvVarLines() EnvVarLines {
 	return EnvVarLines{
 		lines: make(map[string][]EnvVarLineOutput),
