@@ -19,7 +19,7 @@ qovery admin load-credentials --cluster-id 12345678-1234-1234-1234-123456789012
 
 `,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := pkg.LoadCredentials(clusterId)
+			err := pkg.LoadCredentials(clusterId, doNotConnectToBastion)
 			utils.CheckError(err)
 		},
 	}
@@ -27,5 +27,6 @@ qovery admin load-credentials --cluster-id 12345678-1234-1234-1234-123456789012
 
 func init() {
 	adminLoadCredentialsCmd.Flags().StringVarP(&clusterId, "cluster-id", "c", "", "ID of the cluster to load credentials for")
+	adminLoadCredentialsCmd.Flags().BoolVarP(&doNotConnectToBastion, "no-bastion", "n", false, "do not connect to the bastion")
 	adminCmd.AddCommand(adminLoadCredentialsCmd)
 }
