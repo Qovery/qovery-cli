@@ -30,7 +30,10 @@ func LoadAwsCredentials(roleArn string) error {
 	return StartChildShell()
 }
 
-func LoadCredentials(clusterId string) error {
+func LoadCredentials(clusterId string, doNotConnectToBastion bool) error {
+	if !doNotConnectToBastion {
+		SetBastionConnection()
+	}
 	clusterCredentials := getClusterCredentials(clusterId)
 	if len(clusterCredentials) == 0 {
 		return fmt.Errorf("no credentials found for cluster ID %s", clusterId)
@@ -40,6 +43,9 @@ func LoadCredentials(clusterId string) error {
 		os.Setenv(cred.Key, cred.Value)
 		utils.PrintlnInfo(fmt.Sprintf("Set environment variable %s for child process", cred.Key))
 	}
+	kubeconfig := GetKubeconfigByClusterId(clusterId)
+	filePath := utils.WriteInFile(clusterId, "kubeconfig", []byte(kubeconfig))
+	os.Setenv("KUBECONFIG", filePath)
 	return StartChildShell()
 }
 
