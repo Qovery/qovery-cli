@@ -139,6 +139,7 @@ func uploadErrorLogs(tokenType utils.AccessTokenType, token utils.AccessToken, o
 	if response.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(response.Body)
 		utils.PrintlnError(fmt.Errorf("error uploading debug logs: %s %s", response.Status, body))
+		utils.PrintlnInfo("May be caused by a wrong context set, please set it again: `qovery context set`")
 		return
 	}
 }
