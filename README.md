@@ -20,3 +20,9 @@ You can install the latest version of the CLI:
 * On Windows: with scoop `scoop install qovery-cli`
 * On Docker: at the address `public.ecr.aws/r3m4q3r9/qovery-cli`
 * From binary: https://github.com/Qovery/qovery-cli/releases
+
+
+# Update deps
+go get -u github.com/qovery/qovery-client-go
+go build
+go fmt .
