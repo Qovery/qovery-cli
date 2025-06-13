@@ -8,7 +8,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/appscode/go-querystring v0.0.0-20170504095604-0126cfb3f1dc
-	github.com/containerd/console v1.0.4
+	github.com/containerd/console v1.0.5
 	github.com/fatih/color v1.18.0
 	github.com/go-errors/errors v1.5.1
 	github.com/go-jose/go-jose/v4 v4.1.0
@@ -23,7 +23,7 @@ require (
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
 	github.com/posthog/posthog-go v1.5.2
-	github.com/pterm/pterm v0.12.80
+	github.com/pterm/pterm v0.12.81
 	github.com/qovery/qovery-client-go v0.0.0-20250612132532-0831888ea400
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.9.1
@@ -71,5 +71,5 @@ require (
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
 	golang.org/x/term v0.32.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 )
