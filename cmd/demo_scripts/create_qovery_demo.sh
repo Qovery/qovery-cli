@@ -191,7 +191,7 @@ install_deps() {
     echo "k3d already installed"
   else
     echo "Installing k3d"
-    curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v5.6.3 bash
+    curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v5.8.3 bash
   fi
 
   if which helm >/dev/null; then
