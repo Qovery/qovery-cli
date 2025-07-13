@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func SetBastionConnection() {
+func SetBastionConnection() func() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -19,10 +19,12 @@ func SetBastionConnection() {
 	if err != nil {
 		log.Errorf("Failed to setup SSH connection: %v", err)
 		log.Warnf("Connection failure might be due to issues with your SSH configuration. Consider checking and updating your ~/.ssh/known_hosts file to ensure the host is trusted.")
-		// continue anyway
+		return func() {}
 	}
-	defer cleanupSSHConnection(sshCmd)
 
+	return func() {
+		cleanupSSHConnection(sshCmd)
+	}
 }
 
 func setupSSHConnection(ctx context.Context) (*exec.Cmd, error) {
@@ -33,22 +35,23 @@ func setupSSHConnection(ctx context.Context) (*exec.Cmd, error) {
 	}
 
 	sshArgs := []string{
-		"-N", "-D", "1080",
+		"-N", "-D", "127.0.0.1:1080",
+		"-p", "2222",
+		"-4",
 		"-o", "StrictHostKeychecking=no",
 		"-o", "UserKnownHostsFile=/dev/null",
 		"-o", "ServerAliveInterval=10",
 		"-o", "ServerAliveCountMax=3",
 		"-o", "TCPKeepAlive=yes",
 		fmt.Sprintf("root@%s", bastionAddress),
-		"-p", "2222",
 	}
 
-	sshCmd := exec.CommandContext(ctx, "ssh", sshArgs...)
+	sshCmd := exec.Command("ssh", sshArgs...)
 	if err := sshCmd.Start(); err != nil {
 		return nil, fmt.Errorf("error starting SSH command: %v", err)
 	}
 
-	if err := waitForSSHConnection(ctx, "localhost:1080", 30*time.Second); err != nil {
+	if err := waitForSSHConnection(ctx, "127.0.0.1:1080", 30*time.Second); err != nil {
 		if killErr := sshCmd.Process.Kill(); killErr != nil {
 			log.Errorf("failed to kill SSH process: %v", killErr)
 		}
@@ -56,7 +59,7 @@ func setupSSHConnection(ctx context.Context) (*exec.Cmd, error) {
 	}
 
 	log.Info("SSH connection established successfully")
-	if err := os.Setenv("HTTPS_PROXY", "socks5://localhost:1080"); err != nil {
+	if err := os.Setenv("HTTPS_PROXY", "socks5://127.0.0.1:1080"); err != nil {
 		if killErr := sshCmd.Process.Kill(); killErr != nil {
 			log.Errorf("failed to kill SSH process: %v", killErr)
 		}
@@ -99,7 +102,7 @@ func waitForSSHConnection(ctx context.Context, address string, timeout time.Dura
 		case <-timeoutChan:
 			return fmt.Errorf("timeout waiting for SSH connection")
 		case <-ticker.C:
-			if conn, err := net.DialTimeout("tcp", address, time.Second); err == nil {
+			if conn, err := net.DialTimeout("tcp4", address, time.Second); err == nil {
 				err := conn.Close()
 				if err != nil {
 					return err
