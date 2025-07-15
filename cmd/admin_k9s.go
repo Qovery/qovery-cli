@@ -35,8 +35,13 @@ func launchK9s(args []string) {
 		return
 	}
 
+	var cleanup func()
 	if !doNotConnectToBastion {
-		pkg.SetBastionConnection()
+		cleanup = pkg.SetBastionConnection()
+		defer func() {
+			log.Info("Cleaning up SSH tunnel...")
+			cleanup()
+		}()
 	}
 
 	clusterId := args[0]
