@@ -98,3 +98,4 @@ result
 # Direnv
 .envrc
 .direnv/
+.vscode/
