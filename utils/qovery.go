@@ -107,7 +107,7 @@ func SelectRole(organization *Organization) (*Role, error) {
 	}
 
 	if len(roleNames) < 1 {
-		return nil, errors.New("No role found.")
+		return nil, errors.New("no role found")
 	}
 
 	fmt.Println("Roles:")
@@ -154,7 +154,7 @@ func SelectOrganization() (*Organization, error) {
 	}
 
 	if len(organizationNames) < 1 {
-		return nil, errors.New("No organizations found. ")
+		return nil, errors.New("no organizations found")
 	}
 
 	if len(organizationNames) == 1 {
@@ -250,7 +250,7 @@ func SelectProject(organizationID Id) (*Project, error) {
 	}
 
 	if len(projectsNames) < 1 {
-		return nil, errors.New("No projects found. ")
+		return nil, errors.New("no projects found")
 	}
 
 	if len(projectsNames) == 1 {
@@ -346,7 +346,7 @@ func SelectEnvironment(projectID Id) (*Environment, error) {
 	}
 
 	if len(environmentsNames) < 1 {
-		return nil, errors.New("No environments found. ")
+		return nil, errors.New("no environments found")
 	}
 
 	if len(environmentsNames) == 1 {
@@ -601,7 +601,7 @@ func SelectService(environment Id) (*Service, error) {
 	}
 
 	if len(servicesNames) < 1 {
-		return nil, errors.New("No services found. ")
+		return nil, errors.New("no services found")
 	}
 
 	if len(servicesNames) == 1 {
@@ -790,7 +790,7 @@ func GetJobById(id string) (*Job, error) {
 		}, nil
 	}
 
-	return nil, errors.New("Invalid job response")
+	return nil, errors.New("invalid job response")
 }
 
 func GetAdminUrl() string {
@@ -953,7 +953,7 @@ func SelectTokenInformation() (*TokenInformation, error) {
 	}
 
 	if len(strings.Trim(name, "")) == 0 {
-		return nil, errors.New("Token name must not be empty")
+		return nil, errors.New("token name must not be empty")
 	}
 
 	fmt.Println("Choose a token description")

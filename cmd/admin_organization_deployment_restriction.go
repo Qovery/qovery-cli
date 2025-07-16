@@ -143,7 +143,11 @@ func manageOrganizationDeploymentRestriction() {
 		utils.PrintlnError(fmt.Errorf("failed to execute request: %w", err))
 		os.Exit(1)
 	}
-	defer res.Body.Close()
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			utils.PrintlnError(fmt.Errorf("failed to close response body: %w", err))
+		}
+	}()
 
 	// Read response body
 	body, err := io.ReadAll(res.Body)

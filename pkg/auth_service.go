@@ -66,7 +66,7 @@ func DoRequestUserToAuthenticate(headless bool) {
 	verifier := createCodeVerifier()
 	challenge, err := createCodeChallengeS256(verifier)
 	if err != nil {
-		utils.PrintlnError(errors.New("Can not create authorization code challenge. Please contact the #support at 'https://discord.qovery.com'. "))
+		utils.PrintlnError(errors.New("can not create authorization code challenge. Please contact the #support at 'https://discord.qovery.com'. "))
 		os.Exit(0)
 	}
 	// TODO link to web auth
@@ -102,7 +102,7 @@ func DoRequestUserToAuthenticate(headless bool) {
 		})
 
 		if err != nil {
-			utils.PrintlnError(errors.New("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
+			utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
 			os.Exit(0)
 		} else {
 			defer func(Body io.ReadCloser) {
@@ -112,7 +112,7 @@ func DoRequestUserToAuthenticate(headless bool) {
 			tokens := TokensResponse{}
 			err := json.NewDecoder(res.Body).Decode(&tokens)
 			if err != nil {
-				utils.PrintlnError(errors.New("Authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
+				utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
 				os.Exit(0)
 			}
 			expiredAt := time.Now().Local().Add(time.Duration(tokens.ExpiresIn-60) * time.Second)
@@ -152,9 +152,9 @@ func createCodeChallengeS256(verifier string) (string, error) {
 
 func encode(msg []byte) string {
 	encoded := base64.StdEncoding.EncodeToString(msg)
-	encoded = strings.Replace(encoded, "+", "-", -1)
-	encoded = strings.Replace(encoded, "/", "_", -1)
-	encoded = strings.Replace(encoded, "=", "", -1)
+	encoded = strings.ReplaceAll(encoded, "+", "-")
+	encoded = strings.ReplaceAll(encoded, "/", "_")
+	encoded = strings.ReplaceAll(encoded, "=", "")
 	return encoded
 }
 
@@ -200,7 +200,11 @@ func deviceFlowParameters() DeviceFlowParameters {
 	}
 
 	if res.StatusCode == 200 {
-		defer res.Body.Close()
+		defer func() {
+			if err := res.Body.Close(); err != nil {
+				utils.PrintlnError(fmt.Errorf("error closing response body: %w", err))
+			}
+		}()
 
 		parameters := DeviceFlowParameters{}
 		err = json.NewDecoder(res.Body).Decode(&parameters)
@@ -245,14 +249,18 @@ func getTokensWith(params DeviceFlowParameters) (TokensResponse, error) {
 		os.Exit(0)
 	}
 
-	defer res.Body.Close()
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			utils.PrintlnError(fmt.Errorf("error closing response body: %w", err))
+		}
+	}()
 
 	if res.StatusCode == 200 {
 		tokens := TokensResponse{}
 		err = json.NewDecoder(res.Body).Decode(&tokens)
 		return tokens, err
 	} else {
-		return TokensResponse{}, errors.New("Could not fetch tokens")
+		return TokensResponse{}, errors.New("could not fetch tokens")
 	}
 }
 

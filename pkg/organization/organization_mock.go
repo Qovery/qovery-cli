@@ -48,4 +48,3 @@ type OrganizationServiceMock struct {
 func (mock *OrganizationServiceMock) AskUserToSelectOrganization() (*OrganizationDto, error) {
 	return mock.ResultAskUserToSelectOrganization()
 }
-

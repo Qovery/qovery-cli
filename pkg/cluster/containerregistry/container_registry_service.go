@@ -3,10 +3,11 @@ package containerregistry
 import (
 	"context"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/qovery/qovery-client-go"
 	"io"
 	"slices"
+
+	"github.com/fatih/color"
+	"github.com/qovery/qovery-client-go"
 
 	"github.com/qovery/qovery-cli/pkg/promptuifactory"
 )
@@ -78,7 +79,7 @@ func (service *ClusterContainerRegistryServiceImpl) AskToEditClusterContainerReg
 
 	if err != nil {
 		body, _ := io.ReadAll(res.Body)
-		return fmt.Errorf("%s: %v\n", color.RedString("Error"), string(body))
+		return fmt.Errorf("%s: %v", color.RedString("Error"), string(body))
 	}
 
 	return nil

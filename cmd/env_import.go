@@ -71,10 +71,7 @@ var envImportCmd = &cobra.Command{
 			return
 		}
 
-		isSecrets := false
-		if envVarOrSecret == "Secrets" {
-			isSecrets = true
-		}
+		isSecrets := envVarOrSecret == "Secrets"
 
 		envsToImport := getEnvsToImport(envs)
 		if len(envsToImport) == 0 {
@@ -94,10 +91,7 @@ var envImportCmd = &cobra.Command{
 			return
 		}
 
-		overrideEnvVarOrSecret := false
-		if overrideEnvVarOrSecretString == "Yes" {
-			overrideEnvVarOrSecret = true
-		}
+		overrideEnvVarOrSecret := overrideEnvVarOrSecretString == "Yes"
 
 		var errors []string
 

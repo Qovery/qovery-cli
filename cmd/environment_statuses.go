@@ -31,8 +31,8 @@ var environmentServicesStatusesCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		 // Get env and services statuses
-		 statuses, _, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
+		// Get env and services statuses
+		statuses, _, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -59,35 +59,35 @@ var environmentServicesStatusesCmd = &cobra.Command{
 		}
 
 		var data [][]string
-		for _, status := range statuses.Applications{
+		for _, status := range statuses.Applications {
 			data = append(data, []string{
 				"application",
 				status.Id,
 				string(status.GetState()),
 			})
 		}
-		for _, status := range statuses.Containers{
+		for _, status := range statuses.Containers {
 			data = append(data, []string{
 				"container",
 				status.Id,
 				string(status.GetState()),
 			})
 		}
-		for _, status := range statuses.Helms{
+		for _, status := range statuses.Helms {
 			data = append(data, []string{
 				"helm",
 				status.Id,
 				string(status.GetState()),
 			})
 		}
-		for _, status := range statuses.Jobs{
+		for _, status := range statuses.Jobs {
 			data = append(data, []string{
 				"job",
 				status.Id,
 				string(status.GetState()),
 			})
 		}
-		for _, status := range statuses.Databases{
+		for _, status := range statuses.Databases {
 			data = append(data, []string{
 				"database",
 				status.Id,

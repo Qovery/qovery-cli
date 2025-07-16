@@ -23,7 +23,7 @@ var (
 func RefreshAccessToken(token RefreshToken) (AccessToken, error) {
 	refreshToken := strings.TrimSpace(string(token))
 	if refreshToken == "" {
-		return "", errors.New("Could not reauthenticate automatically. Please, run 'qovery auth' to authenticate. ")
+		return "", errors.New("could not reauthenticate automatically. Please, run 'qovery auth' to authenticate. ")
 	}
 	res, err := http.PostForm(oAuthTokenEndpoint, url.Values{
 		"grant_type":    {"refresh_token"},
@@ -31,7 +31,7 @@ func RefreshAccessToken(token RefreshToken) (AccessToken, error) {
 		"refresh_token": {refreshToken},
 	})
 	if err != nil {
-		return "", errors.New("Error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ")
+		return "", errors.New("error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ")
 	}
 
 	defer func(Body io.ReadCloser) {
@@ -41,7 +41,7 @@ func RefreshAccessToken(token RefreshToken) (AccessToken, error) {
 	tokens := TokensResponse{}
 	err = json.NewDecoder(res.Body).Decode(&tokens)
 	if err != nil {
-		return "", errors.New("Error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ")
+		return "", errors.New("error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ")
 	}
 	expiredAt := time.Now().Local().Add(time.Duration(tokens.ExpiresIn-60) * time.Second)
 	accessToken := AccessToken(tokens.AccessToken)

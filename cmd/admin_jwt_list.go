@@ -3,12 +3,13 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"os"
 	"text/tabwriter"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/utils"
 )
@@ -70,9 +71,15 @@ func listJwts() {
 
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 	format := "%s\t | %s\t | %s\t | %s\n"
-	fmt.Fprintf(w, format, "", "cluster_id", "key_id", "created_at")
-	for idx, jwt := range resp.Results {
-		fmt.Fprintf(w, format, fmt.Sprintf("%d", idx+1), jwt.ClusterId, jwt.KeyId, jwt.CreatedAt)
+	if _, err := fmt.Fprintf(w, format, "", "cluster_id", "key_id", "created_at"); err != nil {
+		log.Fatal(err)
 	}
-	w.Flush()
+	for idx, jwt := range resp.Results {
+		if _, err := fmt.Fprintf(w, format, fmt.Sprintf("%d", idx+1), jwt.ClusterId, jwt.KeyId, jwt.CreatedAt); err != nil {
+			log.Fatal(err)
+		}
+	}
+	if err := w.Flush(); err != nil {
+		log.Fatal(err)
+	}
 }

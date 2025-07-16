@@ -3,12 +3,13 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
+
 	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"io"
-	"os"
 
 	"github.com/qovery/qovery-cli/utils"
 )
@@ -160,7 +161,7 @@ func GetHelmSource(helm *qovery.HelmResponse, chartName string, chartVersion str
 		}, nil
 	}
 
-	return nil, fmt.Errorf("Invalid Helm source")
+	return nil, fmt.Errorf("invalid Helm source")
 }
 
 func GetHelmValuesOverride(helm *qovery.HelmResponse, valuesOverrideCommitBranch string) (*qovery.HelmRequestAllOfValuesOverride, error) {
@@ -212,7 +213,7 @@ func GetHelmValuesOverride(helm *qovery.HelmResponse, valuesOverrideCommitBranch
 		return &helmRequest, nil
 	}
 
-	return nil, fmt.Errorf("Invalid Helm values orerride")
+	return nil, fmt.Errorf("invalid Helm values orerride")
 }
 
 func init() {

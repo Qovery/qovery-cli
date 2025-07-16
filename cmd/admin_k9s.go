@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"github.com/qovery/qovery-cli/pkg"
 	"os"
 	"os/exec"
+
+	"github.com/qovery/qovery-cli/pkg"
 
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
@@ -47,7 +48,9 @@ func launchK9s(args []string) {
 	clusterId := args[0]
 	kubeconfig := pkg.GetKubeconfigByClusterId(clusterId)
 	filePath := utils.WriteInFile(clusterId, "kubeconfig", []byte(kubeconfig))
-	os.Setenv("KUBECONFIG", filePath)
+	if err := os.Setenv("KUBECONFIG", filePath); err != nil {
+		log.Fatal(err)
+	}
 
 	log.Info("Launching k9s.")
 

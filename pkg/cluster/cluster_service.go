@@ -20,7 +20,7 @@ type ClusterService interface {
 	StopCluster(organizationName string, clusterName string, watchFlag bool) error
 	ListClusters(organizationId string) (*qovery.ClusterResponseList, error)
 	ListClusterRegions(cloudProviderType qovery.CloudProviderEnum) (*qovery.ClusterRegionResponseList, error)
-	AskToEditStorageClass(cluster *qovery.Cluster, ) error
+	AskToEditStorageClass(cluster *qovery.Cluster) error
 }
 
 type ClusterServiceImpl struct {
@@ -176,7 +176,7 @@ func (service *ClusterServiceImpl) ListClusterRegions(cloudProviderType qovery.C
 	}
 }
 
-func (service *ClusterServiceImpl) AskToEditStorageClass(cluster *qovery.Cluster, ) error {
+func (service *ClusterServiceImpl) AskToEditStorageClass(cluster *qovery.Cluster) error {
 	storageClassName, err := service.promptUiFactory.RunPrompt("We need to know the storage class name that your kubernetes cluster uses to deploy app with network storage. Enter your storage class name", "")
 	if err != nil {
 		return err

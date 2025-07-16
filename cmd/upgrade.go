@@ -6,17 +6,18 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"os/exec"
+	"runtime"
+
 	"github.com/kardianos/osext"
 	"github.com/mholt/archives"
 	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
-	"io"
-	"net/http"
-	"os"
-	"os/exec"
-	"runtime"
 )
 
 var upgradeCmd = &cobra.Command{
@@ -55,17 +56,28 @@ var upgradeCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("error while downloading the latest version: %s", err))
 			os.Exit(0)
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				utils.PrintlnError(fmt.Errorf("error while closing response body: %s", err))
+			}
+		}()
 
 		out, err := os.Create(archivePathName)
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("error while overriding Qovery CLI binary file: %s", err))
 			os.Exit(0)
 		}
-		defer out.Close()
+		defer func() {
+			if err := out.Close(); err != nil {
+				utils.PrintlnError(fmt.Errorf("error while closing output file: %s", err))
+			}
+		}()
 
 		if _, err := os.Stat(uncompressPath); !os.IsNotExist(err) {
-			os.RemoveAll(uncompressPath)
+			if err := os.RemoveAll(uncompressPath); err != nil {
+				utils.PrintlnError(fmt.Errorf("error while removing uncompressed path: %s", err))
+				os.Exit(0)
+			}
 		}
 
 		// Decompress the tar.gz and extract the cli
@@ -86,10 +98,18 @@ var upgradeCmd = &cobra.Command{
 
 				// Extract the cli from the archive on disk
 				cliFileInsideArchive, _ := f.Open()
-				defer cliFileInsideArchive.Close()
+				defer func() {
+					if err := cliFileInsideArchive.Close(); err != nil {
+						utils.PrintlnError(fmt.Errorf("error while closing archive file: %s", err))
+					}
+				}()
 
 				cliFileOnFS, _ := os.Create(uncompressQoveryBinaryPath)
-				defer cliFileOnFS.Close()
+				defer func() {
+					if err := cliFileOnFS.Close(); err != nil {
+						utils.PrintlnError(fmt.Errorf("error while closing filesystem file: %s", err))
+					}
+				}()
 
 				_, err = io.Copy(cliFileOnFS, cliFileInsideArchive)
 				if err != nil {
