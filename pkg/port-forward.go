@@ -3,15 +3,16 @@ package pkg
 import (
 	"errors"
 	"fmt"
-	"github.com/appscode/go-querystring/query"
-	"github.com/gorilla/websocket"
-	"github.com/qovery/qovery-cli/utils"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"regexp"
+
+	"github.com/appscode/go-querystring/query"
+	"github.com/gorilla/websocket"
+	"github.com/qovery/qovery-cli/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 type PortForwardRequest struct {
@@ -111,7 +112,9 @@ func handleConnection(con net.Conn, req *PortForwardRequest) {
 	var errRet error
 	fmt.Printf("Connection accepted from %s => %d\n", con.RemoteAddr().String(), req.Port)
 	defer func() {
-		con.Close()
+		if err := con.Close(); err != nil {
+			log.Error("error closing connection: ", err)
+		}
 		fmt.Printf("Connection closed from %s => %d\n", con.RemoteAddr().String(), req.Port)
 		var e *websocket.CloseError
 		if errors.As(errRet, &e) && e.Code != websocket.CloseNormalClosure {
@@ -124,7 +127,9 @@ func handleConnection(con net.Conn, req *PortForwardRequest) {
 		log.Fatal("error while creating websocket connection", err)
 	}
 	defer func() {
-		wsConn.ws.Close()
+		if err := wsConn.ws.Close(); err != nil {
+			log.Error("error closing websocket connection: ", err)
+		}
 	}()
 
 	go func() {

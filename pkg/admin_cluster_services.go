@@ -279,12 +279,7 @@ func NewAdminClusterBatchDeployServiceImpl(
 		upgradeMode = true
 	}
 
-	completeBatchBeforeContinue := true
-	if executionMode == "on-the-fly" &&
-		// Do not authorize "on-the-fly" for upgrade mode, it's too risky
-		!upgradeMode {
-		completeBatchBeforeContinue = false
-	}
+	completeBatchBeforeContinue := executionMode != "on-the-fly" || upgradeMode
 
 	return &AdminClusterBatchDeployServiceImpl{
 		DryRunDisabled:              dryRun,

@@ -51,5 +51,3 @@ func (factory *PromptUiFactoryMock) RunSelectWithSizeAndSearcher(label string, i
 		return 0, value, nil
 	}
 }
-
-

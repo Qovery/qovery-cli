@@ -46,16 +46,22 @@ func LockedClusters() {
 
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 	format := "%s\t | %s\t | %s\t | %s\t | %s\t | %s\n"
-	fmt.Fprintf(w, format, "", "cluster_id", "locked_at", "locked_by", "reason", "ttl_in_days")
+	if _, err := fmt.Fprintf(w, format, "", "cluster_id", "locked_at", "locked_by", "reason", "ttl_in_days"); err != nil {
+		log.Fatal(err)
+	}
 	for idx, lock := range resp.Results {
 		ttlInDay := "infinite"
 		if lock.TtlInDays != nil {
 			ttlInDay = strconv.Itoa(*lock.TtlInDays)
 		}
 
-		fmt.Fprintf(w, format, fmt.Sprintf("%d", idx+1), lock.ClusterId, lock.LockedAt.Format(time.RFC1123), lock.OwnerName, lock.Reason, ttlInDay)
+		if _, err := fmt.Fprintf(w, format, fmt.Sprintf("%d", idx+1), lock.ClusterId, lock.LockedAt.Format(time.RFC1123), lock.OwnerName, lock.Reason, ttlInDay); err != nil {
+			log.Fatal(err)
+		}
 	}
-	w.Flush()
+	if err := w.Flush(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func listLockedClusters() *http.Response {

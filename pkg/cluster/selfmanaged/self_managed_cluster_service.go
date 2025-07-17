@@ -94,7 +94,7 @@ func (service *SelfManagedClusterServiceImpl) Create(
 
 	if err != nil {
 		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("%s: %v\n", color.RedString("Error"), string(body))
+		return nil, fmt.Errorf("%s: %v", color.RedString("Error"), string(body))
 	}
 
 	return cluster, nil
@@ -208,7 +208,7 @@ func (service *SelfManagedClusterServiceImpl) GetInstallationHelmValues(organiza
 
 	if err != nil {
 		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("%s: %v\n", color.RedString("Error"), string(body))
+		return nil, fmt.Errorf("%s: %v", color.RedString("Error"), string(body))
 	}
 
 	return &clusterHelmValuesContent, nil

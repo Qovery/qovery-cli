@@ -3,12 +3,13 @@ package pkg
 import (
 	"bytes"
 	"fmt"
-	"github.com/go-jose/go-jose/v4/json"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
+
+	"github.com/go-jose/go-jose/v4/json"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/qovery/qovery-cli/utils"
 )
@@ -22,9 +23,15 @@ func LoadAwsCredentials(roleArn string) error {
 	utils.CheckError(err)
 
 	// Set the environment variables for child processes
-	os.Setenv("AWS_ACCESS_KEY_ID", awsStsCredentials.AccessKeyId)
-	os.Setenv("AWS_SECRET_ACCESS_KEY", awsStsCredentials.SecretAccessKey)
-	os.Setenv("AWS_SESSION_TOKEN", awsStsCredentials.SessionToken)
+	if err := os.Setenv("AWS_ACCESS_KEY_ID", awsStsCredentials.AccessKeyId); err != nil {
+		return fmt.Errorf("failed to set AWS_ACCESS_KEY_ID: %w", err)
+	}
+	if err := os.Setenv("AWS_SECRET_ACCESS_KEY", awsStsCredentials.SecretAccessKey); err != nil {
+		return fmt.Errorf("failed to set AWS_SECRET_ACCESS_KEY: %w", err)
+	}
+	if err := os.Setenv("AWS_SESSION_TOKEN", awsStsCredentials.SessionToken); err != nil {
+		return fmt.Errorf("failed to set AWS_SESSION_TOKEN: %w", err)
+	}
 	utils.PrintlnInfo("AWS credentials loaded successfully in current environment for child process. (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN)")
 
 	return StartChildShell()
@@ -40,12 +47,16 @@ func LoadCredentials(clusterId string, doNotConnectToBastion bool) error {
 	}
 	// Set the environment variables for child processes
 	for _, cred := range clusterCredentials {
-		os.Setenv(cred.Key, cred.Value)
+		if err := os.Setenv(cred.Key, cred.Value); err != nil {
+			return fmt.Errorf("failed to set environment variable %s: %w", cred.Key, err)
+		}
 		utils.PrintlnInfo(fmt.Sprintf("Set environment variable %s for child process", cred.Key))
 	}
 	kubeconfig := GetKubeconfigByClusterId(clusterId)
 	filePath := utils.WriteInFile(clusterId, "kubeconfig", []byte(kubeconfig))
-	os.Setenv("KUBECONFIG", filePath)
+	if err := os.Setenv("KUBECONFIG", filePath); err != nil {
+		return fmt.Errorf("failed to set KUBECONFIG: %w", err)
+	}
 	return StartChildShell()
 }
 

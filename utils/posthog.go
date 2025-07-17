@@ -50,7 +50,9 @@ func CaptureWithEventAndProperties(command *cobra.Command, event string, propert
 		return
 	}
 
-	defer ph.Close()
+	defer func() {
+		_ = ph.Close()
+	}()
 
 	ctx, err := GetCurrentContext()
 	if err != nil {

@@ -85,7 +85,7 @@ var environmentCloneCmd = &cobra.Command{
 
 		if err != nil {
 			// print http body error message
-			if res != nil  && !strings.Contains(res.Status, "200") {
+			if res != nil && !strings.Contains(res.Status, "200") {
 				result, _ := io.ReadAll(res.Body)
 				utils.PrintlnError(errors.Errorf("status code: %s ; body: %s", res.Status, string(result)))
 			}

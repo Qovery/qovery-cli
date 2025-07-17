@@ -68,7 +68,7 @@ var demoUpCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		userAgent := "'CLI " + utils.Version+ "'"
+		userAgent := "'CLI " + utils.Version + "'"
 		cmdStr := `
 set -eu
 set -o pipefail

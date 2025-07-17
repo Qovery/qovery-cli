@@ -102,4 +102,3 @@ func init() {
 	applicationListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	applicationListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
 }
-

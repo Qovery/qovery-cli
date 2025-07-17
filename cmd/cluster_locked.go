@@ -3,15 +3,16 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/qovery/qovery-cli/utils"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"text/tabwriter"
 	"time"
+
+	"github.com/qovery/qovery-cli/utils"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 var clusterLockedCmd = &cobra.Command{
@@ -50,14 +51,20 @@ func clusterLocked() {
 
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 	format := "%s\t | %s\t | %s\t | %s\t | %s\t | %s\n"
-	fmt.Fprintf(w, format, "", "cluster_id", "locked_at", "ttl_in_days", "locked_by", "reason")
+	if _, err := fmt.Fprintf(w, format, "", "cluster_id", "locked_at", "ttl_in_days", "locked_by", "reason"); err != nil {
+		log.Fatal(err)
+	}
 	for idx, lock := range lockedClusters.Results {
 		ttlInDays := "infinite"
 		if lock.TtlInDays != nil {
 			ttlInDays = strconv.Itoa(int(*lock.TtlInDays))
 		}
 
-		fmt.Fprintf(w, format, fmt.Sprintf("%d", idx+1), lock.ClusterId, lock.LockedAt.Format(time.RFC1123), ttlInDays, lock.OwnerName, lock.Reason)
+		if _, err := fmt.Fprintf(w, format, fmt.Sprintf("%d", idx+1), lock.ClusterId, lock.LockedAt.Format(time.RFC1123), ttlInDays, lock.OwnerName, lock.Reason); err != nil {
+			log.Fatal(err)
+		}
 	}
-	w.Flush()
+	if err := w.Flush(); err != nil {
+		log.Fatal(err)
+	}
 }
