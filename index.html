@@ -3,6 +3,14 @@
 set -e
 #set -x
 
+# Check for required commands
+for cmd in curl gzip tar; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "[!] Required command '$cmd' is not installed. Please install it and try again."
+    exit 1
+  fi
+done
+
 echo "##################################"
 echo "#                                #"
 echo "#       QOVERY CLI INSTALL       #"
@@ -12,44 +20,60 @@ echo ""
 
 repo="Qovery/qovery-cli"
 output_tgz="/tmp/qovery.tgz"
-if ! command -v sudo 2>&1 >/dev/null
-then
-    dest_binary="."
-else
-    dest_binary="/usr/local/bin"
-fi
+dest_binary="/usr/local/bin"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
+
 case "$(uname -m)" in
   x86_64 | amd64)
     arch="amd64"
-  ;;
-
+    ;;
   arm64 | aarch64)
     arch="arm64"
-  ;;
-
+    ;;
   *)
     echo "Un-supported architecture. Please report to us to add it"
     exit 1
-  ;;
+    ;;
 esac
 
 echo "[+] Downloading Qovery CLI archive..."
 
 latest_tag=$(curl --silent "https://api.github.com/repos/$repo/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-version=$(echo $latest_tag | sed 's/^v//')
+# Remove leading 'v' using Bash parameter expansion
+version="${latest_tag#v}"
 
-test -f $output_tgz && rm -f $output_tgz
-curl -o $output_tgz -sOL "https://github.com/${repo}/releases/download/${latest_tag}/qovery-cli_${version}_${os}_${arch}.tar.gz"
+test -f "$output_tgz" && rm -f "$output_tgz"
+
+max_retries=3
+retry_delay=20
+attempt=1
+success=0
+while [ $attempt -le $max_retries ]; do
+  echo "[+] Attempt $attempt to download Qovery CLI archive..."
+  curl -o "$output_tgz" -sOL "https://github.com/${repo}/releases/download/${latest_tag}/qovery-cli_${version}_${os}_${arch}.tar.gz"
+  echo "[+] Checking if downloaded file is a valid gzip archive..."
+  if gzip -t "$output_tgz" 2>/dev/null; then
+    success=1
+    break
+  else
+    echo "[!] Downloaded file is not a valid gzip archive. Retrying in $retry_delay seconds..."
+    attempt=$((attempt + 1))
+    sleep $retry_delay
+  fi
+done
+
+if [ $success -ne 1 ]; then
+  echo "[!] Failed to download a valid Qovery CLI archive after $max_retries attempts. Exiting."
+  exit 1
+fi
 
 echo "[+] Uncompressing qovery binary in $dest_binary directory (sudo permissions are required)"
-if ! command -v sudo 2>&1 >/dev/null
-then
-    tar -xzf $output_tgz -C $dest_binary qovery
+if ! command -v sudo 2>&1 >/dev/null; then
+  tar -xzf "$output_tgz" -C "$dest_binary" qovery
 else
-    sudo tar -xzf $output_tgz -C $dest_binary qovery
+  sudo tar -xzf "$output_tgz" -C "$dest_binary" qovery
 fi
-rm -f $output_tgz
+rm -f "$output_tgz"
 
 echo -e "\nQovery CLI is installed, you can now use 'qovery' command line"
