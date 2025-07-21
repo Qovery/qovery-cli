@@ -3,9 +3,10 @@ package cluster
 import (
 	"context"
 	"fmt"
-	"github.com/qovery/qovery-client-go"
 	"io"
 	"time"
+
+	"github.com/qovery/qovery-client-go"
 
 	"github.com/go-errors/errors"
 	"github.com/pterm/pterm"
@@ -139,6 +140,21 @@ func (service *ClusterServiceImpl) StopCluster(organizationName string, clusterN
 	}
 
 	return nil
+}
+
+func (service *ClusterServiceImpl) GetClusterByID(organizationId string, clusterId string) (*qovery.Cluster, error) {
+	clusters, err := service.ListClusters(organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, cluster := range clusters.Results {
+		if cluster.Id == clusterId {
+			return &cluster, nil
+		}
+	}
+
+	return nil, errors.Errorf("Cluster with id %s doesn't exists in organization %s", clusterId, organizationId)
 }
 
 func (service *ClusterServiceImpl) ListClusters(organizationId string) (*qovery.ClusterResponseList, error) {

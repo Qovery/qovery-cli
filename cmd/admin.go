@@ -5,24 +5,25 @@ import (
 )
 
 var (
-	jwtKid           string
-	clusterId        string
-	organizationId   string
-	projectId        string
-	lockReason       string
-	orgaErr          error
-	dryRun           bool
-	noConfirm        bool
-	version          string
-	versionErr       error
-	ageInDay         int
-	execId           string
-	directory        string
-	rootDns          string
-	additionalClaims string
-	description      string
-	lockTtlInDays    int32
-	adminCmd         = &cobra.Command{Use: "admin", Hidden: true}
+	jwtKid            string
+	clusterId         string
+	clusterKubeconfig string
+	organizationId    string
+	projectId         string
+	lockReason        string
+	orgaErr           error
+	dryRun            bool
+	noConfirm         bool
+	version           string
+	versionErr        error
+	ageInDay          int
+	execId            string
+	directory         string
+	rootDns           string
+	additionalClaims  string
+	description       string
+	lockTtlInDays     int32
+	adminCmd          = &cobra.Command{Use: "admin", Hidden: true}
 )
 
 func init() {
