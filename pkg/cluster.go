@@ -3,10 +3,11 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"github.com/qovery/qovery-cli/utils"
-	"github.com/qovery/qovery-client-go"
 	"io"
 	"os"
+
+	"github.com/qovery/qovery-cli/utils"
+	"github.com/qovery/qovery-client-go"
 )
 
 func GetKubeconfigByClusterId(clusterId string) string {
@@ -27,6 +28,26 @@ func GetKubeconfigByClusterId(clusterId string) string {
 		os.Exit(1)
 	}
 	return response
+}
+
+func UpdateClusterKubeconfig(organizationId string, clusterId string, kubeconfig string) error {
+	qoveryClient := GetQoveryClientInstance()
+
+	request := qoveryClient.ClustersAPI.EditClusterKubeconfig(
+		context.Background(),
+		organizationId,
+		clusterId,
+	).Body(kubeconfig)
+
+	// Execute the request
+	response, err := request.Execute()
+	if err != nil {
+		utils.PrintlnError(err)
+		return err
+	}
+	defer func() { _ = response.Body.Close() }()
+
+	return nil
 }
 
 func GetTokenByClusterId(clusterId string) string {
