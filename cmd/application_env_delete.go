@@ -17,6 +17,12 @@ var applicationEnvDeleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
+		// Check if required flags are provided
+		if applicationName == "" || utils.Key == "" {
+			_ = cmd.Help()
+			os.Exit(0)
+		}
+
 		tokenType, token, err := utils.GetAccessToken()
 		if err != nil {
 			utils.PrintlnError(err)
@@ -70,6 +76,5 @@ func init() {
 	applicationEnvDeleteCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
 	applicationEnvDeleteCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "Environment variable or secret key")
 
-	_ = applicationEnvDeleteCmd.MarkFlagRequired("key")
-	_ = applicationEnvDeleteCmd.MarkFlagRequired("application")
+	// Don't mark flags as required - we'll handle validation in the Run function
 }

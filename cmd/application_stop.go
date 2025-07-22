@@ -3,12 +3,13 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"os"
-	"strings"
 )
 
 var applicationStopCmd = &cobra.Command{
@@ -16,6 +17,7 @@ var applicationStopCmd = &cobra.Command{
 	Short: "Stop an application",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
+		utils.ShowHelpIfNoArgs(cmd, args)
 
 		client := utils.GetQoveryClientPanicInCaseOfError()
 		validateApplicationArguments(applicationName, applicationNames)

@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/qovery/qovery-client-go"
 	"time"
+
+	"github.com/qovery/qovery-client-go"
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
@@ -16,6 +17,7 @@ var databaseDeployCmd = &cobra.Command{
 	Short: "Deploy a database",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
+		utils.ShowHelpIfNoArgs(cmd, args)
 
 		client := utils.GetQoveryClientPanicInCaseOfError()
 		validateDatabaseArguments(databaseName, databaseNames)

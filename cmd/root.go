@@ -14,6 +14,13 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "qovery",
 	Short: "A Command-line Interface of the Qovery platform",
+	Run: func(cmd *cobra.Command, args []string) {
+		// Show help if no arguments are provided
+		if len(args) == 0 {
+			_ = cmd.Help()
+			os.Exit(0)
+		}
+	},
 }
 
 func Execute() {
