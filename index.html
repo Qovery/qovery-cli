@@ -3,6 +3,34 @@
 set -e
 #set -x
 
+# Parse command line arguments
+install_dir=""
+no_sudo="false"
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --install-dir)
+      install_dir="$2"
+      shift 2
+      ;;
+    --no-sudo)
+      no_sudo="true"
+      shift
+      ;;
+    --help|-h)
+      echo "Usage: $0 [--install-dir DIRECTORY] [--no-sudo]"
+      echo "  --install-dir DIRECTORY  Install qovery binary to specified directory"
+      echo "  --no-sudo               Do not use sudo, even if available"
+      echo "  --help, -h              Show this help message"
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Use --help for usage information"
+      exit 1
+      ;;
+  esac
+done
+
 # Check for required commands
 for cmd in curl gzip tar; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
@@ -20,7 +48,39 @@ echo ""
 
 repo="Qovery/qovery-cli"
 output_tgz="/tmp/qovery.tgz"
-dest_binary="/usr/local/bin"
+
+# Determine install directory and sudo usage
+if [ -n "$install_dir" ]; then
+  # User specified install directory
+  dest_binary="$install_dir"
+  use_sudo="false"
+elif [ "$(id -u)" -eq 0 ]; then
+  dest_binary="/usr/local/bin"
+  use_sudo="false"
+elif [ "$no_sudo" = "true" ]; then
+  # User explicitly disabled sudo
+  dest_binary="."
+  use_sudo="false"
+elif command -v sudo >/dev/null 2>&1; then
+  dest_binary="/usr/local/bin"
+  use_sudo="true"
+else
+  dest_binary="."
+  use_sudo="false"
+fi
+
+# Set sudo command variable
+if [ "$use_sudo" = "true" ]; then
+  sudo="sudo"
+else
+  sudo=""
+fi
+
+# Create install directory if it doesn't exist
+if [ ! -d "$dest_binary" ]; then
+  echo "[+] Creating install directory: $dest_binary"
+  $sudo mkdir -p "$dest_binary"
+fi
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
 
@@ -68,12 +128,8 @@ if [ $success -ne 1 ]; then
   exit 1
 fi
 
-echo "[+] Uncompressing qovery binary in $dest_binary directory (sudo permissions are required)"
-if ! command -v sudo 2>&1 >/dev/null; then
-  tar -xzf "$output_tgz" -C "$dest_binary" qovery
-else
-  sudo tar -xzf "$output_tgz" -C "$dest_binary" qovery
-fi
+echo "[+] Uncompressing qovery binary in $dest_binary directory (sudo permissions may be required)"
+$sudo tar -xzf "$output_tgz" -C "$dest_binary" qovery
 rm -f "$output_tgz"
 
-echo -e "\nQovery CLI is installed, you can now use 'qovery' command line"
+echo -e "\nQovery CLI is installed in $dest_binary directory, you can now use 'qovery' command line"
