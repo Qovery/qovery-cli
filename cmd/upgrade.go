@@ -33,7 +33,7 @@ var upgradeCmd = &cobra.Command{
 		archivePathName := archivePath + archiveName
 		uncompressPath := "/tmp/"
 		uncompressQoveryBinaryPath := uncompressPath + filename
-		cleanList := []string{uncompressPath, archivePathName}
+		cleanList := []string{archivePathName, uncompressQoveryBinaryPath}
 
 		available, message, desiredVersion := pkg.CheckAvailableNewVersion()
 		if !available {
