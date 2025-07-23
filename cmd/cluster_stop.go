@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
+	"os"
 
 	"github.com/qovery/qovery-cli/pkg/cluster"
 	"github.com/qovery/qovery-cli/pkg/promptuifactory"
@@ -15,7 +14,6 @@ var clusterStopCmd = &cobra.Command{
 	Short: "Stop a cluster",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		utils.ShowHelpIfNoArgs(cmd, args)
 
 		tokenType, token, err := utils.GetAccessToken()
 		if err != nil {

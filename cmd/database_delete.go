@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
@@ -16,7 +15,6 @@ var databaseDeleteCmd = &cobra.Command{
 	Short: "Delete a database",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		utils.ShowHelpIfNoArgs(cmd, args)
 
 		client := utils.GetQoveryClientPanicInCaseOfError()
 		validateDatabaseArguments(databaseName, databaseNames)

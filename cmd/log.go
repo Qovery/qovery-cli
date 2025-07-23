@@ -4,11 +4,10 @@ import (
 	"context"
 	"errors"
 	_ "fmt"
-	"os"
-
 	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var rawFormat bool
@@ -18,7 +17,6 @@ var logCmd = &cobra.Command{
 	Short: "Print your application logs",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		utils.ShowHelpIfNoArgs(cmd, args)
 		getLogs()
 	},
 }

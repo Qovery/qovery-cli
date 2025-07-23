@@ -2,11 +2,10 @@ package cmd
 
 import (
 	"context"
-	"time"
-
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+	"time"
 )
 
 var environmentRedeployCmd = &cobra.Command{
@@ -14,7 +13,6 @@ var environmentRedeployCmd = &cobra.Command{
 	Short: "Redeploy an environment",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		utils.ShowHelpIfNoArgs(cmd, args)
 
 		client := utils.GetQoveryClientPanicInCaseOfError()
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)

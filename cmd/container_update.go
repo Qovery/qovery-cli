@@ -18,7 +18,6 @@ var containerUpdateCmd = &cobra.Command{
 	Short: "Update a container",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		utils.ShowHelpIfNoArgs(cmd, args)
 
 		tokenType, token, err := utils.GetAccessToken()
 		if err != nil {

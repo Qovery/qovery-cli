@@ -2,11 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"time"
-
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+	"time"
 
 	"github.com/qovery/qovery-cli/utils"
 )
@@ -16,7 +15,6 @@ var applicationDeployCmd = &cobra.Command{
 	Short: "Deploy an application",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		utils.ShowHelpIfNoArgs(cmd, args)
 
 		client := utils.GetQoveryClientPanicInCaseOfError()
 		validateApplicationArguments(applicationName, applicationNames)

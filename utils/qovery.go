@@ -16,7 +16,6 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/qovery/qovery-client-go"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"golang.org/x/net/context"
 )
 
@@ -1916,58 +1915,4 @@ func GetDuration(startTime time.Time, endTime time.Time) string {
 	}
 
 	return fmt.Sprintf("%d minutes and %d seconds", int(duration.Minutes()), int(duration.Seconds())%60)
-}
-
-// ShowHelpIfNoArgs shows help and exits if no arguments are provided
-func ShowHelpIfNoArgs(cmd *cobra.Command, args []string) {
-	if len(args) == 0 {
-		_ = cmd.Help()
-		os.Exit(0)
-	}
-}
-
-// ShowHelpIfNoRequiredFlags shows help if required flags are not provided
-func ShowHelpIfNoRequiredFlags(cmd *cobra.Command) {
-	// Check if any required flags are missing by checking if they were set
-	missingFlags := []string{}
-
-	// Check application flag
-	if cmd.Flags().Lookup("application") != nil && !cmd.Flags().Lookup("application").Changed {
-		missingFlags = append(missingFlags, "application")
-	}
-
-	// Check key flag
-	if cmd.Flags().Lookup("key") != nil && !cmd.Flags().Lookup("key").Changed {
-		missingFlags = append(missingFlags, "key")
-	}
-
-	// Check other common required flags
-	if cmd.Flags().Lookup("cluster") != nil && !cmd.Flags().Lookup("cluster").Changed {
-		missingFlags = append(missingFlags, "cluster")
-	}
-
-	if cmd.Flags().Lookup("database") != nil && !cmd.Flags().Lookup("database").Changed {
-		missingFlags = append(missingFlags, "database")
-	}
-
-	if cmd.Flags().Lookup("container") != nil && !cmd.Flags().Lookup("container").Changed {
-		missingFlags = append(missingFlags, "container")
-	}
-
-	if len(missingFlags) > 0 {
-		_ = cmd.Help()
-		os.Exit(0)
-	}
-}
-
-// ShowHelpIfNoArgsOrRequiredFlags shows help if no arguments or required flags are provided
-func ShowHelpIfNoArgsOrRequiredFlags(cmd *cobra.Command, args []string) {
-	// First check if no arguments are provided
-	if len(args) == 0 {
-		_ = cmd.Help()
-		os.Exit(0)
-	}
-
-	// Then check if required flags are missing
-	ShowHelpIfNoRequiredFlags(cmd)
 }
