@@ -27,6 +27,14 @@ Example:
   qovery admin enable-user-connect --user-email "user@example.com" --provider "github"
 `,
 		Run: func(cmd *cobra.Command, args []string) {
+			utils.Capture(cmd)
+
+			// Check if required flags are provided
+			if userEmail == "" {
+				_ = cmd.Help()
+				os.Exit(0)
+			}
+
 			enableUserSignup()
 		},
 	}
@@ -35,10 +43,7 @@ Example:
 func init() {
 	adminEnableUserSignupCmd.Flags().StringVarP(&userEmail, "user-email", "e", "", "User email address (required)")
 	adminEnableUserSignupCmd.Flags().StringVarP(&provider, "provider", "p", "", "Authentication provider (github, gitlab, bitbucket, microsoft, google)")
-	if err := adminEnableUserSignupCmd.MarkFlagRequired("user-email"); err != nil {
-		utils.PrintlnError(fmt.Errorf("failed to mark flag as required: %w", err))
-		os.Exit(1)
-	}
+	// Don't mark flags as required - we'll handle validation in the Run function
 	adminCmd.AddCommand(adminEnableUserSignupCmd)
 }
 

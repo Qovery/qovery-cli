@@ -3,10 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/qovery/qovery-client-go"
-	"github.com/spf13/cobra"
 	"os"
 	"strings"
+
+	"github.com/qovery/qovery-client-go"
+	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/utils"
 )
@@ -16,6 +17,7 @@ var containerStopCmd = &cobra.Command{
 	Short: "Stop a container",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
+		utils.ShowHelpIfNoArgs(cmd, args)
 
 		client := utils.GetQoveryClientPanicInCaseOfError()
 		validateContainerArguments(containerName, containerNames)
