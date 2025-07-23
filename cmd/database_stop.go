@@ -3,12 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
-	"strings"
-
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+	"os"
+	"strings"
 
 	"github.com/qovery/qovery-cli/utils"
 )
@@ -18,7 +17,6 @@ var databaseStopCmd = &cobra.Command{
 	Short: "Stop a database",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		utils.ShowHelpIfNoArgs(cmd, args)
 
 		client := utils.GetQoveryClientPanicInCaseOfError()
 		validateDatabaseArguments(databaseName, databaseNames)

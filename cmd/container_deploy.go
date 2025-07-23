@@ -2,12 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"time"
-
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
+	"time"
 )
 
 var containerDeployCmd = &cobra.Command{
@@ -15,7 +14,6 @@ var containerDeployCmd = &cobra.Command{
 	Short: "Deploy a container",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		utils.ShowHelpIfNoArgs(cmd, args)
 
 		client := utils.GetQoveryClientPanicInCaseOfError()
 		validateContainerArguments(containerName, containerNames)

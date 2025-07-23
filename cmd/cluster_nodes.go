@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/appscode/go-querystring/query"
+	"github.com/gorilla/websocket"
 	"net/http"
 	"net/url"
 	"os"
 	"regexp"
-
-	"github.com/appscode/go-querystring/query"
-	"github.com/gorilla/websocket"
 
 	"github.com/spf13/cobra"
 
@@ -23,12 +22,6 @@ var clusterListNodesCmd = &cobra.Command{
 	Short: "List cluster nodes",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-
-		// Check if required flags are provided
-		if clusterId == "" {
-			_ = cmd.Help()
-			os.Exit(0)
-		}
 
 		tokenType, token, err := utils.GetAccessToken()
 		if err != nil {
