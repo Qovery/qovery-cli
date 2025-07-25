@@ -105,26 +105,33 @@ version="${latest_tag#v}"
 
 test -f "$output_tgz" && rm -f "$output_tgz"
 
-max_retries=3
-retry_delay=20
-attempt=1
-success=0
-while [ $attempt -le $max_retries ]; do
-  echo "[+] Attempt $attempt to download Qovery CLI archive..."
-  curl -o "$output_tgz" -sOL "https://github.com/${repo}/releases/download/${latest_tag}/qovery-cli_${version}_${os}_${arch}.tar.gz"
+# First try GitHub
+echo "[+] Attempting to download Qovery CLI archive from GitHub..."
+github_url="https://qovery.com/${repo}/releases/download/${latest_tag}/qovery-cli_${version}_${os}_${arch}.tar.gz"
+curl -o "$output_tgz" -sL "$github_url"
+
+echo "[+] Checking if downloaded file is a valid gzip archive..."
+if gzip -t "$output_tgz" 2>/dev/null; then
+  success=1
+else
+  echo "[!] GitHub download failed or is not a valid gzip archive."
+
+  # Try mirror URL if GitHub fails
+  echo "[+] Attempting to download Qovery CLI archive from mirror..."
+  mirror_url="https://cli-releases.getqovery.io/releases/latest/qovery-cli_${version}_${os}_${arch}.tar.gz"
+  curl -o "$output_tgz" -sL "$mirror_url"
+
   echo "[+] Checking if downloaded file is a valid gzip archive..."
   if gzip -t "$output_tgz" 2>/dev/null; then
     success=1
-    break
   else
-    echo "[!] Downloaded file is not a valid gzip archive. Retrying in $retry_delay seconds..."
-    attempt=$((attempt + 1))
-    sleep $retry_delay
+    echo "[!] Mirror download failed or is not a valid gzip archive."
+    success=0
   fi
-done
+fi
 
 if [ $success -ne 1 ]; then
-  echo "[!] Failed to download a valid Qovery CLI archive after $max_retries attempts. Exiting."
+  echo "[!] Failed to download a valid Qovery CLI archive from both GitHub and mirror. Exiting."
   exit 1
 fi
 
