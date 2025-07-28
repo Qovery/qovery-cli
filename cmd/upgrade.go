@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 
 	"github.com/kardianos/osext"
@@ -28,11 +29,10 @@ var upgradeCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		currentBinaryFilename, _ := osext.Executable()
 		filename := "qovery"
-		archivePath := "/tmp/"
+		tempDir := os.TempDir()
 		archiveName := filename + ".tgz"
-		archivePathName := archivePath + archiveName
-		uncompressPath := "/tmp/"
-		uncompressQoveryBinaryPath := uncompressPath + filename
+		archivePathName := filepath.Join(tempDir, archiveName)
+		uncompressQoveryBinaryPath := filepath.Join(tempDir, filename)
 		cleanList := []string{archivePathName, uncompressQoveryBinaryPath}
 
 		available, message, desiredVersion := pkg.CheckAvailableNewVersion()
@@ -72,13 +72,6 @@ var upgradeCmd = &cobra.Command{
 				utils.PrintlnError(fmt.Errorf("error while closing output file: %s", err))
 			}
 		}()
-
-		if _, err := os.Stat(uncompressPath); !os.IsNotExist(err) {
-			if err := os.RemoveAll(uncompressPath); err != nil {
-				utils.PrintlnError(fmt.Errorf("error while removing uncompressed path: %s", err))
-				os.Exit(0)
-			}
-		}
 
 		// Decompress the tar.gz and extract the cli
 		format, stream, err := archives.Identify(context.Background(), urlFilename, resp.Body)
@@ -144,8 +137,8 @@ func init() {
 
 func cleanArchives(listToRemove []string) {
 	for _, value := range listToRemove {
-		err := os.RemoveAll(value)
-		if err != nil {
+		err := os.Remove(value)
+		if err != nil && !os.IsNotExist(err) {
 			utils.PrintlnError(fmt.Errorf("error while removing the element: %s", err))
 			os.Exit(0)
 		}
