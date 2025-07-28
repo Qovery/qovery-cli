@@ -50,7 +50,8 @@ jobs:
       # archlinux
       - name: Prepare AUR package
         run: |
-          version=$(awk -F'"' '/ci-version-check/{print $2}' pkg/version.go)
+          version="${GITHUB_REF_NAME:-}"
+          version="${version#v}"
           md5version=$(curl -sL https://github.com/Qovery/qovery-cli/archive/v${version}.tar.gz --output - | md5sum | awk '{ print $1 }')
           sed -i "s/pkgver=tbd/pkgver=$version/" PKGBUILD
           echo "md5sums=('${md5version}')" >> PKGBUILD
