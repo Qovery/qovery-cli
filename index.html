@@ -97,9 +97,50 @@ case "$(uname -m)" in
     ;;
 esac
 
-echo "[+] Downloading Qovery CLI archive..."
 
-latest_tag=$(curl --silent "https://api.github.com/repos/$repo/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+find_latest_tag() {
+  # Find through API first
+  echo "  [+] Trying through Github API" >&2
+  response=$(curl --silent --write-out "HTTPSTATUS:%{http_code}" "https://api.github.com/repos/$repo/releases/latest" 2>/dev/null || echo "HTTPSTATUS:000")
+  http_code=$(echo "$response" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
+  body=$(echo "$response" | sed -E 's/HTTPSTATUS:[0-9]*$//')
+
+  if [ "$http_code" -eq 200 ] && [ -n "$body" ]; then
+    tag=$(echo "$body" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' 2>/dev/null)
+    if [ -n "$tag" ] && [ "$tag" != "null" ]; then
+      echo "  [+] Successfully retrieved tag from GitHub API: $tag" >&2
+      echo "$tag"
+      return
+    fi
+  elif [ "$http_code" -eq 403 ]; then
+    echo "  [!] GitHub API rate limit reached (HTTP 403)" >&2
+  elif [ "$http_code" -ne 200 ]; then
+    echo "  [!] GitHub API request failed with HTTP code: $http_code" >&2
+  fi
+
+  # Find using basic scraping on github repo releases
+  echo "  [+] Trying GitHub releases page scraping ..." >&2
+  tag=$(curl --silent --max-time 15 --location "https://github.com/$repo/releases/latest" 2>/dev/null | \
+        grep -oE 'href="[^"]*/releases/tag/[^"]*"' | head -1 | \
+        sed -E 's/.*\/releases\/tag\/([^"]*).*/\1/' 2>/dev/null)
+
+  if [ -n "$tag" ] && [ "$tag" != "null" ]; then
+    echo "  [+] Successfully retrieved tag from GitHub releases page: $tag" >&2
+    echo "$tag"
+    return
+  fi
+
+  echo ""
+}
+
+echo "[+] Attempting to get latest available tag..."
+latest_tag=$(find_latest_tag)
+
+if [ -z latest_tag ]; then
+  echo "[!] Impossible to retrieve latest release tag"
+  exit 1
+fi
+
 # Remove leading 'v' using Bash parameter expansion
 version="${latest_tag#v}"
 
