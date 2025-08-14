@@ -110,6 +110,7 @@ find_latest_tag() {
     if [ -n "$tag" ] && [ "$tag" != "null" ]; then
       echo "  [+] Successfully retrieved tag from GitHub API: $tag" >&2
       echo "$tag"
+      return
     fi
   elif [ "$http_code" -eq 403 ]; then
     echo "  [!] GitHub API rate limit reached (HTTP 403)" >&2
@@ -126,6 +127,7 @@ find_latest_tag() {
   if [ -n "$tag" ] && [ "$tag" != "null" ]; then
     echo "  [+] Successfully retrieved tag from GitHub releases page: $tag" >&2
     echo "$tag"
+    return
   fi
 
   echo ""
