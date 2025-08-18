@@ -454,7 +454,7 @@ func (service AdminClusterBatchDeployServiceImpl) deployCluster(clusterId string
 	adminUrl := utils.GetAdminUrl()
 	response := execAdminRequest(adminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, dryRunDisabled, map[string]string{})
 	if response.StatusCode == 401 {
-		DoRequestUserToAuthenticate(false)
+		DoRequestUserToAuthenticate(false, true)
 		response = execAdminRequest(adminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, dryRunDisabled, map[string]string{})
 	}
 	if response.StatusCode != 200 {
@@ -488,7 +488,7 @@ func (service AdminClusterBatchDeployServiceImpl) upgradeCluster(clusterId strin
 	}
 
 	if response.StatusCode == 401 {
-		DoRequestUserToAuthenticate(false)
+		DoRequestUserToAuthenticate(false, true)
 		request, err = http.NewRequest(http.MethodPost, adminUrl+"/cluster/update/"+clusterId, body)
 		if err != nil {
 			return err

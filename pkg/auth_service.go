@@ -50,14 +50,15 @@ type DeviceFlowParameters struct {
 	Interval                int64  `json:"interval"`
 }
 
-func DoRequestUserToAuthenticate(headless bool) {
+func DoRequestUserToAuthenticate(headless bool, skipVersionCheck bool) {
 	qoveryConsoleUrl := "https://console.qovery.com"
 
-	available, message, _ := CheckAvailableNewVersion()
-	if available {
-		fmt.Println(message)
+	if !skipVersionCheck {
+		available, message, _ := CheckAvailableNewVersion()
+		if available {
+			fmt.Println(message)
+		}
 	}
-
 	if headless {
 		runHeadlessFlow()
 		return
@@ -271,7 +272,7 @@ func RetryQoveryClientApiRequestOnUnauthorized[T any](request QoveryClientApiReq
 	qoveryStruct, response, err := request(false)
 	if response != nil && response.StatusCode == http.StatusUnauthorized {
 		utils.Println("Needs to re-authenticate as the response is UNAUTHORIZED (401)")
-		DoRequestUserToAuthenticate(false)
+		DoRequestUserToAuthenticate(false, true)
 		qoveryStruct, response, err = request(true)
 	}
 	return qoveryStruct, response, err
