@@ -45,8 +45,8 @@ func updateClusterKubeconfig() {
 		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
-	if cluster.Kubernetes == nil || *cluster.Kubernetes != qovery.KUBERNETESENUM_SELF_MANAGED {
-		utils.PrintlnError(errors.New("kubeconfig update is supported for SELF MANAGED clusters only"))
+	if cluster.Kubernetes == nil || (*cluster.Kubernetes != qovery.KUBERNETESENUM_SELF_MANAGED && *cluster.Kubernetes != qovery.KUBERNETESENUM_PARTIALLY_MANAGED) {
+		utils.PrintlnError(errors.New("kubeconfig update is supported for SELF MANAGED and PARTIALLY MANAGED clusters only"))
 		os.Exit(1)
 		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
