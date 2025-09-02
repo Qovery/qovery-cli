@@ -12,15 +12,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	adminClusterUpdateKubeconfigCmd = &cobra.Command{
-		Use:   "kubeconfig",
-		Short: "Update cluster kubeconfig",
-		Run: func(cmd *cobra.Command, args []string) {
-			updateClusterKubeconfig()
-		},
-	}
-)
+var adminClusterUpdateKubeconfigCmd = &cobra.Command{
+	Use:   "kubeconfig",
+	Short: "Update cluster kubeconfig",
+	Run: func(cmd *cobra.Command, args []string) {
+		updateClusterKubeconfig()
+	},
+}
 
 func init() {
 	adminClusterUpdateKubeconfigCmd.Flags().StringVar(&organizationId, "organization-id", "", "The cluster's organization ")

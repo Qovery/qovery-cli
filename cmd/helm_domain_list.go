@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/qovery/qovery-client-go"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/qovery/qovery-client-go"
 
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
@@ -29,7 +30,6 @@ var helmDomainListCmd = &cobra.Command{
 		client := utils.GetQoveryClient(tokenType, token)
 
 		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -37,7 +37,6 @@ var helmDomainListCmd = &cobra.Command{
 		}
 
 		helms, _, err := client.HelmsAPI.ListHelms(context.Background(), envId).Execute()
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -54,7 +53,6 @@ var helmDomainListCmd = &cobra.Command{
 		}
 
 		customDomains, _, err := client.HelmCustomDomainAPI.ListHelmCustomDomain(context.Background(), helm.Id).Execute()
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -77,7 +75,6 @@ var helmDomainListCmd = &cobra.Command{
 		}
 
 		links, _, err := client.HelmMainCallsAPI.ListHelmLinks(context.Background(), helm.Id).Execute()
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -90,22 +87,19 @@ var helmDomainListCmd = &cobra.Command{
 		}
 
 		for _, link := range links.GetResults() {
-			if link.Url != nil {
-				domain := strings.ReplaceAll(*link.Url, "https://", "")
-				if !customDomainsSet[domain] {
-					data = append(data, []string{
-						"N/A",
-						"BUILT_IN_DOMAIN",
-						domain,
-						"N/A",
-						"N/A",
-					})
-				}
+			domain := strings.ReplaceAll(link.Url, "https://", "")
+			if !customDomainsSet[domain] {
+				data = append(data, []string{
+					"N/A",
+					"BUILT_IN_DOMAIN",
+					domain,
+					"N/A",
+					"N/A",
+				})
 			}
 		}
 
 		err = utils.PrintTable([]string{"Id", "Type", "Domain", "Validation Domain", "Generate Certificate"}, data)
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -118,14 +112,12 @@ func gethelmDomainJsonOutput(links []qovery.Link, domains []qovery.CustomDomain)
 	var results []interface{}
 
 	for _, link := range links {
-		if link.Url != nil {
-			results = append(results, map[string]interface{}{
-				"id":                nil,
-				"type":              "BUILT_IN_DOMAIN",
-				"domain":            strings.ReplaceAll(*link.Url, "https://", ""),
-				"validation_domain": nil,
-			})
-		}
+		results = append(results, map[string]interface{}{
+			"id":                nil,
+			"type":              "BUILT_IN_DOMAIN",
+			"domain":            strings.ReplaceAll(link.Url, "https://", ""),
+			"validation_domain": nil,
+		})
 	}
 
 	for _, domain := range domains {
@@ -138,7 +130,6 @@ func gethelmDomainJsonOutput(links []qovery.Link, domains []qovery.CustomDomain)
 	}
 
 	j, err := json.Marshal(results)
-
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
