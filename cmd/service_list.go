@@ -15,15 +15,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var id string
-var organizationName string
-var projectName string
-var environmentName string
-var watchFlag bool
-var markdownFlag bool
-var jiraFlag bool
-var jsonFlag bool
-var servicesJson string
+var (
+	id               string
+	organizationName string
+	projectName      string
+	environmentName  string
+	watchFlag        bool
+	markdownFlag     bool
+	jiraFlag         bool
+	jsonFlag         bool
+	servicesJson     string
+)
 
 var serviceListCmd = &cobra.Command{
 	Use:   "list",
@@ -40,7 +42,6 @@ var serviceListCmd = &cobra.Command{
 
 		client := utils.GetQoveryClient(tokenType, token)
 		orgId, projectId, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -48,7 +49,6 @@ var serviceListCmd = &cobra.Command{
 		}
 
 		apps, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -56,7 +56,6 @@ var serviceListCmd = &cobra.Command{
 		}
 
 		databases, _, err := client.DatabasesAPI.ListDatabase(context.Background(), envId).Execute()
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -64,7 +63,6 @@ var serviceListCmd = &cobra.Command{
 		}
 
 		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -72,7 +70,6 @@ var serviceListCmd = &cobra.Command{
 		}
 
 		jobs, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -80,7 +77,6 @@ var serviceListCmd = &cobra.Command{
 		}
 
 		helms, _, err := client.HelmsAPI.ListHelms(context.Background(), envId).Execute()
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -88,7 +84,6 @@ var serviceListCmd = &cobra.Command{
 		}
 
 		statuses, _, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -141,7 +136,6 @@ var serviceListCmd = &cobra.Command{
 		}
 
 		err = utils.PrintTable([]string{"Name", "Type", "Status"}, data)
-
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -152,19 +146,16 @@ var serviceListCmd = &cobra.Command{
 
 func getOrganizationProjectEnvironmentContextResourcesIds(qoveryAPIClient *qovery.APIClient) (string, string, string, error) {
 	organizationId, err := usercontext.GetOrganizationContextResourceId(qoveryAPIClient, organizationName)
-
 	if err != nil {
 		return "", "", "", err
 	}
 
 	projectId, err := getProjectContextResourceId(qoveryAPIClient, projectName, organizationId)
-
 	if err != nil {
 		return organizationId, "", "", err
 	}
 
 	environmentId, err := getEnvironmentContextResourceId(qoveryAPIClient, environmentName, projectId)
-
 	if err != nil {
 		return organizationId, projectId, "", err
 	}
@@ -180,13 +171,11 @@ func getEnvironmentIdFromContextPanicInCaseOfError(client *qovery.APIClient) str
 
 func getOrganizationProjectContextResourcesIds(qoveryAPIClient *qovery.APIClient) (string, string, error) {
 	organizationId, err := usercontext.GetOrganizationContextResourceId(qoveryAPIClient, organizationName)
-
 	if err != nil {
 		return "", "", err
 	}
 
 	projectId, err := getProjectContextResourceId(qoveryAPIClient, projectName, organizationId)
-
 	if err != nil {
 		return organizationId, "", err
 	}
@@ -211,7 +200,6 @@ func getProjectContextResourceId(qoveryAPIClient *qovery.APIClient, projectName 
 
 	// find project id by name
 	projects, _, err := qoveryAPIClient.ProjectsAPI.ListProject(context.Background(), organizationId).Execute()
-
 	if err != nil {
 		return "", err
 	}
@@ -241,7 +229,6 @@ func getEnvironmentContextResourceId(qoveryAPIClient *qovery.APIClient, environm
 
 	// find environment id by name
 	environments, _, err := qoveryAPIClient.EnvironmentsAPI.ListEnvironment(context.Background(), projectId).Execute()
-
 	if err != nil {
 		return "", err
 	}
@@ -337,7 +324,6 @@ func getApplicationContextResource(qoveryAPIClient *qovery.APIClient, applicatio
 
 	// find applications id by name
 	applications, _, err := qoveryAPIClient.ApplicationsAPI.ListApplication(context.Background(), environmentId).Execute()
-
 	if err != nil {
 		return nil, err
 	}
@@ -359,7 +345,6 @@ func getDatabaseContextResource(qoveryAPIClient *qovery.APIClient, databaseName 
 
 	// find database id by name
 	databases, _, err := qoveryAPIClient.DatabasesAPI.ListDatabase(context.Background(), environmentId).Execute()
-
 	if err != nil {
 		return nil, err
 	}
@@ -381,7 +366,6 @@ func getContainerContextResource(qoveryAPIClient *qovery.APIClient, containerNam
 
 	// find containers id by name
 	containers, _, err := qoveryAPIClient.ContainersAPI.ListContainer(context.Background(), environmentId).Execute()
-
 	if err != nil {
 		return nil, err
 	}
@@ -403,7 +387,6 @@ func getJobContextResource(qoveryAPIClient *qovery.APIClient, jobName string, en
 
 	// find jobs id by name
 	jobs, _, err := qoveryAPIClient.JobsAPI.ListJobs(context.Background(), environmentId).Execute()
-
 	if err != nil {
 		return nil, err
 	}
@@ -425,7 +408,6 @@ func getHelmContextResource(qoveryAPIClient *qovery.APIClient, helmName string, 
 
 	// find helms id by name
 	helms, _, err := qoveryAPIClient.HelmsAPI.ListHelms(context.Background(), environmentId).Execute()
-
 	if err != nil {
 		return nil, err
 	}
@@ -503,7 +485,6 @@ func getServiceJsonOutput(statuses qovery.EnvironmentStatuses, apps []qovery.App
 	}
 
 	j, err := json.Marshal(results)
-
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
@@ -652,7 +633,6 @@ Powered by [Qovery|https://qovery.com].`
 
 func getApplicationPreviewUrl(client qovery.APIClient, appId string) *string {
 	links, _, err := client.ApplicationMainCallsAPI.ListApplicationLinks(context.Background(), appId).Execute()
-
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
@@ -660,9 +640,7 @@ func getApplicationPreviewUrl(client qovery.APIClient, appId string) *string {
 	}
 
 	for _, link := range links.GetResults() {
-		if link.Url != nil {
-			return link.Url
-		}
+		return &link.Url
 	}
 
 	return nil
@@ -670,7 +648,6 @@ func getApplicationPreviewUrl(client qovery.APIClient, appId string) *string {
 
 func getContainerPreviewUrl(client qovery.APIClient, containerId string) *string {
 	links, _, err := client.ContainerMainCallsAPI.ListContainerLinks(context.Background(), containerId).Execute()
-
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
@@ -678,9 +655,7 @@ func getContainerPreviewUrl(client qovery.APIClient, containerId string) *string
 	}
 
 	for _, link := range links.GetResults() {
-		if link.Url != nil {
-			return link.Url
-		}
+		return &link.Url
 	}
 
 	return nil
