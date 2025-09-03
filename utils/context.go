@@ -15,6 +15,7 @@ import (
 )
 
 const ContextFileName = "context"
+const ContextFilePermissions = 0600
 
 type QoveryContext struct {
 	AccessToken           AccessToken  `json:"access_token"`
@@ -144,7 +145,12 @@ func StoreContext(context QoveryContext) error {
 		return err
 	}
 
-	return os.WriteFile(path, bytes, os.ModePerm)
+	err = os.Chmod(path, ContextFilePermissions)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(path, bytes, ContextFilePermissions)
 }
 
 func CurrentOrganization(promptContext bool) (Id, Name, error) {
@@ -398,7 +404,12 @@ func InitializeQoveryContext() error {
 		return err
 	}
 
-	err = os.WriteFile(path, []byte("{}"), os.ModePerm)
+	err = os.Chmod(path, ContextFilePermissions)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(path, []byte("{}"), ContextFilePermissions)
 	if err != nil {
 		return err
 	}
