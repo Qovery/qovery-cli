@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/qovery/qovery-cli/pkg"
 	"os"
 	"path/filepath"
+
+	"github.com/qovery/qovery-cli/pkg"
 
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
@@ -16,7 +17,9 @@ var downloadKubeconfigCmd = &cobra.Command{
 	Short: "Retrieve kubeconfig with a cluster ID",
 	Run: func(cmd *cobra.Command, args []string) {
 		validateKubeconfigFlags()
-		downloadKubeconfig()
+		kubeconfigFilename := downloadKubeconfig(clusterId)
+		log.Info("Kubeconfig file created in the current directory.")
+		log.Info("Execute `export KUBECONFIG=" + kubeconfigFilename + "` to use it.")
 	},
 }
 
@@ -32,7 +35,7 @@ func validateKubeconfigFlags() {
 	}
 }
 
-func downloadKubeconfig() {
+func downloadKubeconfig(clusterId string) string {
 	// download kubeconfig
 	kubeconfig := pkg.GetKubeconfigByClusterId(clusterId)
 
@@ -52,6 +55,5 @@ func downloadKubeconfig() {
 		os.Exit(1)
 	}
 
-	log.Info("Kubeconfig file created in the current directory.")
-	log.Info("Execute `export KUBECONFIG=" + kubeconfigFilename + "` to use it.")
+	return kubeconfigFilename
 }
