@@ -6,7 +6,7 @@ toolchain go1.24.6
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
-	github.com/Masterminds/semver/v3 v3.3.1
+	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/appscode/go-querystring v0.0.0-20170504095604-0126cfb3f1dc
 	github.com/containerd/console v1.0.4
 	github.com/fatih/color v1.18.0
