@@ -70,6 +70,7 @@ var applicationUpdateCmd = &cobra.Command{
 				GitTokenId: application.GitRepository.GitTokenId,
 				RootPath:   application.GitRepository.RootPath,
 				Url:        application.GitRepository.Url,
+				Provider:   application.GitRepository.Provider,
 			},
 			BuildMode:           application.BuildMode,
 			DockerfilePath:      application.DockerfilePath,

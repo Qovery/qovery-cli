@@ -1828,6 +1828,7 @@ func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
 			GitTokenId: docker.GitRepository.GitTokenId,
 			RootPath:   docker.GitRepository.RootPath,
 			Url:        docker.GitRepository.Url,
+			Provider:   docker.GitRepository.Provider,
 		}
 
 		sourceDocker = qovery.JobRequestAllOfSourceDocker{
