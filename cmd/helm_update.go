@@ -187,6 +187,7 @@ func GetHelmValuesOverride(helm *qovery.HelmResponse, valuesOverrideCommitBranch
 				Branch:     updatedBranch,
 				GitTokenId: git.GitRepository.GitTokenId,
 				RootPath:   git.GitRepository.RootPath,
+				Provider:   git.GitRepository.Provider,
 			},
 		})
 		updatedFile.SetRawNil()
