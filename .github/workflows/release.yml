@@ -3,6 +3,7 @@ name: Release
 on:
   create:
     tags:
+      - '*' 
 
 jobs:
   release-and-packages:
