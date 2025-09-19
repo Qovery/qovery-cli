@@ -479,6 +479,7 @@ const (
 	DatabaseType    ServiceType = "database"
 	JobType         ServiceType = "job"
 	HelmType        ServiceType = "helm"
+	TerraformType   ServiceType = "terraform"
 )
 
 type Service struct {
@@ -538,6 +539,14 @@ func SelectService(environment Id) (*Service, error) {
 	}
 	if res.StatusCode >= 400 {
 		return nil, errors.New("Received " + res.Status + " response while listing helms. ")
+	}
+
+	terraforms, res, err := client.TerraformsAPI.ListTerraforms(context.Background(), string(environment)).Execute()
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while listing terraforms. ")
 	}
 
 	var servicesNames []string
@@ -600,6 +609,14 @@ func SelectService(environment Id) (*Service, error) {
 		}
 	}
 
+	for _, terraform := range terraforms.GetResults() {
+		servicesNames = append(servicesNames, terraform.Name)
+		services[terraform.Name] = Service{
+			ID:   Id(terraform.Id),
+			Name: Name(terraform.Name),
+			Type: TerraformType,
+		}
+	}
 	if len(servicesNames) < 1 {
 		return nil, errors.New("no services found")
 	}
