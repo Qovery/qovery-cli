@@ -8,7 +8,6 @@ import (
 	"net/url"
 
 	"github.com/qovery/qovery-cli/utils"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -35,10 +34,7 @@ func init() {
 func deleteEnterpriseConnection() {
 	// Retrieve access token for authorization
 	tokenType, token, err := utils.GetAccessToken()
-	if err != nil {
-		utils.PrintlnError(err)
-		return
-	}
+	checkError(err)
 
 	// Build URL
 	cn := url.PathEscape(enterpriseConnectionName)
@@ -48,17 +44,13 @@ func deleteEnterpriseConnection() {
 
 	// Prepare request
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
 	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Execute request
 	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
 	defer func() { _ = res.Body.Close() }()
 
 	// Read response

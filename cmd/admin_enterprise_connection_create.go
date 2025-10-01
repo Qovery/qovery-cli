@@ -36,10 +36,7 @@ func init() {
 func createEnterpriseConnection() {
 	// Retrieve access token for authorization
 	tokenType, token, err := utils.GetAccessToken()
-	if err != nil {
-		utils.PrintlnError(err)
-		return
-	}
+	checkError(err)
 
 	// Prepare payload with required fields
 	payloadMap := map[string]string{
@@ -47,10 +44,7 @@ func createEnterpriseConnection() {
 		"connection_name": enterpriseConnectionName,
 	}
 	payload, err := json.Marshal(payloadMap)
-	if err != nil {
-		utils.PrintlnError(err)
-		return
-	}
+	checkError(err)
 
 	// Build request
 	url := fmt.Sprintf("%s/enterpriseconnection", utils.GetAdminUrl())
@@ -63,9 +57,7 @@ func createEnterpriseConnection() {
 
 	// Execute request
 	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
 	defer func() { _ = res.Body.Close() }()
 
 	// Read response
@@ -93,8 +85,5 @@ func createEnterpriseConnection() {
 	})
 
 	err = utils.PrintTable([]string{"Organization ID", "Connection Name", "Default Role"}, data)
-	if err != nil {
-		utils.PrintlnError(err)
-		return
-	}
+	checkError(err)
 }
