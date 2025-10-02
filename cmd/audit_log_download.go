@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/qovery/qovery-cli/pkg/auditlog"
 	"github.com/qovery/qovery-cli/pkg/usercontext"
 	"github.com/qovery/qovery-cli/utils"
@@ -51,6 +54,10 @@ func downloadAuditLogs() {
 	client := utils.GetQoveryClientPanicInCaseOfError()
 	organizationId, err := usercontext.GetOrganizationContextResourceId(client, organizationName)
 	checkError(err)
+
+	org, _, err := client.OrganizationMainCallsAPI.GetOrganization(context.Background(), organizationId).Execute()
+	checkError(err)
+	utils.Println(fmt.Sprintf("Your organization plan provides  %.0f days of audit log history", org.OrganizationPlan.GetAuditLogsRetentionInDays()))
 
 	// Get access token
 	tokenType, token, err := utils.GetAccessToken()
