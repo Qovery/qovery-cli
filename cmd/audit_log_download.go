@@ -12,8 +12,8 @@ import (
 
 var (
 	auditLogDowndloadCmd = &cobra.Command{
-		Use:   "download",
-		Short: "Download audit logs",
+		Use:   "export",
+		Short: "Export audit logs",
 		Long: `> Description
 -------------
 This command provides an easy way to download audit logs.
@@ -25,10 +25,10 @@ Date parameters must follow the ISO-8601 format, i.e:
 > Examples 
 ----------
 * Search from a specific date to now:
-qovery audit-log download --from-date 2025-09-01T01:04:45+02:00
+qovery audit-log export --from-date 2025-09-01T01:04:45+02:00
 
 * Search between a range of dates
-qovery audit-log download --from-date 2025-09-01T01:04:45Z --to-date 2025-09-02T02:00:00Z
+qovery audit-log export --from-date 2025-09-01T01:04:45Z --to-date 2025-09-02T02:00:00Z
 `,
 		Run: func(cmd *cobra.Command, args []string) {
 			downloadAuditLogs()
