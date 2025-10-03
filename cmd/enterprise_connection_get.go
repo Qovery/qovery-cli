@@ -19,7 +19,6 @@ func init() {
 	enterpriseConnectionGetCmd.Flags().StringVarP(&organizationName, "organization", "o", "", "Organization Name")
 	enterpriseConnectionGetCmd.Flags().StringVarP(&connectionName, "connection", "c", "", "Connection Name")
 
-	_ = enterpriseConnectionGetCmd.MarkFlagRequired("organization")
 	_ = enterpriseConnectionGetCmd.MarkFlagRequired("connection")
 
 	enterpriseConnectionCmd.AddCommand(enterpriseConnectionGetCmd)

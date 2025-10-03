@@ -23,7 +23,6 @@ func init() {
 	enterpriseConnectionGroupMappingsDeleteCmd.Flags().StringVarP(&connectionName, "connection", "c", "", "Connection Name")
 	enterpriseConnectionGroupMappingsDeleteCmd.Flags().StringVarP(&qoveryRole, "qovery-role", "q", "", "Qovery role to target")
 
-	_ = enterpriseConnectionGroupMappingsDeleteCmd.MarkFlagRequired("organization")
 	_ = enterpriseConnectionGroupMappingsDeleteCmd.MarkFlagRequired("connection")
 
 	enterpriseConnectionGroupMappingsCmd.AddCommand(enterpriseConnectionGroupMappingsDeleteCmd)

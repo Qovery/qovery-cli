@@ -24,7 +24,6 @@ func init() {
 	enterpriseConnectionGroupMappingsAddCmd.Flags().StringVarP(&qoveryRole, "qovery-role", "q", "", "Qovery role name to target")
 	enterpriseConnectionGroupMappingsAddCmd.Flags().StringVarP(&idpGroupNames, "idp-group-names", "i", "", "Your IDP group names (comma separated)")
 
-	_ = enterpriseConnectionGroupMappingsAddCmd.MarkFlagRequired("organization")
 	_ = enterpriseConnectionGroupMappingsAddCmd.MarkFlagRequired("connection")
 
 	enterpriseConnectionGroupMappingsCmd.AddCommand(enterpriseConnectionGroupMappingsAddCmd)
