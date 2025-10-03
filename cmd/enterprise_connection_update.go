@@ -21,7 +21,6 @@ func init() {
 	enterpriseConnectionUpdateCmd.Flags().StringVarP(&defaultRole, "default-role", "r", "", "Default Role")
 	enterpriseConnectionUpdateCmd.Flags().BoolVarP(&enforceGroupSync, "enforce-group-sync", "e", false, "")
 
-	_ = enterpriseConnectionUpdateCmd.MarkFlagRequired("organization")
 	_ = enterpriseConnectionUpdateCmd.MarkFlagRequired("connection")
 
 	enterpriseConnectionCmd.AddCommand(enterpriseConnectionUpdateCmd)

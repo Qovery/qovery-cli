@@ -19,7 +19,6 @@ func init() {
 	enterpriseConnectionGroupMappingsGetCmd.Flags().StringVarP(&organizationName, "organization", "o", "", "Organization Name")
 	enterpriseConnectionGroupMappingsGetCmd.Flags().StringVarP(&connectionName, "connection", "c", "", "Connection Name")
 
-	_ = enterpriseConnectionGroupMappingsGetCmd.MarkFlagRequired("organization")
 	_ = enterpriseConnectionGroupMappingsGetCmd.MarkFlagRequired("connection")
 
 	enterpriseConnectionGroupMappingsCmd.AddCommand(enterpriseConnectionGroupMappingsGetCmd)
