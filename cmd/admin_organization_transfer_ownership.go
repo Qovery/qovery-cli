@@ -38,10 +38,7 @@ func init() {
 	adminTransferOrganizationOwnership.Flags().StringVarP(&newOwnerEmail, "email", "e", "", "New owner email address")
 	adminTransferOrganizationOwnership.Flags().StringVarP(&authProvider, "provider", "p", "", "Auth provider (auth0, github, gitlab, google, etc.) - required if multiple users have the same email")
 
-	if err := adminTransferOrganizationOwnership.MarkFlagRequired("organization-id"); err != nil {
-		utils.PrintlnError(fmt.Errorf("failed to mark organization-id flag as required: %w", err))
-		os.Exit(1)
-	}
+	_ = adminTransferOrganizationOwnership.MarkFlagRequired("organization-id")
 
 	adminCmd.AddCommand(adminTransferOrganizationOwnership)
 }
