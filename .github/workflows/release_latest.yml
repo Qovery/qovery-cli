@@ -1,13 +1,13 @@
 name: Release Latest
 on:
   push:
-    branches: [master]
+    branches: [main]
 jobs:
   tests:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -15,14 +15,15 @@ jobs:
         run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
       - name: Set up Go
-        uses: actions/setup-go@master
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.24.x
+          go-version: '1.25'
+          cache: true
 
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v1
+        uses: goreleaser/goreleaser-action@v6
         with:
-          version: 1.26.2
-          args: release --rm-dist --skip-publish --skip-validate
+          version: latest
+          args: release --clean --skip=publish,validate
         env:
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
