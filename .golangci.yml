@@ -1,24 +1,5 @@
 version: "2"
 
 run:
+  build-tags: ["testing"]
   timeout: 5m
-  tests: true
-  build-tags:
-    - testing
-
-linters:
-  enable:
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
-    - goimports
-    - misspell
-    - gocritic
-    - revive
-
-issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
