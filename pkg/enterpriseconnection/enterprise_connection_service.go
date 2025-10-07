@@ -78,6 +78,21 @@ func (s *EnterpriseConnectionService) initializeRoleMappings() error {
 	return nil
 }
 
+func (s *EnterpriseConnectionService) ListEnterpriseConnection(connectionName string) ([]qovery.EnterpriseConnectionDto, error) {
+	if connectionName == "" {
+		connections, _, err := s.client.OrganizationEnterpriseConnectionAPI.ListOrganizationEnterpriseConnections(
+			context.Background(),
+			s.organizationId,
+		).Execute()
+		utils.CheckError(err)
+		return connections.GetResults(), nil
+	}
+
+	connection, err := s.GetEnterpriseConnection(connectionName)
+	utils.CheckError(err)
+	return []qovery.EnterpriseConnectionDto{*connection}, err
+}
+
 // GetEnterpriseConnection retrieves an enterprise connection by name
 func (s *EnterpriseConnectionService) GetEnterpriseConnection(connectionName string) (*qovery.EnterpriseConnectionDto, error) {
 	connection, _, err := s.client.OrganizationEnterpriseConnectionAPI.GetOrganizationEnterpriseConnection(
@@ -85,6 +100,7 @@ func (s *EnterpriseConnectionService) GetEnterpriseConnection(connectionName str
 		s.organizationId,
 		connectionName,
 	).Execute()
+
 	return connection, err
 }
 
@@ -95,6 +111,7 @@ func (s *EnterpriseConnectionService) UpdateEnterpriseConnection(connectionName 
 		s.organizationId,
 		connectionName,
 	).EnterpriseConnectionDto(dto).Execute()
+
 	return connection, err
 }
 
