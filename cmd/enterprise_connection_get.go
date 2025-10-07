@@ -29,7 +29,7 @@ func getEnterpriseConnection() {
 	service, err := enterpriseconnection.NewEnterpriseConnectionService(organizationName)
 	checkError(err)
 
-	enterpriseConnections, err := service.ListEnterpriseConnection(connectionName)
+	enterpriseConnections, err := service.ListEnterpriseConnections(connectionName)
 	checkError(err)
 
 	for i, enterpriseConnection := range enterpriseConnections {

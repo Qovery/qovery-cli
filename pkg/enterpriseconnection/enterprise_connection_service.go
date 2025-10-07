@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/pkg/usercontext"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
@@ -78,7 +79,7 @@ func (s *EnterpriseConnectionService) initializeRoleMappings() error {
 	return nil
 }
 
-func (s *EnterpriseConnectionService) ListEnterpriseConnection(connectionName string) ([]qovery.EnterpriseConnectionDto, error) {
+func (s *EnterpriseConnectionService) ListEnterpriseConnections(connectionName string) ([]qovery.EnterpriseConnectionDto, error) {
 	if connectionName == "" {
 		connections, _, err := s.client.OrganizationEnterpriseConnectionAPI.ListOrganizationEnterpriseConnections(
 			context.Background(),
@@ -152,42 +153,42 @@ func (s *EnterpriseConnectionService) ValidateRole(roleName string) error {
 }
 
 // DisplayGroupMappingsTable formats and displays group mappings in a table
-func (s *EnterpriseConnectionService) DisplayGroupMappingsTable(groupMappings map[string][]string) error {
-	var data [][]string
+//func (s *EnterpriseConnectionService) DisplayGroupMappingsTable(groupMappings map[string][]string) error {
+//	var data [][]string
+//
+//	for roleIdOrName, idpGroups := range groupMappings {
+//		idpGroupsStr := strings.Join(idpGroups, ", ")
+//		displayName := s.ResolveRoleDisplayName(roleIdOrName)
+//		data = append(data, []string{displayName, idpGroupsStr})
+//	}
+//
+//	// Sort data by role name (first column)
+//	sort.Slice(data, func(i, j int) bool {
+//		return data[i][0] < data[j][0]
+//	})
+//
+//	return utils.PrintTable([]string{"Qovery Role", "Your IDPs roles"}, data)
+//}
 
-	for roleIdOrName, idpGroups := range groupMappings {
-		idpGroupsStr := strings.Join(idpGroups, ", ")
-		displayName := s.ResolveRoleDisplayName(roleIdOrName)
-		data = append(data, []string{displayName, idpGroupsStr})
-	}
-
-	// Sort data by role name (first column)
-	sort.Slice(data, func(i, j int) bool {
-		return data[i][0] < data[j][0]
-	})
-
-	return utils.PrintTable([]string{"Qovery Role", "Your IDPs roles"}, data)
-}
-
-// DisplayEnterpriseConnection displays the complete enterprise connection information
-func (s *EnterpriseConnectionService) DisplayEnterpriseConnection(connection *qovery.EnterpriseConnectionDto) error {
-	// Display connection settings in table format
-	defaultRoleDisplay := s.ResolveRoleDisplayName(connection.DefaultRole)
-	settingsData := [][]string{
-		{defaultRoleDisplay, fmt.Sprintf("%t", connection.EnforceGroupSync)},
-	}
-
-	utils.Println("Configuration:")
-	utils.Println("=============")
-	err := utils.PrintTable([]string{"Default Role", "Enforce Sync Group"}, settingsData)
-	if err != nil {
-		return err
-	}
-
-	utils.Println("Group Mappings:")
-	utils.Println("==============")
-	return s.DisplayGroupMappingsTable(connection.GroupMappings)
-}
+//// DisplayEnterpriseConnection displays the complete enterprise connection information
+//func (s *EnterpriseConnectionService) DisplayEnterpriseConnection(connection *qovery.EnterpriseConnectionDto) error {
+//	// Display connection settings in table format
+//	defaultRoleDisplay := s.ResolveRoleDisplayName(connection.DefaultRole)
+//	settingsData := [][]string{
+//		{defaultRoleDisplay, fmt.Sprintf("%t", connection.EnforceGroupSync)},
+//	}
+//
+//	utils.Println(fmt.Sprintf("Connection name: %s", connection.ConnectionName))
+//	err := utils.PrintTable([]string{"Default Role", "Enforce Sync Group"}, settingsData)
+//	if err != nil {
+//		return err
+//	}
+//
+//	utils.Println("Group Mappings:")
+//	utils.Println("==============")
+//	return s.DisplayGroupMappingsTable(connection.GroupMappings)
+//}
+//
 
 // ParseIdpGroupNames parses comma-separated IDP group names
 func ParseIdpGroupNames(idpGroupNames string) []string {
@@ -204,6 +205,56 @@ func ParseIdpGroupNames(idpGroupNames string) []string {
 		}
 	}
 	return result
+}
+
+// DisplayEnterpriseConnection displays the complete enterprise connection information
+func (s *EnterpriseConnectionService) DisplayEnterpriseConnection(connection *qovery.EnterpriseConnectionDto) error {
+	pterm.DefaultSection.Printfln("Connection Name: %s", connection.ConnectionName)
+	// Display connection settings in table format
+	defaultRoleDisplay := s.ResolveRoleDisplayName(connection.DefaultRole)
+
+	// Style the boolean value
+	enforceSyncDisplay := pterm.FgRed.Sprintf("✗ false")
+	if connection.EnforceGroupSync {
+		enforceSyncDisplay = pterm.FgGreen.Sprintf("✓ true")
+	}
+
+	settingsData := [][]string{
+		{defaultRoleDisplay, enforceSyncDisplay},
+	}
+
+	// Print settings section
+	pterm.DefaultSection.WithTopPadding(0).WithBottomPadding(0).Println("Connection Settings")
+	err := utils.PrintTable([]string{"Default Role", "Enforce Sync Group"}, settingsData)
+	if err != nil {
+		return err
+	}
+
+	// Print group mappings section
+	pterm.DefaultSection.WithTopPadding(0).WithBottomPadding(0).Println("Group Mappings")
+	return s.DisplayGroupMappingsTable(connection.GroupMappings)
+}
+
+func (s *EnterpriseConnectionService) DisplayGroupMappingsTable(groupMappings map[string][]string) error {
+	if len(groupMappings) == 0 {
+		pterm.Info.Println("No group mappings configured")
+		return nil
+	}
+
+	var data [][]string
+
+	for roleIdOrName, idpGroups := range groupMappings {
+		displayName := s.ResolveRoleDisplayName(roleIdOrName)
+		idpGroupsStr := strings.Join(idpGroups, pterm.Gray(" ; "))
+		data = append(data, []string{displayName, idpGroupsStr})
+	}
+
+	// Sort data by role name (first column)
+	sort.Slice(data, func(i, j int) bool {
+		return data[i][0] < data[j][0]
+	})
+
+	return utils.PrintTable([]string{"Qovery Role", "Your IDP Groups"}, data)
 }
 
 // CreateConnectionUpdateDto creates a DTO for updating enterprise connection
