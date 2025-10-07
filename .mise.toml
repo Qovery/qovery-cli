@@ -1,0 +1,59 @@
+# mise configuration for qovery-cli
+# Install mise: https://mise.jdx.dev/getting-started.html
+# Usage: mise install
+
+[tools]
+# Go version - latest stable release
+go = "1.25.1"
+
+# Development tools
+"golangci-lint" = "2.5.0"  # Latest stable version
+
+[env]
+# Environment variables can be set here
+_.path = ["./bin", "$PATH"]
+
+[tasks.build]
+description = "Build the CLI"
+run = "go build -ldflags \"-X github.com/qovery/qovery-cli/utils.Version=$(git describe --tags --always)\" -o qovery ."
+
+[tasks.test]
+description = "Run tests"
+run = "go test -tags=testing ./..."
+
+[tasks.test-verbose]
+description = "Run tests with verbose output"
+run = "go test -v -tags=testing ./..."
+
+[tasks.test-coverage]
+description = "Run tests with coverage"
+run = [
+    "go test -tags=testing -coverprofile=coverage.out ./...",
+    "go tool cover -html=coverage.out -o coverage.html",
+    "echo 'Coverage report generated: coverage.html'"
+]
+
+[tasks.lint]
+description = "Run linter"
+run = "golangci-lint run ./..."
+
+[tasks.clean]
+description = "Clean build artifacts"
+run = "rm -rf dist/ coverage.out coverage.html qovery"
+
+[tasks.install]
+description = "Install CLI locally"
+depends = ["build"]
+run = """
+if [ -z "$GOPATH" ]; then
+  echo "Error: GOPATH is not set"
+  exit 1
+fi
+cp qovery $GOPATH/bin/
+echo "Installed to $GOPATH/bin/qovery"
+"""
+
+[tasks.ci-local]
+description = "Run CI checks locally"
+depends = ["lint", "test", "build"]
+run = "echo '✅ All CI checks passed!'"
