@@ -1,3 +1,5 @@
+version: 2
+
 builds:
   - main: main.go
     binary: qovery
@@ -10,45 +12,50 @@ builds:
     goarch:
       - amd64
       - arm64
+
 archives:
   - format_overrides:
     - goos: windows
       format: zip
+
 checksum:
   name_template: 'checksums.txt'
+
 changelog:
   sort: asc
   filters:
     exclude:
     - '^docs:'
     - '^test:'
+
 brews:
   - name: qovery-cli
-    goarm: 6
-    tap:
+    goarm: "6"
+    repository:
       owner: qovery
       name: homebrew-qovery-cli
     url_template: "https://github.com/Qovery/qovery-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     commit_author:
       name: qovery
       email: contact@qovery.com
-    folder: Formula
+    directory: Formula
     homepage: "https://docs.qovery.com"
     description: "Deploy modern application in seconds"
     skip_upload: false
     install: |
       bin.install "qovery"
-scoop:
-  url_template: "https://github.com/Qovery/qovery-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-  bucket:
-    owner: qovery
-    name: scoop-qovery-cli
-  commit_author:
-    name: qovery
-    email: contact@qovery.com
-  homepage: "https://docs.qovery.com"
-  description: "Deploy modern application in seconds"
-  license: GPL3
-  persist:
-  - "data"
-  - "config.toml"
+
+scoops:
+  - url_template: "https://github.com/Qovery/qovery-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    repository:
+      owner: qovery
+      name: scoop-qovery-cli
+    commit_author:
+      name: qovery
+      email: contact@qovery.com
+    homepage: "https://docs.qovery.com"
+    description: "Deploy modern application in seconds"
+    license: GPL3
+    persist:
+    - "data"
+    - "config.toml"
