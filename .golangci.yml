@@ -3,4 +3,3 @@ version: "2"
 run:
   build-tags: ["testing"]
   timeout: 5m
-

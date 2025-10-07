@@ -99,3 +99,7 @@ result
 .envrc
 .direnv/
 .vscode/
+
+# Test coverage
+coverage.out
+coverage.html
