@@ -946,6 +946,134 @@ func AddSecret(application Id, key string, value string) error {
 	return nil
 }
 
+// Container environment variable functions
+
+func AddContainerEnvironmentVariable(container Id, key string, value string) error {
+	tokenType, token, err := GetAccessToken()
+	if err != nil {
+		return err
+	}
+
+	client := GetQoveryClient(tokenType, token)
+
+	_, res, err := client.ContainerEnvironmentVariableAPI.CreateContainerEnvironmentVariable(context.Background(), string(container)).EnvironmentVariableRequest(
+		qovery.EnvironmentVariableRequest{Key: key, Value: &value},
+	).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 400 {
+		return fmt.Errorf("Received "+res.Status+" response while adding an environment variable for container %s", string(container))
+	}
+
+	return nil
+}
+
+func DeleteContainerEnvironmentVariable(container Id, key string) error {
+	tokenType, token, err := GetAccessToken()
+	if err != nil {
+		return err
+	}
+
+	client := GetQoveryClient(tokenType, token)
+
+	// TODO optimize this call by caching the result?
+	envVars, _, err := client.ContainerEnvironmentVariableAPI.ListContainerEnvironmentVariable(context.Background(), string(container)).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	var envVar *qovery.EnvironmentVariable
+	for _, mEnvVar := range envVars.GetResults() {
+		if mEnvVar.Key == key {
+			envVar = &mEnvVar
+			break
+		}
+	}
+
+	if envVar == nil {
+		return nil
+	}
+
+	res, err := client.ContainerEnvironmentVariableAPI.DeleteContainerEnvironmentVariable(context.Background(), string(container), envVar.Id).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 400 {
+		return fmt.Errorf("Received "+res.Status+" response while deleting an Environment Variable for container %s with key %s", string(container), key)
+	}
+
+	return nil
+}
+
+func AddContainerSecret(container Id, key string, value string) error {
+	tokenType, token, err := GetAccessToken()
+	if err != nil {
+		return err
+	}
+
+	client := GetQoveryClient(tokenType, token)
+
+	_, res, err := client.ContainerSecretAPI.CreateContainerSecret(context.Background(), string(container)).SecretRequest(
+		qovery.SecretRequest{Key: key, Value: &value},
+	).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 400 {
+		return fmt.Errorf("Received "+res.Status+" response while adding a secret for container %s", string(container))
+	}
+
+	return nil
+}
+
+func DeleteContainerSecret(container Id, key string) error {
+	tokenType, token, err := GetAccessToken()
+	if err != nil {
+		return err
+	}
+
+	client := GetQoveryClient(tokenType, token)
+
+	// TODO optimize this call by caching the result?
+	secrets, _, err := client.ContainerSecretAPI.ListContainerSecrets(context.Background(), string(container)).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	var secret *qovery.Secret
+	for _, mSecret := range secrets.GetResults() {
+		if mSecret.Key == key {
+			secret = &mSecret
+			break
+		}
+	}
+
+	if secret == nil {
+		return nil
+	}
+
+	res, err := client.ContainerSecretAPI.DeleteContainerSecret(context.Background(), string(container), secret.Id).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 400 {
+		return fmt.Errorf("Received "+res.Status+" response while deleting a secret for container %s with key %s", string(container), key)
+	}
+
+	return nil
+}
+
 func SelectTokenInformation() (*TokenInformation, error) {
 	organization, err := SelectOrganization()
 
