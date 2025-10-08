@@ -52,8 +52,8 @@ var envImportCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		if service.Type != utils.ApplicationType {
-			utils.PrintlnError(fmt.Errorf("cannot import variables for service different than Application"))
+		if service.Type != utils.ApplicationType && service.Type != utils.ContainerType {
+			utils.PrintlnError(fmt.Errorf("cannot import variables for service of type %s (only Application and Container are supported)", service.Type))
 			os.Exit(0)
 		}
 
@@ -97,18 +97,33 @@ var envImportCmd = &cobra.Command{
 
 		for k, v := range envsToImport {
 			var err error
-			if isSecrets {
-				if overrideEnvVarOrSecret {
-					_ = utils.DeleteSecret(service.ID, k)
-				}
 
-				err = utils.AddSecret(service.ID, k, v)
+			// Use different API calls based on service type
+			if service.Type == utils.ContainerType {
+				if isSecrets {
+					if overrideEnvVarOrSecret {
+						_ = utils.DeleteContainerSecret(service.ID, k)
+					}
+					err = utils.AddContainerSecret(service.ID, k, v)
+				} else {
+					if overrideEnvVarOrSecret {
+						_ = utils.DeleteContainerEnvironmentVariable(service.ID, k)
+					}
+					err = utils.AddContainerEnvironmentVariable(service.ID, k, v)
+				}
 			} else {
-				if overrideEnvVarOrSecret {
-					_ = utils.DeleteEnvironmentVariable(service.ID, k)
+				// ApplicationType
+				if isSecrets {
+					if overrideEnvVarOrSecret {
+						_ = utils.DeleteSecret(service.ID, k)
+					}
+					err = utils.AddSecret(service.ID, k, v)
+				} else {
+					if overrideEnvVarOrSecret {
+						_ = utils.DeleteEnvironmentVariable(service.ID, k)
+					}
+					err = utils.AddEnvironmentVariable(service.ID, k, v)
 				}
-
-				err = utils.AddEnvironmentVariable(service.ID, k, v)
 			}
 
 			if err != nil {
