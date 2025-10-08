@@ -71,11 +71,11 @@ var containerEnvListCmd = &cobra.Command{
 		}
 
 		if jsonFlag {
-			utils.Println(utils.GetEnvVarJsonOutput(variables))
+			utils.Println(utils.GetEnvVarJsonOutput(variables, utils.SortKeys))
 			return
 		}
 
-		err = utils.PrintTable(envVarLines.Header(utils.PrettyPrint), envVarLines.Lines(utils.ShowValues, utils.PrettyPrint))
+		err = utils.PrintTable(envVarLines.Header(utils.PrettyPrint), envVarLines.Lines(utils.ShowValues, utils.PrettyPrint, utils.SortKeys))
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -93,6 +93,7 @@ func init() {
 	containerEnvListCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
 	containerEnvListCmd.Flags().BoolVarP(&utils.ShowValues, "show-values", "", false, "Show env var values")
 	containerEnvListCmd.Flags().BoolVarP(&utils.PrettyPrint, "pretty-print", "", false, "Pretty print output")
+	containerEnvListCmd.Flags().BoolVarP(&utils.SortKeys, "sort", "", false, "Sort environment variables by key")
 	containerEnvListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
 
 	_ = containerEnvListCmd.MarkFlagRequired("container")
