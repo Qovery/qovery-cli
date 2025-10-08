@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -73,7 +74,7 @@ var envImportCmd = &cobra.Command{
 
 		isSecrets := envVarOrSecret == "Secrets"
 
-		envsToImport := getEnvsToImport(envs)
+		envsToImport := getEnvsToImport(envs, utils.SortKeys)
 		if len(envsToImport) == 0 {
 			utils.PrintlnError(fmt.Errorf("no environment variables to import"))
 			return
@@ -161,11 +162,25 @@ func scanAndSelectDotEnvFile() (string, error) {
 	return result, nil
 }
 
-func getEnvsToImport(envs map[string]string) map[string]string {
+func getEnvsToImport(envs map[string]string, sortKeys bool) map[string]string {
 	var envKeys []string
 
-	for k, v := range envs {
-		envKeys = append(envKeys, fmt.Sprintf("%s=%s", k, v))
+	if sortKeys {
+		// Get sorted keys first
+		var keys []string
+		for k := range envs {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		// Build envKeys in sorted order
+		for _, k := range keys {
+			envKeys = append(envKeys, fmt.Sprintf("%s=%s", k, envs[k]))
+		}
+	} else {
+		for k, v := range envs {
+			envKeys = append(envKeys, fmt.Sprintf("%s=%s", k, v))
+		}
 	}
 
 	prompt := &survey.MultiSelect{
@@ -190,4 +205,5 @@ func getEnvsToImport(envs map[string]string) map[string]string {
 
 func init() {
 	envCmd.AddCommand(envImportCmd)
+	envImportCmd.Flags().BoolVarP(&utils.SortKeys, "sort", "", false, "Sort environment variables by key")
 }

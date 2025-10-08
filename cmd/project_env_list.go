@@ -37,11 +37,11 @@ var projectEnvListCmd = &cobra.Command{
 		}
 
 		if jsonFlag {
-			utils.Println(utils.GetEnvVarJsonOutput(variables))
+			utils.Println(utils.GetEnvVarJsonOutput(variables, utils.SortKeys))
 			return
 		}
 
-		err = utils.PrintTable(envVarLines.Header(utils.PrettyPrint), envVarLines.Lines(utils.ShowValues, utils.PrettyPrint))
+		err = utils.PrintTable(envVarLines.Header(utils.PrettyPrint), envVarLines.Lines(utils.ShowValues, utils.PrettyPrint, utils.SortKeys))
 		checkError(err)
 	},
 }
@@ -52,6 +52,7 @@ func init() {
 	projectEnvListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	projectEnvListCmd.Flags().BoolVarP(&utils.ShowValues, "show-values", "", false, "Show env var values")
 	projectEnvListCmd.Flags().BoolVarP(&utils.PrettyPrint, "pretty-print", "", false, "Pretty print output")
+	projectEnvListCmd.Flags().BoolVarP(&utils.SortKeys, "sort", "", false, "Sort environment variables by key")
 	projectEnvListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
 
 	_ = projectEnvListCmd.MarkFlagRequired("project")
