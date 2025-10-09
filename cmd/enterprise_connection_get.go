@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/qovery/qovery-cli/pkg/enterpriseconnection"
+	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -19,8 +22,6 @@ func init() {
 	enterpriseConnectionGetCmd.Flags().StringVarP(&organizationName, "organization", "o", "", "Organization Name")
 	enterpriseConnectionGetCmd.Flags().StringVarP(&connectionName, "connection", "c", "", "Connection Name")
 
-	_ = enterpriseConnectionGetCmd.MarkFlagRequired("connection")
-
 	enterpriseConnectionCmd.AddCommand(enterpriseConnectionGetCmd)
 }
 
@@ -28,9 +29,14 @@ func getEnterpriseConnection() {
 	service, err := enterpriseconnection.NewEnterpriseConnectionService(organizationName)
 	checkError(err)
 
-	enterpriseConnection, err := service.GetEnterpriseConnection(connectionName)
+	enterpriseConnections, err := service.ListEnterpriseConnections(connectionName)
 	checkError(err)
 
-	err = service.DisplayEnterpriseConnection(enterpriseConnection)
-	checkError(err)
+	for i, enterpriseConnection := range enterpriseConnections {
+		if i > 0 {
+			utils.Println("\n" + strings.Repeat("-", 50) + "\n")
+		}
+		err = service.DisplayEnterpriseConnection(&enterpriseConnection)
+		checkError(err)
+	}
 }
