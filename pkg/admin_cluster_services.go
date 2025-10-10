@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"path"
 	"reflect"
 	"strconv"
 	"strings"
@@ -144,6 +146,59 @@ func (service AdminClusterListServiceImpl) SelectClusters() ([]ClusterDetails, e
 	return clusters, nil
 }
 
+func UpdateClusterDomainName(clusterId string, domain string) error {
+	// Validate inputs
+	if clusterId == "" {
+		return fmt.Errorf("clusterId cannot be empty")
+	}
+	if domain == "" {
+		return fmt.Errorf("domain cannot be empty")
+	}
+
+	tokenType, token, err := utils.GetAccessToken()
+	if err != nil {
+		return fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	// Build URL with proper escaping
+	u, err := url.Parse(utils.GetAdminUrl())
+	if err != nil {
+		return fmt.Errorf("invalid admin URL: %w", err)
+	}
+	u.Path = path.Join(u.Path, "cluster", clusterId, "domain")
+	q := u.Query()
+	q.Set("name", domain)
+	u.RawQuery = q.Encode()
+
+	// Use PATCH or PUT for update operations
+	req, err := http.NewRequest(http.MethodPut, u.String(), nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Create client with timeout
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("request failed: %w", err)
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	// Check status code
+	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("failed to update cluster domain (status=%d)",
+			res.StatusCode)
+	}
+
+	return nil
+}
+
 func (service AdminClusterListServiceImpl) fetchClustersEligibleToUpdate() ([]ClusterDetails, error) {
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
@@ -235,7 +290,7 @@ type AdminClusterBatchDeployService interface {
 }
 
 type AdminClusterBatchDeployServiceImpl struct {
-	client          *qovery.ClustersAPIService
+	client *qovery.ClustersAPIService
 	// DryRunDisabled disable dry run
 	DryRunDisabled bool
 	// ParallelRun the number of parallel requests to be processed
@@ -253,7 +308,7 @@ type AdminClusterBatchDeployServiceImpl struct {
 }
 
 func NewAdminClusterBatchDeployServiceImpl(
-	client          *qovery.ClustersAPIService,
+	client *qovery.ClustersAPIService,
 	dryRun bool,
 	parallelRun int,
 	refreshDelay int,
