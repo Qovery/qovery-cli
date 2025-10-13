@@ -22,7 +22,7 @@ require (
 	github.com/mholt/archives v0.1.4
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
-	github.com/posthog/posthog-go v1.6.8
+	github.com/posthog/posthog-go v1.6.11
 	github.com/pterm/pterm v0.12.81
 	github.com/qovery/qovery-client-go v0.0.0-20251008142224-22e3f797c9ef
 	github.com/sirupsen/logrus v1.9.3
