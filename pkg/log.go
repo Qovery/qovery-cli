@@ -130,7 +130,11 @@ func DownloadLogs(req *LogRequest) error {
 	if err != nil {
 		return fmt.Errorf("error creating output file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Error("error closing file: ", err)
+		}
+	}()
 
 	var logMessage LogMessage
 	logCount := 0
