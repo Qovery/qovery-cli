@@ -14,11 +14,11 @@ import (
 )
 
 var (
-	serviceDeployName                   string
-	serviceDeployNames                  string
-	serviceDeployVersion                string
-	serviceDeployValuesOverrideCommitId string
-	serviceDeployWatchFlag              bool
+	serviceDeployName                string
+	serviceDeployNames               string
+	serviceDeployVersion             string
+	serviceDeployValuesOverrideVersion string
+	serviceDeployWatchFlag           bool
 )
 
 var serviceDeployCmd = &cobra.Command{
@@ -32,12 +32,16 @@ The --version parameter accepts:
   - Container image tags (for containers, image-based jobs)
   - Helm chart versions (for helm repository charts)
 
+For helm charts, you can also specify:
+  - --values-override-version: Git commit ID for helm values override
+
 Examples:
   qovery service deploy -n my-app --version abc123
   qovery service deploy -n my-container --version v1.2.3
   qovery service deploy -n my-database
   qovery service deploy -n my-helm-repo --version 1.2.3
   qovery service deploy -n my-helm-git --version abc123
+  qovery service deploy -n my-helm --version 1.2.3 --values-override-version def456
   qovery service deploy --services "service1,service2,service3"`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
@@ -95,7 +99,7 @@ Examples:
 			checkError(err)
 		}
 		if len(helms) > 0 {
-			err = utils.DeployHelms(client, envId, helms, serviceDeployVersion, serviceDeployVersion, serviceDeployValuesOverrideCommitId)
+			err = utils.DeployHelms(client, envId, helms, serviceDeployVersion, serviceDeployVersion, serviceDeployValuesOverrideVersion)
 			checkError(err)
 		}
 
@@ -283,6 +287,6 @@ func init() {
 	serviceDeployCmd.Flags().StringVarP(&serviceDeployName, "service", "n", "", "Service Name")
 	serviceDeployCmd.Flags().StringVarP(&serviceDeployNames, "services", "", "", "Service Names (comma separated) Example: --services \"svc1,svc2,svc3\"")
 	serviceDeployCmd.Flags().StringVarP(&serviceDeployVersion, "version", "v", "", "Version (git commit ID, image tag, or chart version)")
-	serviceDeployCmd.Flags().StringVarP(&serviceDeployValuesOverrideCommitId, "values-override-commit-id", "", "", "Helm values override git commit ID")
+	serviceDeployCmd.Flags().StringVarP(&serviceDeployValuesOverrideVersion, "values-override-version", "", "", "Helm values override version (git commit ID)")
 	serviceDeployCmd.Flags().BoolVarP(&serviceDeployWatchFlag, "watch", "w", false, "Watch service status until it's ready or an error occurs")
 }
