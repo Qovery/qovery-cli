@@ -16,7 +16,6 @@ import (
 var (
 	serviceDeployName                   string
 	serviceDeployNames                  string
-	serviceDeployCommitId               string
 	serviceDeployVersion                string
 	serviceDeployValuesOverrideCommitId string
 	serviceDeployWatchFlag              bool
@@ -28,17 +27,17 @@ var serviceDeployCmd = &cobra.Command{
 	Long: `Deploy a service by automatically detecting its type.
 This command works with applications, containers, databases, jobs (cronjobs and lifecycle), and helm charts.
 
-Version parameters:
-  --commit-id: For git-based services (applications, git-based jobs, git-based helms)
-  --version: For version/tag-based services (containers, image-based jobs, helm repository charts)
-  --values-override-commit-id: For helm values override from git
+The --version parameter accepts:
+  - Git commit IDs (for applications, git-based jobs, git-based helms)
+  - Container image tags (for containers, image-based jobs)
+  - Helm chart versions (for helm repository charts)
 
 Examples:
-  qovery service deploy -n my-app --commit-id abc123
+  qovery service deploy -n my-app --version abc123
   qovery service deploy -n my-container --version v1.2.3
   qovery service deploy -n my-database
   qovery service deploy -n my-helm-repo --version 1.2.3
-  qovery service deploy -n my-helm-git --commit-id abc123
+  qovery service deploy -n my-helm-git --version abc123
   qovery service deploy --services "service1,service2,service3"`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
@@ -80,7 +79,7 @@ Examples:
 		// Deploy services
 		var err error
 		if len(applications) > 0 {
-			err = utils.DeployApplications(client, envId, applications, serviceDeployCommitId)
+			err = utils.DeployApplications(client, envId, applications, serviceDeployVersion)
 			checkError(err)
 		}
 		if len(containers) > 0 {
@@ -92,11 +91,11 @@ Examples:
 			checkError(err)
 		}
 		if len(jobs) > 0 {
-			err = utils.DeployJobs(client, envId, jobs, serviceDeployCommitId, serviceDeployVersion)
+			err = utils.DeployJobs(client, envId, jobs, serviceDeployVersion, serviceDeployVersion)
 			checkError(err)
 		}
 		if len(helms) > 0 {
-			err = utils.DeployHelms(client, envId, helms, serviceDeployVersion, serviceDeployCommitId, serviceDeployValuesOverrideCommitId)
+			err = utils.DeployHelms(client, envId, helms, serviceDeployVersion, serviceDeployVersion, serviceDeployValuesOverrideCommitId)
 			checkError(err)
 		}
 
@@ -283,8 +282,7 @@ func init() {
 	serviceDeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	serviceDeployCmd.Flags().StringVarP(&serviceDeployName, "service", "n", "", "Service Name")
 	serviceDeployCmd.Flags().StringVarP(&serviceDeployNames, "services", "", "", "Service Names (comma separated) Example: --services \"svc1,svc2,svc3\"")
-	serviceDeployCmd.Flags().StringVarP(&serviceDeployCommitId, "commit-id", "c", "", "Git Commit ID (for applications, git-based jobs, and git-based helms)")
-	serviceDeployCmd.Flags().StringVarP(&serviceDeployVersion, "version", "v", "", "Version/Tag (for containers, image-based jobs, and helm repository charts)")
+	serviceDeployCmd.Flags().StringVarP(&serviceDeployVersion, "version", "v", "", "Version (git commit ID, image tag, or chart version)")
 	serviceDeployCmd.Flags().StringVarP(&serviceDeployValuesOverrideCommitId, "values-override-commit-id", "", "", "Helm values override git commit ID")
 	serviceDeployCmd.Flags().BoolVarP(&serviceDeployWatchFlag, "watch", "w", false, "Watch service status until it's ready or an error occurs")
 }
