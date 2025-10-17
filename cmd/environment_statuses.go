@@ -52,11 +52,6 @@ var environmentServicesStatusesCmd = &cobra.Command{
 			return
 		}
 
-		if statuses.Environment == nil {
-			utils.PrintlnError(fmt.Errorf("environment status not found for `%s`", envId))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
 
 		var data [][]string
 		for _, status := range statuses.Applications {
