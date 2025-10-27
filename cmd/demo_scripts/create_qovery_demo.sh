@@ -64,7 +64,7 @@ get_or_create_cluster() {
   if [ "$clusterExist" = "" ]
   then
     k3d cluster create "$clusterName" \
-    --image 'docker.io/rancher/k3s:v1.31.12-k3s1' \
+    --image 'docker.io/rancher/k3s:v1.33.5-k3s1' \
     --subnet '172.42.0.0/16' \
     --k3s-arg "--node-ip=172.42.0.3@server:0" \
     --k3s-arg "--disable=traefik@server:*" \
