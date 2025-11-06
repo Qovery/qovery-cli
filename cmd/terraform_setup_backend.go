@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/qovery/qovery-cli/utils"
+	"github.com/qovery/qovery-client-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -65,7 +66,15 @@ terraform {
 		utils.Println("Writing `backend.tf` file in current directory")
 		err = os.WriteFile("backend.tf", []byte(backendtf), 0600)
 		checkError(err)
-		utils.Println("You can now run `terraform init` to initialize your project with your tf-state configured on your cluster")
+		var commandName string
+		switch terraform.Engine {
+		case qovery.TERRAFORMENGINEENUM_TERRAFORM:
+			commandName = "terraform"
+		case qovery.TERRAFORMENGINEENUM_OPEN_TOFU:
+			commandName = "tofu"
+		}
+
+		utils.Println(fmt.Sprintf("You can now run `%s init` to initialize your project with your tf-state configured on your cluster", commandName))
 	},
 }
 
