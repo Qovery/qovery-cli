@@ -30,6 +30,24 @@ func DeleteOrganizationByClusterId(clusterId string, dryRunDisabled bool) {
 	}
 }
 
+func DeleteOrganizationByOrganizationId(organizationId string, dryRunDisabled bool) {
+	utils.GetAdminUrl()
+
+	utils.DryRunPrint(dryRunDisabled)
+	if utils.Validate("delete") {
+		res := httpDelete(utils.GetAdminUrl()+"/organization?organizationId="+organizationId, http.MethodDelete, dryRunDisabled)
+
+		if !dryRunDisabled {
+			fmt.Println("Organization " + organizationId + " deletable.")
+		} else if !strings.Contains(res.Status, "200") {
+			result, _ := io.ReadAll(res.Body)
+			log.Errorf("Could not delete organization %s : %s. %s", organizationId, res.Status, string(result))
+		} else {
+			fmt.Println("Organization " + organizationId + " deleted.")
+		}
+	}
+}
+
 func httpDelete(url string, method string, dryRunDisabled bool) *http.Response {
 	return deleteWithBody(url, method, dryRunDisabled, nil)
 }
