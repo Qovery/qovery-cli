@@ -255,7 +255,6 @@ func readUserConsole(ctx context.Context, cancel context.CancelFunc, currentCons
 
 		// Combine pending bytes from previous read with new data
 		data := append(pendingBytes, buffer[0:count]...)
-		pendingBytes = nil
 
 		// Handle fragmentation of bracketed paste sequences
 		// Instead of filtering them out, we ensure they are sent complete
@@ -324,16 +323,4 @@ func isPotentialBracketedPastePrefix(data []byte) bool {
 	}
 
 	return matchesStart || matchesEnd
-}
-
-func matchesSequence(data []byte, sequence []byte) bool {
-	if len(data) < len(sequence) {
-		return false
-	}
-	for i := range sequence {
-		if data[i] != sequence[i] {
-			return false
-		}
-	}
-	return true
 }
