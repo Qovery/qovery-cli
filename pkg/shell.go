@@ -231,6 +231,9 @@ func readUserConsole(ctx context.Context, cancel context.CancelFunc, currentCons
 	defer wg.Done()
 
 	buffer := make([]byte, StdinBufferSize)
+	// Persistent buffer to handle fragmented bracketed paste sequences
+	var pendingBytes []byte
+
 	for {
 		if ctx.Err() != nil || normalExit.Load() {
 			return
@@ -250,10 +253,74 @@ func readUserConsole(ctx context.Context, cancel context.CancelFunc, currentCons
 		//	return
 		// }
 
-		select {
-		case <-ctx.Done():
-			return
-		case stdIn <- buffer[0:count]:
+		// Combine pending bytes from previous read with new data
+		data := append(pendingBytes, buffer[0:count]...)
+
+		// Handle fragmentation of bracketed paste sequences
+		// Instead of filtering them out, we ensure they are sent complete
+		toSend, pending := handleBracketedPasteFragmentation(data)
+		pendingBytes = pending
+
+		if len(toSend) > 0 {
+			select {
+			case <-ctx.Done():
+				return
+			case stdIn <- toSend:
+			}
 		}
 	}
+}
+
+// handleBracketedPasteFragmentation ensures bracketed paste sequences are sent complete
+// to prevent Terminal.app's fragmentation issues from corrupting the stream.
+// If a potential sequence is incomplete at the end, it's buffered for the next read.
+// Returns: (data to send, pending bytes that might be part of an incomplete sequence)
+func handleBracketedPasteFragmentation(data []byte) ([]byte, []byte) {
+	// Look for ESC at the end that could be the start of a bracketed paste sequence
+	// The sequences are: ESC[200~ (start) and ESC[201~ (end)
+	// We need to check if we have a potentially incomplete sequence at the end
+
+	if len(data) == 0 {
+		return data, nil
+	}
+
+	// Check if the end of data could be the start of a bracketed paste sequence
+	// ESC[200~ or ESC[201~ are 6 bytes long
+	for checkLen := 1; checkLen < 6 && checkLen <= len(data); checkLen++ {
+		tail := data[len(data)-checkLen:]
+
+		// Check if this could be the start of ESC[200~ or ESC[201~
+		if isPotentialBracketedPastePrefix(tail) {
+			// Buffer these bytes for the next read
+			return data[:len(data)-checkLen], tail
+		}
+	}
+
+	// No incomplete sequence detected, send everything
+	return data, nil
+}
+
+// isPotentialBracketedPastePrefix checks if data could be the start of a bracketed paste sequence
+func isPotentialBracketedPastePrefix(data []byte) bool {
+	bracketedPasteStart := []byte{0x1b, '[', '2', '0', '0', '~'}
+	bracketedPasteEnd := []byte{0x1b, '[', '2', '0', '1', '~'}
+
+	if len(data) == 0 || len(data) >= 6 {
+		return false
+	}
+
+	// Check if it matches the start of either sequence
+	matchesStart := true
+	matchesEnd := true
+
+	for i := 0; i < len(data); i++ {
+		if data[i] != bracketedPasteStart[i] {
+			matchesStart = false
+		}
+		if data[i] != bracketedPasteEnd[i] {
+			matchesEnd = false
+		}
+	}
+
+	return matchesStart || matchesEnd
 }
