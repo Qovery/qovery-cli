@@ -63,7 +63,11 @@ func DeleteOrganizations(organizationIds []string, allowFailedClusters bool, dry
 		log.Error("Failed to execute delete request")
 		return
 	}
-	defer res.Body.Close()
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			log.Warnf("Failed to close response body: %v", err)
+		}
+	}()
 
 	// Handle response
 	if res.StatusCode != http.StatusOK {
