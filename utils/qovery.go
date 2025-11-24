@@ -1849,6 +1849,28 @@ func DeployTerraforms(client *qovery.APIClient, envId string, terraformList []*q
 		return nil
 	}
 
+	// If action is not nil (PLAN, FORCE_UNLOCK, MIGRATE_STATE), use individual API
+	// DeployAllServices only supports PLAN_AND_APPLY
+	if action != nil {
+		for _, terraform := range terraformList {
+			req := qovery.TerraformDeployRequest{
+				Action: *qovery.NewNullableString(action),
+			}
+
+			// Set commit ID if provided
+			if commitId != "" {
+				req.GitCommitId = &commitId
+			}
+
+			_, _, err := client.TerraformActionsAPI.DeployTerraform(context.Background(), terraform.Id).TerraformDeployRequest(req).Execute()
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	// If action is null (PLAN_AND_APPLY), use batch DeployAllServices
 	var terraformsToDeploy []qovery.TerraformDeployRequest
 
 	for _, terraform := range terraformList {
@@ -1859,11 +1881,6 @@ func DeployTerraforms(client *qovery.APIClient, envId string, terraformList []*q
 		// Set commit ID if provided
 		if commitId != "" {
 			req.GitCommitId = &commitId
-		}
-
-		// Handle action parameter
-		if action != nil {
-			req.Action = *qovery.NewNullableString(action)
 		}
 
 		terraformsToDeploy = append(terraformsToDeploy, req)
@@ -1879,6 +1896,28 @@ func DeployTerraforms(client *qovery.APIClient, envId string, terraformList []*q
 	}
 
 	return deployAllServices(client, envId, deployReq)
+}
+
+func UninstallTerraforms(client *qovery.APIClient, envId string, terraformList []*qovery.TerraformResponse, skipDestroy bool) error {
+	if len(terraformList) == 0 {
+		return nil
+	}
+
+	for _, terraform := range terraformList {
+		req := client.TerraformActionsAPI.UninstallTerraform(context.Background(), terraform.Id)
+
+		if skipDestroy {
+			action := qovery.DELETETERRAFORMACTION_SKIP_DESTROY
+			req = req.ForceTerraformAction(action)
+		}
+
+		_, _, err := req.Body(map[string]interface{}{}).Execute()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func deployAllServices(client *qovery.APIClient, envId string, req qovery.DeployAllRequest) error {
