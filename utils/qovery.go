@@ -1346,9 +1346,10 @@ func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnu
 				countStatus(statuses.Databases, finalServiceState) +
 				countStatus(statuses.Jobs, finalServiceState) +
 				countStatus(statuses.Containers, finalServiceState) +
-				countStatus(statuses.Helms, finalServiceState)
+				countStatus(statuses.Helms, finalServiceState) +
+				countStatus(statuses.Terraforms, finalServiceState)
 
-			totalStatuses := len(statuses.Applications) + len(statuses.Databases) + len(statuses.Jobs) + len(statuses.Containers) + len(statuses.Helms)
+			totalStatuses := len(statuses.Applications) + len(statuses.Databases) + len(statuses.Jobs) + len(statuses.Containers) + len(statuses.Helms) + len(statuses.Terraforms)
 
 			icon := "⏳"
 			if countStatuses > 0 {
