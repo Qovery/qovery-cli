@@ -1848,8 +1848,12 @@ func DeployTerraforms(client *qovery.APIClient, envId string, terraformList []*q
 		return nil
 	}
 
+	var terraformsToDeploy []qovery.TerraformDeployRequest
+
 	for _, terraform := range terraformList {
-		req := qovery.TerraformDeployRequest{}
+		req := qovery.TerraformDeployRequest{
+			Id: *qovery.NewNullableString(&terraform.Id),
+		}
 
 		// Set commit ID if provided
 		if commitId != "" {
@@ -1861,13 +1865,19 @@ func DeployTerraforms(client *qovery.APIClient, envId string, terraformList []*q
 			req.Action = *qovery.NewNullableString(action)
 		}
 
-		_, _, err := client.TerraformActionsAPI.DeployTerraform(context.Background(), terraform.Id).TerraformDeployRequest(req).Execute()
-		if err != nil {
-			return err
-		}
+		terraformsToDeploy = append(terraformsToDeploy, req)
 	}
 
-	return nil
+	deployReq := qovery.DeployAllRequest{
+		Applications: nil,
+		Databases:    nil,
+		Containers:   nil,
+		Jobs:         nil,
+		Helms:        nil,
+		Terraforms:   terraformsToDeploy,
+	}
+
+	return deployAllServices(client, envId, deployReq)
 }
 
 func deployAllServices(client *qovery.APIClient, envId string, req qovery.DeployAllRequest) error {
