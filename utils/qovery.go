@@ -1843,6 +1843,33 @@ func GetHelmRepository(helm *qovery.HelmResponse) *qovery.HelmSourceRepositoryRe
 	return nil
 }
 
+func DeployTerraforms(client *qovery.APIClient, envId string, terraformList []*qovery.TerraformResponse, commitId string, action *string) error {
+	if len(terraformList) == 0 {
+		return nil
+	}
+
+	for _, terraform := range terraformList {
+		req := qovery.TerraformDeployRequest{}
+
+		// Set commit ID if provided
+		if commitId != "" {
+			req.GitCommitId = &commitId
+		}
+
+		// Handle action parameter
+		if action != nil {
+			req.Action = *qovery.NewNullableString(action)
+		}
+
+		_, _, err := client.TerraformActionsAPI.DeployTerraform(context.Background(), terraform.Id).TerraformDeployRequest(req).Execute()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func deployAllServices(client *qovery.APIClient, envId string, req qovery.DeployAllRequest) error {
 	_, _, err := client.EnvironmentActionsAPI.DeployAllServices(context.Background(), envId).DeployAllRequest(req).Execute()
 	if err != nil {
