@@ -23,7 +23,7 @@ var terraformPlanCmd = &cobra.Command{
 		terraformList := buildTerraformListFromTerraformNames(client, envId, terraformName, terraformNames)
 		action := "PLAN"
 		err := utils.DeployTerraforms(client, envId, terraformList, terraformCommitId, &action)
-		checkError(err)
+		utils.CheckError(err)
 		utils.Println(fmt.Sprintf("Request to plan terraform(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", terraformName, terraformNames)))
 		WatchTerraformDeployment(client, envId, terraformList, watchFlag, qovery.STATEENUM_DEPLOYED)
 	},

@@ -26,7 +26,7 @@ var terraformPlanAndApplyCmd = &cobra.Command{
 		// deploy multiple terraforms
 		terraformList := buildTerraformListFromTerraformNames(client, envId, terraformName, terraformNames)
 		err := utils.DeployTerraforms(client, envId, terraformList, terraformCommitId, nil)
-		checkError(err)
+		utils.CheckError(err)
 		utils.Println(fmt.Sprintf("Request to deploy terraform(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", terraformName, terraformNames)))
 		WatchTerraformDeployment(client, envId, terraformList, watchFlag, qovery.STATEENUM_DEPLOYED)
 	},
@@ -40,7 +40,7 @@ func buildTerraformListFromTerraformNames(
 ) []*qovery.TerraformResponse {
 	var terraformList []*qovery.TerraformResponse
 	terraforms, _, err := client.TerraformsAPI.ListTerraforms(context.Background(), environmentId).Execute()
-	checkError(err)
+	utils.CheckError(err)
 
 	if terraformName != "" {
 		terraform := utils.FindByTerraformName(terraforms.GetResults(), terraformName)
