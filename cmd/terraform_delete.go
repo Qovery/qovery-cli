@@ -11,10 +11,10 @@ import (
 
 var skipDestroyFlag bool
 
-var terraformDestroyCmd = &cobra.Command{
-	Use:   "destroy",
-	Short: "Destroy terraform resources",
-	Long: `Destroy terraform resources and remove from Qovery.
+var terraformDeleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete terraform resources",
+	Long: `Delete terraform resources and remove from Qovery.
 
 By default, this will execute 'terraform destroy' to delete all resources
 managed by this terraform service, then remove the service from Qovery.
@@ -29,7 +29,7 @@ outside of Qovery or import them into another system.`,
 		validateTerraformArguments(terraformName, terraformNames)
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
-		// destroy terraform resources
+		// delete terraform resources
 		terraformList := buildTerraformListFromTerraformNames(client, envId, terraformName, terraformNames)
 		err := utils.UninstallTerraforms(client, envId, terraformList, skipDestroyFlag)
 		utils.CheckError(err)
@@ -37,7 +37,7 @@ outside of Qovery or import them into another system.`,
 		if skipDestroyFlag {
 			utils.Println(fmt.Sprintf("Request to remove terraform(s) %s from Qovery (keeping resources) has been queued..", pterm.FgBlue.Sprintf("%s%s", terraformName, terraformNames)))
 		} else {
-			utils.Println(fmt.Sprintf("Request to destroy terraform(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", terraformName, terraformNames)))
+			utils.Println(fmt.Sprintf("Request to delete terraform(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", terraformName, terraformNames)))
 		}
 
 		WatchTerraformDeployment(client, envId, terraformList, watchFlag, qovery.STATEENUM_DELETED)
@@ -45,12 +45,12 @@ outside of Qovery or import them into another system.`,
 }
 
 func init() {
-	terraformCmd.AddCommand(terraformDestroyCmd)
-	terraformDestroyCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
-	terraformDestroyCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
-	terraformDestroyCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	terraformDestroyCmd.Flags().StringVarP(&terraformName, "terraform", "n", "", "Terraform Name")
-	terraformDestroyCmd.Flags().StringVarP(&terraformNames, "terraforms", "", "", "Terraform Names (comma separated) Example: --terraforms \"tf1,tf2,tf3\"")
-	terraformDestroyCmd.Flags().BoolVarP(&skipDestroyFlag, "skip-destroy", "", false, "Skip terraform destroy (keep resources, only remove from Qovery)")
-	terraformDestroyCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch terraform status until it's ready or an error occurs")
+	terraformCmd.AddCommand(terraformDeleteCmd)
+	terraformDeleteCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	terraformDeleteCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	terraformDeleteCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	terraformDeleteCmd.Flags().StringVarP(&terraformName, "terraform", "n", "", "Terraform Name")
+	terraformDeleteCmd.Flags().StringVarP(&terraformNames, "terraforms", "", "", "Terraform Names (comma separated) Example: --terraforms \"tf1,tf2,tf3\"")
+	terraformDeleteCmd.Flags().BoolVarP(&skipDestroyFlag, "skip-destroy", "", false, "Skip terraform destroy (keep resources, only remove from Qovery)")
+	terraformDeleteCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch terraform status until it's ready or an error occurs")
 }
