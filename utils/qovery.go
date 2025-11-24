@@ -1306,6 +1306,16 @@ func FindByHelmName(helms []qovery.HelmResponse, name string) *qovery.HelmRespon
 	return nil
 }
 
+func FindByTerraformName(terraforms []qovery.TerraformResponse, name string) *qovery.TerraformResponse {
+	for _, t := range terraforms {
+		if t.Name == name {
+			return &t
+		}
+	}
+
+	return nil
+}
+
 func FindByCustomDomainName(customDomains []qovery.CustomDomain, name string) *qovery.CustomDomain {
 	for _, d := range customDomains {
 		if d.Domain == name {
