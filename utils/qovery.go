@@ -1306,6 +1306,16 @@ func FindByHelmName(helms []qovery.HelmResponse, name string) *qovery.HelmRespon
 	return nil
 }
 
+func FindByTerraformName(terraforms []qovery.TerraformResponse, name string) *qovery.TerraformResponse {
+	for _, t := range terraforms {
+		if t.Name == name {
+			return &t
+		}
+	}
+
+	return nil
+}
+
 func FindByCustomDomainName(customDomains []qovery.CustomDomain, name string) *qovery.CustomDomain {
 	for _, d := range customDomains {
 		if d.Domain == name {
@@ -1336,9 +1346,10 @@ func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnu
 				countStatus(statuses.Databases, finalServiceState) +
 				countStatus(statuses.Jobs, finalServiceState) +
 				countStatus(statuses.Containers, finalServiceState) +
-				countStatus(statuses.Helms, finalServiceState)
+				countStatus(statuses.Helms, finalServiceState) +
+				countStatus(statuses.Terraforms, finalServiceState)
 
-			totalStatuses := len(statuses.Applications) + len(statuses.Databases) + len(statuses.Jobs) + len(statuses.Containers) + len(statuses.Helms)
+			totalStatuses := len(statuses.Applications) + len(statuses.Databases) + len(statuses.Jobs) + len(statuses.Containers) + len(statuses.Helms) + len(statuses.Terraforms)
 
 			icon := "⏳"
 			if countStatuses > 0 {
@@ -1831,6 +1842,43 @@ func GetHelmRepository(helm *qovery.HelmResponse) *qovery.HelmSourceRepositoryRe
 	}
 
 	return nil
+}
+
+func DeployTerraforms(client *qovery.APIClient, envId string, terraformList []*qovery.TerraformResponse, commitId string, action *string) error {
+	if len(terraformList) == 0 {
+		return nil
+	}
+
+	var terraformsToDeploy []qovery.TerraformDeployRequest
+
+	for _, terraform := range terraformList {
+		req := qovery.TerraformDeployRequest{
+			Id: *qovery.NewNullableString(&terraform.Id),
+		}
+
+		// Set commit ID if provided
+		if commitId != "" {
+			req.GitCommitId = &commitId
+		}
+
+		// Handle action parameter
+		if action != nil {
+			req.Action = *qovery.NewNullableString(action)
+		}
+
+		terraformsToDeploy = append(terraformsToDeploy, req)
+	}
+
+	deployReq := qovery.DeployAllRequest{
+		Applications: nil,
+		Databases:    nil,
+		Containers:   nil,
+		Jobs:         nil,
+		Helms:        nil,
+		Terraforms:   terraformsToDeploy,
+	}
+
+	return deployAllServices(client, envId, deployReq)
 }
 
 func deployAllServices(client *qovery.APIClient, envId string, req qovery.DeployAllRequest) error {
