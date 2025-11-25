@@ -1898,20 +1898,24 @@ func DeployTerraforms(client *qovery.APIClient, envId string, terraformList []*q
 	return deployAllServices(client, envId, deployReq)
 }
 
-func UninstallTerraforms(client *qovery.APIClient, envId string, terraformList []*qovery.TerraformResponse, skipDestroy bool) error {
+func DeleteTerraforms(client *qovery.APIClient, envId string, terraformList []*qovery.TerraformResponse, skipDestroy bool, resourcesOnly bool) error {
 	if len(terraformList) == 0 {
 		return nil
 	}
 
 	for _, terraform := range terraformList {
-		req := client.TerraformActionsAPI.UninstallTerraform(context.Background(), terraform.Id)
+		req := client.TerraformMainCallsAPI.DeleteTerraform(context.Background(), terraform.Id)
+
+		if resourcesOnly {
+			req = req.ResourcesOnly(true)
+		}
 
 		if skipDestroy {
 			action := qovery.DELETETERRAFORMACTION_SKIP_DESTROY
 			req = req.ForceTerraformAction(action)
 		}
 
-		_, _, err := req.Body(map[string]interface{}{}).Execute()
+		_, err := req.Execute()
 		if err != nil {
 			return err
 		}
