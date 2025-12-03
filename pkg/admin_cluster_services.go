@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -194,6 +195,132 @@ func UpdateClusterDomainName(clusterId string, domain string) error {
 	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("failed to update cluster domain (status=%d)",
 			res.StatusCode)
+	}
+
+	return nil
+}
+
+func UpdateClusterDnsProvider(
+	clusterId string,
+	domain string,
+	provider string,
+	cloudflareEmail string,
+	cloudflareToken string,
+	cloudflareProxied bool,
+	qoveryApiUrl string,
+	route53AccessKeyId string,
+	route53SecretAccessKey string,
+	route53Region string,
+	route53HostedZoneId string,
+) error {
+	// Validate inputs
+	if clusterId == "" {
+		return fmt.Errorf("clusterId cannot be empty")
+	}
+	if domain == "" {
+		return fmt.Errorf("domain cannot be empty")
+	}
+	if provider == "" {
+		return fmt.Errorf("provider cannot be empty")
+	}
+
+	tokenType, token, err := utils.GetAccessToken()
+	if err != nil {
+		return fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	// Build the request body based on the provider
+	type CloudflareCredentials struct {
+		Email     string `json:"email"`
+		Token     string `json:"token"`
+		IsProxied bool   `json:"isProxied"`
+	}
+
+	type QoveryCredentials struct {
+		ApiUrl string `json:"apiUrl"`
+	}
+
+	type Route53Credentials struct {
+		AwsAccessKeyId     string  `json:"awsAccessKeyId"`
+		AwsSecretAccessKey string  `json:"awsSecretAccessKey"`
+		AwsRegion          string  `json:"awsRegion"`
+		HostedZoneId       *string `json:"hostedZoneId,omitempty"`
+	}
+
+	type UpdateDnsProviderRequest struct {
+		Domain     string                 `json:"domain"`
+		Cloudflare *CloudflareCredentials `json:"cloudflare,omitempty"`
+		Qovery     *QoveryCredentials     `json:"qovery,omitempty"`
+		Route53    *Route53Credentials    `json:"route53,omitempty"`
+	}
+
+	requestBody := UpdateDnsProviderRequest{
+		Domain: domain,
+	}
+
+	switch provider {
+	case "cloudflare":
+		requestBody.Cloudflare = &CloudflareCredentials{
+			Email:     cloudflareEmail,
+			Token:     cloudflareToken,
+			IsProxied: cloudflareProxied,
+		}
+	case "qovery":
+		requestBody.Qovery = &QoveryCredentials{
+			ApiUrl: qoveryApiUrl,
+		}
+	case "route53":
+		creds := Route53Credentials{
+			AwsAccessKeyId:     route53AccessKeyId,
+			AwsSecretAccessKey: route53SecretAccessKey,
+			AwsRegion:          route53Region,
+		}
+		if route53HostedZoneId != "" {
+			creds.HostedZoneId = &route53HostedZoneId
+		}
+		requestBody.Route53 = &creds
+	default:
+		return fmt.Errorf("invalid provider: %s", provider)
+	}
+
+	// Marshal request body to JSON
+	bodyBytes, err := json.Marshal(requestBody)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	// Build URL
+	u, err := url.Parse(utils.GetAdminUrl())
+	if err != nil {
+		return fmt.Errorf("invalid admin URL: %w", err)
+	}
+	u.Path = path.Join(u.Path, "cluster", clusterId, "updateDnsProvider")
+
+	// Create request
+	req, err := http.NewRequest(http.MethodPut, u.String(), bytes.NewBuffer(bodyBytes))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Create client with timeout
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("request failed: %w", err)
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	// Check status code
+	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNoContent {
+		bodyBytes, _ := io.ReadAll(res.Body)
+		return fmt.Errorf("failed to update DNS provider (status=%d): %s",
+			res.StatusCode, string(bodyBytes))
 	}
 
 	return nil
