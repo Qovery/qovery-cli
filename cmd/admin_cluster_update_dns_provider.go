@@ -64,9 +64,9 @@ func init() {
 	adminClusterUpdateDnsProviderCmd.Flags().StringVar(&route53Region, "route53-region", "", "AWS Region for Route53")
 	adminClusterUpdateDnsProviderCmd.Flags().StringVar(&route53HostedZoneId, "route53-hosted-zone-id", "", "AWS Route53 Hosted Zone ID (optional)")
 
-	adminClusterUpdateDnsProviderCmd.MarkFlagRequired("cluster-id")
-	adminClusterUpdateDnsProviderCmd.MarkFlagRequired("domain")
-	adminClusterUpdateDnsProviderCmd.MarkFlagRequired("provider")
+	_ = adminClusterUpdateDnsProviderCmd.MarkFlagRequired("cluster-id")
+	_ = adminClusterUpdateDnsProviderCmd.MarkFlagRequired("domain")
+	_ = adminClusterUpdateDnsProviderCmd.MarkFlagRequired("provider")
 
 	adminClusterCmd.AddCommand(adminClusterUpdateDnsProviderCmd)
 }
