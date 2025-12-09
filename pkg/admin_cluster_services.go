@@ -233,18 +233,18 @@ func UpdateClusterDnsProvider(
 	type CloudflareCredentials struct {
 		Email     string `json:"email"`
 		Token     string `json:"token"`
-		IsProxied bool   `json:"isProxied"`
+		IsProxied bool   `json:"is_proxied"`
 	}
 
 	type QoveryCredentials struct {
-		ApiUrl string `json:"apiUrl"`
+		ApiUrl string `json:"api_url"`
 	}
 
 	type Route53Credentials struct {
-		AwsAccessKeyId     string  `json:"awsAccessKeyId"`
-		AwsSecretAccessKey string  `json:"awsSecretAccessKey"`
-		AwsRegion          string  `json:"awsRegion"`
-		HostedZoneId       *string `json:"hostedZoneId,omitempty"`
+		AwsAccessKeyId     string  `json:"aws_access_key_id"`
+		AwsSecretAccessKey string  `json:"aws_secret_access_key"`
+		AwsRegion          string  `json:"aws_region"`
+		HostedZoneId       *string `json:"hosted_zone_id,omitempty"`
 	}
 
 	type UpdateDnsProviderRequest struct {
