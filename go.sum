@@ -233,8 +233,8 @@ github.com/maxatome/go-testdeep v1.14.0/go.mod h1:lPZc/HAcJMP92l7yI6TRz1aZN5URwU
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b/go.mod h1:01TrycV0kFyexm33Z7vhZRXopbI8J3TDReVlkTgMUxE=
 github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d h1:5PJl274Y63IEHC+7izoQE9x6ikvDFZS2mDVS3drnohI=
 github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d/go.mod h1:01TrycV0kFyexm33Z7vhZRXopbI8J3TDReVlkTgMUxE=
-github.com/mholt/archives v0.1.4 h1:sU+/lLNgafUontWFv3AVwO8VUWye3rrtN6hgC2dU11c=
-github.com/mholt/archives v0.1.4/go.mod h1:I2ia+SQTtQHej9w1GZM/mz7qfdgQv+BHr3hEKqDcGuk=
+github.com/mholt/archives v0.1.5 h1:Fh2hl1j7VEhc6DZs2DLMgiBNChUux154a1G+2esNvzQ=
+github.com/mholt/archives v0.1.5/go.mod h1:3TPMmBLPsgszL+1As5zECTuKwKvIfj6YcwWPpeTAXF4=
 github.com/mikelolasagasti/xz v1.0.1 h1:Q2F2jX0RYJUG3+WsM+FJknv+6eVjsjXNDV0KJXZzkD0=
 github.com/mikelolasagasti/xz v1.0.1/go.mod h1:muAirjiOUxPRXwm9HdDtB3uoRPrGnL85XHtokL9Hcgc=
 github.com/minio/minlz v1.0.1 h1:OUZUzXcib8diiX+JYxyRLIdomyZYzHct6EShOKtQY2A=
@@ -247,8 +247,8 @@ github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee h1:W5t00kpgFd
 github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
-github.com/nwaples/rardecode/v2 v2.1.1 h1:OJaYalXdliBUXPmC8CZGQ7oZDxzX1/5mQmgn0/GASew=
-github.com/nwaples/rardecode/v2 v2.1.1/go.mod h1:7uz379lSxPe6j9nvzxUZ+n7mnJNgjsRNb6IbvGVHRmw=
+github.com/nwaples/rardecode/v2 v2.2.0 h1:4ufPGHiNe1rYJxYfehALLjup4Ls3ck42CWwjKiOqu0A=
+github.com/nwaples/rardecode/v2 v2.2.0/go.mod h1:7uz379lSxPe6j9nvzxUZ+n7mnJNgjsRNb6IbvGVHRmw=
 github.com/onsi/ginkgo/v2 v2.21.0 h1:7rg/4f3rB88pb5obDgNZrNHrQ4e6WpjonchcpuBRnZM=
 github.com/onsi/ginkgo/v2 v2.21.0/go.mod h1:7Du3c42kxCUegi0IImZ1wUQzMBVecgIHjR1C+NkhLQo=
 github.com/onsi/gomega v1.35.1 h1:Cwbd75ZBPxFSuZ6T+rN/WCb/gOc6YgFBXLlZLhC7Ds4=
@@ -273,14 +273,6 @@ github.com/pterm/pterm v0.12.36/go.mod h1:NjiL09hFhT/vWjQHSj1athJpx6H8cjpHXNAK5b
 github.com/pterm/pterm v0.12.40/go.mod h1:ffwPLwlbXxP+rxT0GsgDTzS3y3rmpAO1NMjUkGTYf8s=
 github.com/pterm/pterm v0.12.81 h1:ju+j5I2++FO1jBKMmscgh5h5DPFDFMB7epEjSoKehKA=
 github.com/pterm/pterm v0.12.81/go.mod h1:TyuyrPjnxfwP+ccJdBTeWHtd/e0ybQHkOS/TakajZCw=
-github.com/qovery/qovery-client-go v0.0.0-20250919100838-11f699d2ae7d h1:gAuewKIkBBuFxQhzZUsHbL7HVX0AFmI+JcF+x5pdnpY=
-github.com/qovery/qovery-client-go v0.0.0-20250919100838-11f699d2ae7d/go.mod h1:mcXeQtxR4AIGIBaWLhy52S16UwL8/1fcDywDuSK1BZ4=
-github.com/qovery/qovery-client-go v0.0.0-20250925121805-367cb8705c6d h1:q1wiaSgglRNc8HbN7YXcr/lRjzVh+9pivOwPotQG7Qg=
-github.com/qovery/qovery-client-go v0.0.0-20250925121805-367cb8705c6d/go.mod h1:mcXeQtxR4AIGIBaWLhy52S16UwL8/1fcDywDuSK1BZ4=
-github.com/qovery/qovery-client-go v0.0.0-20250929073947-763a22a25f3e h1:hCOHakEbTs62Ya7WQHECnkYAdZz7TmvdlKlytEhUWg4=
-github.com/qovery/qovery-client-go v0.0.0-20250929073947-763a22a25f3e/go.mod h1:mcXeQtxR4AIGIBaWLhy52S16UwL8/1fcDywDuSK1BZ4=
-github.com/qovery/qovery-client-go v0.0.0-20250929080938-6a4d61780add h1:z6EJhqNXD6sBnB1rKe60blFAL2W5FVpdEstZijX1Lw4=
-github.com/qovery/qovery-client-go v0.0.0-20250929080938-6a4d61780add/go.mod h1:mcXeQtxR4AIGIBaWLhy52S16UwL8/1fcDywDuSK1BZ4=
 github.com/qovery/qovery-client-go v0.0.0-20251008142224-22e3f797c9ef h1:2oszeUsPAfYS3y1Jw3ggx7tWdb1kORHF2Wn+DvK7wpY=
 github.com/qovery/qovery-client-go v0.0.0-20251008142224-22e3f797c9ef/go.mod h1:mcXeQtxR4AIGIBaWLhy52S16UwL8/1fcDywDuSK1BZ4=
 github.com/qovery/qovery-client-go v0.0.0-20251015144407-e16d988cdbc0 h1:5wXIZaYsQqyWAT7i2WA7/bHyLi0NHdUugrXkkd06ptk=
