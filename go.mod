@@ -26,7 +26,7 @@ require (
 	github.com/pterm/pterm v0.12.81
 	github.com/qovery/qovery-client-go v0.0.0-20251211181007-c04611b36b99
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/stretchr/testify v1.11.1
 	github.com/tonistiigi/go-rosetta v0.0.0-20220804170347-3f4430f2d346
