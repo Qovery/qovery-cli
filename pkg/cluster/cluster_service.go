@@ -3,9 +3,10 @@ package cluster
 import (
 	"context"
 	"fmt"
-	"github.com/qovery/qovery-client-go"
 	"io"
 	"time"
+
+	"github.com/qovery/qovery-client-go"
 
 	"github.com/go-errors/errors"
 	"github.com/pterm/pterm"
@@ -20,7 +21,7 @@ type ClusterService interface {
 	StopCluster(organizationName string, clusterName string, watchFlag bool) error
 	ListClusters(organizationId string) (*qovery.ClusterResponseList, error)
 	ListClusterRegions(cloudProviderType qovery.CloudProviderEnum) (*qovery.ClusterRegionResponseList, error)
-	AskToEditStorageClass(cluster *qovery.Cluster, ) error
+	AskToEditStorageClass(cluster *qovery.Cluster) error
 }
 
 type ClusterServiceImpl struct {
@@ -141,6 +142,21 @@ func (service *ClusterServiceImpl) StopCluster(organizationName string, clusterN
 	return nil
 }
 
+func (service *ClusterServiceImpl) GetClusterByID(organizationId string, clusterId string) (*qovery.Cluster, error) {
+	clusters, err := service.ListClusters(organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, cluster := range clusters.Results {
+		if cluster.Id == clusterId {
+			return &cluster, nil
+		}
+	}
+
+	return nil, errors.Errorf("Cluster with id %s doesn't exists in organization %s", clusterId, organizationId)
+}
+
 func (service *ClusterServiceImpl) ListClusters(organizationId string) (*qovery.ClusterResponseList, error) {
 	clusters, _, err := service.client.ClustersAPI.ListOrganizationCluster(context.Background(), organizationId).Execute()
 
@@ -176,7 +192,7 @@ func (service *ClusterServiceImpl) ListClusterRegions(cloudProviderType qovery.C
 	}
 }
 
-func (service *ClusterServiceImpl) AskToEditStorageClass(cluster *qovery.Cluster, ) error {
+func (service *ClusterServiceImpl) AskToEditStorageClass(cluster *qovery.Cluster) error {
 	storageClassName, err := service.promptUiFactory.RunPrompt("We need to know the storage class name that your kubernetes cluster uses to deploy app with network storage. Enter your storage class name", "")
 	if err != nil {
 		return err

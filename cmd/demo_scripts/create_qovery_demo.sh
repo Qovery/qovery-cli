@@ -64,7 +64,7 @@ get_or_create_cluster() {
   if [ "$clusterExist" = "" ]
   then
     k3d cluster create "$clusterName" \
-    --image 'docker.io/rancher/k3s:v1.28.9-k3s1' \
+    --image 'docker.io/rancher/k3s:v1.33.5-k3s1' \
     --subnet '172.42.0.0/16' \
     --k3s-arg "--node-ip=172.42.0.3@server:0" \
     --k3s-arg "--disable=traefik@server:*" \
@@ -191,7 +191,7 @@ install_deps() {
     echo "k3d already installed"
   else
     echo "Installing k3d"
-    curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v5.6.3 bash
+    curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v5.8.3 bash
   fi
 
   if which helm >/dev/null; then

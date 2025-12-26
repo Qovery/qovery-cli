@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -52,8 +53,8 @@ var envImportCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		if service.Type != utils.ApplicationType {
-			utils.PrintlnError(fmt.Errorf("cannot import variables for service different than Application"))
+		if service.Type != utils.ApplicationType && service.Type != utils.ContainerType {
+			utils.PrintlnError(fmt.Errorf("cannot import variables for service of type %s (only Application and Container are supported)", service.Type))
 			os.Exit(0)
 		}
 
@@ -71,12 +72,9 @@ var envImportCmd = &cobra.Command{
 			return
 		}
 
-		isSecrets := false
-		if envVarOrSecret == "Secrets" {
-			isSecrets = true
-		}
+		isSecrets := envVarOrSecret == "Secrets"
 
-		envsToImport := getEnvsToImport(envs)
+		envsToImport := getEnvsToImport(envs, utils.SortKeys)
 		if len(envsToImport) == 0 {
 			utils.PrintlnError(fmt.Errorf("no environment variables to import"))
 			return
@@ -94,27 +92,39 @@ var envImportCmd = &cobra.Command{
 			return
 		}
 
-		overrideEnvVarOrSecret := false
-		if overrideEnvVarOrSecretString == "Yes" {
-			overrideEnvVarOrSecret = true
-		}
+		overrideEnvVarOrSecret := overrideEnvVarOrSecretString == "Yes"
 
 		var errors []string
 
 		for k, v := range envsToImport {
 			var err error
-			if isSecrets {
-				if overrideEnvVarOrSecret {
-					_ = utils.DeleteSecret(service.ID, k)
-				}
 
-				err = utils.AddSecret(service.ID, k, v)
+			// Use different API calls based on service type
+			if service.Type == utils.ContainerType {
+				if isSecrets {
+					if overrideEnvVarOrSecret {
+						_ = utils.DeleteContainerSecret(service.ID, k)
+					}
+					err = utils.AddContainerSecret(service.ID, k, v)
+				} else {
+					if overrideEnvVarOrSecret {
+						_ = utils.DeleteContainerEnvironmentVariable(service.ID, k)
+					}
+					err = utils.AddContainerEnvironmentVariable(service.ID, k, v)
+				}
 			} else {
-				if overrideEnvVarOrSecret {
-					_ = utils.DeleteEnvironmentVariable(service.ID, k)
+				// ApplicationType
+				if isSecrets {
+					if overrideEnvVarOrSecret {
+						_ = utils.DeleteSecret(service.ID, k)
+					}
+					err = utils.AddSecret(service.ID, k, v)
+				} else {
+					if overrideEnvVarOrSecret {
+						_ = utils.DeleteEnvironmentVariable(service.ID, k)
+					}
+					err = utils.AddEnvironmentVariable(service.ID, k, v)
 				}
-
-				err = utils.AddEnvironmentVariable(service.ID, k, v)
 			}
 
 			if err != nil {
@@ -167,11 +177,25 @@ func scanAndSelectDotEnvFile() (string, error) {
 	return result, nil
 }
 
-func getEnvsToImport(envs map[string]string) map[string]string {
+func getEnvsToImport(envs map[string]string, sortKeys bool) map[string]string {
 	var envKeys []string
 
-	for k, v := range envs {
-		envKeys = append(envKeys, fmt.Sprintf("%s=%s", k, v))
+	if sortKeys {
+		// Get sorted keys first
+		var keys []string
+		for k := range envs {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		// Build envKeys in sorted order
+		for _, k := range keys {
+			envKeys = append(envKeys, fmt.Sprintf("%s=%s", k, envs[k]))
+		}
+	} else {
+		for k, v := range envs {
+			envKeys = append(envKeys, fmt.Sprintf("%s=%s", k, v))
+		}
 	}
 
 	prompt := &survey.MultiSelect{
@@ -196,4 +220,5 @@ func getEnvsToImport(envs map[string]string) map[string]string {
 
 func init() {
 	envCmd.AddCommand(envImportCmd)
+	envImportCmd.Flags().BoolVarP(&utils.SortKeys, "sort", "", false, "Sort environment variables by key")
 }

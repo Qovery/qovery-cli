@@ -5,15 +5,17 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/qovery/qovery-client-go"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/qovery/qovery-client-go"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 const ContextFileName = "context"
+const ContextFilePermissions = 0600
 
 type QoveryContext struct {
 	AccessToken           AccessToken  `json:"access_token"`
@@ -143,7 +145,12 @@ func StoreContext(context QoveryContext) error {
 		return err
 	}
 
-	return os.WriteFile(path, bytes, os.ModePerm)
+	err = os.Chmod(path, ContextFilePermissions)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(path, bytes, ContextFilePermissions)
 }
 
 func CurrentOrganization(promptContext bool) (Id, Name, error) {
@@ -159,11 +166,11 @@ func CurrentOrganization(promptContext bool) (Id, Name, error) {
 
 	id := context.OrganizationId
 	if id == "" {
-		return "", "", errors.New("Current organization has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return "", "", errors.New("current organization has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 	name := context.OrganizationName
 	if name == "" {
-		return "", "", errors.New("Current organization has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return "", "", errors.New("current organization has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
 	return id, name, nil
@@ -194,11 +201,11 @@ func CurrentProject(promptContext bool) (Id, Name, error) {
 
 	id := context.ProjectId
 	if id == "" {
-		return "", "", errors.New("Current project has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return "", "", errors.New("current project has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 	name := context.ProjectName
 	if name == "" {
-		return "", "", errors.New("Current project has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return "", "", errors.New("current project has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
 	return id, name, nil
@@ -229,11 +236,11 @@ func CurrentEnvironment(promptContext bool) (Id, Name, error) {
 
 	id := context.EnvironmentId
 	if id == "" {
-		return "", "", errors.New("Current environment has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return "", "", errors.New("current environment has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 	name := context.EnvironmentName
 	if name == "" {
-		return "", "", errors.New("Current environment has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return "", "", errors.New("current environment has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
 	return id, name, nil
@@ -264,12 +271,12 @@ func CurrentService(promptContext bool) (*Service, error) {
 
 	id := context.ServiceId
 	if id == "" {
-		return nil, errors.New("Current service has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return nil, errors.New("current service has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
 	name := context.ServiceName
 	if name == "" {
-		return nil, errors.New("Current service has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return nil, errors.New("current service has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
 	return &Service{ID: id, Name: name, Type: context.ServiceType}, nil
@@ -321,7 +328,7 @@ func GetAccessToken() (AccessTokenType, AccessToken, error) {
 
 	token := context.AccessToken
 	if token == "" {
-		return "", "", errors.New("Access token has not been found. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
+		return "", "", errors.New("access token has not been found. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
 	}
 
 	// check the token is valid by trying to list the organizations
@@ -347,7 +354,7 @@ func GetAccessToken() (AccessTokenType, AccessToken, error) {
 		return "Bearer", token, nil
 	}
 
-	return "", "", errors.New("Access token is invalid or expired. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
+	return "", "", errors.New("access token is invalid or expired. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
 }
 
 func SetAccessToken(token AccessToken, expiration time.Time, refreshToken RefreshToken) error {
@@ -397,7 +404,12 @@ func InitializeQoveryContext() error {
 		return err
 	}
 
-	err = os.WriteFile(path, []byte("{}"), os.ModePerm)
+	err = os.Chmod(path, ContextFilePermissions)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(path, []byte("{}"), ContextFilePermissions)
 	if err != nil {
 		return err
 	}

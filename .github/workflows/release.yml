@@ -1,15 +1,16 @@
 name: Release
 
 on:
-  create:
+  push:
     tags:
+      - 'v*' 
 
 jobs:
   release-and-packages:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -22,21 +23,37 @@ jobs:
 
       # build + lint
       - name: Set up Go
-        uses: actions/setup-go@master
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.21.x
+          go-version: '1.25'
+          cache: true
       # release new version on GitHub + Mac
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v1
+        uses: goreleaser/goreleaser-action@v6
         with:
-          version: "v1.26.2"
-          args: release --rm-dist
+          version: latest
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
+      # upload release artifacts to Cloudflare R2 (S3 compatible)
+      - name: Upload release artifacts to Cloudflare R2
+        if: github.ref_type == 'tag'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+          AWS_REGION: auto
+        run: |
+          # List all files in dist directory
+          echo "Uploading release artifacts to Cloudflare R2... (S3 compatible)"
+          ls -la dist/
+          
+          # Upload all artifacts to Cloudflare R2
+          aws s3 cp dist/ s3://${{ secrets.CLOUDFLARE_R2_BUCKET }}/releases/latest/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT_URL }}
       # archlinux
       - name: Prepare AUR package
         run: |
-          version=$(awk -F'"' '/ci-version-check/{print $2}' pkg/version.go)
+          version="${GITHUB_REF_NAME:-}"
+          version="${version#v}"
           md5version=$(curl -sL https://github.com/Qovery/qovery-cli/archive/v${version}.tar.gz --output - | md5sum | awk '{ print $1 }')
           sed -i "s/pkgver=tbd/pkgver=$version/" PKGBUILD
           echo "md5sums=('${md5version}')" >> PKGBUILD
@@ -53,10 +70,10 @@ jobs:
           force_push: "true"
   # GitHub action usage
   container:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -69,14 +86,14 @@ jobs:
 
       # docker
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
         with:
           registry-type: public
       - name: Build, Tag, and push image to Amazon ECR

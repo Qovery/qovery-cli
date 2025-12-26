@@ -7,7 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
+	"net/url"
+	"path"
 	"reflect"
 	"strconv"
 	"strings"
@@ -38,6 +39,8 @@ type ClusterDetails struct {
 	IsProduction          bool   `json:"is_production"`
 	CurrentStatus         string `json:"current_status"`
 	HasKarpenter          bool   `json:"has_karpenter"`
+	HasPendingUpdate      bool   `json:"has_pending_update"`
+	HasMetricsFeature     bool   `json:"has_metrics_feature"`
 }
 
 // PrintClustersTable global method to output clusters table
@@ -58,8 +61,10 @@ func PrintClustersTable(clusters []ClusterDetails) error {
 			strconv.FormatBool(cluster.IsProduction),
 			cluster.CurrentStatus,
 			strconv.FormatBool(cluster.HasKarpenter),
+			strconv.FormatBool(cluster.HasMetricsFeature),
 			cluster.ClusterCreatedAt,
 			cluster.ClusterLastDeployedAt,
+			strconv.FormatBool(cluster.HasPendingUpdate),
 		})
 	}
 
@@ -75,8 +80,10 @@ func PrintClustersTable(clusters []ClusterDetails) error {
 		"IsProduction",
 		"CurrentStatus",
 		"HasKarpenter",
+		"HasMetricsFeature",
 		"ClusterCreatedAt",
 		"ClusterLastDeployedAt",
+		"HasPendingUpdate",
 	}, data)
 	if err != nil {
 		return fmt.Errorf("cannot print clusters %s", err)
@@ -97,6 +104,8 @@ var allowedFilterProperties = map[string]bool{
 	"Mode":              true,
 	"IsProduction":      true,
 	"HasKarpenter":      true,
+	"HasPendingUpdate":  true,
+	"HasMetricsFeature": true,
 }
 
 type AdminClusterListService interface {
@@ -136,6 +145,185 @@ func (service AdminClusterListServiceImpl) SelectClusters() ([]ClusterDetails, e
 	}
 	clusters := service.filterByPredicates(clustersFetched, service.Filters)
 	return clusters, nil
+}
+
+func UpdateClusterDomainName(clusterId string, domain string) error {
+	// Validate inputs
+	if clusterId == "" {
+		return fmt.Errorf("clusterId cannot be empty")
+	}
+	if domain == "" {
+		return fmt.Errorf("domain cannot be empty")
+	}
+
+	tokenType, token, err := utils.GetAccessToken()
+	if err != nil {
+		return fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	// Build URL with proper escaping
+	u, err := url.Parse(utils.GetAdminUrl())
+	if err != nil {
+		return fmt.Errorf("invalid admin URL: %w", err)
+	}
+	u.Path = path.Join(u.Path, "cluster", clusterId, "domain")
+	q := u.Query()
+	q.Set("name", domain)
+	u.RawQuery = q.Encode()
+
+	// Use PATCH or PUT for update operations
+	req, err := http.NewRequest(http.MethodPut, u.String(), nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Create client with timeout
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("request failed: %w", err)
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	// Check status code
+	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("failed to update cluster domain (status=%d)",
+			res.StatusCode)
+	}
+
+	return nil
+}
+
+func UpdateClusterDnsProvider(
+	clusterId string,
+	domain string,
+	provider string,
+	cloudflareEmail string,
+	cloudflareToken string,
+	cloudflareProxied bool,
+	qoveryApiUrl string,
+	route53AccessKeyId string,
+	route53SecretAccessKey string,
+	route53Region string,
+	route53HostedZoneId string,
+) error {
+	// Validate inputs
+	if clusterId == "" {
+		return fmt.Errorf("clusterId cannot be empty")
+	}
+	if domain == "" {
+		return fmt.Errorf("domain cannot be empty")
+	}
+	if provider == "" {
+		return fmt.Errorf("provider cannot be empty")
+	}
+
+	tokenType, token, err := utils.GetAccessToken()
+	if err != nil {
+		return fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	// Build the request body based on the provider
+	type CloudflareCredentials struct {
+		Email     string `json:"email"`
+		Token     string `json:"token"`
+		IsProxied bool   `json:"is_proxied"`
+	}
+
+	type QoveryCredentials struct {
+		ApiUrl string `json:"api_url"`
+	}
+
+	type Route53Credentials struct {
+		AwsAccessKeyId     string  `json:"aws_access_key_id"`
+		AwsSecretAccessKey string  `json:"aws_secret_access_key"`
+		AwsRegion          string  `json:"aws_region"`
+		HostedZoneId       *string `json:"hosted_zone_id,omitempty"`
+	}
+
+	type UpdateDnsProviderRequest struct {
+		Domain     string                 `json:"domain"`
+		Cloudflare *CloudflareCredentials `json:"cloudflare,omitempty"`
+		Qovery     *QoveryCredentials     `json:"qovery,omitempty"`
+		Route53    *Route53Credentials    `json:"route53,omitempty"`
+	}
+
+	requestBody := UpdateDnsProviderRequest{
+		Domain: domain,
+	}
+
+	switch provider {
+	case "cloudflare":
+		requestBody.Cloudflare = &CloudflareCredentials{
+			Email:     cloudflareEmail,
+			Token:     cloudflareToken,
+			IsProxied: cloudflareProxied,
+		}
+	case "qovery":
+		requestBody.Qovery = &QoveryCredentials{
+			ApiUrl: qoveryApiUrl,
+		}
+	case "route53":
+		creds := Route53Credentials{
+			AwsAccessKeyId:     route53AccessKeyId,
+			AwsSecretAccessKey: route53SecretAccessKey,
+			AwsRegion:          route53Region,
+		}
+		if route53HostedZoneId != "" {
+			creds.HostedZoneId = &route53HostedZoneId
+		}
+		requestBody.Route53 = &creds
+	default:
+		return fmt.Errorf("invalid provider: %s", provider)
+	}
+
+	// Marshal request body to JSON
+	bodyBytes, err := json.Marshal(requestBody)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	// Build URL
+	u, err := url.Parse(utils.GetAdminUrl())
+	if err != nil {
+		return fmt.Errorf("invalid admin URL: %w", err)
+	}
+	u.Path = path.Join(u.Path, "cluster", clusterId, "updateDnsProvider")
+
+	// Create request
+	req, err := http.NewRequest(http.MethodPut, u.String(), bytes.NewBuffer(bodyBytes))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Create client with timeout
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("request failed: %w", err)
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	// Check status code
+	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNoContent {
+		bodyBytes, _ := io.ReadAll(res.Body)
+		return fmt.Errorf("failed to update DNS provider (status=%d): %s",
+			res.StatusCode, string(bodyBytes))
+	}
+
+	return nil
 }
 
 func (service AdminClusterListServiceImpl) fetchClustersEligibleToUpdate() ([]ClusterDetails, error) {
@@ -178,7 +366,7 @@ func (service AdminClusterListServiceImpl) filterByPredicates(clusters []Cluster
 			clusterProperty := reflect.Indirect(reflect.ValueOf(cluster)).FieldByName(filterProperty)
 
 			// hack for IsProduction field (boolean needs to be converted to string)
-			if filterProperty == "IsProduction" || filterProperty == "HasKarpenter" {
+			if filterProperty == "IsProduction" || filterProperty == "HasKarpenter" || filterProperty == "HasPendingUpdate" || filterProperty == "HasMetricsFeature" {
 				boolToString := strconv.FormatBool(clusterProperty.Bool())
 				if _, ok := filterValuesSet[boolToString]; !ok {
 					matchAllFilters = false
@@ -229,6 +417,7 @@ type AdminClusterBatchDeployService interface {
 }
 
 type AdminClusterBatchDeployServiceImpl struct {
+	client *qovery.ClustersAPIService
 	// DryRunDisabled disable dry run
 	DryRunDisabled bool
 	// ParallelRun the number of parallel requests to be processed
@@ -246,6 +435,7 @@ type AdminClusterBatchDeployServiceImpl struct {
 }
 
 func NewAdminClusterBatchDeployServiceImpl(
+	client *qovery.ClustersAPIService,
 	dryRun bool,
 	parallelRun int,
 	refreshDelay int,
@@ -275,14 +465,10 @@ func NewAdminClusterBatchDeployServiceImpl(
 		upgradeMode = true
 	}
 
-	completeBatchBeforeContinue := true
-	if executionMode == "on-the-fly" &&
-		// Do not authorize "on-the-fly" for upgrade mode, it's too risky
-		!upgradeMode {
-		completeBatchBeforeContinue = false
-	}
+	completeBatchBeforeContinue := executionMode != "on-the-fly" || upgradeMode
 
 	return &AdminClusterBatchDeployServiceImpl{
+		client:                      client,
 		DryRunDisabled:              dryRun,
 		ParallelRun:                 parallelRun,
 		RefreshDelay:                refreshDelay,
@@ -377,7 +563,7 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 					utils.Println(fmt.Sprintf("[Organization '%s' - Cluster '%s'] - Starting deployment - https://console.qovery.com/organization/%s/cluster/%s/logs", cluster.OrganizationName, cluster.ClusterName, cluster.OrganizationId, cluster.ClusterId))
 					var err error
 					if service.UpgradeClusterNewK8sVersion != nil {
-						err = service.upgradeCluster(cluster.ClusterId, *service.UpgradeClusterNewK8sVersion, service.DryRunDisabled)
+						err = service.upgradeCluster(cluster.ClusterId, service.DryRunDisabled)
 					} else {
 						err = service.deployCluster(cluster.ClusterId, service.DryRunDisabled)
 					}
@@ -455,7 +641,7 @@ func (service AdminClusterBatchDeployServiceImpl) deployCluster(clusterId string
 	adminUrl := utils.GetAdminUrl()
 	response := execAdminRequest(adminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, dryRunDisabled, map[string]string{})
 	if response.StatusCode == 401 {
-		DoRequestUserToAuthenticate(false)
+		DoRequestUserToAuthenticate(false, true)
 		response = execAdminRequest(adminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, dryRunDisabled, map[string]string{})
 	}
 	if response.StatusCode != 200 {
@@ -465,44 +651,16 @@ func (service AdminClusterBatchDeployServiceImpl) deployCluster(clusterId string
 	return nil
 }
 
-func (service AdminClusterBatchDeployServiceImpl) upgradeCluster(clusterId string, targetVersion string, dryRunDisabled bool) error {
-	tokenType, token, err := utils.GetAccessToken()
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(0)
+func (service AdminClusterBatchDeployServiceImpl) upgradeCluster(clusterId string, dryRunDisabled bool) error {
+	if !dryRunDisabled {
+		utils.Println("dry-run-disabled is false: skip cluster upgrade")
+		return nil
 	}
 
-	adminUrl := utils.GetAdminUrl()
-
-	body := bytes.NewBuffer([]byte(fmt.Sprintf("{ \"metadata\": { \"dry_run_deploy\": \"%s\", \"target_version\": \"%s\" } }", strconv.FormatBool(!dryRunDisabled), targetVersion)))
-	request, err := http.NewRequest(http.MethodPost, adminUrl+"/cluster/update/"+clusterId, body)
+	_, _, err := service.client.UpgradeCluster(context.Background(), clusterId).Execute()
 	if err != nil {
 		return err
 	}
 
-	request.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
-	request.Header.Set("Content-Type", "application/json")
-
-	response, err := http.DefaultClient.Do(request)
-	if err != nil {
-		return err
-	}
-
-	if response.StatusCode == 401 {
-		DoRequestUserToAuthenticate(false)
-		request, err = http.NewRequest(http.MethodPost, adminUrl+"/cluster/update/"+clusterId, body)
-		if err != nil {
-			return err
-		}
-		response, err = http.DefaultClient.Do(request)
-		if err != nil {
-			return err
-		}
-	}
-
-	if response.StatusCode != 200 {
-		result, _ := io.ReadAll(response.Body)
-		return fmt.Errorf("could not deploy cluster : %s. %s", response.Status, string(result))
-	}
 	return nil
 }

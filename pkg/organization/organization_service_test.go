@@ -1,10 +1,11 @@
 package organization
 
 import (
+	"testing"
+
 	"github.com/jarcoal/httpmock"
 	"github.com/qovery/qovery-client-go"
 	"github.com/stretchr/testify/assert"
-	"testing"
 
 	"github.com/qovery/qovery-cli/pkg/promptuifactory"
 	"github.com/qovery/qovery-cli/utils"
@@ -76,7 +77,7 @@ func TestAskUserToSelectOrganization(t *testing.T) {
 
 		// then
 		assert.NotNil(t, err)
-		assert.Equal(t, err.Error(), "Error when listing organizations: 400 (response status = 400)")
+		assert.Equal(t, err.Error(), "error when listing organizations: 400 Bad Request (response status = 400 Bad Request)")
 	})
 	t.Run("Should fail if no organization found", func(t *testing.T) {
 		httpmock.Activate()
@@ -96,7 +97,7 @@ func TestAskUserToSelectOrganization(t *testing.T) {
 
 		// then
 		assert.NotNil(t, err)
-		assert.Equal(t, err.Error(), "No organization found.")
+		assert.Equal(t, err.Error(), "no organization found")
 	})
 	t.Run("Should fail if prompt to select organization fails", func(t *testing.T) {
 		httpmock.Activate()

@@ -3,13 +3,14 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"github.com/go-jose/go-jose/v4/json"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"os"
 	"text/tabwriter"
+
+	"github.com/go-jose/go-jose/v4/json"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/utils"
 )
@@ -39,7 +40,7 @@ func createJwt() {
 	}
 
 	url := fmt.Sprintf("%s/clusters/%s/jwts", utils.GetAdminUrl(), clusterId)
-	req, err := http.NewRequest(http.MethodPost, url,  bytes.NewBuffer([]byte("{  }")))
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer([]byte("{  }")))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,7 +70,13 @@ func createJwt() {
 
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 	format := "%s\t | %s\t | %s\t | %s\n"
-	fmt.Fprintf(w, format, "", "cluster_id", "key_id", "created_at")
-	fmt.Fprintf(w, format, fmt.Sprintf("%d", 1), jwt.ClusterId, jwt.KeyId, jwt.CreatedAt)
-	w.Flush()
+	if _, err := fmt.Fprintf(w, format, "", "cluster_id", "key_id", "created_at"); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := fmt.Fprintf(w, format, fmt.Sprintf("%d", 1), jwt.ClusterId, jwt.KeyId, jwt.CreatedAt); err != nil {
+		log.Fatal(err)
+	}
+	if err := w.Flush(); err != nil {
+		log.Fatal(err)
+	}
 }

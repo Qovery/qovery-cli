@@ -8,12 +8,14 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-client-go"
 	"os"
+	"sort"
 	"strings"
 	"time"
 )
 
 var ShowValues bool
 var PrettyPrint bool
+var SortKeys bool
 var IsSecret bool
 var ApplicationScope string
 var JobScope string
@@ -26,6 +28,11 @@ var Value string
 
 type EnvVarLines struct {
 	lines map[string][]EnvVarLineOutput
+}
+
+type Var struct {
+	Key   string
+	Value string
 }
 
 func NewEnvVarLines() EnvVarLines {
@@ -58,10 +65,21 @@ func (e EnvVarLines) Header(prettyPrint bool) []string {
 	return []string{"Key", "Type", "Parent Key", "Value", "Updated at", "Service", "Scope"}
 }
 
-func (e EnvVarLines) Lines(showValues bool, prettyPrint bool) [][]string {
+func (e EnvVarLines) Lines(showValues bool, prettyPrint bool, sortKeys bool) [][]string {
 	var lines [][]string
 
-	for _, envVars := range e.lines {
+	// Get keys and optionally sort them
+	keys := make([]string, 0, len(e.lines))
+	for key := range e.lines {
+		keys = append(keys, key)
+	}
+	if sortKeys {
+		sort.Strings(keys)
+	}
+
+	// Iterate over sorted keys instead of map
+	for _, key := range keys {
+		envVars := e.lines[key]
 		for idx, envVar := range envVars {
 			x := envVar.Data(showValues)
 			if idx == 0 || !prettyPrint {
@@ -742,8 +760,18 @@ func getValueOrDefault(value *string) string {
 	}
 }
 
-func GetEnvVarJsonOutput(variables []EnvVarLineOutput) string {
+func GetEnvVarJsonOutput(variables []EnvVarLineOutput, sortKeys bool) string {
 	var results []interface{}
+
+	// Optionally sort variables by key before processing
+	if sortKeys {
+		sortedVars := make([]EnvVarLineOutput, len(variables))
+		copy(sortedVars, variables)
+		sort.Slice(sortedVars, func(i, j int) bool {
+			return sortedVars[i].Key < sortedVars[j].Key
+		})
+		variables = sortedVars
+	}
 
 	for _, v := range variables {
 		// TODO improve this

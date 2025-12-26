@@ -3,9 +3,10 @@ package credentials
 import (
 	"context"
 	"fmt"
+	"io"
+
 	"github.com/fatih/color"
 	"github.com/qovery/qovery-client-go"
-	"io"
 
 	"github.com/qovery/qovery-cli/pkg/promptuifactory"
 	"github.com/qovery/qovery-cli/utils"
@@ -78,7 +79,7 @@ func (service *ClusterCredentialsServiceImpl) AskToCreateCredentials(
 		}).Execute()
 		if err != nil || resp.StatusCode >= 400 {
 			body, _ := io.ReadAll(resp.Body)
-			return nil, fmt.Errorf("%s: %v\n%s\n", color.RedString("Error"), string(body), err)
+			return nil, fmt.Errorf("%s: %v\n%s", color.RedString("Error"), string(body), err)
 		}
 		return creds, nil
 	}
@@ -122,7 +123,7 @@ func (service *ClusterCredentialsServiceImpl) AskToCreateCredentials(
 		}).Execute()
 		if err != nil || resp.StatusCode >= 400 {
 			body, _ := io.ReadAll(resp.Body)
-			return nil, fmt.Errorf("%s: %v\n%s\n", color.RedString("Error"), string(body), err)
+			return nil, fmt.Errorf("%s: %v\n%s", color.RedString("Error"), string(body), err)
 		}
 		return creds, nil
 
@@ -169,7 +170,7 @@ func (service *ClusterCredentialsServiceImpl) AskToCreateCredentials(
 		}).Execute()
 		if err != nil || resp.StatusCode >= 400 {
 			body, _ := io.ReadAll(resp.Body)
-			return nil, fmt.Errorf("%s: %v\n%s\n", color.RedString("Error"), string(body), err)
+			return nil, fmt.Errorf("%s: %v\n%s", color.RedString("Error"), string(body), err)
 		}
 		return creds, nil
 
@@ -187,7 +188,7 @@ func (service *ClusterCredentialsServiceImpl) AskToCreateCredentials(
 		}).Execute()
 		if err != nil || resp.StatusCode >= 400 {
 			body, _ := io.ReadAll(resp.Body)
-			return nil, fmt.Errorf("%s: %v\n%s\n", color.RedString("Error"), string(body), err)
+			return nil, fmt.Errorf("%s: %v\n%s", color.RedString("Error"), string(body), err)
 		}
 		return creds, nil
 	}

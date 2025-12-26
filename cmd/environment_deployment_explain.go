@@ -71,15 +71,16 @@ var environmentDeploymentExplainCmd = &cobra.Command{
 		}
 
 		mLevel := AllLevel
-		if level == "" || level == "all" {
+		switch level {
+		case "", "all":
 			mLevel = AllLevel
-		} else if level == "stage" {
+		case "stage":
 			mLevel = StageLevel
-		} else if level == "service" {
+		case "service":
 			mLevel = ServiceLevel
-		} else if level == "step" {
+		case "step":
 			mLevel = StepLevel
-		} else if level == "message" {
+		case "message":
 			mLevel = MessageLevel
 		}
 

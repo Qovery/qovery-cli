@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/qovery/qovery-client-go"
 	"strings"
+
+	"github.com/qovery/qovery-client-go"
 
 	"github.com/qovery/qovery-cli/pkg/promptuifactory"
 )
@@ -34,7 +35,7 @@ func NewOrganizationService(client *qovery.APIClient, promptUiFactory promptuifa
 func (service *OrganizationServiceImpl) AskUserToSelectOrganization() (*OrganizationDto, error) {
 	organizations, res, err := service.client.OrganizationMainCallsAPI.ListOrganization(context.Background()).Execute()
 	if err != nil || res.StatusCode >= 400 {
-		return nil, fmt.Errorf("Error when listing organizations: %s (response status = %s)", err, res.Status)
+		return nil, fmt.Errorf("error when listing organizations: %s (response status = %s)", err, res.Status)
 	}
 
 	var organizationNames []string
@@ -46,7 +47,7 @@ func (service *OrganizationServiceImpl) AskUserToSelectOrganization() (*Organiza
 	}
 
 	if len(organizationNames) < 1 {
-		return nil, errors.New("No organization found.")
+		return nil, errors.New("no organization found")
 	}
 
 	if len(organizationNames) == 1 {

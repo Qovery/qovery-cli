@@ -10,14 +10,14 @@ import (
 )
 
 type SelfManagedClusterServiceMock struct {
-	ResultCreate                    func(organizationID string, cloudProviderType qovery.CloudProviderEnum) (*qovery.Cluster, error)
+	ResultCreate                    func(organizationID string, cloudVendor qovery.CloudVendorEnum) (*qovery.Cluster, error)
 	ResultConfigure                 func() error
 	ResultGetInstallationHelmValues func() (*string, error)
 	ResultGetBaseHelmValuesContent  func(kubernetesType qovery.CloudProviderEnum) (*string, error)
 }
 
-func (mock *SelfManagedClusterServiceMock) Create(organizationID string, cloudProviderType qovery.CloudProviderEnum) (*qovery.Cluster, error) {
-	return mock.ResultCreate(organizationID, cloudProviderType)
+func (mock *SelfManagedClusterServiceMock) Create(organizationID string, cloudVendor qovery.CloudVendorEnum) (*qovery.Cluster, error) {
+	return mock.ResultCreate(organizationID, cloudVendor)
 }
 func (mock *SelfManagedClusterServiceMock) Configure(cluster *qovery.Cluster) error {
 	return mock.ResultConfigure()
@@ -29,8 +29,8 @@ func (mock *SelfManagedClusterServiceMock) GetBaseHelmValuesContent(kubernetesTy
 	return mock.ResultGetBaseHelmValuesContent(kubernetesType)
 }
 
-func CreateSelfManagedTestCluster(organization *qovery.Organization, cloudProviderType qovery.CloudProviderEnum) *qovery.Cluster {
-	cluster := qovery.NewCluster(uuid.NewString(), time.Now(), qovery.ReferenceObject{Id: organization.Id}, "TestCluster", "eu-west-3", cloudProviderType)
+func CreateSelfManagedTestCluster(organization *qovery.Organization, cloudVendor qovery.CloudVendorEnum) *qovery.Cluster {
+	cluster := qovery.NewCluster(uuid.NewString(), time.Now(), qovery.ReferenceObject{Id: organization.Id}, "TestCluster", "eu-west-3", cloudVendor)
 	cluster.SetKubernetes(qovery.KUBERNETESENUM_SELF_MANAGED)
 	return cluster
 }
@@ -46,4 +46,3 @@ func MockGetInstallationHelmValues(organization *qovery.Organization, cluster *q
 			return resp, nil
 		})
 }
-

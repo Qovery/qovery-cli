@@ -107,7 +107,7 @@ func SelectRole(organization *Organization) (*Role, error) {
 	}
 
 	if len(roleNames) < 1 {
-		return nil, errors.New("No role found.")
+		return nil, errors.New("no role found")
 	}
 
 	fmt.Println("Roles:")
@@ -154,7 +154,7 @@ func SelectOrganization() (*Organization, error) {
 	}
 
 	if len(organizationNames) < 1 {
-		return nil, errors.New("No organizations found. ")
+		return nil, errors.New("no organizations found")
 	}
 
 	if len(organizationNames) == 1 {
@@ -250,7 +250,7 @@ func SelectProject(organizationID Id) (*Project, error) {
 	}
 
 	if len(projectsNames) < 1 {
-		return nil, errors.New("No projects found. ")
+		return nil, errors.New("no projects found")
 	}
 
 	if len(projectsNames) == 1 {
@@ -346,7 +346,7 @@ func SelectEnvironment(projectID Id) (*Environment, error) {
 	}
 
 	if len(environmentsNames) < 1 {
-		return nil, errors.New("No environments found. ")
+		return nil, errors.New("no environments found")
 	}
 
 	if len(environmentsNames) == 1 {
@@ -479,6 +479,7 @@ const (
 	DatabaseType    ServiceType = "database"
 	JobType         ServiceType = "job"
 	HelmType        ServiceType = "helm"
+	TerraformType   ServiceType = "terraform"
 )
 
 type Service struct {
@@ -538,6 +539,14 @@ func SelectService(environment Id) (*Service, error) {
 	}
 	if res.StatusCode >= 400 {
 		return nil, errors.New("Received " + res.Status + " response while listing helms. ")
+	}
+
+	terraforms, res, err := client.TerraformsAPI.ListTerraforms(context.Background(), string(environment)).Execute()
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode >= 400 {
+		return nil, errors.New("Received " + res.Status + " response while listing terraforms. ")
 	}
 
 	var servicesNames []string
@@ -600,8 +609,16 @@ func SelectService(environment Id) (*Service, error) {
 		}
 	}
 
+	for _, terraform := range terraforms.GetResults() {
+		servicesNames = append(servicesNames, terraform.Name)
+		services[terraform.Name] = Service{
+			ID:   Id(terraform.Id),
+			Name: Name(terraform.Name),
+			Type: TerraformType,
+		}
+	}
 	if len(servicesNames) < 1 {
-		return nil, errors.New("No services found. ")
+		return nil, errors.New("no services found")
 	}
 
 	if len(servicesNames) == 1 {
@@ -790,7 +807,7 @@ func GetJobById(id string) (*Job, error) {
 		}, nil
 	}
 
-	return nil, errors.New("Invalid job response")
+	return nil, errors.New("invalid job response")
 }
 
 func GetAdminUrl() string {
@@ -929,6 +946,134 @@ func AddSecret(application Id, key string, value string) error {
 	return nil
 }
 
+// Container environment variable functions
+
+func AddContainerEnvironmentVariable(container Id, key string, value string) error {
+	tokenType, token, err := GetAccessToken()
+	if err != nil {
+		return err
+	}
+
+	client := GetQoveryClient(tokenType, token)
+
+	_, res, err := client.ContainerEnvironmentVariableAPI.CreateContainerEnvironmentVariable(context.Background(), string(container)).EnvironmentVariableRequest(
+		qovery.EnvironmentVariableRequest{Key: key, Value: &value},
+	).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 400 {
+		return fmt.Errorf("Received "+res.Status+" response while adding an environment variable for container %s", string(container))
+	}
+
+	return nil
+}
+
+func DeleteContainerEnvironmentVariable(container Id, key string) error {
+	tokenType, token, err := GetAccessToken()
+	if err != nil {
+		return err
+	}
+
+	client := GetQoveryClient(tokenType, token)
+
+	// TODO optimize this call by caching the result?
+	envVars, _, err := client.ContainerEnvironmentVariableAPI.ListContainerEnvironmentVariable(context.Background(), string(container)).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	var envVar *qovery.EnvironmentVariable
+	for _, mEnvVar := range envVars.GetResults() {
+		if mEnvVar.Key == key {
+			envVar = &mEnvVar
+			break
+		}
+	}
+
+	if envVar == nil {
+		return nil
+	}
+
+	res, err := client.ContainerEnvironmentVariableAPI.DeleteContainerEnvironmentVariable(context.Background(), string(container), envVar.Id).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 400 {
+		return fmt.Errorf("Received "+res.Status+" response while deleting an Environment Variable for container %s with key %s", string(container), key)
+	}
+
+	return nil
+}
+
+func AddContainerSecret(container Id, key string, value string) error {
+	tokenType, token, err := GetAccessToken()
+	if err != nil {
+		return err
+	}
+
+	client := GetQoveryClient(tokenType, token)
+
+	_, res, err := client.ContainerSecretAPI.CreateContainerSecret(context.Background(), string(container)).SecretRequest(
+		qovery.SecretRequest{Key: key, Value: &value},
+	).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 400 {
+		return fmt.Errorf("Received "+res.Status+" response while adding a secret for container %s", string(container))
+	}
+
+	return nil
+}
+
+func DeleteContainerSecret(container Id, key string) error {
+	tokenType, token, err := GetAccessToken()
+	if err != nil {
+		return err
+	}
+
+	client := GetQoveryClient(tokenType, token)
+
+	// TODO optimize this call by caching the result?
+	secrets, _, err := client.ContainerSecretAPI.ListContainerSecrets(context.Background(), string(container)).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	var secret *qovery.Secret
+	for _, mSecret := range secrets.GetResults() {
+		if mSecret.Key == key {
+			secret = &mSecret
+			break
+		}
+	}
+
+	if secret == nil {
+		return nil
+	}
+
+	res, err := client.ContainerSecretAPI.DeleteContainerSecret(context.Background(), string(container), secret.Id).Execute()
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 400 {
+		return fmt.Errorf("Received "+res.Status+" response while deleting a secret for container %s with key %s", string(container), key)
+	}
+
+	return nil
+}
+
 func SelectTokenInformation() (*TokenInformation, error) {
 	organization, err := SelectOrganization()
 
@@ -953,7 +1098,7 @@ func SelectTokenInformation() (*TokenInformation, error) {
 	}
 
 	if len(strings.Trim(name, "")) == 0 {
-		return nil, errors.New("Token name must not be empty")
+		return nil, errors.New("token name must not be empty")
 	}
 
 	fmt.Println("Choose a token description")
@@ -1161,6 +1306,16 @@ func FindByHelmName(helms []qovery.HelmResponse, name string) *qovery.HelmRespon
 	return nil
 }
 
+func FindByTerraformName(terraforms []qovery.TerraformResponse, name string) *qovery.TerraformResponse {
+	for _, t := range terraforms {
+		if t.Name == name {
+			return &t
+		}
+	}
+
+	return nil
+}
+
 func FindByCustomDomainName(customDomains []qovery.CustomDomain, name string) *qovery.CustomDomain {
 	for _, d := range customDomains {
 		if d.Domain == name {
@@ -1191,9 +1346,10 @@ func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnu
 				countStatus(statuses.Databases, finalServiceState) +
 				countStatus(statuses.Jobs, finalServiceState) +
 				countStatus(statuses.Containers, finalServiceState) +
-				countStatus(statuses.Helms, finalServiceState)
+				countStatus(statuses.Helms, finalServiceState) +
+				countStatus(statuses.Terraforms, finalServiceState)
 
-			totalStatuses := len(statuses.Applications) + len(statuses.Databases) + len(statuses.Jobs) + len(statuses.Containers) + len(statuses.Helms)
+			totalStatuses := len(statuses.Applications) + len(statuses.Databases) + len(statuses.Jobs) + len(statuses.Containers) + len(statuses.Helms) + len(statuses.Terraforms)
 
 			icon := "⏳"
 			if countStatuses > 0 {
@@ -1688,6 +1844,86 @@ func GetHelmRepository(helm *qovery.HelmResponse) *qovery.HelmSourceRepositoryRe
 	return nil
 }
 
+func DeployTerraforms(client *qovery.APIClient, envId string, terraformList []*qovery.TerraformResponse, commitId string, action *string) error {
+	if len(terraformList) == 0 {
+		return nil
+	}
+
+	// If action is not nil (PLAN, FORCE_UNLOCK, MIGRATE_STATE), use individual API
+	// DeployAllServices only supports PLAN_AND_APPLY
+	if action != nil {
+		for _, terraform := range terraformList {
+			req := qovery.TerraformDeployRequest{
+				Action: *qovery.NewNullableString(action),
+			}
+
+			// Set commit ID if provided
+			if commitId != "" {
+				req.GitCommitId = &commitId
+			}
+
+			_, _, err := client.TerraformActionsAPI.DeployTerraform(context.Background(), terraform.Id).TerraformDeployRequest(req).Execute()
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	// If action is null (PLAN_AND_APPLY), use batch DeployAllServices
+	var terraformsToDeploy []qovery.TerraformDeployRequest
+
+	for _, terraform := range terraformList {
+		req := qovery.TerraformDeployRequest{
+			Id: *qovery.NewNullableString(&terraform.Id),
+		}
+
+		// Set commit ID if provided
+		if commitId != "" {
+			req.GitCommitId = &commitId
+		}
+
+		terraformsToDeploy = append(terraformsToDeploy, req)
+	}
+
+	deployReq := qovery.DeployAllRequest{
+		Applications: nil,
+		Databases:    nil,
+		Containers:   nil,
+		Jobs:         nil,
+		Helms:        nil,
+		Terraforms:   terraformsToDeploy,
+	}
+
+	return deployAllServices(client, envId, deployReq)
+}
+
+func DeleteTerraforms(client *qovery.APIClient, envId string, terraformList []*qovery.TerraformResponse, skipDestroy bool, resourcesOnly bool) error {
+	if len(terraformList) == 0 {
+		return nil
+	}
+
+	for _, terraform := range terraformList {
+		req := client.TerraformMainCallsAPI.DeleteTerraform(context.Background(), terraform.Id)
+
+		if resourcesOnly {
+			req = req.ResourcesOnly(true)
+		}
+
+		if skipDestroy {
+			action := qovery.DELETETERRAFORMACTION_SKIP_DESTROY
+			req = req.ForceTerraformAction(action)
+		}
+
+		_, err := req.Execute()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func deployAllServices(client *qovery.APIClient, envId string, req qovery.DeployAllRequest) error {
 	_, _, err := client.EnvironmentActionsAPI.DeployAllServices(context.Background(), envId).DeployAllRequest(req).Execute()
 	if err != nil {
@@ -1828,6 +2064,7 @@ func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
 			GitTokenId: docker.GitRepository.GitTokenId,
 			RootPath:   docker.GitRepository.RootPath,
 			Url:        docker.GitRepository.Url,
+			Provider:   docker.GitRepository.Provider,
 		}
 
 		sourceDocker = qovery.JobRequestAllOfSourceDocker{

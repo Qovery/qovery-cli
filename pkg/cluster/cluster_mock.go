@@ -15,7 +15,7 @@ import (
 var allAdvancedSettingsByClusterId = make(map[string]qovery.ClusterAdvancedSettings)
 
 func CreateTestCluster(organization *qovery.Organization) *qovery.Cluster {
-	return qovery.NewCluster(uuid.NewString(), time.Now(), qovery.ReferenceObject{Id: organization.Id}, "TestCluster", "eu-west-3", qovery.CLOUDPROVIDERENUM_AWS)
+	return qovery.NewCluster(uuid.NewString(), time.Now(), qovery.ReferenceObject{Id: organization.Id}, "TestCluster", "eu-west-3", qovery.CLOUDVENDORENUM_AWS)
 }
 
 func MockListClusters(organization *qovery.Organization, clusters []qovery.Cluster) {
@@ -179,6 +179,6 @@ func (mock *ClusterServiceMock) ListClusters(organizationId string) (*qovery.Clu
 func (mock *ClusterServiceMock) ListClusterRegions(cloudProviderType qovery.CloudProviderEnum) (*qovery.ClusterRegionResponseList, error) {
 	return mock.ResultListClusterRegions()
 }
-func (mock *ClusterServiceMock) AskToEditStorageClass(cluster *qovery.Cluster, ) error {
+func (mock *ClusterServiceMock) AskToEditStorageClass(cluster *qovery.Cluster) error {
 	return mock.ResultAskToEditStorageClass
 }

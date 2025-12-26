@@ -71,11 +71,11 @@ var cronjobEnvListCmd = &cobra.Command{
 		}
 
 		if jsonFlag {
-			utils.Println(utils.GetEnvVarJsonOutput(variables))
+			utils.Println(utils.GetEnvVarJsonOutput(variables, utils.SortKeys))
 			return
 		}
 
-		err = utils.PrintTable(envVarLines.Header(utils.PrettyPrint), envVarLines.Lines(utils.ShowValues, utils.PrettyPrint))
+		err = utils.PrintTable(envVarLines.Header(utils.PrettyPrint), envVarLines.Lines(utils.ShowValues, utils.PrettyPrint, utils.SortKeys))
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -93,6 +93,7 @@ func init() {
 	cronjobEnvListCmd.Flags().StringVarP(&cronjobName, "cronjob", "n", "", "Cronjob Name")
 	cronjobEnvListCmd.Flags().BoolVarP(&utils.ShowValues, "show-values", "", false, "Show env var values")
 	cronjobEnvListCmd.Flags().BoolVarP(&utils.PrettyPrint, "pretty-print", "", false, "Pretty print output")
+	cronjobEnvListCmd.Flags().BoolVarP(&utils.SortKeys, "sort", "", false, "Sort environment variables by key")
 	cronjobEnvListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
 
 	_ = cronjobEnvListCmd.MarkFlagRequired("cronjob")
