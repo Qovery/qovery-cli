@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"context"
 
 	"github.com/qovery/qovery-cli/variable"
 
@@ -16,7 +17,6 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/qovery/qovery-client-go"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/net/context"
 )
 
 func init() {
