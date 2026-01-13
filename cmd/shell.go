@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"context"
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 
 	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/pkg/usercontext"

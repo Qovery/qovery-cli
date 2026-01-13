@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"context"
 
 	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 
 	"github.com/qovery/qovery-cli/utils"
 )
