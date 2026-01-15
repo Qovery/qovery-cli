@@ -25,7 +25,7 @@ require (
 	github.com/posthog/posthog-go v1.8.2
 	github.com/pterm/pterm v0.12.82
 	github.com/qovery/qovery-client-go v0.0.0-20260113153531-f5a900fc2ee9
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/stretchr/testify v1.11.1
