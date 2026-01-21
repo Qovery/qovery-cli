@@ -23,7 +23,9 @@ var shellCmd = &cobra.Command{
 
 		var shellRequest *pkg.ShellRequest
 		var err error
-		if strings.TrimSpace(organizationName) != "" || strings.TrimSpace(projectName) != "" || strings.TrimSpace(environmentName) != "" || strings.TrimSpace(serviceName) != "" {
+		if contextString != "" {
+			shellRequest, err = shellRequestWithContextString()
+		} else if strings.TrimSpace(organizationName) != "" || strings.TrimSpace(projectName) != "" || strings.TrimSpace(environmentName) != "" || strings.TrimSpace(serviceName) != "" {
 			if strings.TrimSpace(organizationName) == "" {
 				utils.PrintlnError(errors.New("organization name is required"))
 				return
@@ -60,7 +62,22 @@ var (
 	command          []string
 	podName          string
 	podContainerName string
+	contextString    string
 )
+
+func shellRequestWithContextString() (*pkg.ShellRequest, error) {
+	parts := strings.Split(contextString, ":")
+	if len(parts) != 4 {
+		return nil, errors.New("context must be in format organization:project:environment:service")
+	}
+	
+	organizationName = parts[0]
+	projectName = parts[1]
+	environmentName = parts[2]
+	serviceName = parts[3]
+	
+	return shellRequestWithContextFlags()
+}
 
 func shellRequestWithContextFlags() (*pkg.ShellRequest, error) {
 	tokenType, token, err := utils.GetAccessToken()
@@ -348,8 +365,11 @@ func init() {
 	shellCmd.Flags().StringVarP(&serviceName, "service", "", "", "Service Name")
 	shellCmd.Flags().StringVarP(&podName, "pod", "p", "", "pod name where to exec into")
 	shellCmd.Flags().StringVar(&podContainerName, "container", "", "container name inside the pod")
+	shellCmd.Flags().StringVarP(&contextString, "context", "", "", "Context in format organization:project:environment:service")
 	shellCmd.Example = "qovery shell\n" +
 		"qovery shell <qovery_console_service_url>\n" +
+		"qovery shell --context <organization>:<project>:<environment>:<service>\n" +
+		"qovery shell -c <command> --context <organization>:<project>:<environment>:<service>\n" +
 		"qovery shell --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>\n" +
 		"qovery shell --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name> --pod <pod_name> --container <container_name> --command <command>"
 
