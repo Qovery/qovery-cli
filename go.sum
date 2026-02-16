@@ -218,8 +218,6 @@ github.com/pterm/pterm v0.12.36/go.mod h1:NjiL09hFhT/vWjQHSj1athJpx6H8cjpHXNAK5b
 github.com/pterm/pterm v0.12.40/go.mod h1:ffwPLwlbXxP+rxT0GsgDTzS3y3rmpAO1NMjUkGTYf8s=
 github.com/pterm/pterm v0.12.82 h1:+D9wYhCaeaK0FIQoZtqbNQuNpe2lB2tajKKsTd5paVQ=
 github.com/pterm/pterm v0.12.82/go.mod h1:TyuyrPjnxfwP+ccJdBTeWHtd/e0ybQHkOS/TakajZCw=
-github.com/qovery/qovery-client-go v0.0.0-20260113153531-f5a900fc2ee9 h1:Ej2IcZXvMnAESWbaxzp2yVACwJpoXGsE6Wjnd41JS9s=
-github.com/qovery/qovery-client-go v0.0.0-20260113153531-f5a900fc2ee9/go.mod h1:mcXeQtxR4AIGIBaWLhy52S16UwL8/1fcDywDuSK1BZ4=
 github.com/qovery/qovery-client-go v0.0.0-20260216130502-8c24e675d431 h1:+Tsnzj/C7HlN7cj6ErV6ACDw6IkDZZ1tPBGjlWNZDII=
 github.com/qovery/qovery-client-go v0.0.0-20260216130502-8c24e675d431/go.mod h1:mcXeQtxR4AIGIBaWLhy52S16UwL8/1fcDywDuSK1BZ4=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
