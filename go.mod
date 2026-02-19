@@ -22,7 +22,7 @@ require (
 	github.com/mholt/archives v0.1.5
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
-	github.com/posthog/posthog-go v1.8.2
+	github.com/posthog/posthog-go v1.10.0
 	github.com/pterm/pterm v0.12.82
 	github.com/qovery/qovery-client-go v0.0.0-20260219090747-b1c8e03c2c2c
 	github.com/sirupsen/logrus v1.9.3
@@ -68,6 +68,7 @@ require (
 	github.com/go-openapi/swag/stringutils v0.25.4 // indirect
 	github.com/go-openapi/swag/typeutils v0.25.4 // indirect
 	github.com/go-openapi/swag/yamlutils v0.25.4 // indirect
+	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/gookit/color v1.6.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
