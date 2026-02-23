@@ -47,6 +47,35 @@ var environmentStageListCmd = &cobra.Command{
 			return
 		}
 
+		// Collect all skipped services across all stages
+		var skippedData [][]string
+		for _, stage := range stages.GetResults() {
+			for _, service := range stage.GetServices() {
+				if service.GetIsSkipped() {
+					skippedData = append(skippedData, []string{
+						service.Id,
+						service.GetServiceType(),
+						utils.GetServiceNameByIdAndType(client, service.GetServiceId(), service.GetServiceType()),
+						stage.GetName(),
+					})
+				}
+			}
+		}
+
+		// Show skipped services section first
+		if len(skippedData) > 0 {
+			pterm.DefaultSection.WithBottomPadding(0).Println("Skipped services (excluded from environment-level deployments)")
+			utils.Println("")
+			err = utils.PrintTable([]string{"Id", "Type", "Name", "Stage"}, skippedData)
+			utils.Println("")
+			if err != nil {
+				utils.PrintlnError(err)
+				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			}
+		}
+
+		// Show each stage with only non-skipped services
 		for _, stage := range stages.GetResults() {
 			pterm.DefaultSection.WithBottomPadding(0).Println("deployment stage " + strconv.Itoa(int(stage.GetDeploymentOrder()+1)) + ": \"" + stage.GetName() + "\"")
 			utils.Println("Stage id: " + stage.GetId())
@@ -58,14 +87,16 @@ var environmentStageListCmd = &cobra.Command{
 
 			var data [][]string
 			for _, service := range stage.GetServices() {
-				data = append(data, []string{
-					service.Id,
-					service.GetServiceType(),
-					utils.GetServiceNameByIdAndType(client, service.GetServiceId(), service.GetServiceType()),
-				})
+				if !service.GetIsSkipped() {
+					data = append(data, []string{
+						service.Id,
+						service.GetServiceType(),
+						utils.GetServiceNameByIdAndType(client, service.GetServiceId(), service.GetServiceType()),
+					})
+				}
 			}
 
-			if len(stage.GetServices()) == 0 {
+			if len(data) == 0 {
 				utils.Println("<no service>")
 			} else {
 				err = utils.PrintTable([]string{"Id", "Type", "Name"}, data)
@@ -83,17 +114,30 @@ var environmentStageListCmd = &cobra.Command{
 }
 
 func getEnvironmentStageJsonOutput(client qovery.APIClient, stages []qovery.DeploymentStageResponse) string {
+	var skippedServices []interface{}
 	var results []interface{}
 
 	for idx, stage := range stages {
 		var services []interface{}
 
 		for _, service := range stage.Services {
-			services = append(services, map[string]interface{}{
-				"id":   service.ServiceId,
-				"type": service.ServiceType,
-				"name": utils.GetServiceNameByIdAndType(&client, service.GetServiceId(), service.GetServiceType()),
-			})
+			entry := map[string]interface{}{
+				"id":         service.ServiceId,
+				"type":       service.ServiceType,
+				"name":       utils.GetServiceNameByIdAndType(&client, service.GetServiceId(), service.GetServiceType()),
+				"is_skipped": service.GetIsSkipped(),
+			}
+			services = append(services, entry)
+
+			if service.GetIsSkipped() {
+				skippedEntry := map[string]interface{}{
+					"id":    service.ServiceId,
+					"type":  service.ServiceType,
+					"name":  utils.GetServiceNameByIdAndType(&client, service.GetServiceId(), service.GetServiceType()),
+					"stage": stage.Name,
+				}
+				skippedServices = append(skippedServices, skippedEntry)
+			}
 		}
 
 		results = append(results, map[string]interface{}{
@@ -105,7 +149,12 @@ func getEnvironmentStageJsonOutput(client qovery.APIClient, stages []qovery.Depl
 		})
 	}
 
-	j, err := json.Marshal(results)
+	output := map[string]interface{}{
+		"skipped_services": skippedServices,
+		"stages":           results,
+	}
+
+	j, err := json.Marshal(output)
 
 	if err != nil {
 		utils.PrintlnError(err)
