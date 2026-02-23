@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"os"
 	"strconv"
 
 	"github.com/pterm/pterm"
@@ -19,28 +18,14 @@ var environmentStageListCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		utils.CheckError(err)
 
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, environmentId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		utils.CheckError(err)
 
 		stages, _, err := client.DeploymentStageMainCallsAPI.ListEnvironmentDeploymentStage(context.Background(), environmentId).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		utils.CheckError(err)
 
 		if jsonFlag {
 			utils.Println(getEnvironmentStageJsonOutput(*client, stages.GetResults()))
@@ -68,11 +53,7 @@ var environmentStageListCmd = &cobra.Command{
 			utils.Println("")
 			err = utils.PrintTable([]string{"Id", "Type", "Name", "Stage"}, skippedData)
 			utils.Println("")
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
+			utils.CheckError(err)
 		}
 
 		// Show each stage with only non-skipped services
@@ -97,18 +78,17 @@ var environmentStageListCmd = &cobra.Command{
 			}
 
 			if len(data) == 0 {
-				utils.Println("<no service>")
+				if len(stage.GetServices()) == 0 {
+					utils.Println("<no service>")
+				} else {
+					utils.Println("<all services skipped>")
+				}
 			} else {
 				err = utils.PrintTable([]string{"Id", "Type", "Name"}, data)
+				utils.CheckError(err)
 			}
 
 			utils.Println("")
-
-			if err != nil {
-				utils.PrintlnError(err)
-				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-			}
 		}
 	},
 }
@@ -130,13 +110,12 @@ func getEnvironmentStageJsonOutput(client qovery.APIClient, stages []qovery.Depl
 			services = append(services, entry)
 
 			if service.GetIsSkipped() {
-				skippedEntry := map[string]interface{}{
+				skippedServices = append(skippedServices, map[string]interface{}{
 					"id":    service.ServiceId,
 					"type":  service.ServiceType,
 					"name":  utils.GetServiceNameByIdAndType(&client, service.GetServiceId(), service.GetServiceType()),
 					"stage": stage.Name,
-				}
-				skippedServices = append(skippedServices, skippedEntry)
+				})
 			}
 		}
 
@@ -149,18 +128,11 @@ func getEnvironmentStageJsonOutput(client qovery.APIClient, stages []qovery.Depl
 		})
 	}
 
-	output := map[string]interface{}{
+	j, err := json.Marshal(map[string]interface{}{
 		"skipped_services": skippedServices,
 		"stages":           results,
-	}
-
-	j, err := json.Marshal(output)
-
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-	}
+	})
+	utils.CheckError(err)
 
 	return string(j)
 }

@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"errors"
-	"os"
 
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
@@ -18,28 +17,14 @@ var environmentStageUnskipCmd = &cobra.Command{
 		utils.Capture(cmd)
 
 		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		utils.CheckError(err)
 
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, environmentId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		utils.CheckError(err)
 
 		stages, _, err := client.DeploymentStageMainCallsAPI.ListEnvironmentDeploymentStage(context.Background(), environmentId).Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		utils.CheckError(err)
 
 		var service *qovery.DeploymentStageServiceResponse
 		var currentStageId string
@@ -52,9 +37,7 @@ var environmentStageUnskipCmd = &cobra.Command{
 		}
 
 		if service == nil {
-			utils.PrintlnError(errors.New("service not found"))
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+			utils.CheckError(errors.New("service not found"))
 		}
 
 		req := qovery.AttachServiceToDeploymentStageRequest{}
@@ -64,12 +47,7 @@ var environmentStageUnskipCmd = &cobra.Command{
 			AttachServiceToDeploymentStage(context.Background(), currentStageId, service.GetServiceId()).
 			AttachServiceToDeploymentStageRequest(req).
 			Execute()
-
-		if err != nil {
-			utils.PrintlnError(err)
-			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
-		}
+		utils.CheckError(err)
 
 		utils.Println("Service \"" + serviceName + "\" is no longer skipped from environment-level deployments")
 	},
