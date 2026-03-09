@@ -84,7 +84,8 @@ var containerCreateCmd = &cobra.Command{
 				Name       string `json:"name"`
 				PublicLink string `json:"public_link,omitempty"`
 			}{Id: created.Id, Name: created.Name, PublicLink: publicLink}
-			j, _ := json.Marshal(out)
+			j, err := json.Marshal(out)
+			utils.CheckError(err)
 			utils.Println(string(j))
 			return
 		}

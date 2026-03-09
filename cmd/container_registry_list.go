@@ -41,7 +41,11 @@ var containerRegistryListCmd = &cobra.Command{
 			if registry.Kind != nil {
 				kind = string(*registry.Kind)
 			}
-			data = append(data, []string{registry.Id, *registry.Name, kind, url})
+			name := ""
+			if registry.Name != nil {
+				name = *registry.Name
+			}
+			data = append(data, []string{registry.Id, name, kind, url})
 		}
 
 		utils.CheckError(utils.PrintTable([]string{"Id", "Name", "Kind", "URL"}, data))
@@ -59,9 +63,13 @@ func getContainerRegistryJsonOutput(registries []qovery.ContainerRegistryRespons
 		if registry.Kind != nil {
 			kind = string(*registry.Kind)
 		}
+		name := ""
+		if registry.Name != nil {
+			name = *registry.Name
+		}
 		results = append(results, map[string]interface{}{
 			"id":   registry.Id,
-			"name": registry.Name,
+			"name": name,
 			"kind": kind,
 			"url":  url,
 		})
