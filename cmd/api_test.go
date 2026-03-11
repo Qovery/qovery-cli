@@ -42,8 +42,8 @@ func captureOutput(fn func()) (stdout string, stderr string) {
 	return string(outBuf), string(errBuf)
 }
 
-// writeContextFile creates a minimal ~/.qovery/context.json in a temp HOME dir,
-// sets HOME to that dir, and returns a cleanup func.
+// writeContextFile creates a minimal ~/.qovery/context.json in a temp HOME dir
+// and sets HOME to that dir.
 func writeContextFile(t *testing.T, orgID, projectID, envID, serviceID string) {
 	t.Helper()
 	tmpHome := t.TempDir()
@@ -251,6 +251,8 @@ func TestAPICustomHeader(t *testing.T) {
 // --- Scenario 9: Malformed -H header (pure unit test via validateAPIArgs) ---
 func TestAPIMalformedHeader(t *testing.T) {
 	assert.ErrorContains(t, validateAPIArgs("organization", "", "", nil, []string{"Badheader"}), "invalid header")
+	// Empty header name (": value") must also be rejected
+	assert.ErrorContains(t, validateAPIArgs("organization", "", "", nil, []string{": value"}), "invalid header")
 }
 
 // --- Scenario 10: Full URL rejected (pure unit test via validateAPIArgs) ---
@@ -258,19 +260,44 @@ func TestAPIFullURLRejected(t *testing.T) {
 	assert.ErrorContains(t, validateAPIArgs("https://api.qovery.com/organization", "", "", nil, nil), "not a full URL")
 }
 
-// --- Scenario 11: Path normalisation (pure unit test) ---
+// --- Scenario 11: Path normalisation (integration-style via runAPI) ---
 func TestAPIPathNormalisation(t *testing.T) {
+	t.Setenv("QOVERY_CLI_ACCESS_TOKEN", "fake-token")
+
 	cases := []struct {
+		name     string
 		input    string
 		expected string
 	}{
-		{"/organization", "https://api.qovery.com/organization"},
-		{"organization", "https://api.qovery.com/organization"},
+		{"leading-slash", "/organization", "https://api.qovery.com/organization"},
+		{"no-leading-slash", "organization", "https://api.qovery.com/organization"},
 	}
+
 	for _, tc := range cases {
-		path := strings.TrimLeft(tc.input, "/")
-		result := "https://api.qovery.com" + "/" + path
-		assert.Equal(t, tc.expected, result)
+		tc := tc // capture range variable
+		t.Run(tc.name, func(t *testing.T) {
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+
+			var requestedURL string
+			httpmock.RegisterResponder("GET", "https://api.qovery.com/organization",
+				func(req *http.Request) (*http.Response, error) {
+					requestedURL = req.URL.String()
+					return httpmock.NewStringResponse(200, `{}`), nil
+				})
+
+			apiMethod = ""
+			apiInput = ""
+			apiFields = []string{}
+			apiHeaders = []string{}
+			apiInclude = false
+
+			captureOutput(func() {
+				runAPI(apiCmd, []string{tc.input})
+			})
+
+			assert.Equal(t, tc.expected, requestedURL)
+		})
 	}
 }
 
@@ -400,6 +427,8 @@ func TestAPIFieldAndInputMutuallyExclusive(t *testing.T) {
 // --- Scenario 17: Malformed --field entry (pure unit test via validateAPIArgs) ---
 func TestAPIMalformedField(t *testing.T) {
 	assert.ErrorContains(t, validateAPIArgs("organization", "", "", []string{"badfield"}, nil), "invalid field")
+	// Empty key ("=value") must also be rejected
+	assert.ErrorContains(t, validateAPIArgs("organization", "", "", []string{"=value"}, nil), "key must not be empty")
 }
 
 // --- Scenario 18: Placeholder substitution with org context ---

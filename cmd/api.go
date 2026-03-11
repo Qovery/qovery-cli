@@ -76,6 +76,26 @@ func init() {
 	apiCmd.Flags().BoolVarP(&apiInclude, "include", "i", false, "Print HTTP response status and headers before body")
 }
 
+// isValidHTTPHeaderName reports whether name is a valid HTTP token per RFC 7230.
+func isValidHTTPHeaderName(name string) bool {
+	if name == "" {
+		return false
+	}
+	for i := 0; i < len(name); i++ {
+		ch := name[i]
+		if (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') {
+			continue
+		}
+		switch ch {
+		case '!', '#', '$', '%', '&', '\'', '*', '+', '-', '.', '^', '_', '`', '|', '~':
+			continue
+		default:
+			return false
+		}
+	}
+	return true
+}
+
 // validateAPIArgs validates all arguments and flag values before any I/O.
 // It returns an error describing the first problem found.
 func validateAPIArgs(endpoint, method, input string, fields, headers []string) error {
@@ -93,8 +113,13 @@ func validateAPIArgs(endpoint, method, input string, fields, headers []string) e
 		return fmt.Errorf("invalid HTTP method %q: must be one of GET, POST, PUT, PATCH, DELETE", method)
 	}
 	for _, h := range headers {
-		if !strings.Contains(h, ": ") {
+		idx := strings.Index(h, ":")
+		if idx <= 0 {
 			return fmt.Errorf("invalid header %q: must be in 'Key: Value' format", h)
+		}
+		name := h[:idx]
+		if !isValidHTTPHeaderName(name) {
+			return fmt.Errorf("invalid header name %q: must be a non-empty HTTP token", name)
 		}
 	}
 	seen := make(map[string]bool)
@@ -104,6 +129,9 @@ func validateAPIArgs(endpoint, method, input string, fields, headers []string) e
 			return fmt.Errorf("invalid field %q: must be in 'key=value' format", f)
 		}
 		key := f[:idx]
+		if key == "" {
+			return fmt.Errorf("invalid field %q: key must not be empty", f)
+		}
 		if seen[key] {
 			return fmt.Errorf("duplicate field key %q: each key may only appear once", key)
 		}
@@ -112,11 +140,18 @@ func validateAPIArgs(endpoint, method, input string, fields, headers []string) e
 	return nil
 }
 
-// writeResponse writes the response body to stdout (2xx) or stderr (non-2xx).
+// writeResponse writes the response status line, headers (if include), and body
+// to a single stream: stdout for 2xx responses, stderr for non-2xx.
 // Returns true on success (2xx), false on error response.
 func writeResponse(resp *http.Response, include bool, stdout, stderr io.Writer) (bool, error) {
+	is2xx := resp.StatusCode >= 200 && resp.StatusCode < 300
+	out := stdout
+	if !is2xx {
+		out = stderr
+	}
+
 	if include {
-		_, _ = fmt.Fprintf(stdout, "HTTP/%d.%d %s\n", resp.ProtoMajor, resp.ProtoMinor, resp.Status)
+		_, _ = fmt.Fprintf(out, "HTTP/%d.%d %s\n", resp.ProtoMajor, resp.ProtoMinor, resp.Status)
 		headerKeys := make([]string, 0, len(resp.Header))
 		for k := range resp.Header {
 			headerKeys = append(headerKeys, k)
@@ -124,21 +159,17 @@ func writeResponse(resp *http.Response, include bool, stdout, stderr io.Writer) 
 		sort.Strings(headerKeys)
 		for _, k := range headerKeys {
 			for _, v := range resp.Header[k] {
-				_, _ = fmt.Fprintf(stdout, "%s: %s\n", k, v)
+				_, _ = fmt.Fprintf(out, "%s: %s\n", k, v)
 			}
 		}
-		_, _ = fmt.Fprintln(stdout)
+		_, _ = fmt.Fprintln(out)
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return false, err
 	}
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		_, _ = stdout.Write(body)
-		return true, nil
-	}
-	_, _ = stderr.Write(body)
-	return false, nil
+	_, _ = out.Write(body)
+	return is2xx, nil
 }
 
 // substitutePathPlaceholders replaces {organizationId}, {projectId}, {environmentId}, {serviceId}
@@ -192,8 +223,8 @@ func runAPI(cmd *cobra.Command, args []string) {
 	// Parse headers (format already validated)
 	parsedHeaders := make(map[string]string)
 	for _, h := range apiHeaders {
-		idx := strings.Index(h, ": ")
-		parsedHeaders[h[:idx]] = h[idx+2:]
+		idx := strings.Index(h, ":")
+		parsedHeaders[h[:idx]] = strings.TrimPrefix(h[idx+1:], " ")
 	}
 
 	// Parse fields (format already validated)
