@@ -34,8 +34,8 @@ func captureOutput(fn func()) (stdout string, stderr string) {
 
 	fn()
 
-	wOut.Close()
-	wErr.Close()
+	_ = wOut.Close()
+	_ = wErr.Close()
 
 	outBuf, _ := io.ReadAll(rOut)
 	errBuf, _ := io.ReadAll(rErr)
@@ -108,7 +108,7 @@ func TestAPIPostStdin(t *testing.T) {
 	// Replace stdin
 	r, w, _ := os.Pipe()
 	_, _ = w.WriteString(requestBody)
-	w.Close()
+	_ = w.Close()
 	oldStdin := os.Stdin
 	os.Stdin = r
 	defer func() { os.Stdin = oldStdin }()
@@ -177,7 +177,7 @@ func TestAPINon2xx(t *testing.T) {
 	req, _ := http.NewRequest("GET", "https://api.qovery.com/missing-resource", nil)
 	resp, err := client.Do(req)
 	assert.Nil(t, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var outBuf, errBuf bytes.Buffer
 	ok, writeErr := writeResponse(resp, false, &outBuf, &errBuf)
@@ -204,7 +204,7 @@ func TestAPIIncludeFlag(t *testing.T) {
 	req, _ := http.NewRequest("GET", "https://api.qovery.com/organization", nil)
 	resp, err := client.Do(req)
 	assert.Nil(t, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var outBuf, errBuf bytes.Buffer
 	ok, writeErr := writeResponse(resp, true, &outBuf, &errBuf)

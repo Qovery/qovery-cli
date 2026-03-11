@@ -93,7 +93,7 @@ func validateAPIArgs(endpoint, method, input string, fields, headers []string) e
 		return fmt.Errorf("invalid HTTP method %q: must be one of GET, POST, PUT, PATCH, DELETE", method)
 	}
 	for _, h := range headers {
-		if strings.Index(h, ": ") == -1 {
+		if !strings.Contains(h, ": ") {
 			return fmt.Errorf("invalid header %q: must be in 'Key: Value' format", h)
 		}
 	}
@@ -116,7 +116,7 @@ func validateAPIArgs(endpoint, method, input string, fields, headers []string) e
 // Returns true on success (2xx), false on error response.
 func writeResponse(resp *http.Response, include bool, stdout, stderr io.Writer) (bool, error) {
 	if include {
-		fmt.Fprintf(stdout, "HTTP/%d.%d %s\n", resp.ProtoMajor, resp.ProtoMinor, resp.Status)
+		_, _ = fmt.Fprintf(stdout, "HTTP/%d.%d %s\n", resp.ProtoMajor, resp.ProtoMinor, resp.Status)
 		headerKeys := make([]string, 0, len(resp.Header))
 		for k := range resp.Header {
 			headerKeys = append(headerKeys, k)
@@ -124,10 +124,10 @@ func writeResponse(resp *http.Response, include bool, stdout, stderr io.Writer) 
 		sort.Strings(headerKeys)
 		for _, k := range headerKeys {
 			for _, v := range resp.Header[k] {
-				fmt.Fprintf(stdout, "%s: %s\n", k, v)
+				_, _ = fmt.Fprintf(stdout, "%s: %s\n", k, v)
 			}
 		}
-		fmt.Fprintln(stdout)
+		_, _ = fmt.Fprintln(stdout)
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -272,7 +272,7 @@ func runAPI(cmd *cobra.Command, args []string) {
 		utils.PrintlnError(err)
 		os.Exit(1)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	ok, err := writeResponse(resp, apiInclude, os.Stdout, os.Stderr)
 	if err != nil {
