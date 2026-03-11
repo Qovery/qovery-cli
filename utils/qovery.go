@@ -63,16 +63,18 @@ func CheckError(err error) {
 	}
 }
 
+func GetAPIBaseURL() string {
+	if url := os.Getenv("QOVERY_API_URL"); url != "" {
+		return strings.TrimRight(url, "/")
+	}
+	return "https://api.qovery.com"
+}
+
 func GetQoveryClient(tokenType AccessTokenType, token AccessToken) *qovery.APIClient {
 	conf := qovery.NewConfiguration()
 	conf.UserAgent = "CLI " + Version
 	if url := os.Getenv("QOVERY_API_URL"); url != "" {
-		conf.Servers = qovery.ServerConfigurations{
-			{
-				URL:         url,
-				Description: "No description provided",
-			},
-		}
+		conf.Servers = qovery.ServerConfigurations{{URL: GetAPIBaseURL(), Description: "No description provided"}}
 	}
 	conf.DefaultHeader["Authorization"] = GetAuthorizationHeaderValue(tokenType, token)
 	conf.Debug = variable.Verbose
