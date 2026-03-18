@@ -10,10 +10,14 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/qovery/qovery-cli/utils"
 )
+
+var uuidRegex = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
+var uuidWithTimestampRegex = regexp.MustCompile(`^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-\d+$`)
 
 type ArchiveTagsResponse struct {
 	Key   string
@@ -26,13 +30,20 @@ type ArchiveResponse struct {
 }
 
 func DownloadS3Archive(executionId string, directory string) {
+	if matches := uuidWithTimestampRegex.FindStringSubmatch(executionId); matches != nil {
+		log.Warnf("Execution id '%s' contains a timestamp suffix, stripping it automatically", executionId)
+		executionId = matches[1]
+	} else if !uuidRegex.MatchString(executionId) {
+		log.Errorf("Invalid execution id format: '%s'. Expected a UUID (e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)", executionId)
+		return
+	}
+
 	fileName := executionId + ".tgz"
 	res := download(utils.GetAdminUrl()+"/getS3ArchiveObject", fileName)
 
 	if !strings.Contains(res.Status, "200") {
 		result, _ := io.ReadAll(res.Body)
 		log.Errorf("Could not download archive for key %s: %s. %s", fileName, res.Status, string(result))
-		log.Info("For cluster execution id be sure to remove the last part (it's a timestamp)")
 		return
 	}
 
