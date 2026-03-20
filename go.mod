@@ -9,7 +9,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/appscode/go-querystring v0.0.0-20170504095604-0126cfb3f1dc
 	github.com/containerd/console v1.0.5
-	github.com/fatih/color v1.18.0
+	github.com/fatih/color v1.19.0
 	github.com/go-errors/errors v1.5.1
 	github.com/go-jose/go-jose/v4 v4.1.3
 	github.com/golang-jwt/jwt/v5 v5.3.0
@@ -31,7 +31,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/tonistiigi/go-rosetta v0.0.0-20220804170347-3f4430f2d346
 	github.com/xlab/treeprint v1.2.0
-	golang.org/x/sys v0.40.0
+	golang.org/x/sys v0.42.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.35.0
 	k8s.io/client-go v0.35.0
