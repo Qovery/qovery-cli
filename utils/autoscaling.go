@@ -15,9 +15,10 @@ func ConvertAutoscalingResponseToRequest(resp *qovery.AutoscalingPolicyResponse)
 
 	var scalers []qovery.KedaScalerRequest
 	for _, s := range kedaResp.Scalers {
+		enabled := s.Enabled
 		scaler := qovery.KedaScalerRequest{
 			ScalerType: s.ScalerType,
-			Enabled:    &s.Enabled,
+			Enabled:    &enabled,
 			Role:       s.Role,
 			ConfigJson: s.ConfigJson,
 			ConfigYaml: s.ConfigYaml.Get(),
