@@ -99,6 +99,7 @@ var containerUpdateCmd = &cobra.Command{
 			Healthchecks:        container.Healthchecks,
 			AutoPreview:         utils.Bool(container.AutoPreview),
 			AutoDeploy:          *qovery.NewNullableBool(container.AutoDeploy),
+			Autoscaling:         utils.ConvertAutoscalingResponseToRequest(container.Autoscaling),
 		}
 
 		_, res, err := client.ContainerMainCallsAPI.EditContainer(context.Background(), container.Id).ContainerRequest(req).Execute()

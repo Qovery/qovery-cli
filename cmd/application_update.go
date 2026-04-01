@@ -84,6 +84,7 @@ var applicationUpdateCmd = &cobra.Command{
 			Arguments:           application.Arguments,
 			Entrypoint:          application.Entrypoint,
 			AutoDeploy:          *qovery.NewNullableBool(application.AutoDeploy),
+			Autoscaling:         utils.ConvertAutoscalingResponseToRequest(application.Autoscaling),
 		}
 
 		if applicationBranch != "" {
