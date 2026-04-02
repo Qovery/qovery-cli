@@ -51,3 +51,20 @@ func RefreshAccessToken(token RefreshToken) (AccessToken, error) {
 
 	return accessToken, nil
 }
+
+// ForceRefreshAccessToken forces a token refresh using the stored refresh token.
+// Use this when the current access token is rejected by the websocket-gateway
+// despite passing the CLI's standard validation (ListOrganization).
+func ForceRefreshAccessToken() (AccessToken, error) {
+	context, err := GetCurrentContext()
+	if err != nil {
+		return "", err
+	}
+
+	refreshToken := context.RefreshToken
+	if strings.TrimSpace(string(refreshToken)) == "" {
+		return "", errors.New("no refresh token available. Please run 'qovery auth' to re-authenticate")
+	}
+
+	return RefreshAccessToken(refreshToken)
+}

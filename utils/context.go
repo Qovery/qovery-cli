@@ -307,6 +307,15 @@ func checkOrgaValid(orgaList *qovery.OrganizationResponseList) error {
 	}
 }
 
+// IsUsingEnvToken returns true if the CLI is using a token from an environment variable
+// (QOVERY_CLI_ACCESS_TOKEN or Q_CLI_ACCESS_TOKEN). When a token comes from an env var,
+// GetAccessToken() always returns it directly, ignoring the stored context. This means
+// ForceRefreshAccessToken (which updates the stored context) cannot fix auth failures
+// for env-provided tokens, whether they are API tokens or JWTs.
+func IsUsingEnvToken() bool {
+	return os.Getenv("QOVERY_CLI_ACCESS_TOKEN") != "" || os.Getenv("Q_CLI_ACCESS_TOKEN") != ""
+}
+
 func GetAccessToken() (AccessTokenType, AccessToken, error) {
 	apiToken := os.Getenv("QOVERY_CLI_ACCESS_TOKEN")
 	if apiToken == "" {

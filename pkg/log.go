@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/qovery/qovery-cli/utils"
@@ -28,9 +29,16 @@ type LogMessage struct {
 }
 
 func ExecLog(req *LogRequest) {
-	wsConn, err := createLogWebsocket(req)
+	wsConn, resp, err := createLogWebsocket(req)
 	if err != nil {
-		log.Fatal("error while creating websocket connection", err)
+		if !utils.IsUsingEnvToken() && IsAuthDialError(resp) {
+			if _, refreshErr := utils.ForceRefreshAccessToken(); refreshErr == nil {
+				wsConn, _, err = createLogWebsocket(req)
+			}
+		}
+		if err != nil {
+			log.Fatal(ConnectionFailedMessage(err))
+		}
 	}
 	defer func() {
 		if err := wsConn.Close(); err != nil {
@@ -42,7 +50,14 @@ func ExecLog(req *LogRequest) {
 	for {
 		_, msg, err := wsConn.ReadMessage()
 		if err != nil {
-			if e, ok := err.(*websocket.CloseError); ok {
+			if IsPermanentCloseError(err) {
+				log.Fatal(PermanentErrorMessage(err, "Logs"))
+			}
+			if IsInternalServerError(err) {
+				log.Fatal(ServiceUnavailableMessage("Logs"))
+			}
+			var e *websocket.CloseError
+			if errors.As(err, &e) {
 				log.Error("connection closed by server: ", e)
 				return
 			}
@@ -62,7 +77,7 @@ func ExecLog(req *LogRequest) {
 	}
 }
 
-func createLogWebsocket(req *LogRequest) (*websocket.Conn, error) {
+func createLogWebsocket(req *LogRequest) (*websocket.Conn, *http.Response, error) {
 	wsURL, err := url.Parse(fmt.Sprintf(
 		"%s/service/logs?service=%s&cluster=%s&environment=%s&organization=%s&project=%s",
 		utils.WebsocketUrl(),
@@ -73,20 +88,20 @@ func createLogWebsocket(req *LogRequest) (*websocket.Conn, error) {
 		req.ProjectID,
 	))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	headers := http.Header{"Authorization": {utils.GetAuthorizationHeaderValue(tokenType, token)}}
-	wsConn, _, err := websocket.DefaultDialer.Dial(wsURL.String(), headers)
+	wsConn, resp, err := websocket.DefaultDialer.Dial(wsURL.String(), headers)
 	if err != nil {
-		return nil, err
+		return nil, resp, err
 	}
-	return wsConn, nil
+	return wsConn, resp, nil
 }
 
 type Timestamp struct {

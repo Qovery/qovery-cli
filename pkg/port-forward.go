@@ -40,6 +40,9 @@ func (w WebsocketPortForward) Read(p []byte) (n int, err error) {
 	for {
 		msgType, msg, err := w.ws.ReadMessage()
 		if err != nil {
+			if IsPermanentCloseError(err) {
+				log.Error(PermanentErrorMessage(err, "Port-forward"))
+			}
 			return 0, err
 		}
 
@@ -55,32 +58,32 @@ func (w WebsocketPortForward) Read(p []byte) (n int, err error) {
 	}
 }
 
-func mkWebsocketConn(req *PortForwardRequest) (*WebsocketPortForward, error) {
+func mkWebsocketConn(req *PortForwardRequest) (*WebsocketPortForward, *http.Response, error) {
 	command, err := query.Values(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	wsURL, err := url.Parse(fmt.Sprintf("%s/shell/portforward", utils.WebsocketUrl()))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	pattern := regexp.MustCompile("%5B([0-9]+)%5D=")
 	wsURL.RawQuery = pattern.ReplaceAllString(command.Encode(), "[${1}]=")
 
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	headers := http.Header{"Authorization": {utils.GetAuthorizationHeaderValue(tokenType, token)}}
-	wsConn, _, err := websocket.DefaultDialer.Dial(wsURL.String(), headers)
+	wsConn, resp, err := websocket.DefaultDialer.Dial(wsURL.String(), headers)
 	if err != nil {
-		return nil, err
+		return nil, resp, err
 	}
 
 	ws := WebsocketPortForward{ws: wsConn}
-	return &ws, nil
+	return &ws, resp, nil
 }
 
 func ExecPortForward(req *PortForwardRequest) {
@@ -122,9 +125,17 @@ func handleConnection(con net.Conn, req *PortForwardRequest) {
 		}
 	}()
 
-	wsConn, err := mkWebsocketConn(req)
+	wsConn, resp, err := mkWebsocketConn(req)
 	if err != nil {
-		log.Fatal("error while creating websocket connection", err)
+		if !utils.IsUsingEnvToken() && IsAuthDialError(resp) {
+			if _, refreshErr := utils.ForceRefreshAccessToken(); refreshErr == nil {
+				wsConn, _, err = mkWebsocketConn(req)
+			}
+		}
+		if err != nil {
+			log.Error(ConnectionFailedMessage(err))
+			return
+		}
 	}
 	defer func() {
 		if err := wsConn.ws.Close(); err != nil {
