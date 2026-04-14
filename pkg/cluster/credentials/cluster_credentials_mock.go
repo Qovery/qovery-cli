@@ -5,11 +5,12 @@ package credentials
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+
 	"github.com/google/uuid"
 	"github.com/jarcoal/httpmock"
 	"github.com/qovery/qovery-client-go"
-	"net/http"
-	"reflect"
 )
 
 // Stores credentials on POST for assert test purposes
@@ -40,25 +41,39 @@ func MockOnPremiseCreateCredentials(organization *qovery.Organization) {
 }
 
 func mockCreateCloudProviderCredentials[T any](organization *qovery.Organization, cloudProviderTypeUrl string) {
-	var url = fmt.Sprint("https://api.qovery.com/organization/", organization.Id, "/", cloudProviderTypeUrl, "/credentials")
+	url := fmt.Sprint("https://api.qovery.com/organization/", organization.Id, "/", cloudProviderTypeUrl, "/credentials")
 	httpmock.RegisterResponder("POST", url,
 		func(req *http.Request) (*http.Response, error) {
+			// Read body bytes so we can decode twice (once into T, once into a map for name extraction)
+			bodyBytes, err := io.ReadAll(req.Body)
+			if err != nil {
+				return httpmock.NewStringResponse(400, ""), nil
+			}
 			// Decode & store the credentials request
 			var credentials T
-			if err := json.NewDecoder(req.Body).Decode(&credentials); err != nil {
+			if err := json.Unmarshal(bodyBytes, &credentials); err != nil {
 				return httpmock.NewStringResponse(400, ""), nil
 			}
 			generatedUuid := uuid.NewString()
 			allCredentialsById[generatedUuid] = credentials
 
-			var credentialsName = reflect.ValueOf(credentials).FieldByName("Name").String()
+			// Extract name from the raw JSON (works for both flat and oneOf wrapper types)
+			var rawMap map[string]interface{}
+			if err := json.Unmarshal(bodyBytes, &rawMap); err != nil {
+				return httpmock.NewStringResponse(400, ""), nil
+			}
+			var credentialsName string
+			if name, ok := rawMap["name"].(string); ok {
+				credentialsName = name
+			}
 			var response qovery.ClusterCredentials
 			switch cloudProviderTypeUrl {
 			case "aws":
 				response = qovery.ClusterCredentials{AwsStaticClusterCredentials: &qovery.AwsStaticClusterCredentials{
-					Id:         generatedUuid,
-					Name:       credentialsName,
-					ObjectType: "AWS",
+					Id:          generatedUuid,
+					Name:        credentialsName,
+					AccessKeyId: "",
+					ObjectType:  "AWS",
 				}}
 			case "scaleway":
 				response = qovery.ClusterCredentials{ScalewayClusterCredentials: &qovery.ScalewayClusterCredentials{
@@ -82,7 +97,7 @@ func mockCreateCloudProviderCredentials[T any](organization *qovery.Organization
 }
 
 func MockListCloudProviderCredentials(organization *qovery.Organization, results *qovery.ClusterCredentialsResponseList, cloudProviderTypeUrl string) {
-	var url = fmt.Sprint("https://api.qovery.com/organization/", organization.Id, "/", cloudProviderTypeUrl, "/credentials")
+	url := fmt.Sprint("https://api.qovery.com/organization/", organization.Id, "/", cloudProviderTypeUrl, "/credentials")
 	httpmock.RegisterResponder("GET", url,
 		func(req *http.Request) (*http.Response, error) {
 			resp, err := httpmock.NewJsonResponse(200, results)
@@ -101,6 +116,7 @@ type ClusterCredentialsServiceMock struct {
 func (mock *ClusterCredentialsServiceMock) ListClusterCredentials(organizationID string, cloudProviderType qovery.CloudProviderEnum) (*qovery.ClusterCredentialsResponseList, error) {
 	return mock.ResultListClusterCredentials()
 }
+
 func (mock *ClusterCredentialsServiceMock) AskToCreateCredentials(organizationID string, cloudProviderType qovery.CloudProviderEnum) (*qovery.ClusterCredentials, error) {
 	return mock.ResultAskToCreateCredentials()
 }

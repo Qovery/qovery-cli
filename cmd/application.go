@@ -8,7 +8,7 @@ import (
 
 var applicationName string
 var applicationNames string
-var applicationCommitId string
+var applicationCommitID string
 var applicationBranch string
 var targetApplicationName string
 var applicationCustomDomain string

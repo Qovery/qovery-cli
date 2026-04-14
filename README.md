@@ -15,14 +15,17 @@ You can use `qovery auth` to authenticate with the CLI or use `Q_CLI_ACCESS_TOKE
 ## Versions
 
 You can install the latest version of the CLI:
-* On Mac: with brew `brew install qovery-cli`
-* On ArchLinux: with `yay qovery-cli`
-* On Windows: with scoop `scoop install qovery-cli`
-* On Docker: at the address `public.ecr.aws/r3m4q3r9/qovery-cli`
-* From binary: https://github.com/Qovery/qovery-cli/releases
 
+- On Mac: with brew `brew install qovery-cli`
+- On ArchLinux: with `yay qovery-cli`
+- On Windows: with scoop `scoop install qovery-cli`
+- On Docker: at the address `public.ecr.aws/r3m4q3r9/qovery-cli`
+- From binary: <https://github.com/Qovery/qovery-cli/releases>
 
 # Update deps
+
+```sh
 go get -u github.com/qovery/qovery-client-go
 go build
 go fmt .
+```

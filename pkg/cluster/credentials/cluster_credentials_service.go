@@ -116,6 +116,7 @@ func (service *ClusterCredentialsServiceImpl) AskToCreateCredentials(
 
 		creds, resp, err := service.client.CloudProviderCredentialsAPI.CreateAWSCredentials(context.Background(), organizationID).AwsCredentialsRequest(qovery.AwsCredentialsRequest{
 			AwsStaticCredentialsRequest: &qovery.AwsStaticCredentialsRequest{
+				Type:            "AWS_STATIC",
 				Name:            credentialsName,
 				AccessKeyId:     accessKey,
 				SecretAccessKey: secretKey,
