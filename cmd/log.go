@@ -30,7 +30,6 @@ func getLogs() string {
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 	client := utils.GetQoveryClient(tokenType, token)
 
@@ -87,12 +86,10 @@ func getLogs() string {
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 	if res.StatusCode >= 400 {
 		utils.PrintlnError(errors.New("Received " + res.Status + " response while fetching environment. "))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	req := pkg.LogRequest{

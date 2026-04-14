@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 	"context"
 
 	"github.com/qovery/qovery-cli/variable"
@@ -1215,9 +1216,16 @@ func GetClusterStatusTextWithColor(s qovery.ClusterStateEnum) string {
 	return statusMsg
 }
 
+// trimName strips all Unicode whitespace (including non-breaking spaces U+00A0)
+// from both ends of s so that name comparisons are resilient to copy-paste artefacts.
+func trimName(s string) string {
+	return strings.TrimFunc(s, unicode.IsSpace)
+}
+
 func FindByOrganizationName(organizations []qovery.Organization, name string) *qovery.Organization {
+	name = trimName(name)
 	for _, o := range organizations {
-		if o.Name == name {
+		if trimName(o.Name) == name {
 			return &o
 		}
 	}
@@ -1226,8 +1234,9 @@ func FindByOrganizationName(organizations []qovery.Organization, name string) *q
 }
 
 func FindByProjectName(projects []qovery.Project, name string) *qovery.Project {
+	name = trimName(name)
 	for _, p := range projects {
-		if p.Name == name {
+		if trimName(p.Name) == name {
 			return &p
 		}
 	}
@@ -1236,8 +1245,9 @@ func FindByProjectName(projects []qovery.Project, name string) *qovery.Project {
 }
 
 func FindByEnvironmentName(environments []qovery.Environment, name string) *qovery.Environment {
+	name = trimName(name)
 	for _, e := range environments {
-		if e.Name == name {
+		if trimName(e.Name) == name {
 			return &e
 		}
 	}
@@ -1246,8 +1256,9 @@ func FindByEnvironmentName(environments []qovery.Environment, name string) *qove
 }
 
 func FindByApplicationName(applications []qovery.Application, name string) *qovery.Application {
+	name = trimName(name)
 	for _, a := range applications {
-		if a.Name == name {
+		if trimName(a.Name) == name {
 			return &a
 		}
 	}
@@ -1256,8 +1267,9 @@ func FindByApplicationName(applications []qovery.Application, name string) *qove
 }
 
 func FindByClusterName(clusters []qovery.Cluster, name string) *qovery.Cluster {
+	name = trimName(name)
 	for _, c := range clusters {
-		if c.Name == name {
+		if trimName(c.Name) == name {
 			return &c
 		}
 	}
@@ -1266,8 +1278,9 @@ func FindByClusterName(clusters []qovery.Cluster, name string) *qovery.Cluster {
 }
 
 func FindByContainerName(containers []qovery.ContainerResponse, name string) *qovery.ContainerResponse {
+	name = trimName(name)
 	for _, c := range containers {
-		if c.Name == name {
+		if trimName(c.Name) == name {
 			return &c
 		}
 	}
@@ -1276,11 +1289,12 @@ func FindByContainerName(containers []qovery.ContainerResponse, name string) *qo
 }
 
 func FindByJobName(jobs []qovery.JobResponse, name string) *qovery.JobResponse {
+	name = trimName(name)
 	for _, j := range jobs {
-		if j.CronJobResponse != nil && j.CronJobResponse.Name == name {
+		if j.CronJobResponse != nil && trimName(j.CronJobResponse.Name) == name {
 			return &j
 		}
-		if j.LifecycleJobResponse != nil && j.LifecycleJobResponse.Name == name {
+		if j.LifecycleJobResponse != nil && trimName(j.LifecycleJobResponse.Name) == name {
 			return &j
 		}
 	}
@@ -1289,8 +1303,9 @@ func FindByJobName(jobs []qovery.JobResponse, name string) *qovery.JobResponse {
 }
 
 func FindByDatabaseName(databases []qovery.Database, name string) *qovery.Database {
+	name = trimName(name)
 	for _, d := range databases {
-		if d.Name == name {
+		if trimName(d.Name) == name {
 			return &d
 		}
 	}
@@ -1299,8 +1314,9 @@ func FindByDatabaseName(databases []qovery.Database, name string) *qovery.Databa
 }
 
 func FindByHelmName(helms []qovery.HelmResponse, name string) *qovery.HelmResponse {
+	name = trimName(name)
 	for _, h := range helms {
-		if h.Name == name {
+		if trimName(h.Name) == name {
 			return &h
 		}
 	}
@@ -1309,8 +1325,9 @@ func FindByHelmName(helms []qovery.HelmResponse, name string) *qovery.HelmRespon
 }
 
 func FindByTerraformName(terraforms []qovery.TerraformResponse, name string) *qovery.TerraformResponse {
+	name = trimName(name)
 	for _, t := range terraforms {
-		if t.Name == name {
+		if trimName(t.Name) == name {
 			return &t
 		}
 	}
