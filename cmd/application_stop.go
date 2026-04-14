@@ -99,6 +99,6 @@ func init() {
 	applicationStopCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	applicationStopCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
 	applicationStopCmd.Flags().StringVarP(&applicationNames, "applications", "", "", "Application Names (comma separated) Example: --applications \"app1,app2,app3\"")
-	applicationStopCmd.Flags().StringVarP(&applicationCommitId, "commit-id", "c", "", "Application Commit ID")
+	applicationStopCmd.Flags().StringVarP(&applicationCommitID, "commit-id", "c", "", "Application Commit ID")
 	applicationStopCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch application status until it's ready or an error occurs")
 }

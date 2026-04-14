@@ -36,7 +36,7 @@ func init() {
 	applicationRedeployCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	applicationRedeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	applicationRedeployCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
-	applicationRedeployCmd.Flags().StringVarP(&applicationCommitId, "commit-id", "c", "", "Application Commit ID")
+	applicationRedeployCmd.Flags().StringVarP(&applicationCommitID, "commit-id", "c", "", "Application Commit ID")
 	applicationRedeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch application status until it's ready or an error occurs")
 
 	_ = applicationRedeployCmd.MarkFlagRequired("application")
