@@ -8,32 +8,32 @@ import (
 )
 
 var (
-	organizationIds      []string
-	allowFailedClusters  bool
+	organizationIds     []string
+	allowFailedClusters bool
 
 	adminDeleteOrgaCmd = &cobra.Command{
 		Use:   "delete",
 		Short: "Delete one or more organizations by their IDs",
-		Long: `Delete one or more organizations by providing their IDs.
+		Long: `Delete one or more organizations by providing their IDs. Clusters must be deleted before via the force-delete-cluster command
 
 Examples:
   # Delete a single organization
-  qovery admin organization delete --organization-id org-123
+  qovery admin delete --organization-id org-123
 
   # Delete multiple organizations (comma-separated)
-  qovery admin organization delete --organization-id "org-123,org-456,org-789"
+  qovery admin delete --organization-id "org-123,org-456,org-789"
 
   # Delete multiple organizations (repeated flag)
-  qovery admin organization delete --organization-id org-123 --organization-id org-456
+  qovery admin delete --organization-id org-123 --organization-id org-456
 
   # Mix both formats
-  qovery admin organization delete -o "org-123,org-456" -o org-789
+  qovery admin delete -o "org-123,org-456" -o org-789
 
   # Allow deletion of organizations with failed clusters
-  qovery admin organization delete -o org-123 --allow-failed-clusters
+  qovery admin delete -o org-123 --allow-failed-clusters
 
   # Disable dry-run to actually delete
-  qovery admin organization delete -o org-123 --disable-dry-run`,
+  qovery admin delete -o org-123 --disable-dry-run`,
 		Run: func(cmd *cobra.Command, args []string) {
 			deleteOrganizations()
 		},
