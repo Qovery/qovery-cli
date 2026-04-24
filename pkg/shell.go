@@ -19,9 +19,11 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/sys/unix"
 )
 
 const StdinBufferSize = 4096
+const ShellInputQueueSize = 64
 const ReconnectDelay = 5 * time.Second
 const PingInterval = 30 * time.Second
 const ReadTimeout = 60 * time.Second
@@ -55,9 +57,10 @@ func ExecShell(req TerminalSize, path string) {
 	var wg sync.WaitGroup
 	var userCancelled atomic.Bool
 	var normalExit atomic.Bool
+	var shellConnected atomic.Bool
 
 	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, syscall.SIGTERM)
+	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
 		<-signalChan
 		userCancelled.Store(true)
@@ -68,6 +71,10 @@ func ExecShell(req TerminalSize, path string) {
 	defer func() {
 		_ = currentConsole.Reset()
 	}()
+	inputConsole, err := duplicateConsole(currentConsole)
+	if err != nil {
+		log.Fatal("error while duplicating console", err)
+	}
 
 	if err := currentConsole.SetRaw(); err != nil {
 		log.Fatal("error while setting up console", err)
@@ -79,9 +86,12 @@ func ExecShell(req TerminalSize, path string) {
 	}
 	req.SetTtySize(winSize.Width, winSize.Height)
 
-	stdIn := make(chan []byte)
+	stdIn := make(chan []byte, ShellInputQueueSize)
 	wg.Add(1)
-	go readUserConsole(ctx, cancel, currentConsole, stdIn, &normalExit, &wg)
+	go readUserConsole(ctx, cancel, inputConsole, stdIn, &shellConnected, &userCancelled, &normalExit, &wg)
+
+	var tokenRefreshed bool // for websocket close errors (1008)
+	var dialRefreshed bool  // for HTTP-level dial failures (401/403)
 
 	for {
 		if ctx.Err() != nil || userCancelled.Load() || normalExit.Load() {
@@ -91,22 +101,39 @@ func ExecShell(req TerminalSize, path string) {
 
 		log.Info("Attempting to (re)connect to WebSocket")
 
-		wsConn, err := createWebsocketConn(req, path)
+		wsConn, resp, err := createWebsocketConn(req, path)
 		if err != nil {
-			log.Errorf("WebSocket connection failed: %v", err)
-			if ctx.Err() != nil || userCancelled.Load() || normalExit.Load() {
-				log.Info("User cancelled or shell exited during connection attempt.")
-				break
+			// Only refresh on proven auth failure (401/403), not on transient network errors.
+			// Refreshing on arbitrary failures could corrupt a still-valid stored token.
+			if !dialRefreshed && !utils.IsUsingEnvToken() && IsAuthDialError(resp) {
+				if _, refreshErr := utils.ForceRefreshAccessToken(); refreshErr == nil {
+					dialRefreshed = true
+					wsConn, _, err = createWebsocketConn(req, path)
+				}
 			}
-			time.Sleep(ReconnectDelay)
-			continue
+			if err != nil {
+				log.Error(ConnectionFailedMessage(err))
+				if ctx.Err() != nil || userCancelled.Load() || normalExit.Load() {
+					log.Info("User cancelled or shell exited during connection attempt.")
+					break
+				}
+				time.Sleep(ReconnectDelay)
+				continue
+			}
 		}
 
-		done := make(chan struct{})
+		// Connection succeeded — reset refresh guards so future auth failures can retry once
+		dialRefreshed = false
+		tokenRefreshed = false
+		shellConnected.Store(true)
+
+		done := make(chan error, 1)
 		wg.Add(1)
 		go readWebsocketConnection(ctx, wsConn, currentConsole, done, &normalExit, &wg)
 
 		pingTicker := time.NewTicker(PingInterval)
+
+		var wsCloseErr error
 
 	wsLoop:
 		for {
@@ -114,7 +141,7 @@ func ExecShell(req TerminalSize, path string) {
 			case <-ctx.Done():
 				_ = wsConn.Close()
 				break wsLoop
-			case <-done:
+			case wsCloseErr = <-done:
 				_ = wsConn.Close()
 				break wsLoop
 			case msg := <-stdIn:
@@ -137,54 +164,107 @@ func ExecShell(req TerminalSize, path string) {
 		}
 
 		pingTicker.Stop()
+		shellConnected.Store(false)
+
+		// If wsCloseErr is nil (write/ping error broke the loop before we read from done),
+		// try to drain the done channel to capture the real close error from the server.
+		if wsCloseErr == nil {
+			select {
+			case wsCloseErr = <-done:
+			case <-time.After(500 * time.Millisecond):
+			}
+		}
 
 		// Cancel the context to notify readUserConsole
 		if normalExit.Load() || userCancelled.Load() {
 			cancel()
 		}
 
+		// On permanent errors: try token refresh once, then abort if still failing
+		if IsPermanentCloseError(wsCloseErr) {
+			if shouldRefreshShellCredentials(wsCloseErr, tokenRefreshed) {
+				log.Info("Websocket authentication failed. Attempting to refresh credentials...")
+				if _, err := utils.ForceRefreshAccessToken(); err == nil {
+					tokenRefreshed = true //nolint:ineffassign // read by shouldRefreshShellCredentials on next loop iteration if dial fails before reset
+					time.Sleep(ReconnectDelay)
+					continue
+				}
+			}
+			log.Error(PermanentErrorMessage(wsCloseErr, "Shell"))
+			break
+		}
+
 		// Do NOT close stdIn — readUserConsole owns it and it is used across reconnects.
 		time.Sleep(ReconnectDelay)
 	}
 
+	// Ensure context is cancelled so readUserConsole can exit
+	cancel()
+	_ = inputConsole.Close()
 	wg.Wait()
 }
 
-func createWebsocketConn(req interface{}, path string) (*websocket.Conn, error) {
+func shouldRefreshShellCredentials(err error, alreadyRefreshed bool) bool {
+	if alreadyRefreshed || utils.IsUsingEnvToken() {
+		return false
+	}
+	// Only refresh on auth/policy errors (1008), not permission errors (1007)
+	// where the token has correct identity but insufficient role
+	var closeErr *websocket.CloseError
+	if !errors.As(err, &closeErr) {
+		return false
+	}
+	return closeErr.Code == 1008
+}
+
+func createWebsocketConn(req interface{}, path string) (*websocket.Conn, *http.Response, error) {
 	command, err := query.Values(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	wsURL, err := url.Parse(fmt.Sprintf("%s%s", utils.WebsocketUrl(), path))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	pattern := regexp.MustCompile("%5B([0-9]+)%5D=")
 	wsURL.RawQuery = pattern.ReplaceAllString(command.Encode(), "[${1}]=")
 
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	headers := http.Header{"Authorization": {utils.GetAuthorizationHeaderValue(tokenType, token)}}
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL.String(), headers)
-	return conn, err
+	conn, resp, err := websocket.DefaultDialer.Dial(wsURL.String(), headers)
+	return conn, resp, err
 }
 
-func readWebsocketConnection(ctx context.Context, wsConn *websocket.Conn, currentConsole console.Console, done chan struct{}, normalExit *atomic.Bool, wg *sync.WaitGroup) {
+func duplicateConsole(c console.Console) (console.Console, error) {
+	dupFd, err := unix.Dup(int(c.Fd()))
+	if err != nil {
+		return nil, err
+	}
+
+	dupFile := os.NewFile(uintptr(dupFd), c.Name())
+	dupConsole, err := console.ConsoleFromFile(dupFile)
+	if err != nil {
+		_ = dupFile.Close()
+		return nil, err
+	}
+
+	return dupConsole, nil
+}
+
+func readWebsocketConnection(ctx context.Context, wsConn *websocket.Conn, currentConsole console.Console, done chan error, normalExit *atomic.Bool, wg *sync.WaitGroup) {
 	defer wg.Done()
 
+	var lastErr error
 	var once sync.Once
 	safeClose := func() {
 		once.Do(func() {
-			select {
-			case <-done:
-				// already closed
-			default:
-				close(done)
-			}
+			done <- lastErr
+			close(done)
 		})
 	}
 	defer safeClose()
@@ -201,12 +281,16 @@ func readWebsocketConnection(ctx context.Context, wsConn *websocket.Conn, curren
 					if e.Code == websocket.CloseNormalClosure {
 						log.Info("** shell terminated bye **")
 						normalExit.Store(true)
-					} else {
+					} else if IsInternalServerError(err) {
+						log.Errorf("%s Retrying...", ServiceUnavailableMessage("Shell"))
+					} else if !IsPermanentCloseError(err) {
 						log.Errorf("connection closed by server: %v", e)
 					}
+					lastErr = err
 					return
 				}
 				log.Errorf("error while reading on websocket: %v", err)
+				lastErr = err
 				return
 			}
 
@@ -227,7 +311,7 @@ func readWebsocketConnection(ctx context.Context, wsConn *websocket.Conn, curren
 	}
 }
 
-func readUserConsole(ctx context.Context, cancel context.CancelFunc, currentConsole console.Console, stdIn chan []byte, normalExit *atomic.Bool, wg *sync.WaitGroup) {
+func readUserConsole(ctx context.Context, cancel context.CancelFunc, currentConsole console.Console, stdIn chan []byte, shellConnected *atomic.Bool, userCancelled *atomic.Bool, normalExit *atomic.Bool, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	buffer := make([]byte, StdinBufferSize)
@@ -246,15 +330,14 @@ func readUserConsole(ctx context.Context, cancel context.CancelFunc, currentCons
 			return
 		}
 
-		// Do not handle Ctrl^C in order to be able to kill commands inside the container
-		// if count > 0 && buffer[0] == 3 { // Ctrl+C
-		// 	log.Info("Detected Ctrl+C from user input, exiting gracefully...")
-		//	cancel()
-		//	return
-		// }
-
 		// Combine pending bytes from previous read with new data
 		data := append(pendingBytes, buffer[0:count]...)
+		data, shouldExit := handleLocalConsoleControlInput(data, shellConnected.Load())
+		if shouldExit {
+			userCancelled.Store(true)
+			cancel()
+			return
+		}
 
 		// Handle fragmentation of bracketed paste sequences
 		// Instead of filtering them out, we ensure they are sent complete
@@ -269,6 +352,19 @@ func readUserConsole(ctx context.Context, cancel context.CancelFunc, currentCons
 			}
 		}
 	}
+}
+
+func handleLocalConsoleControlInput(data []byte, shellConnected bool) ([]byte, bool) {
+	if shellConnected {
+		return data, false
+	}
+
+	for _, b := range data {
+		if b == 3 { // Ctrl+C
+			return nil, true
+		}
+	}
+	return data, false
 }
 
 // handleBracketedPasteFragmentation ensures bracketed paste sequences are sent complete
