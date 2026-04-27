@@ -12,8 +12,9 @@ import (
 )
 
 var (
-	rawFormat  bool
-	logJobName string
+	rawFormat      bool
+	logJobName     string
+	logServiceName string
 )
 
 var logCmd = &cobra.Command{
@@ -74,6 +75,13 @@ func getLogs() string {
 		} else if job.LifecycleJobResponse != nil {
 			service = &utils.Service{ID: utils.Id(job.LifecycleJobResponse.Id), Name: utils.Name(job.LifecycleJobResponse.Name), Type: utils.JobType}
 		}
+	case logServiceName != "":
+		svc, err := getServiceContextResourceId(client, logServiceName, envID)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+		service = svc
 	default:
 		service, err = utils.CurrentService(true)
 		if err != nil {
@@ -117,4 +125,5 @@ func init() {
 	logCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
 	logCmd.Flags().StringVarP(&databaseName, "database", "d", "", "Database Name")
 	logCmd.Flags().StringVarP(&logJobName, "job", "j", "", "Job Name")
+	logCmd.Flags().StringVarP(&logServiceName, "service", "s", "", "Service Name")
 }
