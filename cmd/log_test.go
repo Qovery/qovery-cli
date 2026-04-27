@@ -8,7 +8,7 @@ import (
 )
 
 func TestLogCmdFlags(t *testing.T) {
-	flags := []string{"organization", "project", "environment", "application", "container", "database", "job", "raw"}
+	flags := []string{"organization", "project", "environment", "application", "container", "database", "job", "service", "raw"}
 	for _, name := range flags {
 		t.Run(name, func(t *testing.T) {
 			require.NotNil(t, logCmd.Flags().Lookup(name), "flag --%s should be registered", name)
