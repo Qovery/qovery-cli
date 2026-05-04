@@ -2,23 +2,10 @@ package pkg
 
 import (
 	"errors"
-	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/gorilla/websocket"
 )
-
-// IsPermissionError returns true if the websocket close error indicates
-// a permission/authorization failure from the websocket-gateway.
-func IsPermissionError(err error) bool {
-	var closeErr *websocket.CloseError
-	if !errors.As(err, &closeErr) {
-		return false
-	}
-	return closeErr.Code == 1007 &&
-		strings.Contains(strings.ToLower(closeErr.Text), "permission")
-}
 
 // IsPermanentCloseError returns true if the websocket close error should NOT
 // be retried (permission denied, auth/policy violation).
@@ -50,6 +37,10 @@ func IsInternalServerError(err error) bool {
 // IsAgentResponseTimeout returns true if the websocket close error indicates
 // the shell-agent timed out while attempting to open a shell session in the pod.
 // This is a transient error that resolves once the pod's Kubernetes exec API is responsive again.
+//
+// The matched substring is produced by:
+//   - rust-backend/grpc-gateway/src/lib/shell_gateway.rs  (TIMEOUT_AGENT_FIRST_RESPONSE)
+//   - rust-backend/grpc-gateway/src/lib/agent_gateway.rs  (DEFAULT_TIMEOUT_FIRST_MESSAGE)
 func IsAgentResponseTimeout(err error) bool {
 	var closeErr *websocket.CloseError
 	if !errors.As(err, &closeErr) {
@@ -58,33 +49,7 @@ func IsAgentResponseTimeout(err error) bool {
 	return closeErr.Code == 1011 && strings.Contains(closeErr.Text, "exceeded for receiving agent response")
 }
 
-// PermissionDeniedMessage returns a user-friendly permission denied message for the given feature.
-func PermissionDeniedMessage(feature string) string {
-	return fmt.Sprintf("Permission denied. Your account does not have access to %s on this service. The minimum required role is Deployer. Contact your Organization admin to update your permissions.", feature)
-}
-
 // ServiceUnavailableMessage returns a user-friendly message when the cluster agent is unreachable.
 func ServiceUnavailableMessage(feature string) string {
-	return fmt.Sprintf("%s is not available. Please verify that the cluster hosting this service is running and healthy.", feature)
-}
-
-// PermanentErrorMessage returns the appropriate user-facing message for a permanent websocket error.
-func PermanentErrorMessage(err error, feature string) string {
-	if IsPermissionError(err) {
-		return PermissionDeniedMessage(feature)
-	}
-	return "Connection rejected by server. Please run 'qovery auth' to re-authenticate, or contact your Organization admin to verify your permissions."
-}
-
-// ConnectionFailedMessage returns a user-facing message when the websocket dial fails after retry.
-func ConnectionFailedMessage(err error) string {
-	return fmt.Sprintf("Error creating websocket connection. Try running 'qovery auth' to re-authenticate: %v", err)
-}
-
-// IsAuthDialError returns true if the HTTP response from the websocket handshake
-// indicates an authentication or authorization failure (401/403).
-// Only these failures justify a token refresh; other dial errors (network, DNS,
-// server down) should not trigger a refresh that could corrupt stored credentials.
-func IsAuthDialError(resp *http.Response) bool {
-	return resp != nil && (resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden)
+	return feature + " is not available. Please verify that the cluster hosting this service is running and healthy."
 }
