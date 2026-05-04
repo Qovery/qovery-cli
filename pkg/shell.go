@@ -24,7 +24,10 @@ import (
 const StdinBufferSize = 4096
 const ReconnectDelay = 5 * time.Second
 const PingInterval = 30 * time.Second
-const ReadTimeout = 60 * time.Second
+
+// ReadTimeout must be > 2 × PingInterval so that a healthy connection always receives a pong
+// before the deadline fires. The pong handler resets the deadline on every pong received.
+const ReadTimeout = 75 * time.Second
 
 type TerminalSize interface {
 	SetTtySize(width uint16, height uint16)
@@ -104,7 +107,7 @@ func ExecShell(req TerminalSize, path string) {
 
 		done := make(chan struct{})
 		wg.Add(1)
-		go readWebsocketConnection(ctx, wsConn, currentConsole, done, &normalExit, &wg)
+		go readWebsocketConnection(ctx, cancel, wsConn, currentConsole, done, &normalExit, &wg)
 
 		pingTicker := time.NewTicker(PingInterval)
 
@@ -144,7 +147,9 @@ func ExecShell(req TerminalSize, path string) {
 		}
 
 		// Do NOT close stdIn — readUserConsole owns it and it is used across reconnects.
-		time.Sleep(ReconnectDelay)
+		if ctx.Err() == nil && !normalExit.Load() && !userCancelled.Load() {
+			time.Sleep(ReconnectDelay)
+		}
 	}
 
 	wg.Wait()
@@ -173,7 +178,7 @@ func createWebsocketConn(req interface{}, path string) (*websocket.Conn, error) 
 	return conn, err
 }
 
-func readWebsocketConnection(ctx context.Context, wsConn *websocket.Conn, currentConsole console.Console, done chan struct{}, normalExit *atomic.Bool, wg *sync.WaitGroup) {
+func readWebsocketConnection(ctx context.Context, cancel context.CancelFunc, wsConn *websocket.Conn, currentConsole console.Console, done chan struct{}, normalExit *atomic.Bool, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	var once sync.Once
@@ -189,6 +194,16 @@ func readWebsocketConnection(ctx context.Context, wsConn *websocket.Conn, curren
 	}
 	defer safeClose()
 
+	// Set an initial read deadline. The pong handler refreshes it on every
+	// pong so that idle-but-healthy sessions are not torn down; only truly
+	// dead connections (no pong for ReadTimeout) are detected and closed.
+	_ = wsConn.SetReadDeadline(time.Now().Add(ReadTimeout))
+	// SetReadDeadline failure in the pong handler would surface as a ReadMessage error on
+	// the next iteration, but cannot happen on a healthy net.Conn.
+	wsConn.SetPongHandler(func(string) error {
+		return wsConn.SetReadDeadline(time.Now().Add(ReadTimeout))
+	})
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -197,16 +212,24 @@ func readWebsocketConnection(ctx context.Context, wsConn *websocket.Conn, curren
 			msgType, msg, err := wsConn.ReadMessage()
 			if err != nil {
 				var e *websocket.CloseError
-				if errors.As(err, &e) {
-					if e.Code == websocket.CloseNormalClosure {
-						log.Info("** shell terminated bye **")
-						normalExit.Store(true)
-					} else {
-						log.Errorf("connection closed by server: %v", e)
-					}
+				if !errors.As(err, &e) {
+					log.Errorf("error while reading on websocket: %v", err)
 					return
 				}
-				log.Errorf("error while reading on websocket: %v", err)
+				switch {
+				case e.Code == websocket.CloseNormalClosure:
+					log.Info("** shell terminated bye **")
+					normalExit.Store(true)
+				case e.Code == 1007 || e.Code == 1008: // same as IsPermanentCloseError
+					log.Errorf("Shell connection rejected: check your permissions or run 'qovery auth'")
+					cancel()
+				case IsAgentResponseTimeout(err): // must come before generic 1011 branch
+					log.Warnf("Shell session timed out while the agent was preparing your connection. Retrying...")
+				case e.Code == 1011:
+					log.Warnf("%s Retrying...", ServiceUnavailableMessage("Shell"))
+				default:
+					log.Errorf("connection closed by server: %v", e)
+				}
 				return
 			}
 
