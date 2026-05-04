@@ -201,7 +201,11 @@ func readWebsocketConnection(ctx context.Context, wsConn *websocket.Conn, curren
 					if e.Code == websocket.CloseNormalClosure {
 						log.Info("** shell terminated bye **")
 						normalExit.Store(true)
-					} else {
+					} else if IsAgentResponseTimeout(err) {
+						log.Errorf("Shell session timed out while the agent was connecting to your pod. Retrying...")
+					} else if IsInternalServerError(err) {
+						log.Errorf("%s Retrying...", ServiceUnavailableMessage("Shell"))
+					} else if !IsPermanentCloseError(err) {
 						log.Errorf("connection closed by server: %v", e)
 					}
 					return
