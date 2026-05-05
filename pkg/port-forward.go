@@ -116,15 +116,25 @@ func handleConnection(con net.Conn, req *PortForwardRequest) {
 			log.Error("error closing connection: ", err)
 		}
 		fmt.Printf("Connection closed from %s => %d\n", con.RemoteAddr().String(), req.Port)
-		var e *websocket.CloseError
-		if errors.As(errRet, &e) && e.Code != websocket.CloseNormalClosure {
-			log.Error("connection terminated badly with ", e)
+		if IsPermanentCloseError(errRet) {
+			log.Error("Port-forward connection rejected: check your permissions or run 'qovery auth'")
+		} else if IsAgentResponseTimeout(errRet) {
+			log.Warnf("Port-forward timed out (agent could not reach the pod or set up the forward). Reconnect to try again.")
+		} else if IsInternalServerError(errRet) {
+			log.Warnf("%s Reconnect to try again.", ServiceUnavailableMessage("Port-forward"))
+		} else if errRet != nil {
+			var e *websocket.CloseError
+			if !errors.As(errRet, &e) || e.Code != websocket.CloseNormalClosure {
+				log.Error("Port-forward connection terminated: ", errRet)
+			}
 		}
 	}()
 
 	wsConn, err := mkWebsocketConn(req)
 	if err != nil {
-		log.Fatal("error while creating websocket connection", err)
+		errRet = err
+		log.Errorf("error while creating websocket connection: %v", err)
+		return
 	}
 	defer func() {
 		if err := wsConn.ws.Close(); err != nil {
