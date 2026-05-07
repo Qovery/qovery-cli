@@ -282,10 +282,25 @@ func readUserConsole(ctx context.Context, cancel context.CancelFunc, in io.Reade
 
 		count, err := in.Read(buffer)
 		if err != nil {
-			// In non-interactive mode (piped stdin), EOF just means the input
-			// stream is exhausted; the remote command may still produce output,
-			// so let the websocket loop run until the server closes the session.
+			// In non-interactive mode (piped stdin), EOF means the input stream
+			// is exhausted but the remote command may still produce output. We
+			// flush any buffered bytes, then send EOT (0x04) so the remote PTY
+			// line discipline propagates EOF to the remote process. Without
+			// this, commands like `cat < file` or `sh -s < script.sh` hang
+			// forever. The websocket loop stays open so we can drain remote
+			// stdout until the server closes the session.
 			if !interactive && errors.Is(err, io.EOF) {
+				if len(pendingBytes) > 0 {
+					select {
+					case <-ctx.Done():
+						return
+					case stdIn <- pendingBytes:
+					}
+				}
+				select {
+				case <-ctx.Done():
+				case stdIn <- []byte{0x04}:
+				}
 				return
 			}
 			log.Error("error while reading on console:", err)
