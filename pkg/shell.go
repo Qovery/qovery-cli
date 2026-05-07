@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -19,6 +20,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/term"
 )
 
 const StdinBufferSize = 4096
@@ -67,24 +69,40 @@ func ExecShell(req TerminalSize, path string) {
 		cancel()
 	}()
 
-	currentConsole := console.Current()
-	defer func() {
-		_ = currentConsole.Reset()
-	}()
+	// Allocate a PTY only when stdin is a real terminal. When piped (e.g.
+	// `qovery shell --command ... < input` or invoked from automation),
+	// containerd/console.Current() panics with "provided file is not a console".
+	// In that case we behave like `kubectl exec -i`: pipe os.Stdin/os.Stdout
+	// straight through and leave TtyWidth/TtyHeight at zero so the server
+	// does not attempt to allocate a TTY on the remote side either.
+	interactive := term.IsTerminal(int(os.Stdin.Fd()))
 
-	if err := currentConsole.SetRaw(); err != nil {
-		log.Fatal("error while setting up console", err)
-	}
+	var stdinReader io.Reader = os.Stdin
+	var stdoutWriter io.Writer = os.Stdout
 
-	winSize, err := currentConsole.Size()
-	if err != nil {
-		log.Fatal("Cannot get terminal size", err)
+	if interactive {
+		currentConsole := console.Current()
+		defer func() {
+			_ = currentConsole.Reset()
+		}()
+
+		if err := currentConsole.SetRaw(); err != nil {
+			log.Fatal("error while setting up console", err)
+		}
+
+		winSize, err := currentConsole.Size()
+		if err != nil {
+			log.Fatal("Cannot get terminal size", err)
+		}
+		req.SetTtySize(winSize.Width, winSize.Height)
+
+		stdinReader = currentConsole
+		stdoutWriter = currentConsole
 	}
-	req.SetTtySize(winSize.Width, winSize.Height)
 
 	stdIn := make(chan []byte)
 	wg.Add(1)
-	go readUserConsole(ctx, cancel, currentConsole, stdIn, &normalExit, &wg)
+	go readUserConsole(ctx, cancel, stdinReader, interactive, stdIn, &normalExit, &wg)
 
 	for {
 		if ctx.Err() != nil || userCancelled.Load() || normalExit.Load() {
@@ -107,7 +125,7 @@ func ExecShell(req TerminalSize, path string) {
 
 		done := make(chan struct{})
 		wg.Add(1)
-		go readWebsocketConnection(ctx, cancel, wsConn, currentConsole, done, &normalExit, &wg)
+		go readWebsocketConnection(ctx, cancel, wsConn, stdoutWriter, done, &normalExit, &wg)
 
 		pingTicker := time.NewTicker(PingInterval)
 
@@ -178,7 +196,7 @@ func createWebsocketConn(req interface{}, path string) (*websocket.Conn, error) 
 	return conn, err
 }
 
-func readWebsocketConnection(ctx context.Context, cancel context.CancelFunc, wsConn *websocket.Conn, currentConsole console.Console, done chan struct{}, normalExit *atomic.Bool, wg *sync.WaitGroup) {
+func readWebsocketConnection(ctx context.Context, cancel context.CancelFunc, wsConn *websocket.Conn, out io.Writer, done chan struct{}, normalExit *atomic.Bool, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	var once sync.Once
@@ -242,7 +260,7 @@ func readWebsocketConnection(ctx context.Context, cancel context.CancelFunc, wsC
 				continue
 			}
 
-			if _, err = currentConsole.Write(msg); err != nil {
+			if _, err = out.Write(msg); err != nil {
 				log.Errorf("error while writing in console: %v", err)
 				return
 			}
@@ -250,7 +268,7 @@ func readWebsocketConnection(ctx context.Context, cancel context.CancelFunc, wsC
 	}
 }
 
-func readUserConsole(ctx context.Context, cancel context.CancelFunc, currentConsole console.Console, stdIn chan []byte, normalExit *atomic.Bool, wg *sync.WaitGroup) {
+func readUserConsole(ctx context.Context, cancel context.CancelFunc, in io.Reader, interactive bool, stdIn chan []byte, normalExit *atomic.Bool, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	buffer := make([]byte, StdinBufferSize)
@@ -262,8 +280,29 @@ func readUserConsole(ctx context.Context, cancel context.CancelFunc, currentCons
 			return
 		}
 
-		count, err := currentConsole.Read(buffer)
+		count, err := in.Read(buffer)
 		if err != nil {
+			// In non-interactive mode (piped stdin), EOF means the input stream
+			// is exhausted but the remote command may still produce output. We
+			// flush any buffered bytes, then send EOT (0x04) so the remote PTY
+			// line discipline propagates EOF to the remote process. Without
+			// this, commands like `cat < file` or `sh -s < script.sh` hang
+			// forever. The websocket loop stays open so we can drain remote
+			// stdout until the server closes the session.
+			if !interactive && errors.Is(err, io.EOF) {
+				if len(pendingBytes) > 0 {
+					select {
+					case <-ctx.Done():
+						return
+					case stdIn <- pendingBytes:
+					}
+				}
+				select {
+				case <-ctx.Done():
+				case stdIn <- []byte{0x04}:
+				}
+				return
+			}
 			log.Error("error while reading on console:", err)
 			cancel()
 			return
