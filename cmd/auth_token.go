@@ -11,27 +11,28 @@ import (
 
 var authTokenJsonFlag bool
 var authTokenAuthorizationHeaderFlag bool
+var authTokenPrintFlag bool
 
 var authTokenCmd = &cobra.Command{
 	Use:   "token",
-	Short: "Print the current valid access token",
-	Long: `Print the current valid access token (refreshing it if expired).
+	Short: "Output the current valid access token",
+	Long: `Output the current valid access token (refreshing it if expired).
 
-This command outputs a valid access token that can be used to make direct API calls 
+This command provides a valid access token that can be used to make direct API calls 
 to the Qovery API. The token is automatically refreshed if it has expired.
 
-By default, only the raw token value is printed to stdout (no newline formatting, 
-no extra text), making it safe for shell substitution.
+For security reasons, the token is not printed by default. You must explicitly 
+use --print or --json to output the token value.
 
 Examples:
-  # Get the raw token value (default)
-  qovery auth token
+  # Print the raw token value
+  qovery auth token --print
 
   # Use directly in a curl command
-  curl -H "Authorization: Bearer $(qovery auth token)" https://api.qovery.com/organization
+  curl -H "Authorization: Bearer $(qovery auth token --print)" https://api.qovery.com/organization
 
-  # Get the full Authorization header value
-  qovery auth token --authorization-header
+  # Print the full Authorization header value
+  qovery auth token --print --authorization-header
 
   # Get structured JSON output with token, type, expiration, and API URL
   qovery auth token --json
@@ -40,6 +41,12 @@ Examples:
   qovery auth token --json --authorization-header`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
+
+		// If neither --print nor --json is set, show help and available flags
+		if !authTokenPrintFlag && !authTokenJsonFlag {
+			_ = cmd.Help()
+			return
+		}
 
 		tokenType, token, err := utils.GetAccessToken()
 		if err != nil {
@@ -57,7 +64,7 @@ Examples:
 			return
 		}
 
-		// Default: just the raw token value
+		// --print: just the raw token value
 		fmt.Print(string(token))
 	},
 }
@@ -99,6 +106,7 @@ func printTokenAsJSON(tokenType utils.AccessTokenType, token utils.AccessToken) 
 
 func init() {
 	authCmd.AddCommand(authTokenCmd)
+	authTokenCmd.Flags().BoolVar(&authTokenPrintFlag, "print", false, "Print the raw access token value to stdout")
 	authTokenCmd.Flags().BoolVar(&authTokenJsonFlag, "json", false, "Output as JSON with token, type, expiration, and API URL")
 	authTokenCmd.Flags().BoolVar(&authTokenAuthorizationHeaderFlag, "authorization-header", false, "Output the full Authorization header value (e.g. 'Bearer eyJ...')")
 }
