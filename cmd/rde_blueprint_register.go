@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var rdeBlueprintCreateCmd = &cobra.Command{
-	Use:   "create",
+var rdeBlueprintRegisterCmd = &cobra.Command{
+	Use:   "register",
 	Short: "Register a project as an RDE blueprint",
 	Long: `Register an existing project as an RDE blueprint by setting the
 BLUEPRINT_PROJECT_ID project-level variable and BLUEPRINT_KEY on the
@@ -96,9 +96,9 @@ The project must already exist and contain at least one environment.`,
 }
 
 func init() {
-	rdeBlueprintCmd.AddCommand(rdeBlueprintCreateCmd)
-	rdeBlueprintCreateCmd.Flags().StringVarP(&rdeBlueprintProjectName, "project", "p", "", "Project Name to register as a blueprint")
-	rdeBlueprintCreateCmd.Flags().StringVarP(&organizationName, "organization", "o", "", "Organization Name")
+	rdeBlueprintCmd.AddCommand(rdeBlueprintRegisterCmd)
+	rdeBlueprintRegisterCmd.Flags().StringVarP(&rdeBlueprintProjectName, "project", "p", "", "Project Name to register as a blueprint")
+	rdeBlueprintRegisterCmd.Flags().StringVarP(&organizationName, "organization", "o", "", "Organization Name")
 
-	_ = rdeBlueprintCreateCmd.MarkFlagRequired("project")
+	_ = rdeBlueprintRegisterCmd.MarkFlagRequired("project")
 }

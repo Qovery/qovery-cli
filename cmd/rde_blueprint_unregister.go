@@ -8,8 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var rdeBlueprintDeleteCmd = &cobra.Command{
-	Use:   "delete",
+var rdeBlueprintUnregisterCmd = &cobra.Command{
+	Use:   "unregister",
 	Short: "Unregister a project as an RDE blueprint",
 	Long: `Remove the BLUEPRINT_PROJECT_ID and BLUEPRINT_KEY environment variables
 from the project and its environment. This does NOT delete the project itself.`,
@@ -61,9 +61,9 @@ from the project and its environment. This does NOT delete the project itself.`,
 }
 
 func init() {
-	rdeBlueprintCmd.AddCommand(rdeBlueprintDeleteCmd)
-	rdeBlueprintDeleteCmd.Flags().StringVarP(&rdeBlueprintProjectName, "project", "p", "", "Blueprint Project Name to unregister")
-	rdeBlueprintDeleteCmd.Flags().StringVarP(&organizationName, "organization", "o", "", "Organization Name")
+	rdeBlueprintCmd.AddCommand(rdeBlueprintUnregisterCmd)
+	rdeBlueprintUnregisterCmd.Flags().StringVarP(&rdeBlueprintProjectName, "project", "p", "", "Blueprint Project Name to unregister")
+	rdeBlueprintUnregisterCmd.Flags().StringVarP(&organizationName, "organization", "o", "", "Organization Name")
 
-	_ = rdeBlueprintDeleteCmd.MarkFlagRequired("project")
+	_ = rdeBlueprintUnregisterCmd.MarkFlagRequired("project")
 }
