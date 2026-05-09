@@ -17,6 +17,7 @@ import (
 // RDE env var constants
 const rdeBlueprintProjectIdVar = "BLUEPRINT_PROJECT_ID"
 const rdeBlueprintKeyVar = "BLUEPRINT_KEY"
+const rdeOwnerEmailVar = "RDE_OWNER_EMAIL"
 
 // RDE shared flag variables
 var rdeBlueprintProjectName string
@@ -71,6 +72,7 @@ type rdeChildInfo struct {
 	EnvId              string
 	EnvName            string
 	BlueprintProjectId string
+	OwnerEmail         string
 }
 
 // --- RDE helper functions ---
@@ -251,12 +253,18 @@ func rdeListChildren(client *qovery.APIClient, orgId string, blueprintProjectId 
 				val = *bkVar.Value.Get()
 			}
 			if val == blueprintProjectId {
+				ownerEmail := ""
+				ownerVar := utils.FindEnvironmentVariableByKey(rdeOwnerEmailVar, vars)
+				if ownerVar != nil && ownerVar.Value.IsSet() && ownerVar.Value.Get() != nil {
+					ownerEmail = *ownerVar.Value.Get()
+				}
 				children = append(children, rdeChildInfo{
 					ProjectId:          project.Id,
 					ProjectName:        project.Name,
 					EnvId:              env.Id,
 					EnvName:            env.Name,
 					BlueprintProjectId: blueprintProjectId,
+					OwnerEmail:         ownerEmail,
 				})
 			}
 		}
@@ -319,12 +327,18 @@ func rdeFindChildByName(client *qovery.APIClient, orgId string, name string) (*r
 
 			// It's a child if BLUEPRINT_KEY != own project ID
 			if val != "" && val != project.Id {
+				ownerEmail := ""
+				ownerVar := utils.FindEnvironmentVariableByKey(rdeOwnerEmailVar, vars)
+				if ownerVar != nil && ownerVar.Value.IsSet() && ownerVar.Value.Get() != nil {
+					ownerEmail = *ownerVar.Value.Get()
+				}
 				return &rdeChildInfo{
 					ProjectId:          project.Id,
 					ProjectName:        project.Name,
 					EnvId:              env.Id,
 					EnvName:            env.Name,
 					BlueprintProjectId: val,
+					OwnerEmail:         ownerEmail,
 				}, nil
 			}
 		}

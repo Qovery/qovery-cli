@@ -36,6 +36,10 @@ var rdeStatusCmd = &cobra.Command{
 			{"Blueprint", fmt.Sprintf("%s (%s)", bpName, child.BlueprintProjectId)},
 		}
 
+		if child.OwnerEmail != "" {
+			rows = append(rows, []string{"Owner", child.OwnerEmail})
+		}
+
 		status, err := rdeGetEnvStatus(client, child.EnvId)
 		if err == nil {
 			rows = append(rows, []string{"Status", utils.GetStatusTextWithColor(status)})

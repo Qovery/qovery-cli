@@ -181,6 +181,11 @@ This command:
 		}
 		utils.Println(fmt.Sprintf("  Environment: %s", clonedEnv.Id))
 
+		// Set RDE_OWNER_EMAIL on the cloned environment if email was provided
+		if rdeEmail != "" {
+			_ = utils.CreateEnvironmentVariable(client, project.Id, clonedEnv.Id, rdeOwnerEmailVar, rdeEmail, false)
+		}
+
 		// Step 5: Update TTL job (if present)
 		utils.Println("\nStep 4/6: Checking for TTL job...")
 		rdeUpdateTTLJob(client, clonedEnv.Id)

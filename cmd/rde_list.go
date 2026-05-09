@@ -69,6 +69,7 @@ Shows name, blueprint, status, uptime, and workspace URL for each RDE.`,
 					"blueprint_id":   child.BlueprintProjectId,
 					"blueprint_name": bpName,
 					"status":         status,
+					"owner":          child.OwnerEmail,
 					"workspace_url":  url,
 				})
 			}
@@ -111,11 +112,15 @@ Shows name, blueprint, status, uptime, and workspace URL for each RDE.`,
 			}
 
 			bpName := rdeBlueprintNameForProjectId(client, child.BlueprintProjectId)
+			owner := child.OwnerEmail
+			if owner == "" {
+				owner = "-"
+			}
 
-			data = append(data, []string{child.ProjectName, bpName, status, uptime, url})
+			data = append(data, []string{child.ProjectName, bpName, status, uptime, owner, url})
 		}
 
-		err = utils.PrintTable([]string{"Name", "Blueprint", "Status", "Uptime", "Workspace URL"}, data)
+		err = utils.PrintTable([]string{"Name", "Blueprint", "Status", "Uptime", "Owner", "Workspace URL"}, data)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
