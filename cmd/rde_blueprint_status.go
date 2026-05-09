@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 )
@@ -25,33 +26,36 @@ var rdeBlueprintStatusCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Blueprint: %s", bp.ProjectName))
-		utils.Println(fmt.Sprintf("  Project:     %s", bp.ProjectId))
+		rows := [][]string{
+			{"Blueprint", pterm.FgBlue.Sprintf("%s", bp.ProjectName)},
+			{"Project", bp.ProjectId},
+		}
 
 		if bp.EnvId == "" {
-			utils.Println("  Environment: (none)")
+			rows = append(rows, []string{"Environment", "(none)"})
+			rdePrintKeyValueTable(rows)
 			return
 		}
 
-		utils.Println(fmt.Sprintf("  Environment: %s (%s)", bp.EnvName, bp.EnvId))
+		rows = append(rows, []string{"Environment", fmt.Sprintf("%s (%s)", bp.EnvName, bp.EnvId)})
 
 		status, err := rdeGetEnvStatus(client, bp.EnvId)
 		if err == nil {
-			utils.Println(fmt.Sprintf("  Status:      %s", utils.GetStatusTextWithColor(status)))
+			rows = append(rows, []string{"Status", utils.GetStatusTextWithColor(status)})
 		}
 
-		utils.Println(fmt.Sprintf("  Console:     https://console.qovery.com/organization/%s/project/%s/environment/%s", orgId, bp.ProjectId, bp.EnvId))
+		rows = append(rows, []string{"Console", fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s", orgId, bp.ProjectId, bp.EnvId)})
 
 		// Count children
 		children, err := rdeListChildren(client, orgId, bp.ProjectId)
 		if err == nil {
-			utils.Println(fmt.Sprintf("  Children:    %d RDE(s)", len(children)))
+			rows = append(rows, []string{"Children", fmt.Sprintf("%d RDE(s)", len(children))})
 		}
+
+		rdePrintKeyValueTable(rows)
 
 		// List services
 		utils.Println("")
-		utils.Println("  Services:")
-
 		rdePrintEnvServices(client, bp.EnvId)
 	},
 }

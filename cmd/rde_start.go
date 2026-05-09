@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
@@ -27,7 +28,6 @@ var rdeStartCmd = &cobra.Command{
 			panic("unreachable")
 		}
 
-		utils.Println(fmt.Sprintf("Starting RDE %s...", rdeName))
 		_, _, err = client.EnvironmentActionsAPI.DeployEnvironment(ctx(), child.EnvId).Execute()
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("deploy failed: %w", err))
@@ -35,7 +35,7 @@ var rdeStartCmd = &cobra.Command{
 			panic("unreachable")
 		}
 
-		utils.Println("  Deploy triggered.")
+		utils.Println(fmt.Sprintf("Request to start RDE %s has been queued..", pterm.FgBlue.Sprintf("%s", rdeName)))
 
 		if watchFlag {
 			time.Sleep(3 * time.Second)

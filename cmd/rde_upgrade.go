@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
@@ -82,7 +83,7 @@ func rdeUpgradeOne(client *qovery.APIClient, orgId string, child *rdeChildInfo) 
 	name := strings.TrimPrefix(child.ProjectName, "rde-")
 
 	if rdeUpgradeStrategy == "image" {
-		utils.Println(fmt.Sprintf("  Upgrading %s (strategy: image - redeploy only)...", name))
+		utils.Println(fmt.Sprintf("  Upgrading %s (strategy: image - redeploy only)...", pterm.FgBlue.Sprintf("%s", name)))
 		_, _, err := client.EnvironmentActionsAPI.DeployEnvironment(ctx(), child.EnvId).Execute()
 		if err != nil {
 			utils.Println(fmt.Sprintf("  WARNING: Deploy failed for %s: %v", name, err))
@@ -91,7 +92,7 @@ func rdeUpgradeOne(client *qovery.APIClient, orgId string, child *rdeChildInfo) 
 		}
 	} else {
 		// reclone strategy
-		utils.Println(fmt.Sprintf("  Upgrading %s (strategy: reclone - full re-clone from blueprint)...", name))
+		utils.Println(fmt.Sprintf("  Upgrading %s (strategy: reclone - full re-clone from blueprint)...", pterm.FgBlue.Sprintf("%s", name)))
 		utils.Println("    WARNING: Uncommitted changes will be lost. Code in git is safe.")
 
 		// Stop and delete the current environment

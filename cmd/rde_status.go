@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
@@ -28,31 +29,34 @@ var rdeStatusCmd = &cobra.Command{
 
 		bpName := rdeBlueprintNameForProjectId(client, child.BlueprintProjectId)
 
-		utils.Println(fmt.Sprintf("RDE: %s", child.ProjectName))
-		utils.Println(fmt.Sprintf("  Project:     %s", child.ProjectId))
-		utils.Println(fmt.Sprintf("  Environment: %s (%s)", child.EnvName, child.EnvId))
-		utils.Println(fmt.Sprintf("  Blueprint:   %s (%s)", bpName, child.BlueprintProjectId))
+		rows := [][]string{
+			{"RDE", pterm.FgBlue.Sprintf("%s", child.ProjectName)},
+			{"Project", child.ProjectId},
+			{"Environment", fmt.Sprintf("%s (%s)", child.EnvName, child.EnvId)},
+			{"Blueprint", fmt.Sprintf("%s (%s)", bpName, child.BlueprintProjectId)},
+		}
 
 		status, err := rdeGetEnvStatus(client, child.EnvId)
 		if err == nil {
-			utils.Println(fmt.Sprintf("  Status:      %s", utils.GetStatusTextWithColor(status)))
+			rows = append(rows, []string{"Status", utils.GetStatusTextWithColor(status)})
 		}
 
 		if status == qovery.STATEENUM_DEPLOYED || status == qovery.STATEENUM_RESTARTED {
 			url := rdeGetWorkspaceUrl(client, child.EnvId)
 			if url != "" {
-				utils.Println(fmt.Sprintf("  Workspace:   %s", url))
+				rows = append(rows, []string{"Workspace", url})
 			}
 		}
 
 		lastDeploy := rdeGetLastDeployTime(client, child.EnvId)
 		uptime := rdeFormatUptime(lastDeploy)
-		utils.Println(fmt.Sprintf("  Uptime:      %s", uptime))
-		utils.Println(fmt.Sprintf("  Console:     https://console.qovery.com/organization/%s/project/%s/environment/%s", orgId, child.ProjectId, child.EnvId))
+		rows = append(rows, []string{"Uptime", uptime})
+		rows = append(rows, []string{"Console", fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s", orgId, child.ProjectId, child.EnvId)})
+
+		rdePrintKeyValueTable(rows)
 
 		// List services
 		utils.Println("")
-		utils.Println("  Services:")
 		rdePrintEnvServices(client, child.EnvId)
 	},
 }

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
@@ -59,7 +60,7 @@ This will delete the environment, project, RBAC role, and API token for each RDE
 			// Extract the RDE name from project name (strip "rde-" prefix if present)
 			name := strings.TrimPrefix(child.ProjectName, "rde-")
 
-			utils.Println(fmt.Sprintf("=== Deleting: %s ===", child.ProjectName))
+			utils.Println(fmt.Sprintf("=== Deleting: %s ===", pterm.FgBlue.Sprintf("%s", child.ProjectName)))
 
 			// Stop environment
 			if child.EnvId != "" {

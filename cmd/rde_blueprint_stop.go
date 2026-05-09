@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
@@ -34,7 +35,6 @@ var rdeBlueprintStopCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println(fmt.Sprintf("Stopping blueprint %s...", bp.ProjectName))
 		_, _, err = client.EnvironmentActionsAPI.StopEnvironment(context.Background(), bp.EnvId).Execute()
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("stop failed: %w", err))
@@ -42,7 +42,7 @@ var rdeBlueprintStopCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		utils.Println("Blueprint stop triggered.")
+		utils.Println(fmt.Sprintf("Request to stop blueprint %s has been queued..", pterm.FgBlue.Sprintf("%s", bp.ProjectName)))
 
 		if watchFlag {
 			time.Sleep(3 * time.Second)

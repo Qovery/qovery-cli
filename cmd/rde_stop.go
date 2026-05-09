@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
@@ -27,7 +28,6 @@ var rdeStopCmd = &cobra.Command{
 			panic("unreachable")
 		}
 
-		utils.Println(fmt.Sprintf("Stopping RDE %s...", rdeName))
 		_, _, err = client.EnvironmentActionsAPI.StopEnvironment(ctx(), child.EnvId).Execute()
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("stop failed: %w", err))
@@ -35,7 +35,7 @@ var rdeStopCmd = &cobra.Command{
 			panic("unreachable")
 		}
 
-		utils.Println("  Stop triggered.")
+		utils.Println(fmt.Sprintf("Request to stop RDE %s has been queued..", pterm.FgBlue.Sprintf("%s", rdeName)))
 
 		if watchFlag {
 			time.Sleep(3 * time.Second)

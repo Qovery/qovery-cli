@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
 )
@@ -44,9 +45,9 @@ var rdeStartAllCmd = &cobra.Command{
 			if child.EnvId != "" {
 				_, _, err := client.EnvironmentActionsAPI.DeployEnvironment(ctx(), child.EnvId).Execute()
 				if err != nil {
-					utils.Println(fmt.Sprintf("  Failed to start: %s (%v)", child.ProjectName, err))
+					utils.Println(fmt.Sprintf("  Failed to start: %s (%v)", pterm.FgBlue.Sprintf("%s", child.ProjectName), err))
 				} else {
-					utils.Println(fmt.Sprintf("  Started: %s", child.ProjectName))
+					utils.Println(fmt.Sprintf("  Request to start %s has been queued..", pterm.FgBlue.Sprintf("%s", child.ProjectName)))
 				}
 			}
 		}

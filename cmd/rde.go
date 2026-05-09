@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/pkg/usercontext"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
@@ -424,11 +425,11 @@ func rdeFindCustomRoleByName(client *qovery.APIClient, orgId string, roleName st
 	return nil, nil
 }
 
-// rdePrintEnvServices prints the services and their statuses for an environment.
+// rdePrintEnvServices prints the services and their statuses for an environment as a table.
 func rdePrintEnvServices(client *qovery.APIClient, envId string) {
 	statuses, _, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
 	if err != nil {
-		utils.Println("    (could not retrieve statuses)")
+		utils.Println("  (could not retrieve statuses)")
 		return
 	}
 
@@ -470,21 +471,38 @@ func rdePrintEnvServices(client *qovery.APIClient, envId string) {
 		}
 	}
 
-	printStatus := func(statuses []qovery.Status, typeName string) {
+	var data [][]string
+	collectStatuses := func(statuses []qovery.Status, typeName string) {
 		for _, s := range statuses {
 			name := nameMap[s.Id]
 			if name == "" {
 				name = s.Id
 			}
-			utils.Println(fmt.Sprintf("    %s [%s] (%s)", name, typeName, utils.GetStatusTextWithColor(s.State)))
+			data = append(data, []string{name, typeName, utils.GetStatusTextWithColor(s.State)})
 		}
 	}
 
-	printStatus(statuses.GetApplications(), "Application")
-	printStatus(statuses.GetContainers(), "Container")
-	printStatus(statuses.GetJobs(), "Job")
-	printStatus(statuses.GetDatabases(), "Database")
-	printStatus(statuses.GetHelms(), "Helm")
+	collectStatuses(statuses.GetApplications(), "Application")
+	collectStatuses(statuses.GetContainers(), "Container")
+	collectStatuses(statuses.GetJobs(), "Job")
+	collectStatuses(statuses.GetDatabases(), "Database")
+	collectStatuses(statuses.GetHelms(), "Helm")
+
+	if len(data) == 0 {
+		utils.Println("  No services found.")
+		return
+	}
+
+	_ = utils.PrintTable([]string{"Name", "Type", "Status"}, data)
+}
+
+// rdePrintKeyValueTable renders a key-value pterm table (no headers, like PrintContext).
+func rdePrintKeyValueTable(rows [][]string) {
+	tableData := pterm.TableData{}
+	for _, row := range rows {
+		tableData = append(tableData, row)
+	}
+	_ = pterm.DefaultTable.WithData(tableData).Render()
 }
 
 // ctx is a shorthand for context.Background() used in RDE commands.

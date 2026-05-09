@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
@@ -27,7 +28,7 @@ var rdeDeleteCmd = &cobra.Command{
 		checkError(err)
 
 		projectName := fmt.Sprintf("rde-%s", rdeName)
-		utils.Println(fmt.Sprintf("Deleting RDE: %s", rdeName))
+		utils.Println(fmt.Sprintf("Deleting RDE %s...", pterm.FgBlue.Sprintf("%s", rdeName)))
 
 		// Find the project
 		project, err := rdeFindProjectByName(client, orgId, projectName)
@@ -46,13 +47,13 @@ var rdeDeleteCmd = &cobra.Command{
 				// Stop environment
 				status, _ := rdeGetEnvStatus(client, env.Id)
 				if status != qovery.STATEENUM_STOPPED && status != "" {
-					utils.Println(fmt.Sprintf("  Stopping environment %s...", env.Name))
+					utils.Println(fmt.Sprintf("  Stopping environment %s...", pterm.FgBlue.Sprintf("%s", env.Name)))
 					_, _, _ = client.EnvironmentActionsAPI.StopEnvironment(ctx(), env.Id).Execute()
 					time.Sleep(2 * time.Second)
 				}
 
 				// Delete environment
-				utils.Println(fmt.Sprintf("  Deleting environment %s...", env.Name))
+				utils.Println(fmt.Sprintf("  Deleting environment %s...", pterm.FgBlue.Sprintf("%s", env.Name)))
 				_, err = client.EnvironmentMainCallsAPI.DeleteEnvironment(ctx(), env.Id).Execute()
 				if err != nil {
 					utils.PrintlnInfo(fmt.Sprintf("Failed to delete environment: %v", err))
@@ -61,7 +62,7 @@ var rdeDeleteCmd = &cobra.Command{
 		}
 
 		// Delete project
-		utils.Println(fmt.Sprintf("  Deleting project %s...", projectName))
+		utils.Println(fmt.Sprintf("  Deleting project %s...", pterm.FgBlue.Sprintf("%s", projectName)))
 		_, err = client.ProjectMainCallsAPI.DeleteProject(ctx(), project.Id).Execute()
 		if err != nil {
 			utils.PrintlnInfo(fmt.Sprintf("Failed to delete project: %v", err))
@@ -70,8 +71,7 @@ var rdeDeleteCmd = &cobra.Command{
 		// Cleanup role and token
 		rdeCleanupRoleAndToken(client, orgId, rdeName)
 
-		utils.Println("")
-		utils.Println(fmt.Sprintf("RDE %s fully removed.", rdeName))
+		utils.Println(fmt.Sprintf("\nRDE %s fully removed.", pterm.FgBlue.Sprintf("%s", rdeName)))
 	},
 }
 
@@ -81,7 +81,7 @@ func rdeCleanupRoleAndToken(client *qovery.APIClient, orgId string, name string)
 	roleName := fmt.Sprintf("RDE-%s", name)
 	role, _ := rdeFindCustomRoleByName(client, orgId, roleName)
 	if role != nil && role.Id != nil {
-		utils.Println(fmt.Sprintf("  Deleting role %s...", roleName))
+		utils.Println(fmt.Sprintf("  Deleting role %s...", pterm.FgBlue.Sprintf("%s", roleName)))
 		_, _ = client.OrganizationCustomRoleAPI.DeleteOrganizationCustomRole(ctx(), orgId, *role.Id).Execute()
 	}
 
@@ -92,7 +92,7 @@ func rdeCleanupRoleAndToken(client *qovery.APIClient, orgId string, name string)
 		for _, token := range tokens.GetResults() {
 			if token.Name != nil && *token.Name == tokenName {
 				if token.Id != "" {
-					utils.Println(fmt.Sprintf("  Deleting API token %s...", tokenName))
+					utils.Println(fmt.Sprintf("  Deleting API token %s...", pterm.FgBlue.Sprintf("%s", tokenName)))
 					_, _ = client.OrganizationApiTokenAPI.DeleteOrganizationApiToken(ctx(), orgId, token.Id).Execute()
 				}
 				break

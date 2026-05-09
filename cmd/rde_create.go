@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
@@ -46,7 +47,7 @@ This command:
 		}
 
 		// Step 1: Resolve blueprint
-		utils.Println(fmt.Sprintf("Resolving blueprint %s...", rdeBlueprintProjectName))
+		utils.Println(fmt.Sprintf("Resolving blueprint %s...", pterm.FgBlue.Sprintf("%s", rdeBlueprintProjectName)))
 		bp, err := rdeFindBlueprintByProjectName(client, orgId, rdeBlueprintProjectName)
 		if err != nil {
 			utils.PrintlnError(err)
@@ -62,7 +63,7 @@ This command:
 
 		// Step 2: Create project
 		projectName := fmt.Sprintf("rde-%s", rdeName)
-		utils.Println(fmt.Sprintf("\nStep 1/6: Creating project %s...", projectName))
+		utils.Println(fmt.Sprintf("\nStep 1/6: Creating project %s...", pterm.FgBlue.Sprintf("%s", projectName)))
 		desc := fmt.Sprintf("RDE for %s (blueprint: %s)", rdeName, bp.ProjectName)
 		projectReq := qovery.NewProjectRequest(projectName)
 		projectReq.Description = &desc
@@ -85,7 +86,7 @@ This command:
 		var roleId string
 		if !rdeSkipRbac {
 			roleName := fmt.Sprintf("RDE-%s", rdeName)
-			utils.Println(fmt.Sprintf("\nStep 2/6: Creating RBAC role %s...", roleName))
+			utils.Println(fmt.Sprintf("\nStep 2/6: Creating RBAC role %s...", pterm.FgBlue.Sprintf("%s", roleName)))
 
 			roleReq := qovery.NewOrganizationCustomRoleCreateRequest(roleName)
 			roleDesc := fmt.Sprintf("Access to %s only", projectName)
@@ -196,11 +197,15 @@ This command:
 		}
 
 		utils.Println("")
-		utils.Println(fmt.Sprintf("Done! RDE: %s", rdeName))
-		utils.Println(fmt.Sprintf("  Project:     %s", project.Id))
-		utils.Println(fmt.Sprintf("  Environment: %s", clonedEnv.Id))
-		utils.Println(fmt.Sprintf("  Console:     https://console.qovery.com/organization/%s/project/%s/environment/%s", orgId, project.Id, clonedEnv.Id))
-		utils.Println("  Workspace URL available once deployment completes.")
+		utils.Println(fmt.Sprintf("RDE %s provisioned successfully!", pterm.FgBlue.Sprintf("%s", rdeName)))
+		utils.Println("")
+		rdePrintKeyValueTable([][]string{
+			{"Project", project.Id},
+			{"Environment", clonedEnv.Id},
+			{"Console", fmt.Sprintf("https://console.qovery.com/organization/%s/project/%s/environment/%s", orgId, project.Id, clonedEnv.Id)},
+		})
+		utils.Println("")
+		utils.PrintlnInfo("Workspace URL will be available once deployment completes.")
 	},
 }
 

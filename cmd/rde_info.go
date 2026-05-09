@@ -57,29 +57,29 @@ var rdeInfoCmd = &cobra.Command{
 			}
 		}
 
-		utils.Println("")
-		utils.Println("Remote Development Environment Platform")
-		utils.Println(fmt.Sprintf("  Organization:  %s (%s)", orgName, orgId))
-		utils.Println("")
-		utils.Println(fmt.Sprintf("  Blueprints:    %d", len(blueprints)))
+		// Platform summary table
+		rdePrintKeyValueTable([][]string{
+			{"Organization", fmt.Sprintf("%s (%s)", orgName, orgId)},
+			{"Blueprints", fmt.Sprintf("%d", len(blueprints))},
+			{"RDEs", fmt.Sprintf("%d total (%d running, %d stopped, %d error/other)", len(allChildren), running, stopped, errors)},
+		})
+
+		// Blueprints detail table
 		if len(blueprints) > 0 {
+			utils.Println("")
+			var data [][]string
 			for _, bp := range blueprints {
 				status := "NO_ENV"
 				if bp.EnvId != "" {
 					s, err := rdeGetEnvStatus(client, bp.EnvId)
 					if err == nil {
-						status = string(s)
+						status = utils.GetStatusTextWithColor(s)
 					}
 				}
-				utils.Println(fmt.Sprintf("    - %s (%s)", bp.ProjectName, status))
+				data = append(data, []string{bp.ProjectName, bp.EnvName, status, bp.ProjectId})
 			}
+			_ = utils.PrintTable([]string{"Blueprint", "Environment", "Status", "Project ID"}, data)
 		}
-		utils.Println("")
-		utils.Println(fmt.Sprintf("  RDEs:          %d total", len(allChildren)))
-		utils.Println(fmt.Sprintf("    Running:     %d", running))
-		utils.Println(fmt.Sprintf("    Stopped:     %d", stopped))
-		utils.Println(fmt.Sprintf("    Error/Other: %d", errors))
-		utils.Println("")
 	},
 }
 
