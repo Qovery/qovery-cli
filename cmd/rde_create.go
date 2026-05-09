@@ -128,16 +128,36 @@ This command:
 			Mode:      qovery.ENVIRONMENTMODEENUM_DEVELOPMENT.Ptr(),
 		}
 
-		// Optionally set cluster
+		// Default to the blueprint's cluster
+		blueprintEnv, _, bpEnvErr := client.EnvironmentMainCallsAPI.GetEnvironment(ctx(), bp.EnvId).Execute()
+		if bpEnvErr == nil {
+			bpClusterId := blueprintEnv.ClusterId
+			cloneReq.ClusterId = &bpClusterId
+			clusterDisplay := bpClusterId
+			if blueprintEnv.ClusterName != nil {
+				clusterDisplay = *blueprintEnv.ClusterName
+			}
+			utils.Println(fmt.Sprintf("  Using blueprint cluster: %s", pterm.FgBlue.Sprintf("%s", clusterDisplay)))
+		}
+
+		// Override with --cluster flag if provided
 		if clusterName != "" {
-			clusters, _, err := client.ClustersAPI.ListOrganizationCluster(ctx(), orgId).Execute()
-			if err == nil {
+			clusters, _, clErr := client.ClustersAPI.ListOrganizationCluster(ctx(), orgId).Execute()
+			if clErr == nil {
+				found := false
 				for _, c := range clusters.GetResults() {
 					if strings.EqualFold(c.Name, clusterName) {
 						clId := c.Id
 						cloneReq.ClusterId = &clId
+						utils.Println(fmt.Sprintf("  Overriding cluster to: %s", pterm.FgBlue.Sprintf("%s", clusterName)))
+						found = true
 						break
 					}
+				}
+				if !found {
+					utils.PrintlnError(fmt.Errorf("cluster %s not found", clusterName))
+					os.Exit(1)
+					panic("unreachable")
 				}
 			}
 		}
