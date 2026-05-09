@@ -88,7 +88,7 @@ The project must already exist and contain at least one environment.`,
 		}
 
 		utils.Println("")
-		utils.Println(fmt.Sprintf("Blueprint registered successfully!"))
+		utils.Println("Blueprint registered successfully!")
 		utils.Println(fmt.Sprintf("  Project:     %s (%s)", project.Name, project.Id))
 		utils.Println(fmt.Sprintf("  Environment: %s (%s)", targetEnv.Name, targetEnv.Id))
 		utils.Println(fmt.Sprintf("  Console:     https://console.qovery.com/organization/%s/project/%s/environment/%s", orgId, project.Id, targetEnv.Id))

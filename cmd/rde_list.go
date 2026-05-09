@@ -91,7 +91,8 @@ Shows name, blueprint, status, uptime, and workspace URL for each RDE.`,
 				s, err := rdeGetEnvStatus(client, child.EnvId)
 				if err == nil {
 					status = string(utils.GetStatusTextWithColor(s))
-					if s == qovery.STATEENUM_DEPLOYED || s == qovery.STATEENUM_RESTARTED {
+					switch s {
+					case qovery.STATEENUM_DEPLOYED, qovery.STATEENUM_RESTARTED:
 						running++
 						url = rdeGetWorkspaceUrl(client, child.EnvId)
 						if url == "" {
@@ -99,9 +100,9 @@ Shows name, blueprint, status, uptime, and workspace URL for each RDE.`,
 						}
 						lastDeploy := rdeGetLastDeployTime(client, child.EnvId)
 						uptime = rdeFormatUptime(lastDeploy)
-					} else if s == qovery.STATEENUM_STOPPED {
+					case qovery.STATEENUM_STOPPED:
 						stopped++
-					} else {
+					default:
 						errors++
 					}
 				} else {

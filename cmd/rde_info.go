@@ -46,10 +46,10 @@ var rdeInfoCmd = &cobra.Command{
 					errors++
 					continue
 				}
-				switch {
-				case status == qovery.STATEENUM_DEPLOYED || status == qovery.STATEENUM_RESTARTED:
+				switch status {
+				case qovery.STATEENUM_DEPLOYED, qovery.STATEENUM_RESTARTED:
 					running++
-				case status == qovery.STATEENUM_STOPPED:
+				case qovery.STATEENUM_STOPPED:
 					stopped++
 				default:
 					errors++

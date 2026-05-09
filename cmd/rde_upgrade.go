@@ -79,10 +79,7 @@ If --name is provided, upgrades a single RDE. Otherwise, upgrades all RDEs.`,
 }
 
 func rdeUpgradeOne(client *qovery.APIClient, orgId string, child *rdeChildInfo) {
-	name := child.ProjectName
-	if strings.HasPrefix(name, "rde-") {
-		name = strings.TrimPrefix(name, "rde-")
-	}
+	name := strings.TrimPrefix(child.ProjectName, "rde-")
 
 	if rdeUpgradeStrategy == "image" {
 		utils.Println(fmt.Sprintf("  Upgrading %s (strategy: image - redeploy only)...", name))

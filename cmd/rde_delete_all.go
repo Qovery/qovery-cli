@@ -57,10 +57,7 @@ This will delete the environment, project, RBAC role, and API token for each RDE
 
 		for _, child := range children {
 			// Extract the RDE name from project name (strip "rde-" prefix if present)
-			name := child.ProjectName
-			if strings.HasPrefix(name, "rde-") {
-				name = strings.TrimPrefix(name, "rde-")
-			}
+			name := strings.TrimPrefix(child.ProjectName, "rde-")
 
 			utils.Println(fmt.Sprintf("=== Deleting: %s ===", child.ProjectName))
 
