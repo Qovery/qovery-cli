@@ -532,3 +532,49 @@ func rdeBlueprintNameForProjectId(client *qovery.APIClient, projectId string) st
 	}
 	return project.Name
 }
+
+// rdeGetBlueprintClusterId returns the cluster ID of the blueprint environment.
+func rdeGetBlueprintClusterId(client *qovery.APIClient, blueprintEnvId string) string {
+	env, _, err := client.EnvironmentMainCallsAPI.GetEnvironment(ctx(), blueprintEnvId).Execute()
+	if err != nil {
+		return ""
+	}
+	return env.ClusterId
+}
+
+// rdeIsEnvDeleted checks if an environment no longer exists (404) or is in a terminal deleted state.
+func rdeIsEnvDeleted(client *qovery.APIClient, envId string) bool {
+	_, resp, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(ctx(), envId).Execute()
+	if err != nil {
+		// If 404, it's deleted
+		if resp != nil && resp.StatusCode == 404 {
+			return true
+		}
+		return false
+	}
+	return false
+}
+
+// rdeWaitForEnvsDeletion waits for multiple environments to be deleted, polling until they return 404 or timeout.
+func rdeWaitForEnvsDeletion(client *qovery.APIClient, envIds []string, timeout time.Duration) {
+	deadline := time.Now().Add(timeout)
+	remaining := make(map[string]bool)
+	for _, id := range envIds {
+		remaining[id] = true
+	}
+
+	for len(remaining) > 0 && time.Now().Before(deadline) {
+		for id := range remaining {
+			if rdeIsEnvDeleted(client, id) {
+				delete(remaining, id)
+			}
+		}
+		if len(remaining) > 0 {
+			time.Sleep(5 * time.Second)
+		}
+	}
+
+	if len(remaining) > 0 {
+		utils.PrintlnInfo(fmt.Sprintf("%d environment(s) did not finish deleting within timeout, proceeding anyway", len(remaining)))
+	}
+}
