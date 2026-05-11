@@ -560,7 +560,7 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 
 				// Trigger a deployment only when the target status is in terminal state
 				if utils.IsTerminalClusterState(*clusterStatus.Status) {
-					utils.Println(fmt.Sprintf("[Organization '%s' - Cluster '%s'] - Starting deployment - https://console.qovery.com/organization/%s/cluster/%s/logs", cluster.OrganizationName, cluster.ClusterName, cluster.OrganizationId, cluster.ClusterId))
+					utils.Println(fmt.Sprintf("[Organization '%s' - Cluster '%s'] - Starting deployment - https://console.qovery.com/organization/%s/cluster/%s/cluster-logs", cluster.OrganizationName, cluster.ClusterName, cluster.OrganizationId, cluster.ClusterId))
 					var err error
 					if service.UpgradeClusterNewK8sVersion != nil {
 						err = service.upgradeCluster(cluster.ClusterId, service.DryRunDisabled)

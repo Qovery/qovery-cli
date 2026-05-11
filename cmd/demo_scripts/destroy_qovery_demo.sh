@@ -6,12 +6,12 @@ QOVERY_API_URL=${QOVERY_API_URL:='https://api.qovery.com'}
 CLUSTER_NAME=$1
 ORGANIZATION_ID=$2
 case $2 in
-  qov_*)
-    AUTHORIZATION_HEADER="Authorization: Token $3"
+qov_*)
+  AUTHORIZATION_HEADER="Authorization: Token $3"
   ;;
 
-  *)
-    AUTHORIZATION_HEADER="Authorization: Bearer $3"
+*)
+  AUTHORIZATION_HEADER="Authorization: Bearer $3"
   ;;
 esac
 DELETE_QOVERY_CONFIG=$4
@@ -34,8 +34,7 @@ delete_qovery_demo_cluster() {
   clusterName=$1
   clusterId=$(curl -s -X GET --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' ${QOVERY_API_URL}/organization/"${ORGANIZATION_ID}"/cluster | jq -r '.results[] | select(.name=="'"$clusterName"'") | .id')
 
-  if [ -n "$clusterId" ]
-  then
+  if [ -n "$clusterId" ]; then
     curl -s -X DELETE --fail-with-body -H "${AUTHORIZATION_HEADER}" ${QOVERY_API_URL}'/organization/'"${ORGANIZATION_ID}"'/cluster/'"${clusterId}"'?deleteMode=DELETE_QOVERY_CONFIG' || true
   fi
 }
@@ -43,12 +42,11 @@ delete_qovery_demo_cluster() {
 delete_k3d_cluster() {
   clusterName=$1
   clusterExist=$(k3d cluster list -o json | jq '.[] | select(.name=="'"$clusterName"'") | .name')
-  if [ -n "$clusterExist" ]
-  then
+  if [ -n "$clusterExist" ]; then
     k3d cluster delete "$clusterName" || true
   fi
-  docker network rm "k3d-${clusterName}" > /dev/null 2>&1 || true
-  k3d registry delete qovery-registry.lan > /dev/null 2>&1 || true
+  docker network rm "k3d-${clusterName}" >/dev/null 2>&1 || true
+  k3d registry delete qovery-registry.lan >/dev/null 2>&1 || true
 }
 
 teardown_network() {
@@ -88,18 +86,18 @@ echo '""""""""""""""""""""""""""""""""""""""""""""'
 teardown_network
 
 if [ "$DELETE_QOVERY_CONFIG" = 'true' ]; then
-echo ''
-echo '""""""""""""""""""""""""""""""""""""""""""""'
-echo 'Deleting cluster Qovery side'
-echo '""""""""""""""""""""""""""""""""""""""""""""'
- delete_qovery_demo_cluster "$CLUSTER_NAME"
+  echo ''
+  echo '""""""""""""""""""""""""""""""""""""""""""""'
+  echo 'Deleting cluster Qovery side'
+  echo '""""""""""""""""""""""""""""""""""""""""""""'
+  delete_qovery_demo_cluster "$CLUSTER_NAME"
 fi
 
 echo ''
 echo '""""""""""""""""""""""""""""""""""""""""""""'
 echo "Qovery local demo cluster is now deleted !!!"
 if [ "$DELETE_QOVERY_CONFIG" != 'true' ]; then
-echo "Your created environments still exits !"
-echo "Go to https://console.qovery.com/organization/${ORGANIZATION_ID}/clusters/general to delete Qovery cluster config"
+  echo "Your created environments still exits !"
+  echo "Go to https://console.qovery.com/organization/${ORGANIZATION_ID}/clusters to delete Qovery cluster config"
 fi
 echo '""""""""""""""""""""""""""""""""""""""""""""'
