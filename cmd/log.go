@@ -15,6 +15,7 @@ var (
 	rawFormat      bool
 	logJobName     string
 	logServiceName string
+	logServiceId   string
 )
 
 var logCmd = &cobra.Command{
@@ -43,6 +44,8 @@ func getLogs() string {
 	}
 
 	switch {
+	case logServiceId != "":
+		service = &utils.Service{ID: utils.Id(logServiceId)}
 	case applicationName != "":
 		app, err := getApplicationContextResource(client, applicationName, envID)
 		if err != nil {
@@ -126,4 +129,5 @@ func init() {
 	logCmd.Flags().StringVarP(&databaseName, "database", "d", "", "Database Name")
 	logCmd.Flags().StringVarP(&logJobName, "job", "j", "", "Job Name")
 	logCmd.Flags().StringVarP(&logServiceName, "service", "s", "", "Service Name")
+	logCmd.Flags().StringVarP(&logServiceId, "service-id", "", "", "Service ID (UUID) - skips name lookup, use when you already have the ID from a console URL")
 }
