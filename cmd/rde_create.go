@@ -276,6 +276,7 @@ func rdeSetRolePermissions(client *qovery.APIClient, orgId string, roleId string
 			devMode := qovery.ENVIRONMENTMODEENUM_DEVELOPMENT
 			stagingMode := qovery.ENVIRONMENTMODEENUM_STAGING
 			prodMode := qovery.ENVIRONMENTMODEENUM_PRODUCTION
+			previewMode := qovery.ENVIRONMENTMODEENUM_PREVIEW
 			deployerPerm := qovery.ORGANIZATIONCUSTOMROLEPROJECTPERMISSION_DEPLOYER
 			viewerPerm := qovery.ORGANIZATIONCUSTOMROLEPROJECTPERMISSION_VIEWER
 			noAccessPerm := qovery.ORGANIZATIONCUSTOMROLEPROJECTPERMISSION_NO_ACCESS
@@ -284,18 +285,21 @@ func rdeSetRolePermissions(client *qovery.APIClient, orgId string, roleId string
 				{EnvironmentType: &devMode, Permission: &deployerPerm},
 				{EnvironmentType: &stagingMode, Permission: &viewerPerm},
 				{EnvironmentType: &prodMode, Permission: &noAccessPerm},
+				{EnvironmentType: &previewMode, Permission: &deployerPerm},
 			}
 		} else {
 			// Other projects: NO_ACCESS for all
 			devMode := qovery.ENVIRONMENTMODEENUM_DEVELOPMENT
 			stagingMode := qovery.ENVIRONMENTMODEENUM_STAGING
 			prodMode := qovery.ENVIRONMENTMODEENUM_PRODUCTION
+			previewMode := qovery.ENVIRONMENTMODEENUM_PREVIEW
 			noAccessPerm := qovery.ORGANIZATIONCUSTOMROLEPROJECTPERMISSION_NO_ACCESS
 
 			permissions = []qovery.OrganizationCustomRoleUpdateRequestProjectPermissionsInnerPermissionsInner{
 				{EnvironmentType: &devMode, Permission: &noAccessPerm},
 				{EnvironmentType: &stagingMode, Permission: &noAccessPerm},
 				{EnvironmentType: &prodMode, Permission: &noAccessPerm},
+				{EnvironmentType: &previewMode, Permission: &noAccessPerm},
 			}
 		}
 
