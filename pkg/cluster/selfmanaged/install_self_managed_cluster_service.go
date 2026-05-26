@@ -244,6 +244,10 @@ Qovery provides you with a default configuration that can be customized based on
 Helm values location: %s
 	`, helmValuesFileName))
 
+	utils.Println(`
+# Note: --rollback-on-failure requires Helm >= 3.15.0 (replaces the deprecated --atomic flag).
+# Check your version with: helm version`)
+
 	utils.Println(fmt.Sprintf(`
 # Install Qovery on your cluster first, without some services to avoid circular dependency errors
 helm upgrade --install --create-namespace -n qovery -f "%s" --rollback-on-failure \
