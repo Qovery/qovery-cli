@@ -244,9 +244,13 @@ Qovery provides you with a default configuration that can be customized based on
 Helm values location: %s
 	`, helmValuesFileName))
 
+	utils.Println(`
+# Note: --rollback-on-failure requires Helm >= 3.15.0 (replaces the deprecated --atomic flag).
+# Check your version with: helm version`)
+
 	utils.Println(fmt.Sprintf(`
 # Install Qovery on your cluster first, without some services to avoid circular dependency errors
-helm upgrade --install --create-namespace -n qovery -f "%s" --atomic \
+helm upgrade --install --create-namespace -n qovery -f "%s" --rollback-on-failure \
 	 --set services.certificates.cert-manager-configs.enabled=false \
 	 --set services.certificates.qovery-cert-manager-webhook.enabled=false \
 	 --set services.qovery.qovery-cluster-agent.enabled=false \
@@ -255,7 +259,7 @@ helm upgrade --install --create-namespace -n qovery -f "%s" --atomic \
 
 	utils.Println(fmt.Sprintf(`
 # Then, re-apply the full Qovery installation with all services
-helm upgrade --install --create-namespace -n qovery -f "%s" --wait --atomic qovery qovery/qovery
+helm upgrade --install --create-namespace -n qovery -f "%s" --wait --rollback-on-failure qovery qovery/qovery
 `, helmValuesFileName))
 	utils.Println("////////////////////////////////////////////////////////////////////////////////////")
 	utils.PrintlnInfo("Please note that the installation process may take a few minutes to complete.")
