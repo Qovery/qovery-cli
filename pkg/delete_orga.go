@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,6 +13,36 @@ import (
 
 	"github.com/qovery/qovery-cli/utils"
 )
+
+func printOrganizationsPreview(organizationIds []string) {
+	tokenType, token, err := utils.GetAccessToken()
+	if err != nil {
+		log.Warnf("Could not fetch organization details: %v", err)
+		for _, id := range organizationIds {
+			fmt.Printf("  - %s\n", id)
+		}
+		return
+	}
+	client := utils.GetQoveryClient(tokenType, token)
+
+	for _, orgId := range organizationIds {
+		org, _, err := client.OrganizationMainCallsAPI.GetOrganization(context.Background(), orgId).Execute()
+		if err != nil {
+			fmt.Printf("  - %s (name: unknown)\n", orgId)
+		} else {
+			fmt.Printf("  - %s (%s)\n", orgId, org.Name)
+		}
+
+		clusters, _, err := client.ClustersAPI.ListOrganizationCluster(context.Background(), orgId).Execute()
+		if err != nil {
+			log.Warnf("Could not fetch clusters for organization %s: %v", orgId, err)
+		} else if clusters != nil {
+			for _, c := range clusters.GetResults() {
+				fmt.Printf("      cluster: %s (%s)\n", c.Id, c.Name)
+			}
+		}
+	}
+}
 
 type DeleteOrganizationsResponse struct {
 	Deleted []string                      `json:"deleted"`
@@ -33,7 +64,15 @@ func DeleteOrganizations(organizationIds []string, allowFailedClusters bool, dry
 		os.Exit(1)
 	}
 
-	if !utils.Validate("delete") {
+	fmt.Printf("The following %d organization(s) will be deleted (allowFailedClusters=%t):\n", len(organizationIds), allowFailedClusters)
+	printOrganizationsPreview(organizationIds)
+	fmt.Println()
+
+	if !dryRunDisabled {
+		if !utils.Validate("delete") {
+			return
+		}
+		log.Info("Dry run: no deletion performed")
 		return
 	}
 
@@ -47,14 +86,6 @@ func DeleteOrganizations(organizationIds []string, allowFailedClusters bool, dry
 	body, err := json.Marshal(organizationIds)
 	if err != nil {
 		log.Fatalf("Failed to marshal organization IDs: %v", err)
-	}
-
-	if !dryRunDisabled {
-		fmt.Printf("Would delete %d organization(s) (allowFailedClusters=%t):\n", len(organizationIds), allowFailedClusters)
-		for _, id := range organizationIds {
-			fmt.Printf("  - %s\n", id)
-		}
-		return
 	}
 
 	// Make HTTP request
