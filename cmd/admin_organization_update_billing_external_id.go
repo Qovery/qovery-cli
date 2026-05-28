@@ -70,7 +70,7 @@ func updateOrganizationBillingExternalId() {
 		utils.PrintlnError(fmt.Errorf("failed to execute request: %w", err))
 		os.Exit(1)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 
 	if res.StatusCode >= 400 {
 		body, _ := io.ReadAll(res.Body)
