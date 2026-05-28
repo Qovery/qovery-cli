@@ -16,11 +16,11 @@ var (
 	billingExternalId                         string
 	adminOrganizationUpdateBillingExternalId = &cobra.Command{
 		Use:   "update-billing-external-id",
-		Short: "Update the billing external ID of an organization",
-		Long: `Update the billing external ID of an organization.
+		Short: "Update the billing external ID (Chargebee subscription ID) of an organization",
+		Long: `Update the billing external ID of an organization. The billing external ID is the Chargebee subscription ID.
 
 Example:
-  qovery admin update-billing-external-id --organization-id "xxx-xxx-xxx" --billing-external-id "stripe_cus_xxx"
+  qovery admin update-billing-external-id --organization-id "xxx-xxx-xxx" --billing-external-id "AzyXZ8T0EI4jB4AZf"
 `,
 		Run: func(cmd *cobra.Command, args []string) {
 			updateOrganizationBillingExternalId()
@@ -30,7 +30,7 @@ Example:
 
 func init() {
 	adminOrganizationUpdateBillingExternalId.Flags().StringVarP(&organizationId, "organization-id", "o", "", "Organization ID (required)")
-	adminOrganizationUpdateBillingExternalId.Flags().StringVarP(&billingExternalId, "billing-external-id", "b", "", "Billing external ID (required)")
+	adminOrganizationUpdateBillingExternalId.Flags().StringVarP(&billingExternalId, "billing-external-id", "b", "", "Chargebee subscription ID (required)")
 
 	_ = adminOrganizationUpdateBillingExternalId.MarkFlagRequired("organization-id")
 	_ = adminOrganizationUpdateBillingExternalId.MarkFlagRequired("billing-external-id")
