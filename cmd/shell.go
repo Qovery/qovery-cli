@@ -52,7 +52,11 @@ var shellCmd = &cobra.Command{
 			return
 		}
 
-		pkg.ExecShell(shellRequest, "/shell/exec")
+		endpoint := "/shell/exec"
+		if ephemeral {
+			endpoint = "/shell/ephemeral"
+		}
+		pkg.ExecShell(shellRequest, endpoint)
 	},
 }
 
@@ -60,6 +64,7 @@ var (
 	command          []string
 	podName          string
 	podContainerName string
+	ephemeral        bool
 )
 
 func shellRequestWithContextFlags() (*pkg.ShellRequest, error) {
@@ -348,10 +353,12 @@ func init() {
 	shellCmd.Flags().StringVarP(&serviceName, "service", "", "", "Service Name")
 	shellCmd.Flags().StringVarP(&podName, "pod", "p", "", "pod name where to exec into")
 	shellCmd.Flags().StringVar(&podContainerName, "container", "", "container name inside the pod")
+	shellCmd.Flags().BoolVar(&ephemeral, "ephemeral", false, "spawn a new ephemeral pod using the service image and env vars instead of connecting to an existing pod")
 	shellCmd.Example = "qovery shell\n" +
 		"qovery shell <qovery_console_service_url>\n" +
 		"qovery shell --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>\n" +
-		"qovery shell --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name> --pod <pod_name> --container <container_name> --command <command>"
+		"qovery shell --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name> --pod <pod_name> --container <container_name> --command <command>\n" +
+		"qovery shell --ephemeral --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>"
 
 	rootCmd.AddCommand(shellCmd)
 }
