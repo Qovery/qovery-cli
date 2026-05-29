@@ -34,7 +34,7 @@ jobs:
           version: latest
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
       # upload release artifacts to Cloudflare R2 (S3 compatible)
       - name: Upload release artifacts to Cloudflare R2
         if: github.ref_type == 'tag'
