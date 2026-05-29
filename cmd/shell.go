@@ -54,6 +54,11 @@ var shellCmd = &cobra.Command{
 
 		endpoint := "/shell/exec"
 		if ephemeral {
+			if ephemeralMode != "clone" && ephemeralMode != "debug" {
+				utils.PrintlnError(errors.New("--mode must be 'clone' or 'debug'"))
+				return
+			}
+			shellRequest.EphemeralMode = ephemeralMode
 			endpoint = "/shell/ephemeral"
 		}
 		pkg.ExecShell(shellRequest, endpoint)
@@ -65,6 +70,7 @@ var (
 	podName          string
 	podContainerName string
 	ephemeral        bool
+	ephemeralMode    string
 )
 
 func shellRequestWithContextFlags() (*pkg.ShellRequest, error) {
@@ -353,12 +359,13 @@ func init() {
 	shellCmd.Flags().StringVarP(&serviceName, "service", "", "", "Service Name")
 	shellCmd.Flags().StringVarP(&podName, "pod", "p", "", "pod name where to exec into")
 	shellCmd.Flags().StringVar(&podContainerName, "container", "", "container name inside the pod")
-	shellCmd.Flags().BoolVar(&ephemeral, "ephemeral", false, "spawn a new ephemeral pod using the service image and env vars instead of connecting to an existing pod")
+	shellCmd.Flags().BoolVar(&ephemeral, "ephemeral", false, "spawn an ephemeral shell instead of connecting to an existing pod")
+	shellCmd.Flags().StringVar(&ephemeralMode, "mode", "clone", "ephemeral mode: 'clone' (new isolated pod, Heroku-style) or 'debug' (ephemeral container injected into existing pod, kubectl-debug style)")
 	shellCmd.Example = "qovery shell\n" +
 		"qovery shell <qovery_console_service_url>\n" +
 		"qovery shell --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>\n" +
-		"qovery shell --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name> --pod <pod_name> --container <container_name> --command <command>\n" +
-		"qovery shell --ephemeral --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>"
+		"qovery shell --ephemeral --mode clone --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>\n" +
+		"qovery shell --ephemeral --mode debug --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>"
 
 	rootCmd.AddCommand(shellCmd)
 }
