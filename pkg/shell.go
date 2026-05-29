@@ -110,11 +110,16 @@ func ExecShell(req TerminalSize, path string) {
 			break
 		}
 
-		log.Info("Attempting to (re)connect to WebSocket")
+		log.Info("Attempting to (re)connect")
+		var requestId string
 
-		wsConn, err := createWebsocketConn(req, path)
+		wsConn, resp, err := createWebsocketConn(req, path)
+		if resp != nil {
+			requestId = resp.Header.Get("X-Qovery-Request-Id")
+			log.Info("Connected to shell with requestId: ", requestId)
+		}
 		if err != nil {
-			log.Errorf("WebSocket connection failed: %v", err)
+			log.Errorf("WebSocket connection failed: %v %s", err, requestId)
 			if ctx.Err() != nil || userCancelled.Load() || normalExit.Load() {
 				log.Info("User cancelled or shell exited during connection attempt.")
 				break
@@ -122,10 +127,9 @@ func ExecShell(req TerminalSize, path string) {
 			time.Sleep(ReconnectDelay)
 			continue
 		}
-
 		done := make(chan struct{})
 		wg.Add(1)
-		go readWebsocketConnection(ctx, cancel, wsConn, stdoutWriter, done, &normalExit, &wg)
+		go readWebsocketConnection(ctx, cancel, wsConn, requestId, stdoutWriter, done, &normalExit, &wg)
 
 		pingTicker := time.NewTicker(PingInterval)
 
@@ -173,30 +177,30 @@ func ExecShell(req TerminalSize, path string) {
 	wg.Wait()
 }
 
-func createWebsocketConn(req interface{}, path string) (*websocket.Conn, error) {
+func createWebsocketConn(req interface{}, path string) (*websocket.Conn, *http.Response, error) {
 	command, err := query.Values(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	wsURL, err := url.Parse(fmt.Sprintf("%s%s", utils.WebsocketUrl(), path))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	pattern := regexp.MustCompile("%5B([0-9]+)%5D=")
 	wsURL.RawQuery = pattern.ReplaceAllString(command.Encode(), "[${1}]=")
 
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	headers := http.Header{"Authorization": {utils.GetAuthorizationHeaderValue(tokenType, token)}}
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL.String(), headers)
-	return conn, err
+	conn, resp, err := websocket.DefaultDialer.Dial(wsURL.String(), headers)
+	return conn, resp, err
 }
 
-func readWebsocketConnection(ctx context.Context, cancel context.CancelFunc, wsConn *websocket.Conn, out io.Writer, done chan struct{}, normalExit *atomic.Bool, wg *sync.WaitGroup) {
+func readWebsocketConnection(ctx context.Context, cancel context.CancelFunc, wsConn *websocket.Conn, requestId string, out io.Writer, done chan struct{}, normalExit *atomic.Bool, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	var once sync.Once
@@ -231,7 +235,7 @@ func readWebsocketConnection(ctx context.Context, cancel context.CancelFunc, wsC
 			if err != nil {
 				var e *websocket.CloseError
 				if !errors.As(err, &e) {
-					log.Errorf("error while reading on websocket: %v", err)
+					log.Errorf("error while reading on websocket %s: %v  ", requestId, err)
 					return
 				}
 				switch {
@@ -239,14 +243,14 @@ func readWebsocketConnection(ctx context.Context, cancel context.CancelFunc, wsC
 					log.Info("** shell terminated bye **")
 					normalExit.Store(true)
 				case e.Code == 1007 || e.Code == 1008: // same as IsPermanentCloseError
-					log.Errorf("Shell connection rejected: check your permissions or run 'qovery auth'")
+					log.Errorf("Shell connection %s rejected: check your permissions or run 'qovery auth'", requestId)
 					cancel()
 				case IsAgentResponseTimeout(err): // must come before generic 1011 branch
-					log.Warnf("Shell session timed out while the agent was preparing your connection. Retrying...")
+					log.Warnf("Shell session %s timed out while the agent was preparing your connection. Retrying...", requestId)
 				case e.Code == 1011:
-					log.Warnf("%s Retrying...", ServiceUnavailableMessage("Shell"))
+					log.Warnf("%s Closing %s and Retrying...", ServiceUnavailableMessage("Shell"), requestId)
 				default:
-					log.Errorf("connection closed by server: %v", e)
+					log.Errorf("connection %s closed by server: %v", requestId, e)
 				}
 				return
 			}
