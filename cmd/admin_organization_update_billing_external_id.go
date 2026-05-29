@@ -39,6 +39,15 @@ func init() {
 }
 
 func updateOrganizationBillingExternalId() {
+	if organizationId == "" {
+		utils.PrintlnError(fmt.Errorf("organization ID is required"))
+		os.Exit(1)
+	}
+	if billingExternalId == "" {
+		utils.PrintlnError(fmt.Errorf("billing external ID is required"))
+		os.Exit(1)
+	}
+
 	tokenType, token, err := utils.GetAccessToken()
 	if err != nil {
 		utils.PrintlnError(err)
