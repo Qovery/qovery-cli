@@ -60,6 +60,8 @@ var shellCmd = &cobra.Command{
 			}
 			shellRequest.EphemeralMode = ephemeralMode
 			endpoint = "/shell/ephemeral"
+		} else if cmd.Flags().Changed("mode") {
+			utils.PrintlnInfo("--mode has no effect without --ephemeral; ignoring it.")
 		}
 		pkg.ExecShell(shellRequest, endpoint)
 	},
