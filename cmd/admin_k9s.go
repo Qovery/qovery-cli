@@ -46,7 +46,7 @@ func launchK9s(args []string) {
 	}
 
 	clusterId := args[0]
-	kubeconfig := pkg.GetKubeconfigByClusterId(clusterId)
+	kubeconfig := pkg.GetKubeconfigByClusterId(clusterId, false)
 	filePath := utils.WriteInFile(clusterId, "kubeconfig", []byte(kubeconfig))
 	if err := os.Setenv("KUBECONFIG", filePath); err != nil {
 		log.Fatal(err)

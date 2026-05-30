@@ -53,7 +53,7 @@ func LoadCredentials(clusterId string, doNotConnectToBastion bool) error {
 		}
 		utils.PrintlnInfo(fmt.Sprintf("Set environment variable %s for child process", cred.Key))
 	}
-	kubeconfig := GetKubeconfigByClusterId(clusterId)
+	kubeconfig := GetKubeconfigByClusterId(clusterId, false)
 	filePath := utils.WriteInFile(clusterId, "kubeconfig", []byte(kubeconfig))
 	if err := os.Setenv("KUBECONFIG", filePath); err != nil {
 		return fmt.Errorf("failed to set KUBECONFIG: %w", err)

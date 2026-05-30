@@ -12,19 +12,25 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var readOnlyKubeconfig bool
+
 var downloadKubeconfigCmd = &cobra.Command{
 	Use:   "kubeconfig",
 	Short: "Retrieve kubeconfig with a cluster ID",
 	Run: func(cmd *cobra.Command, args []string) {
 		validateKubeconfigFlags()
-		kubeconfigFilename := downloadKubeconfig(clusterId)
+		kubeconfigFilename := downloadKubeconfig(clusterId, readOnlyKubeconfig)
 		log.Info("Kubeconfig file created in the current directory.")
 		log.Info("Execute `export KUBECONFIG=" + kubeconfigFilename + "` to use it.")
+		if readOnlyKubeconfig {
+			log.Info("This kubeconfig uses read-only access (ServiceAccount with view ClusterRole).")
+		}
 	},
 }
 
 func init() {
 	downloadKubeconfigCmd.Flags().StringVarP(&clusterId, "cluster-id", "c", "", "Cluster ID")
+	downloadKubeconfigCmd.Flags().BoolVarP(&readOnlyKubeconfig, "read-only", "r", false, "Download a read-only kubeconfig backed by a Kubernetes service account with the view ClusterRole")
 	clusterCmd.AddCommand(downloadKubeconfigCmd)
 }
 
@@ -35,11 +41,9 @@ func validateKubeconfigFlags() {
 	}
 }
 
-func downloadKubeconfig(clusterId string) string {
-	// download kubeconfig
-	kubeconfig := pkg.GetKubeconfigByClusterId(clusterId)
+func downloadKubeconfig(clusterId string, readOnly bool) string {
+	kubeconfig := pkg.GetKubeconfigByClusterId(clusterId, readOnly)
 
-	// get current working directory
 	dir, err := os.Getwd()
 
 	if err != nil {
@@ -47,8 +51,11 @@ func downloadKubeconfig(clusterId string) string {
 		os.Exit(1)
 	}
 
-	kubeconfigFilename := filepath.Join(dir, "kubeconfig-"+clusterId+".yaml")
-	// create a file in the current folder
+	suffix := ""
+	if readOnly {
+		suffix = "-readonly"
+	}
+	kubeconfigFilename := filepath.Join(dir, "kubeconfig"+suffix+"-"+clusterId+".yaml")
 	writeError := os.WriteFile(kubeconfigFilename, []byte(kubeconfig), 0600)
 	if writeError != nil {
 		utils.PrintlnError(writeError)
