@@ -59,6 +59,8 @@ var shellCmd = &cobra.Command{
 				return
 			}
 			shellRequest.EphemeralMode = ephemeralMode
+			shellRequest.CpuOverride = cpuOverride
+			shellRequest.MemoryOverride = memoryOverride
 			endpoint = "/shell/ephemeral"
 		} else if cmd.Flags().Changed("mode") {
 			utils.PrintlnInfo("--mode has no effect without --ephemeral; ignoring it.")
@@ -73,6 +75,8 @@ var (
 	podContainerName string
 	ephemeral        bool
 	ephemeralMode    string
+	cpuOverride      string
+	memoryOverride   string
 )
 
 func shellRequestWithContextFlags() (*pkg.ShellRequest, error) {
@@ -363,10 +367,13 @@ func init() {
 	shellCmd.Flags().StringVar(&podContainerName, "container", "", "container name inside the pod")
 	shellCmd.Flags().BoolVar(&ephemeral, "ephemeral", false, "spawn an ephemeral shell instead of connecting to an existing pod")
 	shellCmd.Flags().StringVar(&ephemeralMode, "mode", "clone", "ephemeral mode: 'clone' (new isolated pod, Heroku-style) or 'debug' (ephemeral container injected into existing pod, kubectl-debug style)")
+	shellCmd.Flags().StringVar(&cpuOverride, "cpu", "", "override CPU request+limit for the ephemeral pod (e.g. '500m', '2')")
+	shellCmd.Flags().StringVar(&memoryOverride, "memory", "", "override memory request+limit for the ephemeral pod (e.g. '512Mi', '2Gi')")
 	shellCmd.Example = "qovery shell\n" +
 		"qovery shell <qovery_console_service_url>\n" +
 		"qovery shell --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>\n" +
 		"qovery shell --ephemeral --mode clone --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>\n" +
+		"qovery shell --ephemeral --mode clone --memory 2Gi --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>\n" +
 		"qovery shell --ephemeral --mode debug --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>"
 
 	rootCmd.AddCommand(shellCmd)

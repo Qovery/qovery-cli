@@ -47,6 +47,8 @@ type ShellRequest struct {
 	TtyWidth       uint16   `url:"tty_width"`
 	TtyHeight      uint16   `url:"tty_height"`
 	EphemeralMode  string   `url:"mode,omitempty"`
+	CpuOverride    string   `url:"cpu_override,omitempty"`
+	MemoryOverride string   `url:"memory_override,omitempty"`
 }
 
 func (s *ShellRequest) SetTtySize(width uint16, height uint16) {
