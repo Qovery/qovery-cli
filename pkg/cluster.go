@@ -58,10 +58,10 @@ func UpdateClusterKubeconfig(organizationId string, clusterId string, kubeconfig
 func GetTokenByClusterId(clusterId string, readOnly bool) string {
 	qoveryClient := GetQoveryClientInstance()
 
-	// readOnly is accepted by the CLI flag but not yet passed to the server —
-	// token generation for the qovery-readonly SA requires cluster-agent gRPC (future work).
-	_ = readOnly
 	request := qoveryClient.DefaultAPI.GetClusterTokenByClusterId(context.Background(), clusterId)
+	if readOnly {
+		request = request.ReadOnly(true)
+	}
 	_, response, err := qoveryClient.DefaultAPI.GetClusterTokenByClusterIdExecute(request)
 	if err != nil {
 		utils.PrintlnError(err)
