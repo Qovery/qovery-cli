@@ -58,6 +58,9 @@ var shellCmd = &cobra.Command{
 				utils.PrintlnError(errors.New("--mode must be 'clone' or 'debug'"))
 				return
 			}
+			if ephemeralMode == "debug" && (cpuOverride != "" || memoryOverride != "") {
+				utils.PrintlnInfo("--cpu/--memory only apply to --mode clone; ignoring them in debug mode.")
+			}
 			shellRequest.EphemeralMode = ephemeralMode
 			shellRequest.CpuOverride = cpuOverride
 			shellRequest.MemoryOverride = memoryOverride
