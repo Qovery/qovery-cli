@@ -4,12 +4,18 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 
 	"github.com/fatih/color"
 	"github.com/qovery/qovery-client-go"
 
 	"github.com/qovery/qovery-cli/pkg/promptuifactory"
 	"github.com/qovery/qovery-cli/utils"
+)
+
+const (
+	gcpCredentialsTypeWif            = "Workload Identity Federation"
+	gcpCredentialsTypeServiceAccount = "Service Account JSON Key"
 )
 
 type ClusterCredentialsService interface {
@@ -77,9 +83,8 @@ func (service *ClusterCredentialsServiceImpl) AskToCreateCredentials(
 		creds, resp, err := service.client.CloudProviderCredentialsAPI.CreateOnPremiseCredentials(context.Background(), organizationID).OnPremiseCredentialsRequest(qovery.OnPremiseCredentialsRequest{
 			Name: "on-premise",
 		}).Execute()
-		if err != nil || resp.StatusCode >= 400 {
-			body, _ := io.ReadAll(resp.Body)
-			return nil, fmt.Errorf("%s: %v\n%s", color.RedString("Error"), string(body), err)
+		if apiErr := formatCloudProviderCredentialsApiError(resp, err); apiErr != nil {
+			return nil, apiErr
 		}
 		return creds, nil
 	}
@@ -122,9 +127,8 @@ func (service *ClusterCredentialsServiceImpl) AskToCreateCredentials(
 				SecretAccessKey: secretKey,
 			},
 		}).Execute()
-		if err != nil || resp.StatusCode >= 400 {
-			body, _ := io.ReadAll(resp.Body)
-			return nil, fmt.Errorf("%s: %v\n%s", color.RedString("Error"), string(body), err)
+		if apiErr := formatCloudProviderCredentialsApiError(resp, err); apiErr != nil {
+			return nil, apiErr
 		}
 		return creds, nil
 
@@ -169,30 +173,79 @@ func (service *ClusterCredentialsServiceImpl) AskToCreateCredentials(
 			ScalewayProjectId:      projectId,
 			ScalewayOrganizationId: organizationId,
 		}).Execute()
-		if err != nil || resp.StatusCode >= 400 {
-			body, _ := io.ReadAll(resp.Body)
-			return nil, fmt.Errorf("%s: %v\n%s", color.RedString("Error"), string(body), err)
+		if apiErr := formatCloudProviderCredentialsApiError(resp, err); apiErr != nil {
+			return nil, apiErr
 		}
 		return creds, nil
 
 	case qovery.CLOUDPROVIDERENUM_GCP:
-		gcpJsonCredentials, err := service.promptUiFactory.RunPrompt("Enter your GCP JSON credentials (*base64* encoded)", "")
+		_, gcpCredentialsType, err := service.promptUiFactory.RunSelect("Which GCP credentials type do you want to use?", []string{
+			gcpCredentialsTypeWif,
+			gcpCredentialsTypeServiceAccount,
+		})
 		if err != nil {
 			return nil, err
 		}
-		if utils.IsEmptyOrBlank(gcpJsonCredentials) {
-			return nil, fmt.Errorf("please enter a non-empty gcp json credentials")
+
+		var gcpCredentialsRequest qovery.GcpCredentialsRequest
+		switch gcpCredentialsType {
+		case gcpCredentialsTypeWif:
+			serviceAccountEmail, err := service.promptUiFactory.RunPrompt("Enter your GCP service account email", "")
+			if err != nil {
+				return nil, err
+			}
+			workloadIdentityProviderResource, err := service.promptUiFactory.RunPrompt("Enter your GCP Workload Identity provider resource", "")
+			if err != nil {
+				return nil, err
+			}
+			if utils.IsEmptyOrBlank(serviceAccountEmail) {
+				return nil, fmt.Errorf("please enter a non-empty gcp service account email")
+			}
+			if utils.IsEmptyOrBlank(workloadIdentityProviderResource) {
+				return nil, fmt.Errorf("please enter a non-empty gcp workload identity provider resource")
+			}
+
+			gcpCredentialsRequest = qovery.GcpWorkloadIdentityFederationCredentialsRequestAsGcpCredentialsRequest(
+				qovery.NewGcpWorkloadIdentityFederationCredentialsRequest(credentialsName, serviceAccountEmail, workloadIdentityProviderResource),
+			)
+
+		case gcpCredentialsTypeServiceAccount:
+			gcpJsonCredentials, err := service.promptUiFactory.RunPrompt("Enter your GCP JSON credentials (*base64* encoded)", "")
+			if err != nil {
+				return nil, err
+			}
+			if utils.IsEmptyOrBlank(gcpJsonCredentials) {
+				return nil, fmt.Errorf("please enter a non-empty gcp json credentials")
+			}
+
+			gcpServiceAccountKeyRequest := qovery.NewGcpServiceAccountKeyCredentialsRequest(credentialsName, gcpJsonCredentials)
+			gcpCredentialsRequest = qovery.GcpServiceAccountKeyCredentialsRequestAsGcpCredentialsRequest(gcpServiceAccountKeyRequest)
+
+		default:
+			return nil, fmt.Errorf("unhandled gcp credentials type during credentials creation: %s", gcpCredentialsType)
 		}
-		creds, resp, err := service.client.CloudProviderCredentialsAPI.CreateGcpCredentials(context.Background(), organizationID).GcpCredentialsRequest(qovery.GcpCredentialsRequest{
-			Name:           credentialsName,
-			GcpCredentials: gcpJsonCredentials,
-		}).Execute()
-		if err != nil || resp.StatusCode >= 400 {
-			body, _ := io.ReadAll(resp.Body)
-			return nil, fmt.Errorf("%s: %v\n%s", color.RedString("Error"), string(body), err)
+
+		creds, resp, err := service.client.CloudProviderCredentialsAPI.CreateGcpCredentials(context.Background(), organizationID).GcpCredentialsRequest(gcpCredentialsRequest).Execute()
+		if apiErr := formatCloudProviderCredentialsApiError(resp, err); apiErr != nil {
+			return nil, apiErr
 		}
 		return creds, nil
 	}
 
 	return nil, fmt.Errorf("unhandled cloud provider type during credentials creation: %s", cloudProviderType)
+}
+
+func formatCloudProviderCredentialsApiError(resp *http.Response, err error) error {
+	if err == nil && (resp == nil || resp.StatusCode < http.StatusBadRequest) {
+		return nil
+	}
+
+	if resp != nil && resp.Body != nil {
+		body, _ := io.ReadAll(resp.Body)
+		if len(body) > 0 {
+			return fmt.Errorf("%s: %v\n%s", color.RedString("Error"), string(body), err)
+		}
+	}
+
+	return fmt.Errorf("%s: %v", color.RedString("Error"), err)
 }

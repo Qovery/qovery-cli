@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/go-jose/go-jose/v4/json"
 	log "github.com/sirupsen/logrus"
@@ -57,7 +58,16 @@ func LoadCredentials(clusterId string, doNotConnectToBastion bool) error {
 	if err := os.Setenv("KUBECONFIG", filePath); err != nil {
 		return fmt.Errorf("failed to set KUBECONFIG: %w", err)
 	}
+	if kubeconfigRequiresQoveryCommand(kubeconfig) {
+		if _, err := exec.LookPath("qovery"); err != nil {
+			utils.PrintlnInfo(fmt.Sprintf("KUBECONFIG uses qovery as an exec credential command, but qovery was not found in PATH: %v", err))
+		}
+	}
 	return StartChildShell()
+}
+
+func kubeconfigRequiresQoveryCommand(kubeconfig string) bool {
+	return strings.Contains(kubeconfig, "command: qovery")
 }
 
 func StartChildShell() error {
@@ -137,7 +147,12 @@ func getClusterCredentials(clusterId string) []utils.Var {
 		log.Fatal(err)
 	}
 
+	return clusterCredentialsFromPayload(clusterId, payload)
+}
+
+func clusterCredentialsFromPayload(clusterId string, payload map[string]string) []utils.Var {
 	var clusterCreds []utils.Var
+	isGcpPayload := isGcpCredentialsPayload(payload)
 	for key, value := range payload {
 		switch key {
 		case "access_key_id":
@@ -147,7 +162,13 @@ func getClusterCredentials(clusterId string) []utils.Var {
 		case "aws_session_token":
 			clusterCreds = append(clusterCreds, utils.Var{Key: "AWS_SESSION_TOKEN", Value: value})
 		case "region":
-			clusterCreds = append(clusterCreds, utils.Var{Key: "AWS_DEFAULT_REGION", Value: value})
+			if isGcpPayload {
+				if _, hasGcpRegion := payload["gcp_region"]; !hasGcpRegion {
+					clusterCreds = appendGcpRegionVars(clusterCreds, value)
+				}
+			} else {
+				clusterCreds = append(clusterCreds, utils.Var{Key: "AWS_DEFAULT_REGION", Value: value})
+			}
 		case "scaleway_access_key":
 			clusterCreds = append(clusterCreds, utils.Var{Key: "SCW_ACCESS_KEY", Value: value})
 		case "scaleway_secret_key":
@@ -161,7 +182,50 @@ func getClusterCredentials(clusterId string) []utils.Var {
 
 			clusterCreds = append(clusterCreds, utils.Var{Key: "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE", Value: filepath})
 			clusterCreds = append(clusterCreds, utils.Var{Key: "GOOGLE_CREDENTIALS", Value: value})
+		case "gcp_access_token":
+			filepath := utils.WriteInFile(clusterId, "google_access_token", []byte(value))
+
+			clusterCreds = append(clusterCreds, utils.Var{Key: "GOOGLE_OAUTH_ACCESS_TOKEN", Value: value})
+			clusterCreds = append(clusterCreds, utils.Var{Key: "CLOUDSDK_AUTH_ACCESS_TOKEN_FILE", Value: filepath})
+		case "gcp_project_id":
+			clusterCreds = appendGcpProjectVars(clusterCreds, value)
+		case "gcp_region":
+			clusterCreds = appendGcpRegionVars(clusterCreds, value)
+		case "gcp_access_token_expiration":
+			clusterCreds = append(clusterCreds, utils.Var{Key: "GOOGLE_OAUTH_ACCESS_TOKEN_EXPIRATION", Value: value})
+		case "gcp_credentials_type":
+			clusterCreds = append(clusterCreds, utils.Var{Key: "GCP_CREDENTIALS_TYPE", Value: value})
 		}
 	}
 	return clusterCreds
+}
+
+func appendGcpProjectVars(clusterCreds []utils.Var, projectId string) []utils.Var {
+	clusterCreds = append(clusterCreds, utils.Var{Key: "GOOGLE_PROJECT", Value: projectId})
+	clusterCreds = append(clusterCreds, utils.Var{Key: "GOOGLE_CLOUD_PROJECT", Value: projectId})
+	clusterCreds = append(clusterCreds, utils.Var{Key: "CLOUDSDK_CORE_PROJECT", Value: projectId})
+	return clusterCreds
+}
+
+func appendGcpRegionVars(clusterCreds []utils.Var, region string) []utils.Var {
+	clusterCreds = append(clusterCreds, utils.Var{Key: "GOOGLE_REGION", Value: region})
+	clusterCreds = append(clusterCreds, utils.Var{Key: "CLOUDSDK_COMPUTE_REGION", Value: region})
+	return clusterCreds
+}
+
+func isGcpCredentialsPayload(payload map[string]string) bool {
+	gcpKeys := []string{
+		"json_credentials",
+		"gcp_access_token",
+		"gcp_project_id",
+		"gcp_region",
+		"gcp_access_token_expiration",
+		"gcp_credentials_type",
+	}
+	for _, key := range gcpKeys {
+		if _, ok := payload[key]; ok {
+			return true
+		}
+	}
+	return false
 }

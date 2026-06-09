@@ -109,7 +109,7 @@ var clusterUpgradeCmd = &cobra.Command{
 					utils.PrintlnError(err)
 				}
 
-				if utils.IsTerminalClusterState(*status.Status) {
+				if utils.IsTerminalClusterState(status.Status) {
 					break
 				}
 
