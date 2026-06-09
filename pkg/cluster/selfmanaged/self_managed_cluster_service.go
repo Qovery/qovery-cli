@@ -222,6 +222,10 @@ func getName(creds *qovery.ClusterCredentials) (string, error) {
 		return castedCreds.GetName(), nil
 	case *qovery.ScalewayClusterCredentials:
 		return castedCreds.GetName(), nil
+	case *qovery.GcpStaticClusterCredentials:
+		return castedCreds.GetName(), nil
+	case *qovery.GcpWorkloadIdentityFederationClusterCredentials:
+		return castedCreds.GetName(), nil
 	case *qovery.GenericClusterCredentials:
 		return castedCreds.GetName(), nil
 	default:
@@ -236,6 +240,10 @@ func getId(creds *qovery.ClusterCredentials) (string, error) {
 	case *qovery.AwsRoleClusterCredentials:
 		return castedCreds.GetId(), nil
 	case *qovery.ScalewayClusterCredentials:
+		return castedCreds.GetId(), nil
+	case *qovery.GcpStaticClusterCredentials:
+		return castedCreds.GetId(), nil
+	case *qovery.GcpWorkloadIdentityFederationClusterCredentials:
 		return castedCreds.GetId(), nil
 	case *qovery.GenericClusterCredentials:
 		return castedCreds.GetId(), nil

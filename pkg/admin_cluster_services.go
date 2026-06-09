@@ -559,7 +559,7 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 				}
 
 				// Trigger a deployment only when the target status is in terminal state
-				if utils.IsTerminalClusterState(*clusterStatus.Status) {
+				if utils.IsTerminalClusterState(clusterStatus.Status) {
 					utils.Println(fmt.Sprintf("[Organization '%s' - Cluster '%s'] - Starting deployment - https://console.qovery.com/organization/%s/cluster/%s/cluster-logs", cluster.OrganizationName, cluster.ClusterName, cluster.OrganizationId, cluster.ClusterId))
 					var err error
 					if service.UpgradeClusterNewK8sVersion != nil {
@@ -573,7 +573,7 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 					cluster.CurrentStatus = "DEPLOYING"
 					currentDeployingClustersByClusterId[cluster.ClusterId] = cluster
 				} else {
-					status := fmt.Sprintf("%v", *clusterStatus.Status) // only solution to get the underlying enum's string value
+					status := fmt.Sprintf("%v", clusterStatus.Status) // only solution to get the underlying enum's string value
 					utils.Println(fmt.Sprintf("[Organization '%s' - Cluster '%s'] - Cluster's state is '%s' (not a terminal state), sending it to waiting queue to be processed later", cluster.OrganizationName, cluster.ClusterName, status))
 					pendingClusters = append(pendingClusters, cluster)
 				}
@@ -607,11 +607,11 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 			}
 
 			// set cluster status
-			status := fmt.Sprintf("%v", *clusterStatus.Status) // only solution to get the underlying enum's string value
+			status := fmt.Sprintf("%v", clusterStatus.Status) // only solution to get the underlying enum's string value
 			cluster.CurrentStatus = status
 			// Mark the deployment as finished only if terminal state OR status is "INTERNAL_ERROR" (specific case)
-			if utils.IsTerminalClusterState(*clusterStatus.Status) || cluster.CurrentStatus == "INTERNAL_ERROR" {
-				utils.Println(fmt.Sprintf("[Organization '%s' - Cluster '%s'] - Cluster deployed with '%s' status ", cluster.OrganizationName, cluster.ClusterName, *clusterStatus.Status))
+			if utils.IsTerminalClusterState(clusterStatus.Status) || cluster.CurrentStatus == "INTERNAL_ERROR" {
+				utils.Println(fmt.Sprintf("[Organization '%s' - Cluster '%s'] - Cluster deployed with '%s' status ", cluster.OrganizationName, cluster.ClusterName, clusterStatus.Status))
 
 				processedClusters = append(processedClusters, cluster)
 				clustersToRemoveFromMap = append(clustersToRemoveFromMap, clusterId)

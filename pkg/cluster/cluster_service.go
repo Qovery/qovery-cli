@@ -74,7 +74,7 @@ func (service *ClusterServiceImpl) DeployCluster(organizationName string, cluste
 				return err
 			}
 
-			if utils.IsTerminalClusterState(*status.Status) {
+			if utils.IsTerminalClusterState(status.Status) {
 				break
 			}
 
@@ -124,7 +124,7 @@ func (service *ClusterServiceImpl) StopCluster(organizationName string, clusterN
 				return err
 			}
 
-			if utils.IsTerminalClusterState(*status.Status) {
+			if utils.IsTerminalClusterState(status.Status) {
 				break
 			}
 

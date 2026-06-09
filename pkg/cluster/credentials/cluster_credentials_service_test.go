@@ -1,6 +1,7 @@
 package credentials
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"github.com/jarcoal/httpmock"
 	"github.com/qovery/qovery-client-go"
@@ -67,6 +68,17 @@ func TestCredentialsNameOnCreateCredentials(t *testing.T) {
 		assert.Nil(t, credentials)
 		assert.NotNil(t, err)
 		assert.Equal(t, "please enter a non-empty name for your credentials", err.Error())
+	})
+}
+
+func TestFormatCloudProviderCredentialsApiError(t *testing.T) {
+	t.Run("Should return transport error when response is nil", func(t *testing.T) {
+		// when
+		err := formatCloudProviderCredentialsApiError(nil, errors.New("connection refused"))
+
+		// then
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "connection refused")
 	})
 }
 
@@ -350,7 +362,7 @@ func TestScalewayCredentials(t *testing.T) {
 }
 
 func TestGcpCredentials(t *testing.T) {
-	t.Run("Should succeed to create GCP credentials according to prompt user inputs", func(t *testing.T) {
+	t.Run("Should succeed to create GCP service account JSON key credentials according to prompt user inputs", func(t *testing.T) {
 		httpmock.Activate()
 		defer httpmock.DeactivateAndReset()
 
@@ -363,6 +375,7 @@ func TestGcpCredentials(t *testing.T) {
 			utils.GetQoveryClient("Fake token type", "Fake token"),
 			promptuifactory.NewPromptUiFactoryMock(map[string]bool{}, map[string]string{
 				"Give a name to your credentials":                    "gcp-credentials",
+				"Which GCP credentials type do you want to use?":     gcpCredentialsTypeServiceAccount,
 				"Enter your GCP JSON credentials (*base64* encoded)": "gcp-creds-json",
 			}),
 		)
@@ -374,8 +387,40 @@ func TestGcpCredentials(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, credentials)
 		var createdCredentials = allCredentialsById[credentials.GenericClusterCredentials.Id].(qovery.GcpCredentialsRequest)
-		assert.Equal(t, "gcp-credentials", createdCredentials.Name)
-		assert.Equal(t, "gcp-creds-json", createdCredentials.GcpCredentials)
+		assert.NotNil(t, createdCredentials.GcpServiceAccountKeyCredentialsRequest)
+		assert.Equal(t, "gcp-credentials", createdCredentials.GcpServiceAccountKeyCredentialsRequest.Name)
+		assert.Equal(t, "gcp-creds-json", createdCredentials.GcpServiceAccountKeyCredentialsRequest.GcpCredentials)
+	})
+	t.Run("Should succeed to create GCP workload identity federation credentials according to prompt user inputs", func(t *testing.T) {
+		httpmock.Activate()
+		defer httpmock.DeactivateAndReset()
+
+		// mock
+		var organization = organization.CreateTestOrganization()
+		MockCreateGcpCredentials(organization)
+
+		// given
+		var service = NewClusterCredentialsService(
+			utils.GetQoveryClient("Fake token type", "Fake token"),
+			promptuifactory.NewPromptUiFactoryMock(map[string]bool{}, map[string]string{
+				"Give a name to your credentials":                    "gcp-wif-credentials",
+				"Which GCP credentials type do you want to use?":     gcpCredentialsTypeWif,
+				"Enter your GCP service account email":               "svc@example.iam.gserviceaccount.com",
+				"Enter your GCP Workload Identity provider resource": "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider",
+			}),
+		)
+
+		// when
+		var credentials, err = service.AskToCreateCredentials(organization.Id, qovery.CLOUDPROVIDERENUM_GCP)
+
+		// then
+		assert.Nil(t, err)
+		assert.NotNil(t, credentials)
+		var createdCredentials = allCredentialsById[credentials.GenericClusterCredentials.Id].(qovery.GcpCredentialsRequest)
+		assert.NotNil(t, createdCredentials.GcpWorkloadIdentityFederationCredentialsRequest)
+		assert.Equal(t, "gcp-wif-credentials", createdCredentials.GcpWorkloadIdentityFederationCredentialsRequest.Name)
+		assert.Equal(t, "svc@example.iam.gserviceaccount.com", createdCredentials.GcpWorkloadIdentityFederationCredentialsRequest.ServiceAccountEmail)
+		assert.Equal(t, "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider", createdCredentials.GcpWorkloadIdentityFederationCredentialsRequest.WorkloadIdentityProviderResource)
 	})
 	t.Run("Should fail to create GCP credentials if json is empty", func(t *testing.T) {
 		httpmock.Activate()
@@ -390,6 +435,7 @@ func TestGcpCredentials(t *testing.T) {
 			utils.GetQoveryClient("Fake token type", "Fake token"),
 			promptuifactory.NewPromptUiFactoryMock(map[string]bool{}, map[string]string{
 				"Give a name to your credentials":                    "gcp-credentials",
+				"Which GCP credentials type do you want to use?":     gcpCredentialsTypeServiceAccount,
 				"Enter your GCP JSON credentials (*base64* encoded)": "",
 			}),
 		)
@@ -401,6 +447,60 @@ func TestGcpCredentials(t *testing.T) {
 		assert.Nil(t, credentials)
 		assert.NotNil(t, err)
 		assert.Equal(t, "please enter a non-empty gcp json credentials", err.Error())
+	})
+	t.Run("Should fail to create GCP workload identity federation credentials if service account email is empty", func(t *testing.T) {
+		httpmock.Activate()
+		defer httpmock.DeactivateAndReset()
+
+		// mock
+		var organization = organization.CreateTestOrganization()
+		MockCreateGcpCredentials(organization)
+
+		// given
+		var service = NewClusterCredentialsService(
+			utils.GetQoveryClient("Fake token type", "Fake token"),
+			promptuifactory.NewPromptUiFactoryMock(map[string]bool{}, map[string]string{
+				"Give a name to your credentials":                    "gcp-wif-credentials",
+				"Which GCP credentials type do you want to use?":     gcpCredentialsTypeWif,
+				"Enter your GCP service account email":               "",
+				"Enter your GCP Workload Identity provider resource": "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider",
+			}),
+		)
+
+		// when
+		var credentials, err = service.AskToCreateCredentials(organization.Id, qovery.CLOUDPROVIDERENUM_GCP)
+
+		// then
+		assert.Nil(t, credentials)
+		assert.NotNil(t, err)
+		assert.Equal(t, "please enter a non-empty gcp service account email", err.Error())
+	})
+	t.Run("Should fail to create GCP workload identity federation credentials if provider resource is empty", func(t *testing.T) {
+		httpmock.Activate()
+		defer httpmock.DeactivateAndReset()
+
+		// mock
+		var organization = organization.CreateTestOrganization()
+		MockCreateGcpCredentials(organization)
+
+		// given
+		var service = NewClusterCredentialsService(
+			utils.GetQoveryClient("Fake token type", "Fake token"),
+			promptuifactory.NewPromptUiFactoryMock(map[string]bool{}, map[string]string{
+				"Give a name to your credentials":                    "gcp-wif-credentials",
+				"Which GCP credentials type do you want to use?":     gcpCredentialsTypeWif,
+				"Enter your GCP service account email":               "svc@example.iam.gserviceaccount.com",
+				"Enter your GCP Workload Identity provider resource": "",
+			}),
+		)
+
+		// when
+		var credentials, err = service.AskToCreateCredentials(organization.Id, qovery.CLOUDPROVIDERENUM_GCP)
+
+		// then
+		assert.Nil(t, credentials)
+		assert.NotNil(t, err)
+		assert.Equal(t, "please enter a non-empty gcp workload identity provider resource", err.Error())
 	})
 	t.Run("Should list GCP credentials", func(t *testing.T) {
 		httpmock.Activate()

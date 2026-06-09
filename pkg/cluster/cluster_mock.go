@@ -33,8 +33,9 @@ func MockListClusters(organization *qovery.Organization, clusters []qovery.Clust
 
 func MockDeployCluster(organization *qovery.Organization, cluster *qovery.Cluster, clusterState *qovery.ClusterStateEnum) {
 	var clusterStatus = qovery.ClusterStatus{
-		ClusterId: &cluster.Id,
-		Status:    clusterState,
+		ClusterId: cluster.Id,
+		Status:    clusterStateOrDefault(clusterState),
+		Reason:    qovery.DEPLOYMENTINFRAREASON_UNSPECIFIED,
 	}
 	var url = fmt.Sprint("https://api.qovery.com/organization/", organization.Id, "/cluster/", cluster.Id, "/deploy")
 	httpmock.RegisterResponder("POST", url,
@@ -49,8 +50,9 @@ func MockDeployCluster(organization *qovery.Organization, cluster *qovery.Cluste
 
 func MockStopCluster(organization *qovery.Organization, cluster *qovery.Cluster, clusterState *qovery.ClusterStateEnum) {
 	var clusterStatus = qovery.ClusterStatus{
-		ClusterId: &cluster.Id,
-		Status:    clusterState,
+		ClusterId: cluster.Id,
+		Status:    clusterStateOrDefault(clusterState),
+		Reason:    qovery.DEPLOYMENTINFRAREASON_UNSPECIFIED,
 	}
 	var url = fmt.Sprint("https://api.qovery.com/organization/", organization.Id, "/cluster/", cluster.Id, "/stop")
 	httpmock.RegisterResponder("POST", url,
@@ -65,8 +67,9 @@ func MockStopCluster(organization *qovery.Organization, cluster *qovery.Cluster,
 
 func MockGetClusterStatus(organization *qovery.Organization, cluster *qovery.Cluster, clusterState *qovery.ClusterStateEnum) {
 	var clusterStatus = qovery.ClusterStatus{
-		ClusterId: &cluster.Id,
-		Status:    clusterState,
+		ClusterId: cluster.Id,
+		Status:    clusterStateOrDefault(clusterState),
+		Reason:    qovery.DEPLOYMENTINFRAREASON_UNSPECIFIED,
 	}
 	var url = fmt.Sprint("https://api.qovery.com/organization/", organization.Id, "/cluster/", cluster.Id, "/status")
 	httpmock.RegisterResponder("GET", url,
@@ -77,6 +80,13 @@ func MockGetClusterStatus(organization *qovery.Organization, cluster *qovery.Clu
 			}
 			return resp, nil
 		})
+}
+
+func clusterStateOrDefault(clusterState *qovery.ClusterStateEnum) qovery.ClusterStateEnum {
+	if clusterState == nil {
+		return qovery.CLUSTERSTATEENUM_DEPLOYED
+	}
+	return *clusterState
 }
 
 func MockCreateCluster(organization *qovery.Organization) {
