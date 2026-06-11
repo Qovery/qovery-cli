@@ -10,7 +10,7 @@ import (
 	"github.com/qovery/qovery-client-go"
 )
 
-func GetKubeconfigByClusterId(clusterId string) string {
+func GetKubeconfigByClusterId(clusterId string, readOnly bool) string {
 	qoveryClient := GetQoveryClientInstance()
 
 	request := qoveryClient.ClustersAPI.GetClusterKubeconfig(
@@ -18,6 +18,11 @@ func GetKubeconfigByClusterId(clusterId string) string {
 		"00000000-0000-0000-000000000000",
 		clusterId,
 	).WithTokenFromCli(true)
+
+	if readOnly {
+		request = request.ReadOnly(true)
+	}
+
 	response, httpResponse, err := qoveryClient.ClustersAPI.GetClusterKubeconfigExecute(request)
 	if err != nil {
 		utils.PrintlnError(err)
@@ -50,10 +55,13 @@ func UpdateClusterKubeconfig(organizationId string, clusterId string, kubeconfig
 	return nil
 }
 
-func GetTokenByClusterId(clusterId string) string {
+func GetTokenByClusterId(clusterId string, readOnly bool) string {
 	qoveryClient := GetQoveryClientInstance()
 
 	request := qoveryClient.DefaultAPI.GetClusterTokenByClusterId(context.Background(), clusterId)
+	if readOnly {
+		request = request.ReadOnly(true)
+	}
 	_, response, err := qoveryClient.DefaultAPI.GetClusterTokenByClusterIdExecute(request)
 	if err != nil {
 		utils.PrintlnError(err)

@@ -31,7 +31,7 @@ var terraformSetupBackendCmd = &cobra.Command{
 		utils.Println(fmt.Sprintf("Preparing backend.tf file for terraform `%s` of environment `%s`", terraform.Name, env.Name))
 
 		// Download kubeconfig to connect to the cluster
-		kubeconfigPath := downloadKubeconfig(env.ClusterId)
+		kubeconfigPath := downloadKubeconfig(env.ClusterId, false)
 
 		// Create kubeclient to retrieve the namespace of the tfstate secret
 		kubeconfig, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)

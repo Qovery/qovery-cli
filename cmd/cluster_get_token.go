@@ -7,17 +7,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var getTokenReadOnly bool
+
 var getTokenCommand = &cobra.Command{
 	Use:   "get-token",
 	Short: "Get token for a cluster ID",
 	Run: func(cmd *cobra.Command, args []string) {
 		validateGetTokenFlags()
-		getToken()
+		getToken(getTokenReadOnly)
 	},
 }
 
 func init() {
 	getTokenCommand.Flags().StringVarP(&clusterId, "cluster-id", "c", "", "Cluster ID")
+	getTokenCommand.Flags().BoolVarP(&getTokenReadOnly, "read-only", "r", false, "Get a read-only service account token instead of an admin token")
 	clusterCmd.AddCommand(getTokenCommand)
 }
 
@@ -27,7 +30,7 @@ func validateGetTokenFlags() {
 	}
 }
 
-func getToken() {
-	response := pkg.GetTokenByClusterId(clusterId)
+func getToken(readOnly bool) {
+	response := pkg.GetTokenByClusterId(clusterId, readOnly)
 	utils.Println(response)
 }
