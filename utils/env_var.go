@@ -269,6 +269,37 @@ func UpdateServiceExternalSecret(
 	return err
 }
 
+func UpdateEnvironmentExternalSecret(
+	client *qovery.APIClient,
+	environmentId string,
+	key string,
+	reference string,
+	secretManagerAccessId string,
+) error {
+	envVars, err := ListEnvironmentVariables(client, environmentId)
+	if err != nil {
+		return err
+	}
+
+	envVar := FindEnvironmentVariableByKey(key, envVars)
+	if envVar == nil {
+		return fmt.Errorf("external secret %s not found", pterm.FgRed.Sprintf("%s", key))
+	}
+
+	editRequest := qovery.VariableEditRequest{
+		Key: key,
+	}
+	if reference != "" {
+		editRequest.SetValue(reference)
+	}
+	if secretManagerAccessId != "" {
+		editRequest.SetSecretManagerAccessId(secretManagerAccessId)
+	}
+
+	_, _, err = client.VariableMainCallsAPI.EditVariable(context.Background(), envVar.Id).VariableEditRequest(editRequest).Execute()
+	return err
+}
+
 func CreateEnvironmentVariable(
 	client *qovery.APIClient,
 	projectId string,
