@@ -185,12 +185,10 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/posthog/posthog-go v1.12.5 h1:l/x3mpqisXJ0sTOyyRutsTQAgiWYuJT1uhN4cQraJ8o=
-github.com/posthog/posthog-go v1.12.5/go.mod h1:xsVOW9YImilUcazwPNEq4PJDqEZf2KeCS758zXjwkPg=
+github.com/posthog/posthog-go v1.15.0 h1:Fizkdct7zGg050hnYpxEiq/iD/OJO7tVaQE9Vyoh0q0=
+github.com/posthog/posthog-go v1.15.0/go.mod h1:xsVOW9YImilUcazwPNEq4PJDqEZf2KeCS758zXjwkPg=
 github.com/pterm/pterm v0.12.83 h1:ie+YmGmA727VuhxBlyGr74Ks+7McV6kT99IB8EU80aA=
 github.com/pterm/pterm v0.12.83/go.mod h1:xlgc6bFWyJIMtmLJvGim+L7jhSReilOlOnodeIYe4Tk=
-github.com/qovery/qovery-client-go v0.0.0-20260609072636-f548ebe903f2 h1:R6lG3dFH9/N7k7Hz+MMMCY1y3c0N9rmY6NAAjy1dkos=
-github.com/qovery/qovery-client-go v0.0.0-20260609072636-f548ebe903f2/go.mod h1:mcXeQtxR4AIGIBaWLhy52S16UwL8/1fcDywDuSK1BZ4=
 github.com/qovery/qovery-client-go v0.0.0-20260610153209-3c28b05bfe2b h1:BEeLs9mqTI93TyzHPfAhhrn1aIyXVZzNwkQOI6bN3yc=
 github.com/qovery/qovery-client-go v0.0.0-20260610153209-3c28b05bfe2b/go.mod h1:mcXeQtxR4AIGIBaWLhy52S16UwL8/1fcDywDuSK1BZ4=
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=
