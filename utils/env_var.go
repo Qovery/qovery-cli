@@ -25,6 +25,10 @@ var EnvironmentScope string
 var Alias string
 var Key string
 var Value string
+var SecretManagerAccessId string
+var Reference string
+var MountPath string
+var TerraformScope string
 
 type EnvVarLines struct {
 	lines map[string][]EnvVarLineOutput
@@ -198,6 +202,101 @@ func CreateServiceVariable(
 	}
 
 	_, _, err = client.VariableMainCallsAPI.CreateVariable(context.Background()).VariableRequest(variableRequest).Execute()
+	return err
+}
+
+func CreateServiceExternalSecret(
+	client *qovery.APIClient,
+	projectId string,
+	environmentId string,
+	serviceId string,
+	scope string,
+	key string,
+	reference string,
+	secretManagerAccessId string,
+	mountPath string,
+) error {
+	parentId, parentScope, err := getParentIdByScope(scope, projectId, environmentId, serviceId)
+	if err != nil {
+		return err
+	}
+
+	variableRequest := qovery.VariableRequest{
+		Key:              key,
+		Value:            reference,
+		IsSecret:         false,
+		VariableScope:    parentScope,
+		VariableParentId: parentId,
+	}
+	variableRequest.SetSecretManagerAccessId(secretManagerAccessId)
+	if mountPath != "" {
+		variableRequest.SetMountPath(mountPath)
+	}
+
+	_, _, err = client.VariableMainCallsAPI.CreateVariable(context.Background()).VariableRequest(variableRequest).Execute()
+	return err
+}
+
+func UpdateServiceExternalSecret(
+	client *qovery.APIClient,
+	key string,
+	reference string,
+	secretManagerAccessId string,
+	serviceId string,
+	serviceType ServiceType,
+) error {
+	envVars, err := ListServiceVariables(client, serviceId, serviceType)
+	if err != nil {
+		return err
+	}
+
+	envVar := FindEnvironmentVariableByKey(key, envVars)
+	if envVar == nil {
+		return fmt.Errorf("external secret %s not found", pterm.FgRed.Sprintf("%s", key))
+	}
+
+	editRequest := qovery.VariableEditRequest{
+		Key: key,
+	}
+	if reference != "" {
+		editRequest.SetValue(reference)
+	}
+	if secretManagerAccessId != "" {
+		editRequest.SetSecretManagerAccessId(secretManagerAccessId)
+	}
+
+	_, _, err = client.VariableMainCallsAPI.EditVariable(context.Background(), envVar.Id).VariableEditRequest(editRequest).Execute()
+	return err
+}
+
+func UpdateEnvironmentExternalSecret(
+	client *qovery.APIClient,
+	environmentId string,
+	key string,
+	reference string,
+	secretManagerAccessId string,
+) error {
+	envVars, err := ListEnvironmentVariables(client, environmentId)
+	if err != nil {
+		return err
+	}
+
+	envVar := FindEnvironmentVariableByKey(key, envVars)
+	if envVar == nil {
+		return fmt.Errorf("external secret %s not found", pterm.FgRed.Sprintf("%s", key))
+	}
+
+	editRequest := qovery.VariableEditRequest{
+		Key: key,
+	}
+	if reference != "" {
+		editRequest.SetValue(reference)
+	}
+	if secretManagerAccessId != "" {
+		editRequest.SetSecretManagerAccessId(secretManagerAccessId)
+	}
+
+	_, _, err = client.VariableMainCallsAPI.EditVariable(context.Background(), envVar.Id).VariableEditRequest(editRequest).Execute()
 	return err
 }
 
@@ -411,6 +510,8 @@ func ServiceTypeToScope(serviceType ServiceType) (qovery.APIVariableScopeEnum, e
 		return qovery.APIVARIABLESCOPEENUM_JOB, nil
 	case HelmType:
 		return qovery.APIVARIABLESCOPEENUM_HELM, nil
+	case TerraformType:
+		return qovery.APIVARIABLESCOPEENUM_TERRAFORM, nil
 	}
 
 	return qovery.APIVARIABLESCOPEENUM_BUILT_IN, fmt.Errorf("the service type %s is not supported", serviceType)
@@ -430,6 +531,8 @@ func getParentIdByScope(scope string, projectId string, environmentId string, se
 		return serviceId, qovery.APIVARIABLESCOPEENUM_JOB, nil
 	case "HELM":
 		return serviceId, qovery.APIVARIABLESCOPEENUM_HELM, nil
+	case "TERRAFORM":
+		return serviceId, qovery.APIVARIABLESCOPEENUM_TERRAFORM, nil
 	}
 
 	return "", qovery.APIVARIABLESCOPEENUM_BUILT_IN, fmt.Errorf("scope %s not supported", scope)
