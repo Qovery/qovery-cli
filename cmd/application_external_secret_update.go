@@ -25,7 +25,7 @@ var applicationExternalSecretUpdateCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		organizationId, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -50,7 +50,14 @@ var applicationExternalSecretUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.UpdateServiceExternalSecret(client, utils.Key, utils.Reference, utils.SecretManagerAccessId, application.Id, utils.ApplicationType)
+		secretManagerAccessId, err := getSecretManagerAccessIdByName(client, organizationId, envId, utils.SecretManagerAccessName)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		err = utils.UpdateServiceExternalSecret(client, utils.Key, utils.Reference, secretManagerAccessId, application.Id, utils.ApplicationType)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -70,7 +77,7 @@ func init() {
 	applicationExternalSecretUpdateCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
 	applicationExternalSecretUpdateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "External secret key")
 	applicationExternalSecretUpdateCmd.Flags().StringVarP(&utils.Reference, "reference", "r", "", "New reference to the secret in the secrets provider")
-	applicationExternalSecretUpdateCmd.Flags().StringVarP(&utils.SecretManagerAccessId, "secret-manager-access-id", "", "", "New secret manager access ID")
+	applicationExternalSecretUpdateCmd.Flags().StringVarP(&utils.SecretManagerAccessName, "secret-manager-access-name", "", "", "New secret manager access name")
 
 	_ = applicationExternalSecretUpdateCmd.MarkFlagRequired("key")
 	_ = applicationExternalSecretUpdateCmd.MarkFlagRequired("application")

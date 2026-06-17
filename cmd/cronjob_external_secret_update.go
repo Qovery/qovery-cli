@@ -25,7 +25,7 @@ var cronjobExternalSecretUpdateCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		organizationId, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -50,7 +50,14 @@ var cronjobExternalSecretUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.UpdateServiceExternalSecret(client, utils.Key, utils.Reference, utils.SecretManagerAccessId, cronjob.CronJobResponse.Id, utils.JobType)
+		secretManagerAccessId, err := getSecretManagerAccessIdByName(client, organizationId, envId, utils.SecretManagerAccessName)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		err = utils.UpdateServiceExternalSecret(client, utils.Key, utils.Reference, secretManagerAccessId, cronjob.CronJobResponse.Id, utils.JobType)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -70,7 +77,7 @@ func init() {
 	cronjobExternalSecretUpdateCmd.Flags().StringVarP(&cronjobName, "cronjob", "n", "", "Cronjob Name")
 	cronjobExternalSecretUpdateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "External secret key")
 	cronjobExternalSecretUpdateCmd.Flags().StringVarP(&utils.Reference, "reference", "r", "", "New reference to the secret in the secrets provider")
-	cronjobExternalSecretUpdateCmd.Flags().StringVarP(&utils.SecretManagerAccessId, "secret-manager-access-id", "", "", "New secret manager access ID")
+	cronjobExternalSecretUpdateCmd.Flags().StringVarP(&utils.SecretManagerAccessName, "secret-manager-access-name", "", "", "New secret manager access name")
 
 	_ = cronjobExternalSecretUpdateCmd.MarkFlagRequired("key")
 	_ = cronjobExternalSecretUpdateCmd.MarkFlagRequired("cronjob")
