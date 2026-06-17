@@ -25,7 +25,7 @@ var terraformExternalSecretUpdateCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		organizationId, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -50,7 +50,14 @@ var terraformExternalSecretUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.UpdateServiceExternalSecret(client, utils.Key, utils.Reference, utils.SecretManagerAccessId, terraform.Id, utils.TerraformType)
+		secretManagerAccessId, err := getSecretManagerAccessIdByName(client, organizationId, envId, utils.SecretManagerAccessName)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		err = utils.UpdateServiceExternalSecret(client, utils.Key, utils.Reference, secretManagerAccessId, terraform.Id, utils.TerraformType)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -70,7 +77,7 @@ func init() {
 	terraformExternalSecretUpdateCmd.Flags().StringVarP(&terraformName, "terraform", "n", "", "Terraform Name")
 	terraformExternalSecretUpdateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "External secret key")
 	terraformExternalSecretUpdateCmd.Flags().StringVarP(&utils.Reference, "reference", "r", "", "New reference to the secret in the secrets provider")
-	terraformExternalSecretUpdateCmd.Flags().StringVarP(&utils.SecretManagerAccessId, "secret-manager-access-id", "", "", "New secret manager access ID")
+	terraformExternalSecretUpdateCmd.Flags().StringVarP(&utils.SecretManagerAccessName, "secret-manager-access-name", "", "", "New secret manager access name")
 
 	_ = terraformExternalSecretUpdateCmd.MarkFlagRequired("key")
 	_ = terraformExternalSecretUpdateCmd.MarkFlagRequired("terraform")

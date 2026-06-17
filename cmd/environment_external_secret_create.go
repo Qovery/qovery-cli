@@ -47,7 +47,10 @@ var environmentExternalSecretCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateServiceExternalSecret(client, project.Id, environment.Id, "", utils.EnvironmentScope, utils.Key, utils.Reference, utils.SecretManagerAccessId, utils.MountPath)
+		secretManagerAccessId, err := getSecretManagerAccessIdByName(client, organizationId, environment.Id, utils.SecretManagerAccessName)
+		checkError(err)
+
+		err = utils.CreateServiceExternalSecret(client, project.Id, environment.Id, "", utils.EnvironmentScope, utils.Key, utils.Reference, secretManagerAccessId, utils.MountPath)
 		checkError(err)
 
 		utils.Println(fmt.Sprintf("External secret %s has been created", pterm.FgBlue.Sprintf("%s", utils.Key)))
@@ -61,7 +64,7 @@ func init() {
 	environmentExternalSecretCreateCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	environmentExternalSecretCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "External secret key")
 	environmentExternalSecretCreateCmd.Flags().StringVarP(&utils.Reference, "reference", "r", "", "Reference to the secret in the secrets provider")
-	environmentExternalSecretCreateCmd.Flags().StringVarP(&utils.SecretManagerAccessId, "secret-manager-access-id", "", "", "Secret manager access ID")
+	environmentExternalSecretCreateCmd.Flags().StringVarP(&utils.SecretManagerAccessName, "secret-manager-access-name", "", "", "Secret manager access name")
 	environmentExternalSecretCreateCmd.Flags().StringVarP(&utils.EnvironmentScope, "scope", "", "ENVIRONMENT", "Scope of this external secret <PROJECT|ENVIRONMENT>")
 	environmentExternalSecretCreateCmd.Flags().StringVarP(&utils.MountPath, "mount-path", "", "", "Path where the secret will be mounted as a file")
 
@@ -69,5 +72,5 @@ func init() {
 	_ = environmentExternalSecretCreateCmd.MarkFlagRequired("environment")
 	_ = environmentExternalSecretCreateCmd.MarkFlagRequired("key")
 	_ = environmentExternalSecretCreateCmd.MarkFlagRequired("reference")
-	_ = environmentExternalSecretCreateCmd.MarkFlagRequired("secret-manager-access-id")
+	_ = environmentExternalSecretCreateCmd.MarkFlagRequired("secret-manager-access-name")
 }

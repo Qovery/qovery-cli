@@ -25,7 +25,7 @@ var EnvironmentScope string
 var Alias string
 var Key string
 var Value string
-var SecretManagerAccessId string
+var SecretManagerAccessName string
 var Reference string
 var MountPath string
 var TerraformScope string

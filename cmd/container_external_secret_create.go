@@ -25,7 +25,7 @@ var containerExternalSecretCreateCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, projectId, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		organizationId, projectId, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -50,7 +50,14 @@ var containerExternalSecretCreateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.CreateServiceExternalSecret(client, projectId, envId, container.Id, utils.ContainerScope, utils.Key, utils.Reference, utils.SecretManagerAccessId, utils.MountPath)
+		secretManagerAccessId, err := getSecretManagerAccessIdByName(client, organizationId, envId, utils.SecretManagerAccessName)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		err = utils.CreateServiceExternalSecret(client, projectId, envId, container.Id, utils.ContainerScope, utils.Key, utils.Reference, secretManagerAccessId, utils.MountPath)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -70,12 +77,12 @@ func init() {
 	containerExternalSecretCreateCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
 	containerExternalSecretCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "External secret key")
 	containerExternalSecretCreateCmd.Flags().StringVarP(&utils.Reference, "reference", "r", "", "Reference to the secret in the secrets provider")
-	containerExternalSecretCreateCmd.Flags().StringVarP(&utils.SecretManagerAccessId, "secret-manager-access-id", "", "", "Secret manager access ID")
+	containerExternalSecretCreateCmd.Flags().StringVarP(&utils.SecretManagerAccessName, "secret-manager-access-name", "", "", "Secret manager access name")
 	containerExternalSecretCreateCmd.Flags().StringVarP(&utils.ContainerScope, "scope", "", "CONTAINER", "Scope of this external secret <PROJECT|ENVIRONMENT|CONTAINER>")
 	containerExternalSecretCreateCmd.Flags().StringVarP(&utils.MountPath, "mount-path", "", "", "Path where the secret will be mounted as a file")
 
 	_ = containerExternalSecretCreateCmd.MarkFlagRequired("key")
 	_ = containerExternalSecretCreateCmd.MarkFlagRequired("reference")
-	_ = containerExternalSecretCreateCmd.MarkFlagRequired("secret-manager-access-id")
+	_ = containerExternalSecretCreateCmd.MarkFlagRequired("secret-manager-access-name")
 	_ = containerExternalSecretCreateCmd.MarkFlagRequired("container")
 }

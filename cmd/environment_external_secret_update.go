@@ -47,7 +47,10 @@ var environmentExternalSecretUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.UpdateEnvironmentExternalSecret(client, environment.Id, utils.Key, utils.Reference, utils.SecretManagerAccessId)
+		secretManagerAccessId, err := getSecretManagerAccessIdByName(client, organizationId, environment.Id, utils.SecretManagerAccessName)
+		checkError(err)
+
+		err = utils.UpdateEnvironmentExternalSecret(client, environment.Id, utils.Key, utils.Reference, secretManagerAccessId)
 		checkError(err)
 
 		utils.Println(fmt.Sprintf("External secret %s has been updated", pterm.FgBlue.Sprintf("%s", utils.Key)))
@@ -61,7 +64,7 @@ func init() {
 	environmentExternalSecretUpdateCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	environmentExternalSecretUpdateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "External secret key")
 	environmentExternalSecretUpdateCmd.Flags().StringVarP(&utils.Reference, "reference", "r", "", "New reference to the secret in the secrets provider")
-	environmentExternalSecretUpdateCmd.Flags().StringVarP(&utils.SecretManagerAccessId, "secret-manager-access-id", "", "", "New secret manager access ID")
+	environmentExternalSecretUpdateCmd.Flags().StringVarP(&utils.SecretManagerAccessName, "secret-manager-access-name", "", "", "New secret manager access name")
 
 	_ = environmentExternalSecretUpdateCmd.MarkFlagRequired("project")
 	_ = environmentExternalSecretUpdateCmd.MarkFlagRequired("environment")

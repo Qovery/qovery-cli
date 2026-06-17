@@ -25,7 +25,7 @@ var containerExternalSecretUpdateCmd = &cobra.Command{
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
-		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+		organizationId, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -50,7 +50,14 @@ var containerExternalSecretUpdateCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		err = utils.UpdateServiceExternalSecret(client, utils.Key, utils.Reference, utils.SecretManagerAccessId, container.Id, utils.ContainerType)
+		secretManagerAccessId, err := getSecretManagerAccessIdByName(client, organizationId, envId, utils.SecretManagerAccessName)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		err = utils.UpdateServiceExternalSecret(client, utils.Key, utils.Reference, secretManagerAccessId, container.Id, utils.ContainerType)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -70,7 +77,7 @@ func init() {
 	containerExternalSecretUpdateCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
 	containerExternalSecretUpdateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "External secret key")
 	containerExternalSecretUpdateCmd.Flags().StringVarP(&utils.Reference, "reference", "r", "", "New reference to the secret in the secrets provider")
-	containerExternalSecretUpdateCmd.Flags().StringVarP(&utils.SecretManagerAccessId, "secret-manager-access-id", "", "", "New secret manager access ID")
+	containerExternalSecretUpdateCmd.Flags().StringVarP(&utils.SecretManagerAccessName, "secret-manager-access-name", "", "", "New secret manager access name")
 
 	_ = containerExternalSecretUpdateCmd.MarkFlagRequired("key")
 	_ = containerExternalSecretUpdateCmd.MarkFlagRequired("container")
