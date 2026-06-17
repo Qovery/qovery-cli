@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	newOwnerUserId                      string
-	newOwnerEmail                       string
-	authProvider                        string
+	newOwnerUserId                     string
+	newOwnerEmail                      string
+	authProvider                       string
 	adminTransferOrganizationOwnership = &cobra.Command{
 		Use:   "transfer-ownership",
 		Short: "Transfer organization ownership to another user",
@@ -130,6 +130,7 @@ func transferOrganizationOwnership() {
 			if foundMember == nil {
 				utils.PrintlnError(fmt.Errorf("no member found with email '%s' and provider '%s'", newOwnerEmail, authProvider))
 				os.Exit(1)
+				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
 			targetUserId = foundMember.Id
