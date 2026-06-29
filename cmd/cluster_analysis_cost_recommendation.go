@@ -13,6 +13,23 @@ import (
 var clusterAnalysisCostRecommendationCmd = &cobra.Command{
 	Use:   "cost-recommendation",
 	Short: "Start a cluster cost recommendation analysis, optionally wait for completion, then print its report",
+	Example: `  qovery cluster analysis cost-recommendation \
+    -c <cluster_id> \
+    --output json \
+    --cmd-arg=--history_duration \
+    --cmd-arg=336 \
+    --cmd-arg=--timeframe_duration \
+    --cmd-arg=2.5 \
+    --cmd-arg=--cpu-request \
+    --cmd-arg=99 \
+    --cmd-arg=--cpu-limit \
+    --cmd-arg=99 \
+    --cmd-arg=--memory-buffer-percentage \
+    --cmd-arg=15 \
+    --cmd-arg=--use-oomkill-data \
+    --cmd-arg=--oom-memory-buffer-percentage \
+    --cmd-arg=25 \
+    --cmd-arg=--allow-hpa`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
