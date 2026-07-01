@@ -85,12 +85,15 @@ install_or_upgrade_helm_charts() {
       --set services.certificates.qovery-cert-manager-webhook.enabled=false \
       --set services.qovery.qovery-cluster-agent.enabled=false \
       --set services.qovery.qovery-engine.enabled=false \
+      --set services.qovery.qovery-operator.enabled=false \
       qovery qovery/qovery
   fi
 
   for i in $(seq 1 3); do
     set -x
-    helm upgrade --install --create-namespace ${HELM_DEBUG} --timeout=15m -n qovery -f values.yaml --wait --atomic qovery qovery/qovery && break
+    helm upgrade --install --create-namespace ${HELM_DEBUG} --timeout=15m -n qovery -f values.yaml --wait --atomic \
+      --set services.qovery.qovery-operator.enabled=false \
+      qovery qovery/qovery && break
     set +x
     echo "Install failed. Retrying in 10 seconds. To let the cluster initialize"
     sleep 10

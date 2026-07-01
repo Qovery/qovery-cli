@@ -255,11 +255,14 @@ helm upgrade --install --create-namespace -n qovery -f "%s" --rollback-on-failur
 	 --set services.certificates.qovery-cert-manager-webhook.enabled=false \
 	 --set services.qovery.qovery-cluster-agent.enabled=false \
 	 --set services.qovery.qovery-engine.enabled=false \
+	 --set services.qovery.qovery-operator.enabled=false \
 	 qovery qovery/qovery`, helmValuesFileName))
 
 	utils.Println(fmt.Sprintf(`
-# Then, re-apply the full Qovery installation with all services
-helm upgrade --install --create-namespace -n qovery -f "%s" --wait --rollback-on-failure qovery qovery/qovery
+# Then, re-apply the Qovery installation with the remaining services
+helm upgrade --install --create-namespace -n qovery -f "%s" --wait --rollback-on-failure \
+	 --set services.qovery.qovery-operator.enabled=false \
+	 qovery qovery/qovery
 `, helmValuesFileName))
 	utils.Println("////////////////////////////////////////////////////////////////////////////////////")
 	utils.PrintlnInfo("Please note that the installation process may take a few minutes to complete.")
