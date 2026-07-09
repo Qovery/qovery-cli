@@ -42,7 +42,7 @@ func CaptureWithEventAndProperties(command *cobra.Command, event string, propert
 	ph, err := posthog.NewWithConfig(
 		"phc_IgdG1K2GveDUte1gJ6hlwNbFHCv9nViWETUyLMU7ciq",
 		posthog.Config{
-			Endpoint: "https://phprox.qovery.com",
+			Endpoint: "https://e.qovery.com",
 		},
 	)
 
