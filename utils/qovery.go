@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -251,6 +252,7 @@ func SelectProject(organizationID Id) (*Project, error) {
 		projectsNames = append(projectsNames, proj.Name)
 		projects[proj.Name] = proj.Id
 	}
+	sort.Strings(projectsNames)
 
 	if len(projectsNames) < 1 {
 		return nil, errors.New("no projects found")
@@ -347,6 +349,7 @@ func SelectEnvironment(projectID Id) (*Environment, error) {
 		environmentsNames = append(environmentsNames, env.Name)
 		environments[env.Name] = env
 	}
+	sort.Strings(environmentsNames)
 
 	if len(environmentsNames) < 1 {
 		return nil, errors.New("no environments found")
@@ -620,6 +623,8 @@ func SelectService(environment Id) (*Service, error) {
 			Type: TerraformType,
 		}
 	}
+	sort.Strings(servicesNames)
+
 	if len(servicesNames) < 1 {
 		return nil, errors.New("no services found")
 	}
