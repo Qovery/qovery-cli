@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -23,6 +24,12 @@ import (
 func init() {
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp: true,
+	})
+}
+
+func sortNamesCaseInsensitive(names []string) {
+	sort.Slice(names, func(i, j int) bool {
+		return strings.ToLower(names[i]) < strings.ToLower(names[j])
 	})
 }
 
@@ -155,6 +162,7 @@ func SelectOrganization() (*Organization, error) {
 		organizationNames = append(organizationNames, org.Name)
 		orgs[org.Name] = org.Id
 	}
+	sortNamesCaseInsensitive(organizationNames)
 
 	if len(organizationNames) < 1 {
 		return nil, errors.New("no organizations found")
@@ -251,6 +259,7 @@ func SelectProject(organizationID Id) (*Project, error) {
 		projectsNames = append(projectsNames, proj.Name)
 		projects[proj.Name] = proj.Id
 	}
+	sortNamesCaseInsensitive(projectsNames)
 
 	if len(projectsNames) < 1 {
 		return nil, errors.New("no projects found")
@@ -347,6 +356,7 @@ func SelectEnvironment(projectID Id) (*Environment, error) {
 		environmentsNames = append(environmentsNames, env.Name)
 		environments[env.Name] = env
 	}
+	sortNamesCaseInsensitive(environmentsNames)
 
 	if len(environmentsNames) < 1 {
 		return nil, errors.New("no environments found")
@@ -620,6 +630,8 @@ func SelectService(environment Id) (*Service, error) {
 			Type: TerraformType,
 		}
 	}
+	sortNamesCaseInsensitive(servicesNames)
+
 	if len(servicesNames) < 1 {
 		return nil, errors.New("no services found")
 	}
