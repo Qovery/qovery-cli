@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 set -eu
 
@@ -76,24 +76,79 @@ get_or_create_cluster() {
 }
 
 install_or_upgrade_helm_charts() {
+  local chart_source="qovery/qovery"
+  local helm_values_args=(-f values.yaml)
+  local engine_image_overrides=()
+
+  if [ -n "${QOVERY_DEMO_CHART_PATH:-}" ]; then
+    chart_source="${QOVERY_DEMO_CHART_PATH}"
+    helm dependency update "${chart_source}"
+  fi
+
+  if [ -n "${QOVERY_DEMO_ENGINE_IMAGE_REPOSITORY:-}" ]; then
+    engine_image_overrides=(
+      --set-string "qovery-engine.image.repository=${QOVERY_DEMO_ENGINE_IMAGE_REPOSITORY}"
+      --set-string "qovery-engine.image.tag=${QOVERY_DEMO_ENGINE_IMAGE_TAG}"
+      --set "qovery-engine.image.pullPolicy=IfNotPresent"
+    )
+    local source_engine_image="${QOVERY_DEMO_ENGINE_IMAGE_SOURCE:-${QOVERY_DEMO_ENGINE_IMAGE_REPOSITORY}:${QOVERY_DEMO_ENGINE_IMAGE_TAG}}"
+    local engine_image="${QOVERY_DEMO_ENGINE_IMAGE_REPOSITORY}:${QOVERY_DEMO_ENGINE_IMAGE_TAG}"
+    local server_node="k3d-${CLUSTER_NAME}-server-0"
+    local imported_image_id
+    imported_image_id=$(docker exec "${server_node}" crictl images -q "${engine_image}" 2>/dev/null || true)
+
+    if [ -z "${imported_image_id}" ]; then
+      if [ "${source_engine_image}" != "${engine_image}" ]; then
+        docker tag "${source_engine_image}" "${engine_image}"
+      fi
+      k3d image import "${engine_image}" --cluster "${CLUSTER_NAME}"
+    else
+      echo "Engine image ${engine_image} is already available in ${server_node}"
+    fi
+  fi
+
+  # Gateway API and Envoy custom resources must exist before Helm renders
+  # the charts that create Gateway, HTTPRoute and EnvoyProxy objects.
+  #
+  # Use helm template + kubectl apply --server-side instead of a Helm release:
+  # the CRD bundle is too large to fit in Helm's release Secret storage.
+  set -x
+  local crd_chart_path="$chart_source/charts/envoy-gateway-crd"
+  if [ "$chart_source" = "qovery/qovery" ]; then
+    local tmp_chart_dir
+    tmp_chart_dir=$(mktemp -d)
+    helm pull "$chart_source" --untar --untardir "$tmp_chart_dir"
+    crd_chart_path="$tmp_chart_dir/qovery/charts/envoy-gateway-crd"
+  fi
+
+  helm template qovery-gateway-crds "$crd_chart_path" \
+    --set crds.gatewayAPI.enabled=true \
+    --set crds.gatewayAPI.channel=standard \
+    --set crds.envoyGateway.enabled=true | kubectl apply --server-side -f -
+  kubectl wait --for=condition=Established --timeout=180s crd/gateways.gateway.networking.k8s.io
+  kubectl wait --for=condition=Established --timeout=180s crd/envoyproxies.gateway.envoyproxy.io
+  set +x
+
   releaseExist=$(helm list -n qovery -o json | jq '.[] | select(.name=="qovery") | .name')
   if [ "$releaseExist" = "" ]
   then
     set -x
-    helm upgrade --install --create-namespace ${HELM_DEBUG} --timeout=15m -n qovery -f values.yaml --atomic \
+    helm upgrade --install --create-namespace ${HELM_DEBUG} --timeout=15m -n qovery "${helm_values_args[@]}" --atomic \
       --set services.certificates.cert-manager-configs.enabled=false \
       --set services.certificates.qovery-cert-manager-webhook.enabled=false \
+      --set services.ingress.envoy-gateway-crd.enabled=false \
       --set services.qovery.qovery-cluster-agent.enabled=false \
       --set services.qovery.qovery-engine.enabled=false \
       --set services.qovery.qovery-operator.enabled=false \
-      qovery qovery/qovery
+      "${engine_image_overrides[@]}" qovery "$chart_source"
   fi
 
   for i in $(seq 1 3); do
     set -x
-    helm upgrade --install --create-namespace ${HELM_DEBUG} --timeout=15m -n qovery -f values.yaml --wait --atomic \
+    helm upgrade --install --create-namespace ${HELM_DEBUG} --timeout=15m -n qovery "${helm_values_args[@]}" --wait --atomic \
+      --set services.ingress.envoy-gateway-crd.enabled=false \
       --set services.qovery.qovery-operator.enabled=false \
-      qovery qovery/qovery && break
+      "${engine_image_overrides[@]}" qovery "$chart_source" && break
     set +x
     echo "Install failed. Retrying in 10 seconds. To let the cluster initialize"
     sleep 10
@@ -241,7 +296,11 @@ get_cluster_values "${clusterId}" > values.yaml
 echo "" >> values.yaml
 sed -i.bak 's/AMD64/'"$ARCH"'/g' values.yaml
 rm values.yaml.bak
-curl -s -L https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-local.yaml | grep -vE 'set-by-customer|^qovery:' >> values.yaml
+if [ -n "${QOVERY_DEMO_CHART_PATH:-}" ]; then
+  grep -vE 'set-by-customer|^qovery:' "${QOVERY_DEMO_CHART_PATH}/values-demo-local.yaml" >> values.yaml
+else
+  curl -s -L https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-local.yaml | grep -vE 'set-by-customer|^qovery:' >> values.yaml
+fi
 echo 'Helm values written into values.yaml'
 
 

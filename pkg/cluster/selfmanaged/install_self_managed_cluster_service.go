@@ -178,6 +178,24 @@ func (service *InstallSelfManagedClusterService) InstallCluster() (*string, erro
 		helmValues = *contentWithAKSValues
 	}
 
+	contentWithGatewayDomain, err := injectQoveryClusterGatewayDomain(helmValues)
+	if err != nil {
+		return nil, err
+	}
+	helmValues = *contentWithGatewayDomain
+
+	contentWithExternalDNSGatewaySources, err := injectExternalDNSGatewaySources(helmValues)
+	if err != nil {
+		return nil, err
+	}
+	helmValues = *contentWithExternalDNSGatewaySources
+
+	contentWithEnvoyIngress, err := injectEnvoyIngressServices(helmValues)
+	if err != nil {
+		return nil, err
+	}
+	helmValues = *contentWithEnvoyIngress
+
 	// generate the helm values file and output it to the user to ./values-<cluster-name>.yaml
 	helmValuesFileName := fmt.Sprintf("values-%s.yaml", strings.ToLower(cluster.Name))
 
@@ -245,14 +263,31 @@ Helm values location: %s
 	`, helmValuesFileName))
 
 	utils.Println(`
+# Pre-apply Gateway API and Envoy CRDs before the main Helm release.
+# The CRD bundle is too large to fit reliably in Helm's release Secret storage.
+helm pull qovery/qovery --untar --untardir /tmp/qovery-helm-chart
+helm template qovery-gateway-crds /tmp/qovery-helm-chart/qovery/charts/envoy-gateway-crd \
+	 --set crds.gatewayAPI.enabled=true \
+	 --set crds.gatewayAPI.channel=standard \
+	 --set crds.envoyGateway.enabled=true | kubectl apply --server-side -f -
+kubectl wait --for=condition=Established --timeout=180s crd/gateways.gateway.networking.k8s.io
+kubectl wait --for=condition=Established --timeout=180s crd/envoyproxies.gateway.envoyproxy.io`)
+
+	utils.Println(`
 # Note: --rollback-on-failure requires Helm >= 3.15.0 (replaces the deprecated --atomic flag).
 # Check your version with: helm version`)
 
 	utils.Println(fmt.Sprintf(`
-# Install Qovery on your cluster first, without some services to avoid circular dependency errors
+# Install Qovery on your cluster first, without some services to avoid circular dependency errors.
 helm upgrade --install --create-namespace -n qovery -f "%s" --rollback-on-failure \
 	 --set services.certificates.cert-manager-configs.enabled=false \
 	 --set services.certificates.qovery-cert-manager-webhook.enabled=false \
+	 --set services.ingress.envoy-gateway-crd.enabled=false \
+	 --set qovery-cluster-gateway.metrics.enabled=false \
+	 --set qovery-cluster-gateway.metrics.podMonitor.enabled=false \
+	 --set services.ingress.envoy-gateway.enabled=false \
+	 --set services.ingress.qovery-gateway-class.enabled=false \
+	 --set services.ingress.qovery-cluster-gateway.enabled=false \
 	 --set services.qovery.qovery-cluster-agent.enabled=false \
 	 --set services.qovery.qovery-engine.enabled=false \
 	 --set services.qovery.qovery-operator.enabled=false \
@@ -261,6 +296,9 @@ helm upgrade --install --create-namespace -n qovery -f "%s" --rollback-on-failur
 	utils.Println(fmt.Sprintf(`
 # Then, re-apply the Qovery installation with the remaining services
 helm upgrade --install --create-namespace -n qovery -f "%s" --wait --rollback-on-failure \
+	 --set services.ingress.envoy-gateway-crd.enabled=false \
+	 --set qovery-cluster-gateway.metrics.enabled=false \
+	 --set qovery-cluster-gateway.metrics.podMonitor.enabled=false \
 	 --set services.qovery.qovery-operator.enabled=false \
 	 qovery qovery/qovery
 `, helmValuesFileName))
@@ -308,6 +346,130 @@ func injectAzureAKSValues(clusterHelmValuesContent string) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
+	helmValuesString := string(helmValuesYamlBytes)
+	return &helmValuesString, nil
+}
+
+func injectQoveryClusterGatewayDomain(clusterHelmValuesContent string) (*string, error) {
+	var helmValuesYaml map[string]interface{}
+
+	err := yaml.Unmarshal([]byte(clusterHelmValuesContent), &helmValuesYaml)
+	if err != nil {
+		// Keep backward-compatible behavior for tests or mocked flows that do not provide valid YAML.
+		return &clusterHelmValuesContent, nil
+	}
+
+	qoveryValues, ok := helmValuesYaml["qovery"].(map[string]interface{})
+	if !ok {
+		return &clusterHelmValuesContent, nil
+	}
+
+	qoveryDomain, ok := qoveryValues["domain"].(string)
+	if !ok || strings.TrimSpace(qoveryDomain) == "" {
+		return &clusterHelmValuesContent, nil
+	}
+
+	qoveryClusterGateway, ok := helmValuesYaml["qovery-cluster-gateway"].(map[string]interface{})
+	if !ok {
+		qoveryClusterGateway = map[string]interface{}{}
+		helmValuesYaml["qovery-cluster-gateway"] = qoveryClusterGateway
+	}
+
+	dnsValues, ok := qoveryClusterGateway["dns"].(map[string]interface{})
+	if !ok {
+		dnsValues = map[string]interface{}{}
+		qoveryClusterGateway["dns"] = dnsValues
+	}
+
+	if existingDomain, ok := dnsValues["domain"].(string); ok && strings.TrimSpace(existingDomain) != "" {
+		return &clusterHelmValuesContent, nil
+	}
+
+	dnsValues["domain"] = qoveryDomain
+
+	helmValuesYamlBytes, err := yaml.Marshal(helmValuesYaml)
+	if err != nil {
+		return nil, err
+	}
+
+	helmValuesString := string(helmValuesYamlBytes)
+	return &helmValuesString, nil
+}
+
+func injectExternalDNSGatewaySources(clusterHelmValuesContent string) (*string, error) {
+	var helmValuesYaml map[string]interface{}
+
+	err := yaml.Unmarshal([]byte(clusterHelmValuesContent), &helmValuesYaml)
+	if err != nil {
+		return &clusterHelmValuesContent, nil
+	}
+
+	externalDNSValues, ok := helmValuesYaml["external-dns"].(map[string]interface{})
+	if !ok {
+		return &clusterHelmValuesContent, nil
+	}
+
+	if _, ok := externalDNSValues["sources"]; !ok {
+		externalDNSValues["sources"] = []string{
+			"service",
+			"ingress",
+			"gateway-httproute",
+			"gateway-grpcroute",
+		}
+	}
+
+	if _, ok := externalDNSValues["enableGatewayListenerSets"]; !ok {
+		externalDNSValues["enableGatewayListenerSets"] = true
+	}
+
+	helmValuesYamlBytes, err := yaml.Marshal(helmValuesYaml)
+	if err != nil {
+		return nil, err
+	}
+
+	helmValuesString := string(helmValuesYamlBytes)
+	return &helmValuesString, nil
+}
+
+func injectEnvoyIngressServices(clusterHelmValuesContent string) (*string, error) {
+	var helmValuesYaml map[string]interface{}
+
+	err := yaml.Unmarshal([]byte(clusterHelmValuesContent), &helmValuesYaml)
+	if err != nil {
+		return &clusterHelmValuesContent, nil
+	}
+
+	servicesValues, ok := helmValuesYaml["services"].(map[string]interface{})
+	if !ok {
+		return &clusterHelmValuesContent, nil
+	}
+
+	ingressValues, ok := servicesValues["ingress"].(map[string]interface{})
+	if !ok {
+		ingressValues = map[string]interface{}{}
+		servicesValues["ingress"] = ingressValues
+	}
+
+	ensureServiceEnabled := func(serviceName string, enabled bool) {
+		serviceValues, ok := ingressValues[serviceName].(map[string]interface{})
+		if !ok {
+			serviceValues = map[string]interface{}{}
+			ingressValues[serviceName] = serviceValues
+		}
+		serviceValues["enabled"] = enabled
+	}
+
+	ensureServiceEnabled("ingress-nginx", false)
+	ensureServiceEnabled("envoy-gateway-crd", false)
+	ensureServiceEnabled("envoy-gateway", true)
+	ensureServiceEnabled("qovery-gateway-class", true)
+	ensureServiceEnabled("qovery-cluster-gateway", true)
+
+	helmValuesYamlBytes, err := yaml.Marshal(helmValuesYaml)
+	if err != nil {
+		return nil, err
+	}
+
 	helmValuesString := string(helmValuesYamlBytes)
 	return &helmValuesString, nil
 }

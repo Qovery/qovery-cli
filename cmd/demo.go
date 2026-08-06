@@ -11,6 +11,8 @@ var (
 	demoClusterName        string
 	demoDeleteQoveryConfig bool
 	demoDebug              bool
+	demoChartPath          string
+	demoEngineImage        string
 )
 
 //go:embed demo_scripts/create_qovery_demo.sh
