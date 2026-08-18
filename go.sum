@@ -189,8 +189,8 @@ github.com/posthog/posthog-go v1.12.5 h1:l/x3mpqisXJ0sTOyyRutsTQAgiWYuJT1uhN4cQr
 github.com/posthog/posthog-go v1.12.5/go.mod h1:xsVOW9YImilUcazwPNEq4PJDqEZf2KeCS758zXjwkPg=
 github.com/pterm/pterm v0.12.83 h1:ie+YmGmA727VuhxBlyGr74Ks+7McV6kT99IB8EU80aA=
 github.com/pterm/pterm v0.12.83/go.mod h1:xlgc6bFWyJIMtmLJvGim+L7jhSReilOlOnodeIYe4Tk=
-github.com/qovery/qovery-client-go v0.0.0-20260828080937-17e8dbfe5711 h1:eH+5HvkAFzA2cpX7aAJWztpf7UYB5cmrNigVW818WTo=
-github.com/qovery/qovery-client-go v0.0.0-20260828080937-17e8dbfe5711/go.mod h1:qGyibtOSpR2wQeInNzFagLGRpQqlCGcRcFUiDf9FPLw=
+github.com/qovery/qovery-client-go v0.0.0-20260928120552-e2ecd2c1419c h1:mmjVcOKdy00u+wNke7mXmfhYE3larl9XHJs/py4JH68=
+github.com/qovery/qovery-client-go v0.0.0-20260928120552-e2ecd2c1419c/go.mod h1:qGyibtOSpR2wQeInNzFagLGRpQqlCGcRcFUiDf9FPLw=
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=
 github.com/rogpeppe/go-internal v1.14.1/go.mod h1:MaRKkUm5W0goXpeCfT7UZI6fk/L7L7so1lCWt35ZSgc=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
