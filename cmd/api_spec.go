@@ -72,11 +72,20 @@ EXAMPLES
 				os.Exit(1)
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
-			utils.PrintlnInfo("OpenAPI spec written to " + apiSpecOutput)
+			// Status message goes to stderr, not stdout, so stdout stays reserved
+			// for the spec itself (the whole point of -o is a clean stdout to script against).
+			fmt.Fprintln(os.Stderr, "OpenAPI spec written to "+apiSpecOutput)
 			return
 		}
 
-		_, _ = os.Stdout.Write(body)
+		if n, err := os.Stdout.Write(body); err != nil || n != len(body) {
+			if err == nil {
+				err = fmt.Errorf("short write: wrote %d of %d bytes", n, len(body))
+			}
+			utils.PrintlnError(err)
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
 	},
 }
 
