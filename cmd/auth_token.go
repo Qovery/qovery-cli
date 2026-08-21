@@ -21,8 +21,12 @@ var authTokenCmd = &cobra.Command{
 This command provides a valid access token that can be used to make direct API calls 
 to the Qovery API. The token is automatically refreshed if it has expired.
 
-For security reasons, the token is not printed by default. You must explicitly 
+For security reasons, the token is not printed by default. You must explicitly
 use --print or --json to output the token value.
+
+If you only need to check whether the CLI is authenticated (e.g. from a script
+or an automated agent), use 'qovery auth status' instead — it never prints the
+token, even with --json.
 
 Examples:
   # Print the raw token value
