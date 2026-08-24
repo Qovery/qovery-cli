@@ -116,9 +116,23 @@ install_or_upgrade_helm_charts() {
   local crd_chart_path="$chart_source/charts/envoy-gateway-crd"
   if [ "$chart_source" = "qovery/qovery" ]; then
     local tmp_chart_dir
+    local extracted_chart_dir
+    local extracted_charts_dir
     tmp_chart_dir=$(mktemp -d)
     helm pull "$chart_source" --untar --untardir "$tmp_chart_dir"
-    crd_chart_path="$tmp_chart_dir/qovery/charts/envoy-gateway-crd"
+    extracted_chart_dir=$(find "$tmp_chart_dir" -mindepth 1 -maxdepth 1 -type d | head -n 1)
+    if [ -z "$extracted_chart_dir" ]; then
+      echo "Unable to locate extracted chart directory under $tmp_chart_dir"
+      exit 1
+    fi
+    extracted_charts_dir="$extracted_chart_dir/charts"
+    crd_chart_path=$(find "$extracted_charts_dir" -maxdepth 1 \
+      \( -type d -name 'gateway-crds-helm' -o -type d -name 'envoy-gateway-crd' -o -type f -name '*gateway*crd*.tgz' \) | head -n 1)
+    if [ -z "$crd_chart_path" ]; then
+      echo "Unable to locate Envoy Gateway CRD chart under $extracted_charts_dir"
+      ls -la "$extracted_charts_dir"
+      exit 1
+    fi
   fi
 
   helm template qovery-gateway-crds "$crd_chart_path" \
