@@ -7,6 +7,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/fatih/color"
@@ -32,6 +33,7 @@ type SelfManagedClusterServiceImpl struct {
 	clusterCredentialsService       credentials.ClusterCredentialsService
 	clusterContainerRegistryService containerregistry.ClusterContainerRegistryService
 	promptUiFactory                 promptuifactory.PromptUiFactory
+	localBaseHelmValuesPath         string
 }
 
 func NewSelfManagedClusterService(
@@ -40,13 +42,20 @@ func NewSelfManagedClusterService(
 	clusterCredentialsService credentials.ClusterCredentialsService,
 	clusterContainerRegistryService containerregistry.ClusterContainerRegistryService,
 	promptUiFactory promptuifactory.PromptUiFactory,
+	localBaseHelmValuesPath ...string,
 ) *SelfManagedClusterServiceImpl {
+	baseHelmValuesPath := ""
+	if len(localBaseHelmValuesPath) > 0 {
+		baseHelmValuesPath = localBaseHelmValuesPath[0]
+	}
+
 	return &SelfManagedClusterServiceImpl{
 		client,
 		clusterService,
 		clusterCredentialsService,
 		clusterContainerRegistryService,
 		promptUiFactory,
+		baseHelmValuesPath,
 	}
 }
 
@@ -253,6 +262,16 @@ func getId(creds *qovery.ClusterCredentials) (string, error) {
 }
 
 func (service *SelfManagedClusterServiceImpl) GetBaseHelmValuesContent(kubernetesType qovery.CloudProviderEnum) (*string, error) {
+	if service.localBaseHelmValuesPath != "" {
+		body, err := os.ReadFile(service.localBaseHelmValuesPath)
+		if err != nil {
+			return nil, err
+		}
+
+		s := string(body)
+		return &s, nil
+	}
+
 	// download the appropriate values file
 	valuesUrl := ""
 	switch kubernetesType {

@@ -53,6 +53,18 @@ var demoUpCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		demoChartPath, err = validateDemoChartPath(demoChartPath)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		engineImageRepository, engineImageTag, err := demoEngineImageOverride(demoEngineImage)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
 		scriptDir := filepath.Join(os.TempDir(), "qovery-demo")
 		mErr := os.MkdirAll(scriptDir, os.FileMode(0700))
 		if mErr != nil {
@@ -76,6 +88,13 @@ set -o pipefail
 `
 		cmdArgs := fmt.Sprintf(cmdStr, scriptPath, demoClusterName, detectArchitecture(), string(orgId), string(token), demoDebug, userAgent, debugLogsPath)
 		shCmd := exec.Command("/bin/bash", "-c", cmdArgs)
+		shCmd.Env = append(
+			os.Environ(),
+			"QOVERY_DEMO_CHART_PATH="+demoChartPath,
+			"QOVERY_DEMO_ENGINE_IMAGE_SOURCE="+demoEngineImage,
+			"QOVERY_DEMO_ENGINE_IMAGE_REPOSITORY="+engineImageRepository,
+			"QOVERY_DEMO_ENGINE_IMAGE_TAG="+engineImageTag,
+		)
 		shCmd.Stdout = os.Stdout
 		shCmd.Stderr = os.Stderr
 		if err := shCmd.Run(); err != nil || !shCmd.ProcessState.Success() {
@@ -86,6 +105,51 @@ set -o pipefail
 
 		utils.CaptureWithEvent(cmd, utils.EndOfExecutionEventName)
 	},
+}
+
+func validateDemoChartPath(chartPath string) (string, error) {
+	if chartPath == "" {
+		return "", nil
+	}
+
+	expandedChartPath, err := expandPath(chartPath)
+	if err != nil {
+		return "", fmt.Errorf("expand demo chart path: %w", err)
+	}
+
+	absChartPath, err := filepath.Abs(expandedChartPath)
+	if err != nil {
+		return "", fmt.Errorf("resolve demo chart path: %w", err)
+	}
+
+	chartInfo, err := os.Stat(absChartPath)
+	if err != nil {
+		return "", fmt.Errorf("read demo chart path %q: %w", absChartPath, err)
+	}
+	if !chartInfo.IsDir() {
+		return "", fmt.Errorf("demo chart path %q must be a directory", absChartPath)
+	}
+
+	for _, filename := range []string{"Chart.yaml", "values-demo-local.yaml"} {
+		if _, err := os.Stat(filepath.Join(absChartPath, filename)); err != nil {
+			return "", fmt.Errorf("demo chart path %q must contain %s: %w", absChartPath, filename, err)
+		}
+	}
+
+	return absChartPath, nil
+}
+
+func demoEngineImageOverride(image string) (string, string, error) {
+	if image == "" {
+		return "", "", nil
+	}
+
+	repository, tag, err := splitImageReference(image)
+	if err != nil {
+		return "", "", fmt.Errorf("invalid demo engine image: %w", err)
+	}
+
+	return normalizeImageRepository(repository), tag, nil
 }
 
 // Only needed due to MacOs when rosetta (x86_64 emulation on ARM64) is turned on.
@@ -156,6 +220,8 @@ func init() {
 	var demoUpCmd = demoUpCmd
 	demoUpCmd.Flags().StringVarP(&demoClusterName, "cluster-name", "c", "local-demo-"+userName, "The name of the cluster to create")
 	demoUpCmd.Flags().BoolVar(&demoDebug, "debug", false, "Enable debug mode")
+	demoUpCmd.Flags().StringVar(&demoChartPath, "chart-path", "", "Local Qovery chart directory to install instead of the published chart")
+	demoUpCmd.Flags().StringVar(&demoEngineImage, "engine-image", "", "Engine image with an explicit tag to use for the demo")
 
 	demoCmd.AddCommand(demoUpCmd)
 }

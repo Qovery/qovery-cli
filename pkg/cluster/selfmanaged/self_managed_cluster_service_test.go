@@ -5,6 +5,8 @@ import (
 	"github.com/jarcoal/httpmock"
 	"github.com/qovery/qovery-client-go"
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"os"
 	"testing"
 
 	mockCluster "github.com/qovery/qovery-cli/pkg/cluster"
@@ -174,16 +176,73 @@ func TestGetInstallationHelmValues(t *testing.T) {
 }
 
 func TestGetBaseHelmValuesContent(t *testing.T) {
+	t.Run("Should get installation helm values from a local base values file when provided", func(t *testing.T) {
+		baseValuesFile, err := os.CreateTemp(t.TempDir(), "values-*.yaml")
+		if err != nil {
+			t.Fatalf("create temp values file: %v", err)
+		}
+		defer func() {
+			_ = baseValuesFile.Close()
+		}()
+
+		expectedContent := "services:\n  ingress:\n    ingress-nginx:\n      enabled: false\n"
+		if _, err := baseValuesFile.WriteString(expectedContent); err != nil {
+			t.Fatalf("write temp values file: %v", err)
+		}
+
+		service := NewSelfManagedClusterService(
+			utils.GetQoveryClient("Fake token type", "Fake token"),
+			nil,
+			nil,
+			nil,
+			promptuifactory.NewPromptUiFactoryMock(map[string]bool{}, map[string]string{}),
+			baseValuesFile.Name(),
+		)
+
+		content, err := service.GetBaseHelmValuesContent(qovery.CLOUDPROVIDERENUM_SCW)
+
+		assert.Nil(t, err)
+		assert.Equal(t, expectedContent, *content)
+	})
+
 	testCases := []struct {
+		Name              string
 		CloudProviderType qovery.CloudProviderEnum
+		URL               string
 	}{
-		{CloudProviderType: qovery.CLOUDPROVIDERENUM_AWS},
-		{CloudProviderType: qovery.CLOUDPROVIDERENUM_SCW},
-		{CloudProviderType: qovery.CLOUDPROVIDERENUM_GCP},
-		{CloudProviderType: qovery.CLOUDPROVIDERENUM_ON_PREMISE},
+		{
+			Name:              "AWS",
+			CloudProviderType: qovery.CLOUDPROVIDERENUM_AWS,
+			URL:               "https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-aws.yaml",
+		},
+		{
+			Name:              "SCW",
+			CloudProviderType: qovery.CLOUDPROVIDERENUM_SCW,
+			URL:               "https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-scaleway.yaml",
+		},
+		{
+			Name:              "GCP",
+			CloudProviderType: qovery.CLOUDPROVIDERENUM_GCP,
+			URL:               "https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-gcp.yaml",
+		},
+		{
+			Name:              "ON_PREMISE",
+			CloudProviderType: qovery.CLOUDPROVIDERENUM_ON_PREMISE,
+			URL:               "https://raw.githubusercontent.com/Qovery/qovery-chart/main/charts/qovery/values-demo-local.yaml",
+		},
 	}
 	for _, testCase := range testCases {
-		t.Run(fmt.Sprintf("Should get installation helm values cluster cloud provider %s", testCase.CloudProviderType), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Should get installation helm values cluster cloud provider %s", testCase.Name), func(t *testing.T) {
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+
+			expectedContent := fmt.Sprintf("# %s values\n", testCase.Name)
+			httpmock.RegisterResponder("GET", testCase.URL,
+				func(request *http.Request) (*http.Response, error) {
+					return httpmock.NewStringResponse(200, expectedContent), nil
+				},
+			)
+
 			// given
 			service := NewSelfManagedClusterService(
 				utils.GetQoveryClient("Fake token type", "Fake token"),
@@ -199,6 +258,7 @@ func TestGetBaseHelmValuesContent(t *testing.T) {
 			// then
 			assert.Nil(t, err)
 			assert.NotNil(t, content)
+			assert.Equal(t, expectedContent, *content)
 		})
 	}
 }
