@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/qovery/qovery-cli/utils"
 	qovery "github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
@@ -29,6 +30,10 @@ const (
 	demo2NodeIP              = "172.42.0.3"
 	demo2Registry            = "qovery-registry.lan"
 	demo2PlatformTemplateKey = "qovery-demo-v0"
+	demo2WorkflowType        = "demo_installation"
+	demo2Implementation      = "engine_v2"
+	demo2UnknownErrorCode    = "UNKNOWN_FAILURE"
+	demo2SafeErrorMessage    = "The demo installation failed."
 )
 
 var (
@@ -36,59 +41,104 @@ var (
 	demo2Debug       bool
 )
 
+type demo2Attempt struct {
+	id        string
+	startedAt time.Time
+}
+
 var demo2UpCmd = &cobra.Command{
 	Use:   "up",
 	Short: "Create an experimental local cluster using Qovery Operator and Engine V2",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		utils.Capture(cmd)
-		if runtime.GOOS == "windows" {
-			return errors.New("qovery demo2 is not supported directly on Windows; use WSL")
-		}
-		tokenType, token, err := utils.GetAccessToken()
-		if err != nil {
-			return fmt.Errorf("authentication failed; run `qovery auth` first: %w", err)
-		}
-		organizationID, _, err := utils.CurrentOrganization(true)
-		if err != nil {
-			return fmt.Errorf("cannot resolve the current organization: %w", err)
-		}
-		if err := validateDemo2ClusterName(demo2ClusterName); err != nil {
-			return err
-		}
-		debugLog, debugLogsPath, err := openDemo2DebugLog()
-		if err != nil {
-			return err
-		}
-		defer func() { _ = debugLog.Close() }()
+		attempt := newDemo2Attempt()
+		attempt.capture(cmd, utils.DefaultEventName, utils.CommandExecutionProperties{})
 
-		terminalOutput := cmd.OutOrStdout()
-		runner := &demo2ExecRunner{
-			out:   terminalOutput,
-			log:   debugLog,
-			debug: demo2Debug,
-		}
-		orchestrator := demo2Orchestrator{
-			api:   &demo2QoveryAPI{client: utils.GetQoveryClient(tokenType, token)},
-			local: &demo2LocalCommands{runner: runner, goos: runtime.GOOS},
-			clock: demo2SystemClock{},
-			out:   io.MultiWriter(terminalOutput, debugLog),
-		}
-		err = orchestrator.Up(cmd.Context(), demo2Config{
-			OrganizationID:  string(organizationID),
-			ClusterName:     demo2ClusterName,
-			CPUArchitecture: detectArchitecture(),
-		})
+		err := runDemo2Up(cmd)
 		if err != nil {
-			_, _ = fmt.Fprintf(debugLog, "\nERROR: %v\n", err)
-			_ = debugLog.Sync()
-			uploadErrorLogs(tokenType, token, organizationID, demo2ClusterName, debugLogsPath)
-			utils.CaptureError(cmd, "qovery demo2 up", err.Error())
+			attempt.capture(
+				cmd,
+				utils.EndOfExecutionErrorEventName,
+				utils.CommandExecutionProperties{
+					Result:           "failed",
+					ErrorCode:        demo2UnknownErrorCode,
+					SafeErrorMessage: demo2SafeErrorMessage,
+				},
+			)
 			return err
 		}
-		utils.CaptureWithEvent(cmd, utils.EndOfExecutionEventName)
+
+		attempt.capture(cmd, utils.EndOfExecutionEventName, utils.CommandExecutionProperties{Result: "succeeded"})
 		return nil
 	},
+}
+
+func runDemo2Up(cmd *cobra.Command) error {
+	if runtime.GOOS == "windows" {
+		return errors.New("qovery demo2 is not supported directly on Windows; use WSL")
+	}
+	tokenType, token, err := utils.GetAccessToken()
+	if err != nil {
+		return fmt.Errorf("authentication failed; run `qovery auth` first: %w", err)
+	}
+	organizationID, _, err := utils.CurrentOrganization(true)
+	if err != nil {
+		return fmt.Errorf("cannot resolve the current organization: %w", err)
+	}
+	if err := validateDemo2ClusterName(demo2ClusterName); err != nil {
+		return err
+	}
+	debugLog, debugLogsPath, err := openDemo2DebugLog()
+	if err != nil {
+		return err
+	}
+	defer func() { _ = debugLog.Close() }()
+
+	terminalOutput := cmd.OutOrStdout()
+	runner := &demo2ExecRunner{
+		out:   terminalOutput,
+		log:   debugLog,
+		debug: demo2Debug,
+	}
+	orchestrator := demo2Orchestrator{
+		api:   &demo2QoveryAPI{client: utils.GetQoveryClient(tokenType, token)},
+		local: &demo2LocalCommands{runner: runner, goos: runtime.GOOS},
+		clock: demo2SystemClock{},
+		out:   io.MultiWriter(terminalOutput, debugLog),
+	}
+	err = orchestrator.Up(cmd.Context(), demo2Config{
+		OrganizationID:  string(organizationID),
+		ClusterName:     demo2ClusterName,
+		CPUArchitecture: detectArchitecture(),
+	})
+	if err != nil {
+		_, _ = fmt.Fprintf(debugLog, "\nERROR: %v\n", err)
+		_ = debugLog.Sync()
+		uploadErrorLogs(tokenType, token, organizationID, demo2ClusterName, debugLogsPath)
+		return err
+	}
+	return nil
+}
+
+func (a demo2Attempt) capture(
+	cmd *cobra.Command,
+	event string,
+	execution utils.CommandExecutionProperties,
+) {
+	execution.AttemptID = a.id
+	execution.WorkflowType = demo2WorkflowType
+	execution.Implementation = demo2Implementation
+	if execution.Result != "" {
+		execution.DurationMillis = max(time.Since(a.startedAt).Milliseconds(), 1)
+	}
+	utils.CaptureCommandExecution(cmd, event, execution)
+}
+
+func newDemo2Attempt() demo2Attempt {
+	return demo2Attempt{
+		id:        uuid.Must(uuid.NewV7()).String(),
+		startedAt: time.Now(),
+	}
 }
 
 func init() {

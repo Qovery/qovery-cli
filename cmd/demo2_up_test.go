@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	qovery "github.com/qovery/qovery-client-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -36,6 +37,14 @@ func TestDemo2UpFreshCreationOrder(t *testing.T) {
 		"deploy", "cluster-status", "cluster-status", "validate-workloads",
 	}, events)
 	assert.Equal(t, "ARM64", api.operatorCPUArchitecture)
+}
+
+func TestNewDemo2AttemptUsesUUIDV7(t *testing.T) {
+	attempt := newDemo2Attempt()
+	attemptID, err := uuid.Parse(attempt.id)
+
+	require.NoError(t, err)
+	assert.Equal(t, uuid.Version(7), attemptID.Version())
 }
 
 func TestDemo2UpRerunReusesResources(t *testing.T) {
