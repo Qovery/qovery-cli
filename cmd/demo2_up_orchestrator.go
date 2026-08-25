@@ -14,6 +14,17 @@ const (
 	demo2DefaultOperatorTimeout     = 10 * time.Minute
 	demo2DefaultDeploymentTimeout   = 90 * time.Minute
 	demo2DefaultPollInterval        = 5 * time.Second
+
+	demo2PhaseLocalDependencies         = "local_dependencies"
+	demo2PhaseCredentialsAndCluster     = "credentials_and_cluster"
+	demo2PhaseLocalCluster              = "local_cluster"
+	demo2PhaseLegacyReleaseCheck        = "legacy_release_check"
+	demo2PhaseOperatorBootstrap         = "operator_bootstrap"
+	demo2PhaseOperatorHeartbeat         = "operator_heartbeat"
+	demo2PhasePlatformCatalogDeployment = "platform_catalog_deployment"
+	demo2PhaseWorkloadVerification      = "workload_verification"
+	demo2PhaseResultSucceeded           = "succeeded"
+	demo2PhaseResultFailed              = "failed"
 )
 
 type demo2Credential struct {
@@ -60,6 +71,19 @@ type demo2Clock interface {
 	Sleep(context.Context, time.Duration) error
 }
 
+type demo2PhaseExecution struct {
+	Phase            string
+	Result           string
+	Duration         time.Duration
+	ErrorCode        string
+	SafeErrorMessage string
+}
+
+type demo2Progress interface {
+	ClusterResolved(string)
+	PhaseFinished(demo2PhaseExecution)
+}
+
 type demo2Config struct {
 	OrganizationID    string
 	ClusterName       string
@@ -70,10 +94,11 @@ type demo2Config struct {
 }
 
 type demo2Orchestrator struct {
-	api   demo2API
-	local demo2Local
-	clock demo2Clock
-	out   io.Writer
+	api      demo2API
+	local    demo2Local
+	clock    demo2Clock
+	out      io.Writer
+	progress demo2Progress
 }
 
 func (o *demo2Orchestrator) Up(ctx context.Context, cfg demo2Config) error {
@@ -87,76 +112,105 @@ func (o *demo2Orchestrator) Up(ctx context.Context, cfg demo2Config) error {
 		cfg.PollInterval = demo2DefaultPollInterval
 	}
 
-	o.phase("Checking local dependencies")
-	if err := o.local.CheckDependencies(ctx); err != nil {
-		return fmt.Errorf("local dependency check failed: %w", err)
-	}
-
-	o.phase("Resolving Qovery On-Premise credentials and cluster")
-	credential, err := o.api.EnsureOnPremiseCredentials(ctx, cfg.OrganizationID)
-	if err != nil {
-		return fmt.Errorf("cannot resolve On-Premise credentials: %w", err)
-	}
-	clusterID, found, err := o.api.FindCluster(ctx, cfg.OrganizationID, cfg.ClusterName)
-	if err != nil {
-		return fmt.Errorf("cannot look up Qovery cluster: %w", err)
-	}
-	if !found {
-		clusterID, err = o.api.CreateCluster(ctx, cfg.OrganizationID, cfg.ClusterName, credential)
-		if err != nil {
-			return fmt.Errorf("cannot create Qovery cluster: %w", err)
+	if err := o.runPhase(demo2PhaseLocalDependencies, "Checking local dependencies", func() error {
+		if err := o.local.CheckDependencies(ctx); err != nil {
+			return fmt.Errorf("local dependency check failed: %w", err)
 		}
-	}
-
-	o.phase("Creating or starting the local k3d cluster")
-	if err := o.local.EnsureK3dCluster(ctx, cfg.ClusterName); err != nil {
-		return fmt.Errorf("cannot prepare local k3d cluster: %w", err)
-	}
-	if err := o.local.EnsureLoopback(ctx); err != nil {
-		return fmt.Errorf("cannot configure local loopback: %w", err)
-	}
-
-	o.phase("Checking for an unsupported legacy Qovery release")
-	legacy, err := o.local.LegacyQoveryReleaseExists(ctx)
-	if err != nil {
-		return fmt.Errorf("cannot inspect Helm releases: %w", err)
-	}
-	if legacy {
-		return errors.New("legacy Helm release \"qovery\" exists in namespace \"qovery\"; adopting an old demo is not supported: destroy and recreate the local cluster before running `qovery demo2 up`")
-	}
-
-	o.phase("Bootstrapping and attaching the Qovery Operator")
-	if err := o.api.ConfigureOperator(ctx, cfg.OrganizationID, clusterID, cfg.CPUArchitecture); err != nil {
-		return fmt.Errorf("cannot configure the Qovery Operator for the local demo: %w", err)
-	}
-	bootstrap, err := o.api.GetOperatorBootstrap(ctx, cfg.OrganizationID, clusterID)
-	if err != nil {
-		return errors.New("cannot retrieve the Qovery Operator bootstrap")
-	}
-	if err := o.api.AttachOperator(ctx, cfg.OrganizationID, clusterID); err != nil {
-		return fmt.Errorf("cannot attach the cluster to the Qovery Operator path: %w", err)
-	}
-	if err := o.local.InstallOperator(ctx, bootstrap); err != nil {
-		return errors.New("operator Helm installation failed; sensitive bootstrap values were redacted")
-	}
-
-	o.phase("Waiting for a fresh Qovery Operator heartbeat")
-	if err := o.waitForOperator(ctx, cfg, clusterID); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 
-	o.phase("Deploying the current self-managed platform catalog")
-	initialStatus, err := o.api.DeployCluster(ctx, cfg.OrganizationID, clusterID)
-	if err != nil {
-		return fmt.Errorf("cannot trigger cluster deployment: %w", err)
-	}
-	status, err := o.waitForDeployment(ctx, cfg, clusterID, initialStatus)
-	if err != nil {
+	var clusterID string
+	if err := o.runPhase(demo2PhaseCredentialsAndCluster, "Resolving Qovery On-Premise credentials and cluster", func() error {
+		credential, err := o.api.EnsureOnPremiseCredentials(ctx, cfg.OrganizationID)
+		if err != nil {
+			return fmt.Errorf("cannot resolve On-Premise credentials: %w", err)
+		}
+		var found bool
+		clusterID, found, err = o.api.FindCluster(ctx, cfg.OrganizationID, cfg.ClusterName)
+		if err != nil {
+			return fmt.Errorf("cannot look up Qovery cluster: %w", err)
+		}
+		if !found {
+			clusterID, err = o.api.CreateCluster(ctx, cfg.OrganizationID, cfg.ClusterName, credential)
+			if err != nil {
+				return fmt.Errorf("cannot create Qovery cluster: %w", err)
+			}
+		}
+		o.clusterResolved(clusterID)
+		return nil
+	}); err != nil {
 		return err
 	}
 
-	o.phase("Verifying Operator and Engine workloads")
-	if err := o.local.ValidateWorkloads(ctx, bootstrap.Namespace); err != nil {
+	if err := o.runPhase(demo2PhaseLocalCluster, "Creating or starting the local k3d cluster", func() error {
+		if err := o.local.EnsureK3dCluster(ctx, cfg.ClusterName); err != nil {
+			return fmt.Errorf("cannot prepare local k3d cluster: %w", err)
+		}
+		if err := o.local.EnsureLoopback(ctx); err != nil {
+			return fmt.Errorf("cannot configure local loopback: %w", err)
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	if err := o.runPhase(demo2PhaseLegacyReleaseCheck, "Checking for an unsupported legacy Qovery release", func() error {
+		legacy, err := o.local.LegacyQoveryReleaseExists(ctx)
+		if err != nil {
+			return fmt.Errorf("cannot inspect Helm releases: %w", err)
+		}
+		if legacy {
+			return errors.New("legacy Helm release \"qovery\" exists in namespace \"qovery\"; adopting an old demo is not supported: destroy and recreate the local cluster before running `qovery demo2 up`")
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	var bootstrap demo2Bootstrap
+	if err := o.runPhase(demo2PhaseOperatorBootstrap, "Bootstrapping and attaching the Qovery Operator", func() error {
+		if err := o.api.ConfigureOperator(ctx, cfg.OrganizationID, clusterID, cfg.CPUArchitecture); err != nil {
+			return fmt.Errorf("cannot configure the Qovery Operator for the local demo: %w", err)
+		}
+		var err error
+		bootstrap, err = o.api.GetOperatorBootstrap(ctx, cfg.OrganizationID, clusterID)
+		if err != nil {
+			return errors.New("cannot retrieve the Qovery Operator bootstrap")
+		}
+		if err := o.api.AttachOperator(ctx, cfg.OrganizationID, clusterID); err != nil {
+			return fmt.Errorf("cannot attach the cluster to the Qovery Operator path: %w", err)
+		}
+		if err := o.local.InstallOperator(ctx, bootstrap); err != nil {
+			return errors.New("operator Helm installation failed; sensitive bootstrap values were redacted")
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	if err := o.runPhase(demo2PhaseOperatorHeartbeat, "Waiting for a fresh Qovery Operator heartbeat", func() error {
+		return o.waitForOperator(ctx, cfg, clusterID)
+	}); err != nil {
+		return err
+	}
+
+	var status string
+	if err := o.runPhase(demo2PhasePlatformCatalogDeployment, "Deploying the current self-managed platform catalog", func() error {
+		initialStatus, err := o.api.DeployCluster(ctx, cfg.OrganizationID, clusterID)
+		if err != nil {
+			return fmt.Errorf("cannot trigger cluster deployment: %w", err)
+		}
+		status, err = o.waitForDeployment(ctx, cfg, clusterID, initialStatus)
+		return err
+	}); err != nil {
+		return err
+	}
+
+	if err := o.runPhase(demo2PhaseWorkloadVerification, "Verifying Operator and Engine workloads", func() error {
+		return o.local.ValidateWorkloads(ctx, bootstrap.Namespace)
+	}); err != nil {
 		return err
 	}
 	_, _ = fmt.Fprintf(
@@ -166,6 +220,36 @@ func (o *demo2Orchestrator) Up(ctx context.Context, cfg demo2Config) error {
 		status,
 	)
 	return nil
+}
+
+func (o *demo2Orchestrator) runPhase(phase string, message string, run func() error) error {
+	o.phase(message)
+	startedAt := o.clock.Now()
+	err := run()
+	result := demo2PhaseResultSucceeded
+	errorCode := ""
+	safeErrorMessage := ""
+	if err != nil {
+		result = demo2PhaseResultFailed
+		errorCode = demo2UnknownErrorCode
+		safeErrorMessage = demo2SafeErrorMessage
+	}
+	if o.progress != nil {
+		o.progress.PhaseFinished(demo2PhaseExecution{
+			Phase:            phase,
+			Result:           result,
+			Duration:         o.clock.Now().Sub(startedAt),
+			ErrorCode:        errorCode,
+			SafeErrorMessage: safeErrorMessage,
+		})
+	}
+	return err
+}
+
+func (o *demo2Orchestrator) clusterResolved(clusterID string) {
+	if o.progress != nil {
+		o.progress.ClusterResolved(clusterID)
+	}
 }
 
 func (o *demo2Orchestrator) waitForOperator(ctx context.Context, cfg demo2Config, clusterID string) error {
