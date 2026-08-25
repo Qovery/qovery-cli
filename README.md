@@ -80,16 +80,6 @@ qovery version
 
 You can use `qovery auth` to authenticate with the CLI or use `Q_CLI_ACCESS_TOKEN` (or `QOVERY_CLI_ACCESS_TOKEN`) environment variable to set your API token.
 
-## Versions
-
-You can install the latest version of the CLI:
-
-- On Mac: with brew `brew install qovery-cli`
-- On ArchLinux: with `yay qovery-cli`
-- On Windows: with scoop `scoop install qovery-cli`
-- On Docker: at the address `public.ecr.aws/r3m4q3r9/qovery-cli`
-- From binary: <https://github.com/Qovery/qovery-cli/releases>
-
 # Update deps
 
 ```sh
