@@ -11,6 +11,8 @@ func TestCommandExecutionPropertiesContainOnlySafeStructuredValues(t *testing.T)
 		AttemptID:        "0198dc0e-b7ab-7b91-8c42-2169f9302572",
 		WorkflowType:     "demo_installation",
 		Implementation:   "engine_v2",
+		ClusterID:        "cluster-id",
+		Phase:            "operator_bootstrap",
 		Result:           "failed",
 		DurationMillis:   1234,
 		ErrorCode:        "UNKNOWN_FAILURE",
@@ -20,8 +22,11 @@ func TestCommandExecutionPropertiesContainOnlySafeStructuredValues(t *testing.T)
 	properties := commandExecutionPostHogProperties(execution)
 
 	assert.Equal(t, "0198dc0e-b7ab-7b91-8c42-2169f9302572", properties["attempt_id"])
+	assert.Equal(t, "0198dc0e-b7ab-7b91-8c42-2169f9302572", properties["$session_id"])
 	assert.Equal(t, "demo_installation", properties["workflow_type"])
 	assert.Equal(t, "engine_v2", properties["implementation"])
+	assert.Equal(t, "cluster-id", properties["cluster_id"])
+	assert.Equal(t, "operator_bootstrap", properties["phase"])
 	assert.Equal(t, "failed", properties["result"])
 	assert.Equal(t, int64(1234), properties["duration_ms"])
 	assert.Equal(t, "UNKNOWN_FAILURE", properties["error_code"])

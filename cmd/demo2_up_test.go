@@ -68,6 +68,65 @@ func TestDemo2UpRerunReusesResources(t *testing.T) {
 	assert.Equal(t, 1, api.ensureCredentialsCalls)
 }
 
+func TestDemo2UpReportsEveryPhaseWithClusterCorrelation(t *testing.T) {
+	now := time.Date(2026, 8, 19, 10, 0, 0, 0, time.UTC)
+	progress := &recordingDemo2Progress{}
+	api := &fakeDemo2API{
+		operatorStatuses: []demo2OperatorStatus{readyDemo2OperatorStatus(now)},
+		clusterStatuses:  []string{"DEPLOYED"},
+	}
+	orchestrator := demo2Orchestrator{
+		api:      api,
+		local:    &fakeDemo2Local{},
+		clock:    &fakeDemo2Clock{now: now},
+		out:      &bytes.Buffer{},
+		progress: progress,
+	}
+
+	err := orchestrator.Up(context.Background(), testDemo2Config())
+
+	require.NoError(t, err)
+	assert.Equal(t, []string{"cluster-id"}, progress.resolvedClusterIDs)
+	require.Len(t, progress.phases, 8)
+	assert.Equal(t, []string{
+		demo2PhaseLocalDependencies,
+		demo2PhaseCredentialsAndCluster,
+		demo2PhaseLocalCluster,
+		demo2PhaseLegacyReleaseCheck,
+		demo2PhaseOperatorBootstrap,
+		demo2PhaseOperatorHeartbeat,
+		demo2PhasePlatformCatalogDeployment,
+		demo2PhaseWorkloadVerification,
+	}, demo2RecordedPhaseNames(progress.phases))
+	for _, phase := range progress.phases {
+		assert.Equal(t, demo2PhaseResultSucceeded, phase.Result)
+	}
+	assert.Empty(t, progress.phases[0].ClusterID)
+	for _, phase := range progress.phases[1:] {
+		assert.Equal(t, "cluster-id", phase.ClusterID)
+	}
+}
+
+func TestDemo2UpReportsTheFailedPhaseAndStopsTheTimeline(t *testing.T) {
+	now := time.Date(2026, 8, 19, 10, 0, 0, 0, time.UTC)
+	progress := &recordingDemo2Progress{}
+	orchestrator := demo2Orchestrator{
+		api:      &fakeDemo2API{},
+		local:    &fakeDemo2Local{legacyRelease: true},
+		clock:    &fakeDemo2Clock{now: now},
+		out:      &bytes.Buffer{},
+		progress: progress,
+	}
+
+	err := orchestrator.Up(context.Background(), testDemo2Config())
+
+	require.Error(t, err)
+	require.Len(t, progress.phases, 4)
+	assert.Equal(t, demo2PhaseLegacyReleaseCheck, progress.phases[3].Phase)
+	assert.Equal(t, demo2PhaseResultFailed, progress.phases[3].Result)
+	assert.Equal(t, "cluster-id", progress.phases[3].ClusterID)
+}
+
 func TestDemo2ClusterRequestSerializesIsDemo(t *testing.T) {
 	request := newDemo2ClusterRequest("local-demo2-user", demo2Credential{ID: "credential-id", Name: "on-premise"})
 
@@ -610,6 +669,34 @@ func (f *fakeDemo2Clock) Sleep(ctx context.Context, duration time.Duration) erro
 		f.now = f.now.Add(duration)
 		return nil
 	}
+}
+
+type recordedDemo2Phase struct {
+	demo2PhaseExecution
+	ClusterID string
+}
+
+type recordingDemo2Progress struct {
+	clusterID          string
+	resolvedClusterIDs []string
+	phases             []recordedDemo2Phase
+}
+
+func (r *recordingDemo2Progress) ClusterResolved(clusterID string) {
+	r.clusterID = clusterID
+	r.resolvedClusterIDs = append(r.resolvedClusterIDs, clusterID)
+}
+
+func (r *recordingDemo2Progress) PhaseFinished(execution demo2PhaseExecution) {
+	r.phases = append(r.phases, recordedDemo2Phase{demo2PhaseExecution: execution, ClusterID: r.clusterID})
+}
+
+func demo2RecordedPhaseNames(phases []recordedDemo2Phase) []string {
+	names := make([]string, 0, len(phases))
+	for _, phase := range phases {
+		names = append(names, phase.Phase)
+	}
+	return names
 }
 
 type inspectingDemo2Runner struct {

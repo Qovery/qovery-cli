@@ -42,8 +42,17 @@ var (
 )
 
 type demo2Attempt struct {
-	id        string
-	startedAt time.Time
+	id          string
+	startedAt   time.Time
+	clusterID   string
+	failedPhase string
+	errorCode   string
+	safeMessage string
+}
+
+type demo2AttemptTelemetry struct {
+	attempt *demo2Attempt
+	command *cobra.Command
 }
 
 var demo2UpCmd = &cobra.Command{
@@ -54,17 +63,20 @@ var demo2UpCmd = &cobra.Command{
 		attempt := newDemo2Attempt()
 		attempt.capture(cmd, utils.DefaultEventName, utils.CommandExecutionProperties{})
 
-		err := runDemo2Up(cmd)
+		err := runDemo2Up(cmd, &demo2AttemptTelemetry{attempt: attempt, command: cmd}, attempt.id)
 		if err != nil {
+			errorCode, safeMessage := attempt.failureProperties()
 			attempt.capture(
 				cmd,
 				utils.EndOfExecutionErrorEventName,
 				utils.CommandExecutionProperties{
 					Result:           "failed",
-					ErrorCode:        demo2UnknownErrorCode,
-					SafeErrorMessage: demo2SafeErrorMessage,
+					Phase:            attempt.failedPhase,
+					ErrorCode:        errorCode,
+					SafeErrorMessage: safeMessage,
 				},
 			)
+			attempt.printFailureSummary(cmd)
 			return err
 		}
 
@@ -73,7 +85,7 @@ var demo2UpCmd = &cobra.Command{
 	},
 }
 
-func runDemo2Up(cmd *cobra.Command) error {
+func runDemo2Up(cmd *cobra.Command, progress demo2Progress, diagnosticID string) error {
 	if runtime.GOOS == "windows" {
 		return errors.New("qovery demo2 is not supported directly on Windows; use WSL")
 	}
@@ -93,6 +105,7 @@ func runDemo2Up(cmd *cobra.Command) error {
 		return err
 	}
 	defer func() { _ = debugLog.Close() }()
+	_, _ = fmt.Fprintf(debugLog, "Diagnostic ID: %s\n", diagnosticID)
 
 	terminalOutput := cmd.OutOrStdout()
 	runner := &demo2ExecRunner{
@@ -101,10 +114,11 @@ func runDemo2Up(cmd *cobra.Command) error {
 		debug: demo2Debug,
 	}
 	orchestrator := demo2Orchestrator{
-		api:   &demo2QoveryAPI{client: utils.GetQoveryClient(tokenType, token)},
-		local: &demo2LocalCommands{runner: runner, goos: runtime.GOOS},
-		clock: demo2SystemClock{},
-		out:   io.MultiWriter(terminalOutput, debugLog),
+		api:      &demo2QoveryAPI{client: utils.GetQoveryClient(tokenType, token)},
+		local:    &demo2LocalCommands{runner: runner, goos: runtime.GOOS},
+		clock:    demo2SystemClock{},
+		out:      io.MultiWriter(terminalOutput, debugLog),
+		progress: progress,
 	}
 	err = orchestrator.Up(cmd.Context(), demo2Config{
 		OrganizationID:  string(organizationID),
@@ -120,7 +134,7 @@ func runDemo2Up(cmd *cobra.Command) error {
 	return nil
 }
 
-func (a demo2Attempt) capture(
+func (a *demo2Attempt) capture(
 	cmd *cobra.Command,
 	event string,
 	execution utils.CommandExecutionProperties,
@@ -128,14 +142,68 @@ func (a demo2Attempt) capture(
 	execution.AttemptID = a.id
 	execution.WorkflowType = demo2WorkflowType
 	execution.Implementation = demo2Implementation
-	if execution.Result != "" {
+	execution.ClusterID = a.clusterID
+	if execution.Result != "" && execution.DurationMillis <= 0 {
 		execution.DurationMillis = max(time.Since(a.startedAt).Milliseconds(), 1)
 	}
 	utils.CaptureCommandExecution(cmd, event, execution)
 }
 
-func newDemo2Attempt() demo2Attempt {
-	return demo2Attempt{
+func (t *demo2AttemptTelemetry) ClusterResolved(clusterID string) {
+	t.attempt.clusterID = clusterID
+}
+
+func (t *demo2AttemptTelemetry) PhaseFinished(execution demo2PhaseExecution) {
+	if execution.Result == demo2PhaseResultFailed {
+		t.attempt.failedPhase = execution.Phase
+		t.attempt.errorCode = execution.ErrorCode
+		t.attempt.safeMessage = execution.SafeErrorMessage
+	}
+	properties := utils.CommandExecutionProperties{
+		Phase:          execution.Phase,
+		Result:         execution.Result,
+		DurationMillis: max(execution.Duration.Milliseconds(), 1),
+	}
+	if execution.Result == demo2PhaseResultFailed {
+		properties.ErrorCode, properties.SafeErrorMessage = demo2FailureProperties(
+			execution.ErrorCode,
+			execution.SafeErrorMessage,
+		)
+	}
+	t.attempt.capture(t.command, utils.PhaseFinishedEventName, properties)
+}
+
+func (a *demo2Attempt) failureProperties() (string, string) {
+	return demo2FailureProperties(a.errorCode, a.safeMessage)
+}
+
+func demo2FailureProperties(errorCode string, safeMessage string) (string, string) {
+	if errorCode == "" {
+		errorCode = demo2UnknownErrorCode
+	}
+	if safeMessage == "" {
+		safeMessage = demo2SafeErrorMessage
+	}
+	return errorCode, safeMessage
+}
+
+func (a *demo2Attempt) printFailureSummary(cmd *cobra.Command) {
+	phase := strings.ReplaceAll(a.failedPhase, "_", " ")
+	if phase == "" {
+		phase = "an unknown phase"
+	}
+	_, safeMessage := a.failureProperties()
+	_, _ = fmt.Fprintf(
+		cmd.ErrOrStderr(),
+		"\nDemo installation failed during %s.\n%s\nDiagnostic ID: %s\n",
+		phase,
+		safeMessage,
+		a.id,
+	)
+}
+
+func newDemo2Attempt() *demo2Attempt {
+	return &demo2Attempt{
 		id:        uuid.Must(uuid.NewV7()).String(),
 		startedAt: time.Now(),
 	}

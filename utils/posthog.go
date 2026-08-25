@@ -14,11 +14,14 @@ import (
 const DefaultEventName = "cli-command-execution"
 const EndOfExecutionEventName = "cli-command-execution-end"
 const EndOfExecutionErrorEventName = "cli-command-execution-error"
+const PhaseFinishedEventName = "cli-command-phase-finished"
 
 type CommandExecutionProperties struct {
 	AttemptID        string
 	WorkflowType     string
 	Implementation   string
+	ClusterID        string
+	Phase            string
 	Result           string
 	DurationMillis   int64
 	ErrorCode        string
@@ -52,8 +55,17 @@ func commandExecutionPostHogProperties(execution CommandExecutionProperties) pos
 		"workflow_type":  execution.WorkflowType,
 		"implementation": execution.Implementation,
 	}
+	if execution.AttemptID != "" {
+		properties["$session_id"] = execution.AttemptID
+	}
 	if execution.Result != "" {
 		properties["result"] = execution.Result
+	}
+	if execution.ClusterID != "" {
+		properties["cluster_id"] = execution.ClusterID
+	}
+	if execution.Phase != "" {
+		properties["phase"] = execution.Phase
 	}
 	if execution.DurationMillis > 0 {
 		properties["duration_ms"] = execution.DurationMillis
