@@ -49,28 +49,24 @@ EXAMPLES
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("could not reach %s: %w", openAPISpecURL, err))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 		defer func() { _ = resp.Body.Close() }()
 
 		if resp.StatusCode != http.StatusOK {
 			utils.PrintlnError(fmt.Errorf("failed to fetch OpenAPI spec: server returned %s", resp.Status))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if apiSpecOutput != "" {
 			if err := os.WriteFile(apiSpecOutput, body, 0644); err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 			// Status message goes to stderr, not stdout, so stdout stays reserved
 			// for the spec itself (the whole point of -o is a clean stdout to script against).
@@ -84,7 +80,6 @@ EXAMPLES
 			}
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 	},
 }
