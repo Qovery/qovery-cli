@@ -38,7 +38,6 @@ Exit code is 0 when authenticated, 1 otherwise.`,
 				APIURL:        utils.GetAPIBaseURL(),
 			})
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		// GetAccessToken only verifies validity server-side for browser/device-flow
@@ -54,7 +53,6 @@ Exit code is 0 when authenticated, 1 otherwise.`,
 				APIURL:        utils.GetAPIBaseURL(),
 			})
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		output := authStatusOutput{
@@ -94,7 +92,6 @@ func printAuthStatus(output authStatusOutput) {
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 		utils.Println(string(jsonBytes))
 		return
