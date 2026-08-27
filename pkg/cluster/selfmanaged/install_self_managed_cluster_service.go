@@ -266,7 +266,7 @@ Helm values location: %s
 # Pre-apply Gateway API and Envoy CRDs before the main Helm release.
 # The CRD bundle is too large to fit reliably in Helm's release Secret storage.
 helm pull qovery/qovery --untar --untardir /tmp/qovery-helm-chart
-helm template qovery-gateway-crds /tmp/qovery-helm-chart/qovery/charts/envoy-gateway-crd \
+helm template qovery-gateway-crds /tmp/qovery-helm-chart/qovery/charts/gateway-crds-helm \
 	 --set crds.gatewayAPI.enabled=true \
 	 --set crds.gatewayAPI.channel=standard \
 	 --set crds.envoyGateway.enabled=true | kubectl apply --server-side -f -

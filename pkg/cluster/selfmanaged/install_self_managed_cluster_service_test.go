@@ -788,7 +788,7 @@ func TestOutputCommandsToInstallQoveryOnCluster(t *testing.T) {
 	})
 
 	assert.Contains(t, output, "helm pull qovery/qovery --untar --untardir /tmp/qovery-helm-chart")
-	assert.Contains(t, output, "helm template qovery-gateway-crds /tmp/qovery-helm-chart/qovery/charts/envoy-gateway-crd")
+	assert.Contains(t, output, "helm template qovery-gateway-crds /tmp/qovery-helm-chart/qovery/charts/gateway-crds-helm")
 	assert.Contains(t, output, "kubectl apply --server-side -f -")
 	assert.Contains(t, output, "kubectl wait --for=condition=Established --timeout=180s crd/gateways.gateway.networking.k8s.io")
 	assert.Contains(t, output, "kubectl wait --for=condition=Established --timeout=180s crd/envoyproxies.gateway.envoyproxy.io")
