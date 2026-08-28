@@ -154,7 +154,7 @@ install_or_upgrade_helm_charts() {
       --set services.qovery.qovery-cluster-agent.enabled=false \
       --set services.qovery.qovery-engine.enabled=false \
       --set services.qovery.qovery-operator.enabled=false \
-      "${engine_image_overrides[@]}" qovery "$chart_source"
+      "${engine_image_overrides[@]+"${engine_image_overrides[@]}"}" qovery "$chart_source"
   fi
 
   for i in $(seq 1 3); do
@@ -162,7 +162,7 @@ install_or_upgrade_helm_charts() {
     helm upgrade --install --create-namespace ${HELM_DEBUG} --timeout=15m -n qovery "${helm_values_args[@]}" --wait --atomic \
       --set services.ingress.envoy-gateway-crd.enabled=false \
       --set services.qovery.qovery-operator.enabled=false \
-      "${engine_image_overrides[@]}" qovery "$chart_source" && break
+      "${engine_image_overrides[@]+"${engine_image_overrides[@]}"}" qovery "$chart_source" && break
     set +x
     echo "Install failed. Retrying in 10 seconds. To let the cluster initialize"
     sleep 10
