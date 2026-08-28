@@ -24,11 +24,11 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/posthog/posthog-go v1.12.5
 	github.com/pterm/pterm v0.12.83
-	github.com/qovery/qovery-client-go v0.0.0-20260625132707-e611218d15ba
+	github.com/qovery/qovery-client-go v0.0.0-20260828080937-17e8dbfe5711
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
-	github.com/stretchr/testify v1.11.1
+	github.com/stretchr/testify v1.12.1
 	github.com/tonistiigi/go-rosetta v0.0.0-20220804170347-3f4430f2d346
 	github.com/xlab/treeprint v1.2.0
 	golang.org/x/sys v0.44.0
@@ -97,7 +97,7 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	go4.org v0.0.0-20260112195520-a5071408f32f // indirect
 	golang.org/x/net v0.54.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
