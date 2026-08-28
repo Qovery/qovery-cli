@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -30,5 +31,13 @@ func TestDemoEngineImageOverride(t *testing.T) {
 	}
 	if repository != "docker.io/library/qovery-demo-engine" || tag != "local" {
 		t.Fatalf("expected docker.io/library/qovery-demo-engine:local, got %s:%s", repository, tag)
+	}
+}
+
+func TestDemoScriptUsesNounsetSafeEmptyEngineImageOverrides(t *testing.T) {
+	const nounsetSafeOverrides = `"${engine_image_overrides[@]+"${engine_image_overrides[@]}"}"`
+
+	if count := strings.Count(string(demoScriptsCreate), nounsetSafeOverrides); count != 2 {
+		t.Fatalf("expected both Helm invocations to use a Bash 3.2 nounset-safe engine image override expansion, found %d", count)
 	}
 }
