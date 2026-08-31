@@ -9,13 +9,23 @@ WORKDIR /app
 COPY go.mod go.sum ./
 
 # Download dependencies
-RUN go mod download
+# Retried: proxy.golang.org intermittently resets HTTP/2 streams mid-download.
+RUN --mount=type=cache,target=/go/pkg/mod \
+    for attempt in 1 2 3 4 5; do \
+        go mod download && exit 0; \
+        echo "go mod download failed (attempt ${attempt}/5)"; \
+        [ "${attempt}" = 5 ] && break; \
+        sleep $((attempt * 5)); \
+    done; \
+    exit 1
 
 # Copy the source code to the container's working directory
 COPY . .
 
 # Build the Go application
-RUN go build -o qovery -ldflags "-X github.com/qovery/qovery-cli/utils.Version=$APP_VERSION"
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -o qovery -ldflags "-X github.com/qovery/qovery-cli/utils.Version=$APP_VERSION"
 
 FROM public.ecr.aws/r3m4q3r9/pub-mirror-debian:bookworm-slim as runner
 
