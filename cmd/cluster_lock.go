@@ -38,7 +38,7 @@ func lockCluster() {
 	}
 
 	if utils.Validate("lock") {
-		tokenType, token, err := utils.GetAccessToken()
+		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)

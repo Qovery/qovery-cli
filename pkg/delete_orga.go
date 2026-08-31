@@ -138,7 +138,7 @@ func httpDelete(url string, method string, dryRunDisabled bool) *http.Response {
 }
 
 func deleteWithBody(url string, method string, dryRunDisabled bool, body io.Reader) *http.Response {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)

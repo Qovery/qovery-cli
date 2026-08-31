@@ -39,7 +39,7 @@ var tokenCmd = &cobra.Command{
 }
 
 func generateMachineToMachineAPIToken(tokenInformation *utils.TokenInformation) (string, error) {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		return "", err
 	}

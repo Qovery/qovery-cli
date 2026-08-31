@@ -156,7 +156,7 @@ func UpdateClusterDomainName(clusterId string, domain string) error {
 		return fmt.Errorf("domain cannot be empty")
 	}
 
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		return fmt.Errorf("failed to get access token: %w", err)
 	}
@@ -224,7 +224,7 @@ func UpdateClusterDnsProvider(
 		return fmt.Errorf("provider cannot be empty")
 	}
 
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		return fmt.Errorf("failed to get access token: %w", err)
 	}
@@ -327,7 +327,7 @@ func UpdateClusterDnsProvider(
 }
 
 func (service AdminClusterListServiceImpl) fetchClustersEligibleToUpdate() ([]ClusterDetails, error) {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -493,7 +493,7 @@ func (service AdminClusterBatchDeployServiceImpl) PrintParameters() {
 }
 
 func getQoveryClient() (*qovery.APIClient, error) {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}

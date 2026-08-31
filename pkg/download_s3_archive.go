@@ -94,7 +94,7 @@ func findOrganizationInTag(tags []ArchiveTagsResponse) *string {
 }
 
 func download(url string, executionId string) *http.Response {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)

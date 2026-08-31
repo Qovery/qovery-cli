@@ -104,7 +104,7 @@ func manageOrganizationDeploymentRestriction() {
 	}
 
 	// Get access token
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)

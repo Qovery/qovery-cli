@@ -32,7 +32,7 @@ var demoUpCmd = &cobra.Command{
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
-		tokenType, token, err := utils.GetAccessToken()
+		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)

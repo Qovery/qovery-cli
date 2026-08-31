@@ -51,7 +51,7 @@ func encryptSecret() {
 }
 
 func callEncryptSecret(organizationId string, secret string) (string, error) {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		return "", fmt.Errorf("failed to get access token: %w", err)
 	}

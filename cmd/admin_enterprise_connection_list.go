@@ -31,7 +31,7 @@ func init() {
 
 func listEnterpriseConnections() {
 	// Retrieve access token for authorization
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	checkError(err)
 
 	// Build URL

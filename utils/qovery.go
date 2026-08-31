@@ -58,7 +58,7 @@ func WebsocketUrl() string {
 }
 
 func GetQoveryClientPanicInCaseOfError() *qovery.APIClient {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	CheckError(err)
 	return GetQoveryClient(tokenType, token)
 }
@@ -93,7 +93,7 @@ func GetQoveryClient(tokenType AccessTokenType, token AccessToken) *qovery.APICl
 }
 
 func SelectRole(organization *Organization) (*Role, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func SelectRole(organization *Organization) (*Role, error) {
 }
 
 func SelectOrganization() (*Organization, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +215,7 @@ type Project struct {
 }
 
 func GetOrganizationById(id string) (*Organization, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -237,7 +237,7 @@ func GetOrganizationById(id string) (*Organization, error) {
 }
 
 func SelectProject(organizationID Id) (*Project, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -312,7 +312,7 @@ type Environment struct {
 }
 
 func GetProjectById(id string) (*Project, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -334,7 +334,7 @@ func GetProjectById(id string) (*Project, error) {
 }
 
 func SelectEnvironment(projectID Id) (*Environment, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -405,7 +405,7 @@ func SelectAndSetEnvironment(projectID Id) (*Environment, error) {
 }
 
 func GetEnvironmentById(id string) (*Environment, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -433,7 +433,7 @@ type EnvironmentService struct {
 }
 
 func GetEnvironmentServicesById(id string) ([]EnvironmentService, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -507,7 +507,7 @@ type Application struct {
 }
 
 func SelectService(environment Id) (*Service, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -672,7 +672,7 @@ func SelectAndSetService(environment Id) (*Service, error) {
 }
 
 func GetApplicationById(id string) (*Application, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -720,7 +720,7 @@ type Container struct {
 }
 
 func GetContainerById(id string) (*Container, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -742,7 +742,7 @@ func GetContainerById(id string) (*Container, error) {
 }
 
 func GetDatabaseById(id string) (*Service, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -765,7 +765,7 @@ func GetDatabaseById(id string) (*Service, error) {
 }
 
 func GetHelmById(id string) (*Service, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -793,7 +793,7 @@ type Job struct {
 }
 
 func GetJobById(id string) (*Job, error) {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}
@@ -836,7 +836,7 @@ func GetAdminUrl() string {
 }
 
 func DeleteEnvironmentVariable(application Id, key string) error {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return err
 	}
@@ -876,7 +876,7 @@ func DeleteEnvironmentVariable(application Id, key string) error {
 }
 
 func AddEnvironmentVariable(application Id, key string, value string) error {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return err
 	}
@@ -899,7 +899,7 @@ func AddEnvironmentVariable(application Id, key string, value string) error {
 }
 
 func DeleteSecret(application Id, key string) error {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return err
 	}
@@ -939,7 +939,7 @@ func DeleteSecret(application Id, key string) error {
 }
 
 func AddSecret(application Id, key string, value string) error {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return err
 	}
@@ -964,7 +964,7 @@ func AddSecret(application Id, key string, value string) error {
 // Container environment variable functions
 
 func AddContainerEnvironmentVariable(container Id, key string, value string) error {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return err
 	}
@@ -987,7 +987,7 @@ func AddContainerEnvironmentVariable(container Id, key string, value string) err
 }
 
 func DeleteContainerEnvironmentVariable(container Id, key string) error {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return err
 	}
@@ -1027,7 +1027,7 @@ func DeleteContainerEnvironmentVariable(container Id, key string) error {
 }
 
 func AddContainerSecret(container Id, key string, value string) error {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return err
 	}
@@ -1050,7 +1050,7 @@ func AddContainerSecret(container Id, key string, value string) error {
 }
 
 func DeleteContainerSecret(container Id, key string) error {
-	tokenType, token, err := GetAccessToken()
+	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return err
 	}

@@ -35,7 +35,7 @@ func init() {
 
 func createEnterpriseConnection() {
 	// Retrieve access token for authorization
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	checkError(err)
 
 	// Prepare payload with required fields

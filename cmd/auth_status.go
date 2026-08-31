@@ -31,7 +31,7 @@ Exit code is 0 when authenticated, 1 otherwise.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
+		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
 			printAuthStatus(authStatusOutput{
 				Authenticated: false,
