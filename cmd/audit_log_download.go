@@ -60,7 +60,7 @@ func downloadAuditLogs() {
 	utils.Println(fmt.Sprintf("Your organization plan provides  %.0f days of audit log history", org.OrganizationPlan.GetAuditLogsRetentionInDays()))
 
 	// Get access token
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	checkError(err)
 
 	// Create audit log service

@@ -47,7 +47,7 @@ func UpdateAll(dryRunDisabled bool, version string, providerKind string, paralle
 }
 
 func update(url string, method string, dryRunDisabled bool, version string, providerKind string, parallelRun int) *http.Response {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)

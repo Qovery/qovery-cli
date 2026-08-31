@@ -25,7 +25,7 @@ type EnterpriseConnectionService struct {
 // NewEnterpriseConnectionService creates a new service instance with authentication
 func NewEnterpriseConnectionService(organizationName string) (*EnterpriseConnectionService, error) {
 	// Get access token and client
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}

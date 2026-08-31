@@ -193,7 +193,7 @@ func createWebsocketConn(req interface{}, path string) (*websocket.Conn, *http.R
 	pattern := regexp.MustCompile("%5B([0-9]+)%5D=")
 	wsURL.RawQuery = pattern.ReplaceAllString(command.Encode(), "[${1}]=")
 
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		return nil, nil, err
 	}

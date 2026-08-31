@@ -76,7 +76,7 @@ func createLogWebsocket(req *LogRequest) (*websocket.Conn, error) {
 		return nil, err
 	}
 
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		return nil, err
 	}

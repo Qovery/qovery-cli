@@ -83,7 +83,7 @@ var (
 )
 
 func shellRequestWithContextFlags() (*pkg.ShellRequest, error) {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
@@ -218,7 +218,7 @@ func shellRequestFromSelect() (*pkg.ShellRequest, error) {
 }
 
 func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequest, error) {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)

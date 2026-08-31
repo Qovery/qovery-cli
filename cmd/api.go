@@ -276,8 +276,12 @@ func runAPI(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// Get auth token
-	tokenType, token, err := utils.GetAccessToken()
+	// Get auth token. Creating the very first organization (`qovery api organization
+	// --method POST ...`, documented above as a first-class example) is the one
+	// legitimate case where the caller is expected to have zero organizations yet,
+	// so it skips the usual "you don't have any organization" guard.
+	isOrgCreation := path == "organization" && method == "POST"
+	tokenType, token, err := utils.GetAccessToken(isOrgCreation)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)

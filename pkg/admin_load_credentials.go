@@ -96,7 +96,7 @@ type AwsStsCredentials struct {
 }
 
 func fetchAwsCredentials(roleArn string) ([]byte, error) {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	utils.CheckError(err)
 
 	req, err := http.NewRequest(http.MethodPost, utils.GetAdminUrl()+"/aws/credentials/assume-role?role_arn="+roleArn, nil)
@@ -115,7 +115,7 @@ func fetchAwsCredentials(roleArn string) ([]byte, error) {
 }
 
 func getClusterCredentials(clusterId string) []utils.Var {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)

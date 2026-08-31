@@ -28,7 +28,7 @@ var logCmd = &cobra.Command{
 }
 
 func getLogs() string {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)

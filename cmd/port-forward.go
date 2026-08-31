@@ -157,7 +157,7 @@ func portForwardRequestFromSelect() (*pkg.PortForwardRequest, error) {
 }
 
 func portForwardRequestFromContext(currentContext utils.QoveryContext) (*pkg.PortForwardRequest, error) {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)

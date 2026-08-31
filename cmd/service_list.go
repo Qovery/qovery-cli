@@ -33,7 +33,7 @@ var serviceListCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		tokenType, token, err := utils.GetAccessToken()
+		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)

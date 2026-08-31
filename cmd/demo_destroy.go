@@ -19,7 +19,7 @@ var demoDestroyCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		_, token, err := utils.GetAccessToken()
+		_, token, err := utils.GetAccessToken(false)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)

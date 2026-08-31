@@ -76,7 +76,7 @@ func GetTokenByClusterId(clusterId string, readOnly bool) string {
 }
 
 func GetQoveryClientInstance() *qovery.APIClient {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)

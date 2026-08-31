@@ -52,7 +52,7 @@ Examples:
 			return
 		}
 
-		tokenType, token, err := utils.GetAccessToken()
+		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error: "+err.Error())
 			os.Exit(1)

@@ -307,7 +307,14 @@ func checkOrgaValid(orgaList *qovery.OrganizationResponseList) error {
 	}
 }
 
-func GetAccessToken() (AccessTokenType, AccessToken, error) {
+// GetAccessToken returns a valid access token, refreshing it if expired.
+// skipOrgaCheck should be false for every caller except the one legitimate
+// bootstrap case where an empty org list is expected: creating the user's
+// first organization via `qovery api organization --method POST ...`
+// (documented as a first-class example in `qovery api --help`). Passing
+// true anywhere else would let organization-scoped commands run with no
+// organization to scope to.
+func GetAccessToken(skipOrgaCheck bool) (AccessTokenType, AccessToken, error) {
 	apiToken := os.Getenv("QOVERY_CLI_ACCESS_TOKEN")
 	if apiToken == "" {
 		apiToken = os.Getenv("Q_CLI_ACCESS_TOKEN")
@@ -334,8 +341,10 @@ func GetAccessToken() (AccessTokenType, AccessToken, error) {
 	// check the token is valid by trying to list the organizations
 	if orgaList, _, err := GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute(); err == nil {
 		// everything is fine, return the token
-		if err = checkOrgaValid(orgaList); err != nil {
-			return "", "", err
+		if !skipOrgaCheck {
+			if err = checkOrgaValid(orgaList); err != nil {
+				return "", "", err
+			}
 		}
 		return "Bearer", token, nil
 	}
@@ -347,8 +356,10 @@ func GetAccessToken() (AccessTokenType, AccessToken, error) {
 
 	if orgaList, _, err := GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute(); err == nil {
 		// everything is fine, return the token
-		if err = checkOrgaValid(orgaList); err != nil {
-			return "", "", err
+		if !skipOrgaCheck {
+			if err = checkOrgaValid(orgaList); err != nil {
+				return "", "", err
+			}
 		}
 
 		return "Bearer", token, nil

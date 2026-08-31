@@ -13,7 +13,7 @@ import (
 )
 
 func execAdminRequest(url string, method string, dryRunDisabled bool, queryParams map[string]string) *http.Response {
-	tokenType, token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(0)

@@ -26,7 +26,7 @@ func init() {
 
 func unlockCluster() {
 	if utils.Validate("unlock") {
-		tokenType, token, err := utils.GetAccessToken()
+		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
