@@ -47,10 +47,28 @@ get_or_create_demo_cluster() {
   if [ "$clusterId" = "" ]
   then
     payload='{"name":"'$2'","region":"on-premise","cloud_provider":"ON_PREMISE","kubernetes":"SELF_MANAGED", "production": false, "is_demo": true, "features":[],"cloud_provider_credentials":{"cloud_provider":"ON_PREMISE","credentials":{"id":"'${accountId}'","name":"on-premise"},"region":"unknown"}}'
-    clusterId=$(curl -s -X POST --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' -H "User-Agent: ${USER_AGENT}" -d "${payload}" ${QOVERY_API_URL}/organization/"${ORGANIZATION_ID}"/cluster | jq -r .id)
-  fi
 
-  echo "$clusterId"
+     post_response=$(curl -s -X POST -w "\n%{http_code}" --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' -H "User-Agent: ${USER_AGENT}" -d "${payload}" ${QOVERY_API_URL}/organization/"${ORGANIZATION_ID}"/cluster)
+
+     response_body=$(echo "$post_response" | sed '$d')
+     status_code=$(echo "$post_response" | tail -n 1)
+
+     if [ "$status_code" != "201" ]; then
+       echo "❌ Failed to create demo cluster '$clusterName'. Status code: $status_code" >&2
+       echo "Response: $response_body" >&2
+       exit 1
+     fi
+
+     clusterId=$(echo "$response_body" | jq -r .id)
+
+     if [ "$clusterId" = "null" ] || [ -z "$clusterId" ]; then
+       echo "❌ Failed to extract cluster ID from response" >&2
+       echo "Response: $response_body" >&2
+       exit 1
+     fi
+   fi
+
+   echo "$clusterId"
 }
 
 get_cluster_values() {
