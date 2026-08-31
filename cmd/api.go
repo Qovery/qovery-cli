@@ -280,7 +280,7 @@ func runAPI(cmd *cobra.Command, args []string) {
 	// --method POST ...`, documented above as a first-class example) is the one
 	// legitimate case where the caller is expected to have zero organizations yet,
 	// so it skips the usual "you don't have any organization" guard.
-	isOrgCreation := strings.Trim(endpoint, "/") == "organization" && method == "POST"
+	isOrgCreation := path == "organization" && method == "POST"
 	var tokenType utils.AccessTokenType
 	var token utils.AccessToken
 	if isOrgCreation {
