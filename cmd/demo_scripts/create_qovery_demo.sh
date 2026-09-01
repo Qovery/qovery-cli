@@ -70,6 +70,7 @@ get_or_create_cluster() {
     --k3s-arg "--disable=traefik@server:*" \
     --registry-create qovery-registry.lan \
     --port "80:80@loadbalancer" --port "443:443@loadbalancer"
+      --image 'docker.io/rancher/k3s:v1.36.4-k3s1' \
   else
     k3d cluster start "$clusterName"
   fi
