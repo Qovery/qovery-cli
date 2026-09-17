@@ -19,7 +19,7 @@ var demoDestroyCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
-		_, token, err := utils.GetAccessToken(false)
+		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -51,7 +51,18 @@ var demoDestroyCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		shCmd := exec.Command("/bin/sh", scriptPath, demoClusterName, string(orgId), string(token), strconv.FormatBool(demoDeleteQoveryConfig))
+		tokenPath, err := writeDemoTokenFile(scriptDir, tokenType, token)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+		defer func() {
+			if err := os.Remove(tokenPath); err != nil {
+				utils.PrintlnError(fmt.Errorf("cannot remove demo token file: %w", err))
+			}
+		}()
+
+		shCmd := exec.Command("/bin/sh", scriptPath, demoClusterName, string(orgId), tokenPath, strconv.FormatBool(demoDeleteQoveryConfig))
 		shCmd.Stdout = os.Stdout
 		shCmd.Stderr = os.Stderr
 		if err := shCmd.Run(); err != nil {
@@ -59,7 +70,6 @@ var demoDestroyCmd = &cobra.Command{
 			utils.CaptureError(cmd, shCmd.String(), err.Error())
 		}
 		utils.CaptureWithEvent(cmd, utils.EndOfExecutionEventName)
-		os.Exit(0)
 	},
 }
 

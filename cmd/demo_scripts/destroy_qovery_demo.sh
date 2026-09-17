@@ -5,15 +5,7 @@ set -eu
 QOVERY_API_URL=${QOVERY_API_URL:='https://api.qovery.com'}
 CLUSTER_NAME=$1
 ORGANIZATION_ID=$2
-case $2 in
-qov_*)
-  AUTHORIZATION_HEADER="Authorization: Token $3"
-  ;;
-
-*)
-  AUTHORIZATION_HEADER="Authorization: Bearer $3"
-  ;;
-esac
+AUTHORIZATION_HEADER_FILE=$3
 DELETE_QOVERY_CONFIG=$4
 
 POWERSHELL_CMD='powershell.exe'
@@ -32,10 +24,10 @@ fi
 
 delete_qovery_demo_cluster() {
   clusterName=$1
-  clusterId=$(curl -s -X GET --fail-with-body -H "${AUTHORIZATION_HEADER}" -H 'Content-Type: application/json' ${QOVERY_API_URL}/organization/"${ORGANIZATION_ID}"/cluster | jq -r '.results[] | select(.name=="'"$clusterName"'") | .id')
+  clusterId=$(curl -s -X GET --fail-with-body -H "@${AUTHORIZATION_HEADER_FILE}" -H 'Content-Type: application/json' ${QOVERY_API_URL}/organization/"${ORGANIZATION_ID}"/cluster | jq -r '.results[] | select(.name=="'"$clusterName"'") | .id')
 
   if [ -n "$clusterId" ]; then
-    curl -s -X DELETE --fail-with-body -H "${AUTHORIZATION_HEADER}" ${QOVERY_API_URL}'/organization/'"${ORGANIZATION_ID}"'/cluster/'"${clusterId}"'?deleteMode=DELETE_QOVERY_CONFIG' || true
+    curl -s -X DELETE --fail-with-body -H "@${AUTHORIZATION_HEADER_FILE}" ${QOVERY_API_URL}'/organization/'"${ORGANIZATION_ID}"'/cluster/'"${clusterId}"'?deleteMode=DELETE_QOVERY_CONFIG' || true
   fi
 }
 

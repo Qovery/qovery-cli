@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -80,14 +81,26 @@ var demoUpCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		userAgent := "'CLI " + utils.Version + "'"
-		cmdStr := `
+		tokenPath, err := writeDemoTokenFile(scriptDir, tokenType, token)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+		defer func() {
+			if err := os.Remove(tokenPath); err != nil {
+				utils.PrintlnError(fmt.Errorf("cannot remove demo token file: %w", err))
+			}
+		}()
+
+		// Pass values as positional parameters so file paths are not interpreted by bash.
+		cmdArgs := `
 set -eu
 set -o pipefail
-%s %s %s %s %s %t %s 2>&1 | tee %s
+"$1" "$2" "$3" "$4" "$5" "$6" "$7" 2>&1 | tee "$8"
 `
-		cmdArgs := fmt.Sprintf(cmdStr, scriptPath, demoClusterName, detectArchitecture(), string(orgId), string(token), demoDebug, userAgent, debugLogsPath)
-		shCmd := exec.Command("/bin/bash", "-c", cmdArgs)
+		shCmd := exec.Command("/bin/bash", "-c", cmdArgs, "qovery-demo",
+			scriptPath, demoClusterName, detectArchitecture(), string(orgId), tokenPath,
+			strconv.FormatBool(demoDebug), "CLI "+utils.Version, debugLogsPath)
 		shCmd.Env = append(
 			os.Environ(),
 			"QOVERY_DEMO_CHART_PATH="+demoChartPath,
