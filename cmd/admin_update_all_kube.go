@@ -11,7 +11,7 @@ var (
 	parallelRun       int
 	providerErr       error
 	adminUpdateAllCmd = &cobra.Command{
-		Use:   "update_bulk",
+		Use:   "update-bulk",
 		Short: "Update an amount of clusters to a specific version based on cloud provider kind.",
 		Run: func(cmd *cobra.Command, args []string) {
 			updateAllClusters()
@@ -22,7 +22,7 @@ var (
 func init() {
 	adminUpdateAllCmd.Flags().BoolVarP(&dryRun, "disable-dry-run", "y", false, "Disable dry run mode")
 	adminUpdateAllCmd.Flags().StringVarP(&version, "version", "v", "", "Targeted version")
-	adminUpdateAllCmd.Flags().StringVarP(&providerKind, "provider-kind", "k", "", "Provider to upgrade. Can be : AWS, DO or SCW")
+	adminUpdateAllCmd.Flags().StringVarP(&providerKind, "provider-kind", "k", "", "Provider to upgrade. Can be : AWS, AZURE, GCP or SCW")
 	adminUpdateAllCmd.Flags().IntVarP(&parallelRun, "parallel-run", "p", 1, "Number of parallel upgrades. Max is 20.")
 	versionErr = adminUpdateAllCmd.MarkFlagRequired("version")
 	providerErr = adminUpdateAllCmd.MarkFlagRequired("provider-kind")

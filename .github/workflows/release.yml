@@ -1,56 +1,64 @@
-name: goreleaser
+name: Release
 
 on:
-  create:
+  push:
     tags:
+      - 'v*' 
 
 jobs:
-  qovery:
-    runs-on: ubuntu-latest
+  release-and-packages:
+    runs-on: ubuntu-24.04
     steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      -
-        name: Fetch tags
+
+      # tag/version check
+      - name: Fetch tags
         run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-      - name: Ensure tag match the current version
-        run: |
-            if [ "v$(grep '// ci-version-check' pkg/version.go | sed -r 's/.+return\s"(.+)".+/\1/')" != "$(git tag | sort --version-sort | tail -1)" ] ; then
-                echo "Tag version do not match application version"
-                exit 1
-            fi
-      -
-        name: Set up Go
-        uses: actions/setup-go@master
+      - name: Set tag
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+
+      # build + lint
+      - name: Set up Go
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.17.x
-      -
-        name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: latest
-          args: --timeout 5m
-      -
-        name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v1
+          go-version: '1.25'
+          cache: true
+      # release new version on GitHub + Mac
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          args: release --rm-dist
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
-      -
-        name: Prepare AUR package
+      # upload release artifacts to Cloudflare R2 (S3 compatible)
+      - name: Upload release artifacts to Cloudflare R2
+        if: github.ref_type == 'tag'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+          AWS_REGION: auto
         run: |
-          version=$(awk -F'"' '/ci-version-check/{print $2}' pkg/version.go)
+          # List all files in dist directory
+          echo "Uploading release artifacts to Cloudflare R2... (S3 compatible)"
+          ls -la dist/
+          
+          # Upload all artifacts to Cloudflare R2
+          aws s3 cp dist/ s3://${{ secrets.CLOUDFLARE_R2_BUCKET }}/releases/latest/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT_URL }}
+      # archlinux
+      - name: Prepare AUR package
+        run: |
+          version="${GITHUB_REF_NAME:-}"
+          version="${version#v}"
           md5version=$(curl -sL https://github.com/Qovery/qovery-cli/archive/v${version}.tar.gz --output - | md5sum | awk '{ print $1 }')
           sed -i "s/pkgver=tbd/pkgver=$version/" PKGBUILD
           echo "md5sums=('${md5version}')" >> PKGBUILD
-      -
-        name: Publish AUR package
-        uses: KSXGitHub/github-actions-deploy-aur@v2.2.4
+      - name: Publish AUR package
+        uses: KSXGitHub/github-actions-deploy-aur@v4.1.2
         with:
           pkgname: qovery-cli
           pkgbuild: ./PKGBUILD
@@ -58,5 +66,58 @@ jobs:
           commit_email: ${{ secrets.AUR_EMAIL }}
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
           commit_message: Update AUR package
-          ssh_keyscan_types: rsa,dsa,ecdsa,ed25519
-          force_push: 'true'
+          ssh_keyscan_types: rsa,ecdsa,ed25519
+          force_push: "true"
+  # GitHub action usage
+  container:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # tag/version check
+      - name: Fetch tags
+        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+      - name: Set tag
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+
+      # docker
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build, tag, and push images
+        env:
+          ECR_REGISTRY: public.ecr.aws/r3m4q3r9
+          ECR_REPOSITORY: qovery-cli
+          GHCR_REGISTRY: ghcr.io
+          GHCR_REPOSITORY: qovery/qovery-cli
+          IMAGE_TAG: ${{ steps.vars.outputs.tag }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --build-arg APP_VERSION=$IMAGE_TAG --label org.opencontainers.image.source=https://github.com/Qovery/qovery-cli
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $GHCR_REGISTRY/$GHCR_REPOSITORY:$IMAGE_TAG
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $GHCR_REGISTRY/$GHCR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $GHCR_REGISTRY/$GHCR_REPOSITORY:$IMAGE_TAG
+          docker push $GHCR_REGISTRY/$GHCR_REPOSITORY:latest

@@ -1,19 +1,24 @@
 package utils
 
 import (
-	log "github.com/sirupsen/logrus"
 	"os"
 	"runtime"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func WriteInFile(clusterId string, fileName string, content []byte) string {
 	fullPath := GetFullPath(clusterId)
-	err := os.Mkdir(fullPath, 0777)
-	if err != nil {
-		log.Error("Couldn't create folder : " + err.Error())
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		err := os.Mkdir(fullPath, 0777)
+		if err != nil {
+			log.Error("Couldn't create folder : " + err.Error())
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
 	}
 
-	err = os.WriteFile(fullPath+fileName, content, 0777)
+	err := os.WriteFile(fullPath+fileName, content, 0777)
 	if err != nil {
 		log.Error("Couldn't write file : " + err.Error())
 		return ""

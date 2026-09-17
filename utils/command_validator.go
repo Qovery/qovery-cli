@@ -38,6 +38,7 @@ func getInput(actionType string) string {
 	if err != nil {
 		log.Errorf("Prompt failed %v", err)
 		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	return result

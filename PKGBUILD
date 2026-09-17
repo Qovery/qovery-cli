@@ -15,7 +15,8 @@ build() {
     export CGO_CPPFLAGS="${CPPFLAGS}"
     export CGO_CXXFLAGS="${CXXFLAGS}"
     export GOFLAGS="-buildmode=pie -trimpath -mod=readonly -modcacherw"
-    go build -o $pkgname main.go
+    export CGO_ENABLED=0
+    go build -ldflags "-X github.com/qovery/qovery-cli/utils.Version=$pkgver" -o $pkgname main.go
 }
 
 package() {
