@@ -13,6 +13,29 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 )
 
+func TestWriteDemoTokenFileWithRelativeDirectory(t *testing.T) {
+	t.Chdir(t.TempDir())
+	if err := os.Mkdir("credentials", 0700); err != nil {
+		t.Fatal(err)
+	}
+	path, err := writeDemoTokenFile("credentials", "Bearer", "test-token")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !filepath.IsAbs(path) {
+		t.Fatalf("token path must be absolute, got %q", path)
+	}
+	// Both demo scripts change directory before making API requests.
+	t.Chdir(t.TempDir())
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(data) != "Authorization: Bearer test-token\n" {
+		t.Fatalf("unexpected authorization header: %q", data)
+	}
+}
+
 func TestDemoScriptsReadTokenFile(t *testing.T) {
 	if _, err := exec.LookPath("curl"); err != nil {
 		t.Skip("curl is required to test the demo scripts")

@@ -6,9 +6,11 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
+	"os/signal"
 	"os/user"
 	"path/filepath"
 	"strconv"
+	"syscall"
 
 	"github.com/qovery/qovery-cli/utils"
 )
@@ -51,21 +53,22 @@ var demoDestroyCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		tokenPath, err := writeDemoTokenFile(scriptDir, tokenType, token)
+		ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+		tokenPath, cleanupToken, err := prepareDemoTokenFile(scriptDir, tokenType, token)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
-		defer func() {
-			if err := os.Remove(tokenPath); err != nil {
-				utils.PrintlnError(fmt.Errorf("cannot remove demo token file: %w", err))
-			}
-		}()
+		defer cleanupToken()
 
-		shCmd := exec.Command("/bin/sh", scriptPath, demoClusterName, string(orgId), tokenPath, strconv.FormatBool(demoDeleteQoveryConfig))
+		shCmd := exec.CommandContext(ctx, "/bin/sh", scriptPath, demoClusterName, string(orgId), tokenPath, strconv.FormatBool(demoDeleteQoveryConfig))
 		shCmd.Stdout = os.Stdout
 		shCmd.Stderr = os.Stderr
-		if err := shCmd.Run(); err != nil {
+		err = shCmd.Run()
+		cleanupToken()
+		stop()
+		if err != nil {
 			utils.PrintlnError(fmt.Errorf("error executing the command %s", err))
 			utils.CaptureError(cmd, shCmd.String(), err.Error())
 		}

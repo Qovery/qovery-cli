@@ -22,7 +22,9 @@ import (
 // or contacting the telemetry service. These tests must not run in parallel.
 func setupTelemetryTest(t *testing.T, token string) <-chan []byte {
 	t.Helper()
-	t.Setenv("HOME", t.TempDir())
+	dir := t.TempDir()
+	t.Setenv("HOME", dir)
+	t.Setenv("USERPROFILE", dir)
 	ctx := QoveryContext{
 		AccessToken:      AccessToken(token),
 		RefreshToken:     "refresh-token-secret",
