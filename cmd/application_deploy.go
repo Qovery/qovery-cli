@@ -53,6 +53,6 @@ func init() {
 	applicationDeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	applicationDeployCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
 	applicationDeployCmd.Flags().StringVarP(&applicationNames, "applications", "", "", "Application Names (comma separated) Example: --applications \"app1,app2,app3\"")
-	applicationDeployCmd.Flags().StringVarP(&applicationCommitID, "commit-id", "c", "", "Application Commit ID")
+	applicationDeployCmd.Flags().StringVarP(&applicationCommitID, "commit-id", "c", "", "Application Commit ID, or 'latest' for the newest commit of the branch")
 	applicationDeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch application status until it's ready or an error occurs")
 }

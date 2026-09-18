@@ -134,6 +134,16 @@ func getDeploymentRequestForMultipleServices(
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
+			if isLatestVersion(version) {
+				latestCommitId, err := utils.ResolveLatestApplicationCommit(client, app.Id, app.Name)
+				if err != nil {
+					utils.PrintlnError(err)
+					os.Exit(1)
+					panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+				}
+				version = &latestCommitId
+			}
+
 			request.Applications = append(request.Applications, qovery.DeployAllRequestApplicationsInner{ApplicationId: app.Id, GitCommitId: version})
 		}
 	}
@@ -169,7 +179,7 @@ func getDeploymentRequestForMultipleServices(
 			// Adding lifecycle to be deployed
 			for _, nameAndVersion := range strings.Split(lifecycleNames, ",") {
 				name, version := splitServiceNameAndVersion(nameAndVersion)
-				job, gitCommitId, imageTag := getLifecycleJobGitCommitAndImageTag(jobs.GetResults(), name)
+				job := utils.FindByJobName(jobs.GetResults(), name)
 
 				if job == nil {
 					utils.PrintlnError(fmt.Errorf("lifecycle %s not found", name))
@@ -178,9 +188,9 @@ func getDeploymentRequestForMultipleServices(
 				}
 
 				req := qovery.DeployAllRequestJobsInner{Id: &job.LifecycleJobResponse.Id}
-				if gitCommitId != nil {
-					req.GitCommitId = version
-				} else if imageTag != nil {
+				if utils.GetJobDocker(job) != nil {
+					req.GitCommitId = resolveLatestJobVersion(client, job, version)
+				} else if utils.GetJobImage(job) != nil {
 					req.ImageTag = version
 				}
 
@@ -193,7 +203,7 @@ func getDeploymentRequestForMultipleServices(
 			for _, nameAndVersion := range strings.Split(cronjobNames, ",") {
 				name, version := splitServiceNameAndVersion(nameAndVersion)
 
-				job, gitCommitId, imageTag := getCronjobGitCommitAndImageTag(jobs.GetResults(), name)
+				job := utils.FindByJobName(jobs.GetResults(), name)
 
 				if job == nil {
 					utils.PrintlnError(fmt.Errorf("cronjob %s not found", name))
@@ -202,9 +212,9 @@ func getDeploymentRequestForMultipleServices(
 				}
 
 				req := qovery.DeployAllRequestJobsInner{Id: &job.CronJobResponse.Id}
-				if gitCommitId != nil {
-					req.GitCommitId = version
-				} else if imageTag != nil {
+				if utils.GetJobDocker(job) != nil {
+					req.GitCommitId = resolveLatestJobVersion(client, job, version)
+				} else if utils.GetJobImage(job) != nil {
 					req.ImageTag = version
 				}
 
@@ -234,12 +244,19 @@ func getDeploymentRequestForMultipleServices(
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
-			gitCommitId, chartVersion := getHelmCommitAndChartVersion(client, name)
-
 			req := qovery.DeployAllRequestHelmsInner{Id: &helm.Id}
-			if gitCommitId != nil {
+			if utils.GetGitSource(helm) != nil {
+				if isLatestVersion(version) {
+					latestCommitId, err := utils.ResolveLatestHelmChartCommit(client, helm.Id, helm.Name)
+					if err != nil {
+						utils.PrintlnError(err)
+						os.Exit(1)
+						panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+					}
+					version = &latestCommitId
+				}
 				req.GitCommitId = version
-			} else if chartVersion != nil {
+			} else if utils.GetHelmRepository(helm) != nil {
 				req.ChartVersion = version
 			}
 
@@ -313,73 +330,23 @@ func splitServiceNameAndVersion(service string) (string, *string) {
 	return split[0], &split[1]
 }
 
-func getLifecycleJobGitCommitAndImageTag(jobs []qovery.JobResponse, jobName string) (*qovery.JobResponse, *string, *string) {
-	var commitId, imageTag *string
-
-	job := utils.FindByJobName(jobs, jobName)
-
-	if job == nil {
-		return nil, nil, nil
-	}
-
-	if job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
-		// image tag
-		image := job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf.GetImage()
-		tag := image.GetTag()
-		imageTag = &tag
-	} else if job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
-		// commit id
-		docker := job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.GetDocker()
-		commitId = docker.GitRepository.DeployedCommitId
-	}
-
-	return job, commitId, imageTag
+func isLatestVersion(version *string) bool {
+	return version != nil && utils.IsLatestCommitKeyword(*version)
 }
 
-func getCronjobGitCommitAndImageTag(jobs []qovery.JobResponse, jobName string) (*qovery.JobResponse, *string, *string) {
-	var commitId, imageTag *string
-
-	job := utils.FindByJobName(jobs, jobName)
-
-	if job == nil {
-		return nil, nil, nil
+func resolveLatestJobVersion(client *qovery.APIClient, job *qovery.JobResponse, version *string) *string {
+	if !isLatestVersion(version) {
+		return version
 	}
 
-	if job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
-		// image tag
-		image := job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf.GetImage()
-		tag := image.GetTag()
-		imageTag = &tag
-	} else if job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
-		// commit id
-		docker := job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.GetDocker()
-		commitId = docker.GitRepository.DeployedCommitId
-	}
-
-	return job, commitId, imageTag
-}
-
-func getHelmCommitAndChartVersion(client *qovery.APIClient, helmId string) (*string, *string) {
-	var commitId, chartVersion *string
-
-	// check if the helm version is a chart version or a commit id
-	helm, _, err := client.HelmMainCallsAPI.GetHelm(context.Background(), helmId).Execute()
+	latestCommitId, err := utils.ResolveLatestJobCommit(client, utils.GetJobId(job), utils.GetJobName(job))
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
+		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
-	if helm.Source.HelmResponseAllOfSourceOneOf != nil {
-		// chart version
-		git := helm.Source.HelmResponseAllOfSourceOneOf.GetGit()
-		commitId = git.GitRepository.DeployedCommitId
-	} else if helm.Source.HelmResponseAllOfSourceOneOf1 != nil {
-		// commit id
-		git := helm.Source.HelmResponseAllOfSourceOneOf1.GetRepository()
-		chartVersion = &git.ChartVersion
-	}
-
-	return commitId, chartVersion
+	return &latestCommitId
 }
 
 func init() {
@@ -388,11 +355,11 @@ func init() {
 	environmentDeployCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	environmentDeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	environmentDeployCmd.Flags().StringVarP(&servicesJson, "services", "", "", "Services to deploy (JSON Format: https://api-doc.qovery.com/#tag/Environment-Actions/operation/deployAllServices)")
-	environmentDeployCmd.Flags().StringVarP(&applicationNames, "applications", "", "", "Applications to deploy E.g. --applications app1:commit_id,app2:commit_id). If you omit the commit id, the same commit will be used")
+	environmentDeployCmd.Flags().StringVarP(&applicationNames, "applications", "", "", "Applications to deploy E.g. --applications app1:commit_id,app2:latest). If you omit the commit id, the same commit will be used. 'latest' deploys the newest commit of the branch")
 	environmentDeployCmd.Flags().StringVarP(&containerNames, "containers", "", "", "Containers to deploy E.g. --containers container1:image_tag,container2:image_tag). If you omit the image tag, the same image tag will be used")
-	environmentDeployCmd.Flags().StringVarP(&lifecycleNames, "lifecycles", "", "", "Lifecycle to deploy E.g. --lifecycles job1:image_tag|git_commit_id,job2:image_tag|git_commit_id). If you omit the git commit id or image tag, the same version will be used")
-	environmentDeployCmd.Flags().StringVarP(&cronjobNames, "cronjobs", "", "", "Cronjobs to deploy E.g. --cronjobs cronjob1:git_commit_id,cronjob2:git_commit_id). If you omit the git commit id, the same version will be used")
-	environmentDeployCmd.Flags().StringVarP(&helmNames, "helms", "", "", "Helms to deploy E.g. --helms helm1:chart_version|git_commit_id,helm2:chart_version|git_commit_id). If you omit the chart version or git commit id, the same version will be used")
+	environmentDeployCmd.Flags().StringVarP(&lifecycleNames, "lifecycles", "", "", "Lifecycle to deploy E.g. --lifecycles job1:image_tag|git_commit_id,job2:image_tag|git_commit_id). If you omit the git commit id or image tag, the same version will be used. 'latest' deploys the newest commit of the branch for a git-sourced job")
+	environmentDeployCmd.Flags().StringVarP(&cronjobNames, "cronjobs", "", "", "Cronjobs to deploy E.g. --cronjobs cronjob1:git_commit_id,cronjob2:latest). If you omit the git commit id, the same version will be used. 'latest' deploys the newest commit of the branch for a git-sourced cronjob")
+	environmentDeployCmd.Flags().StringVarP(&helmNames, "helms", "", "", "Helms to deploy E.g. --helms helm1:chart_version|git_commit_id,helm2:chart_version|git_commit_id). If you omit the chart version or git commit id, the same version will be used. 'latest' deploys the newest commit of the branch for a git-sourced chart")
 	environmentDeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch environment status until it's ready or an error occurs")
 	environmentDeployCmd.Flags().BoolVarP(&skipPausedServicesFlag, "skip-paused-services", "", false, "Skip paused services: paused services won't be started / deployed")
 }

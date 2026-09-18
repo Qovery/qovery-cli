@@ -52,7 +52,7 @@ func init() {
 	helmDeployCmd.Flags().StringVarP(&helmName, "helm", "n", "", "helm Name")
 	helmDeployCmd.Flags().StringVarP(&helmNames, "helms", "", "", "helm Names (comma separated) (ex: --helms \"helm1,helm2\")")
 	helmDeployCmd.Flags().StringVarP(&chartVersion, "chart_version", "", "", "helm chart version")
-	helmDeployCmd.Flags().StringVarP(&chartGitCommitId, "chart_git_commit_id", "", "", "helm chart git commit id")
+	helmDeployCmd.Flags().StringVarP(&chartGitCommitId, "chart_git_commit_id", "", "", "helm chart git commit id, or 'latest' for the newest commit of the branch")
 	helmDeployCmd.Flags().StringVarP(&valuesOverrideCommitId, "values_override_git_commit_id", "", "", "helm values override git commit id")
 	helmDeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch helm status until it's ready or an error occurs")
 }
