@@ -36,6 +36,6 @@ func init() {
 	terraformPlanCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	terraformPlanCmd.Flags().StringVarP(&terraformName, "terraform", "n", "", "Terraform Name")
 	terraformPlanCmd.Flags().StringVarP(&terraformNames, "terraforms", "", "", "Terraform Names (comma separated) Example: --terraforms \"tf1,tf2,tf3\"")
-	terraformPlanCmd.Flags().StringVarP(&terraformCommitId, "commit-id", "c", "", "Git Commit ID (optional, defaults to deployed commit)")
+	terraformPlanCmd.Flags().StringVarP(&terraformCommitId, "commit-id", "c", "", "Git Commit ID, or 'latest' for the newest commit of the branch (optional, defaults to deployed commit)")
 	terraformPlanCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch terraform status until it's ready or an error occurs")
 }

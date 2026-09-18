@@ -20,9 +20,22 @@ var applicationRedeployCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		applicationList := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)
+		application := applicationList[0]
 
-		_, _, err := client.ApplicationActionsAPI.DeployApplication(context.Background(), applicationList[0].Id).
-			DeployRequest(qovery.DeployRequest{GitCommitId: *applicationList[0].GitRepository.DeployedCommitId}).
+		var commitId string
+		switch {
+		case utils.IsLatestCommitKeyword(applicationCommitID):
+			latestCommitId, err := utils.ResolveLatestApplicationCommit(client, application.Id, application.Name)
+			checkError(err)
+			commitId = latestCommitId
+		case applicationCommitID != "":
+			commitId = applicationCommitID
+		default:
+			commitId = application.GitRepository.GetDeployedCommitId()
+		}
+
+		_, _, err := client.ApplicationActionsAPI.DeployApplication(context.Background(), application.Id).
+			DeployRequest(qovery.DeployRequest{GitCommitId: commitId}).
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to redeploy application(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", applicationName, applicationNames)))
@@ -36,7 +49,7 @@ func init() {
 	applicationRedeployCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	applicationRedeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	applicationRedeployCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
-	applicationRedeployCmd.Flags().StringVarP(&applicationCommitID, "commit-id", "c", "", "Application Commit ID")
+	applicationRedeployCmd.Flags().StringVarP(&applicationCommitID, "commit-id", "c", "", "Application Commit ID, or 'latest' for the newest commit of the branch")
 	applicationRedeployCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch application status until it's ready or an error occurs")
 
 	_ = applicationRedeployCmd.MarkFlagRequired("application")

@@ -44,6 +44,6 @@ func init() {
 	terraformMigrateStateCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	terraformMigrateStateCmd.Flags().StringVarP(&terraformName, "terraform", "n", "", "Terraform Name")
 	terraformMigrateStateCmd.Flags().StringVarP(&terraformNames, "terraforms", "", "", "Terraform Names (comma separated) Example: --terraforms \"tf1,tf2,tf3\"")
-	terraformMigrateStateCmd.Flags().StringVarP(&terraformCommitId, "commit-id", "c", "", "Git Commit ID (optional, defaults to deployed commit)")
+	terraformMigrateStateCmd.Flags().StringVarP(&terraformCommitId, "commit-id", "c", "", "Git Commit ID, or 'latest' for the newest commit of the branch (optional, defaults to deployed commit)")
 	terraformMigrateStateCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch terraform status until it's ready or an error occurs")
 }
