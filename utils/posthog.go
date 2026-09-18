@@ -16,21 +16,14 @@ const EndOfExecutionEventName = "cli-command-execution-end"
 const EndOfExecutionErrorEventName = "cli-command-execution-error"
 
 func Capture(command *cobra.Command) {
-
-	// Do not track the command execution in Qovery telemetry
-	if flag := os.Getenv("QOVERY_TELEMETRY"); strings.ToLower(flag) == "false" {
-		return
-	}
-
 	CaptureWithEvent(command, DefaultEventName)
 }
 
-func CaptureError(command *cobra.Command, stout string, stderr string) {
+func CaptureError(command *cobra.Command, stdout string, stderr string) {
 	properties := posthog.Properties{
-		"stdout": stout,
+		"stdout": stdout,
 		"stderr": stderr,
 	}
-
 	CaptureWithEventAndProperties(command, EndOfExecutionErrorEventName, properties)
 }
 
@@ -39,6 +32,11 @@ func CaptureWithEvent(command *cobra.Command, event string) {
 }
 
 func CaptureWithEventAndProperties(command *cobra.Command, event string, properties posthog.Properties) {
+	// Apply the telemetry opt-out to every event, including failures and completion.
+	if strings.EqualFold(os.Getenv("QOVERY_TELEMETRY"), "false") {
+		return
+	}
+
 	ph, err := posthog.NewWithConfig(
 		"phc_IgdG1K2GveDUte1gJ6hlwNbFHCv9nViWETUyLMU7ciq",
 		posthog.Config{

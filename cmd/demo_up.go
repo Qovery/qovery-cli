@@ -12,11 +12,14 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"os/user"
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -80,14 +83,24 @@ var demoUpCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		userAgent := "'CLI " + utils.Version + "'"
-		cmdStr := `
+		ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+		tokenPath, cleanupToken, err := prepareDemoTokenFile(scriptDir, tokenType, token)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+		defer cleanupToken()
+
+		// Pass values as positional parameters so file paths are not interpreted by bash.
+		cmdArgs := `
 set -eu
 set -o pipefail
-%s %s %s %s %s %t %s 2>&1 | tee %s
+"$1" "$2" "$3" "$4" "$5" "$6" "$7" 2>&1 | tee "$8"
 `
-		cmdArgs := fmt.Sprintf(cmdStr, scriptPath, demoClusterName, detectArchitecture(), string(orgId), string(token), demoDebug, userAgent, debugLogsPath)
-		shCmd := exec.Command("/bin/bash", "-c", cmdArgs)
+		shCmd := exec.CommandContext(ctx, "/bin/bash", "-c", cmdArgs, "qovery-demo",
+			scriptPath, demoClusterName, detectArchitecture(), string(orgId), tokenPath,
+			strconv.FormatBool(demoDebug), "CLI "+utils.Version, debugLogsPath)
 		shCmd.Env = append(
 			os.Environ(),
 			"QOVERY_DEMO_CHART_PATH="+demoChartPath,
@@ -97,7 +110,10 @@ set -o pipefail
 		)
 		shCmd.Stdout = os.Stdout
 		shCmd.Stderr = os.Stderr
-		if err := shCmd.Run(); err != nil || !shCmd.ProcessState.Success() {
+		err = shCmd.Run()
+		cleanupToken()
+		stop()
+		if err != nil {
 			utils.PrintlnError(fmt.Errorf("error executing the command %s", err))
 			uploadErrorLogs(tokenType, token, orgId, demoClusterName, debugLogsPath)
 			utils.CaptureError(cmd, shCmd.String(), err.Error())
