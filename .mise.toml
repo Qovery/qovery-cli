@@ -57,3 +57,99 @@ echo "Installed to $GOPATH/bin/qovery"
 description = "Run CI checks locally"
 depends = ["lint", "test", "build"]
 run = "echo '✅ All CI checks passed!'"
+
+[tasks.release]
+description = "Tag new version and push it (triggers Release workflow: GitHub release, R2, AUR, Docker images)"
+usage = '''
+arg "<version>" help="Tag to push, e.g. v1.170.0 (default: patch bump of latest tag)" default=""
+flag "-y --yes" help="Skip confirmation prompt"
+'''
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+REMOTE="${RELEASE_REMOTE:-origin}"
+RELEASE_BRANCH="${RELEASE_BRANCH:-main}"
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$branch" != "$RELEASE_BRANCH" ]; then
+  echo "Error: on branch '$branch', releases are cut from '$RELEASE_BRANCH'." >&2
+  exit 1
+fi
+
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Error: working tree not clean. Commit or stash first." >&2
+  exit 1
+fi
+
+echo "==> Fetching $REMOTE"
+git fetch --quiet --tags "$REMOTE"
+
+if [ "$(git rev-parse HEAD)" != "$(git rev-parse "$REMOTE/$RELEASE_BRANCH")" ]; then
+  echo "Error: local $RELEASE_BRANCH differs from $REMOTE/$RELEASE_BRANCH. Pull or push first." >&2
+  exit 1
+fi
+
+current="$(git tag --list 'v*' --sort=-v:refname | head -n1)"
+if [ -z "$current" ]; then
+  echo "Error: no v* tag found." >&2
+  exit 1
+fi
+
+new="${usage_version:-}"
+if [ -z "$new" ]; then
+  # patch bump of latest tag
+  IFS='.' read -r major minor patch <<< "${current#v}"
+  new="v${major}.${minor}.$((patch + 1))"
+fi
+
+if ! echo "$new" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+  echo "Error: '$new' is not a vX.Y.Z tag." >&2
+  exit 1
+fi
+
+if git rev-parse -q --verify "refs/tags/$new" >/dev/null; then
+  echo "Error: tag $new already exists locally." >&2
+  exit 1
+fi
+
+commits="$(git log --oneline "$current..HEAD")"
+if [ -z "$commits" ]; then
+  echo "Error: no commit since $current, nothing to release." >&2
+  exit 1
+fi
+
+echo
+echo "  current tag : $current"
+echo "  new tag     : $new"
+echo "  remote      : $REMOTE  $(git remote get-url "$REMOTE")"
+echo "  commit      : $(git log -1 --oneline HEAD)"
+echo
+echo "  $(echo "$commits" | wc -l | tr -d ' ') commit(s) since $current:"
+echo "$commits" | sed 's/^/    /'
+echo
+echo "  Pushing $new triggers .github/workflows/release.yml:"
+echo "    GitHub release + binaries, Cloudflare R2 upload, AUR package,"
+echo "    Docker images to ECR + GHCR ($new and latest)."
+echo
+
+if [ "${usage_yes:-}" != "true" ]; then
+  if [ ! -t 0 ]; then
+    echo "Error: not a TTY, rerun with --yes to skip confirmation." >&2
+    exit 1
+  fi
+  printf '  Create and push tag %s (current: %s)? [y/N] ' "$new" "$current"
+  read -r answer
+  case "$answer" in
+    y|Y|yes|YES) ;;
+    *) echo "Aborted, nothing pushed."; exit 1 ;;
+  esac
+fi
+
+git tag -a "$new" -m "$new"
+git push "$REMOTE" "$new"
+
+echo
+echo "Pushed $new. Release workflow:"
+echo "  https://github.com/Qovery/qovery-cli/actions/workflows/release.yml"
+'''

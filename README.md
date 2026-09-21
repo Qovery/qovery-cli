@@ -87,3 +87,14 @@ go get -u github.com/qovery/qovery-client-go
 go build
 go fmt .
 ```
+
+# Release a new version
+
+Releases are cut from `main` by pushing a `vX.Y.Z` tag. [mise](https://mise.jdx.dev) task:
+
+```sh
+mise run release            # patch bump of latest tag
+mise run release v1.170.0   # explicit version
+```
+
+It checks branch, clean tree and sync with `origin/main`, prints current tag + new tag + commits since, then asks for confirmation before pushing. The tag push triggers `.github/workflows/release.yml`: GitHub release + binaries, Cloudflare R2 upload, AUR package, Docker images on ECR and GHCR.
