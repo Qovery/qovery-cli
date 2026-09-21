@@ -85,9 +85,12 @@ ver_num() {
 # highest vX.Y.Z tag. Non-release tags (v0.1, v1.2-rc1) are dropped: they sort
 # high and break ver_num. grep reads the whole stream, so git never sees SIGPIPE
 latest_release_tag() {
-  local tags
-  tags="$(git for-each-ref --sort=-v:refname --format='%(refname:strip=2)' 'refs/tags/v*' \
-    | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true)"
+  local all tags
+  # git runs on its own so a real failure returns 1; only grep's "no match" is tolerated
+  if ! all="$(git for-each-ref --sort=-v:refname --format='%(refname:strip=2)' 'refs/tags/v*')"; then
+    return 1
+  fi
+  tags="$(printf '%s\n' "$all" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true)"
   echo "${tags%%$'\n'*}"
 }
 
@@ -113,7 +116,10 @@ fi
 echo "==> Fetching $REMOTE"
 require_in_sync
 
-current="$(latest_release_tag)"
+if ! current="$(latest_release_tag)"; then
+  echo "Error: listing tags failed (git error above)." >&2
+  exit 1
+fi
 if [ -z "$current" ]; then
   echo "Error: no vX.Y.Z tag found." >&2
   exit 1
@@ -183,7 +189,10 @@ if git rev-parse -q --verify "refs/tags/$new" >/dev/null; then
   echo "Error: tag $new appeared on $REMOTE meanwhile, nothing pushed." >&2
   exit 1
 fi
-latest="$(latest_release_tag)"
+if ! latest="$(latest_release_tag)"; then
+  echo "Error: listing tags failed (git error above), nothing pushed." >&2
+  exit 1
+fi
 if [ "$(ver_num "$new")" -le "$(ver_num "$latest")" ]; then
   echo "Error: $latest was released meanwhile, $new would go backwards. Nothing pushed." >&2
   exit 1
