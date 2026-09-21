@@ -1640,7 +1640,13 @@ func DeployApplications(client *qovery.APIClient, envId string, applicationList 
 
 		// if commitId is not set, use the deployed commit id
 		applicationCommitId := application.GitRepository.DeployedCommitId
-		if commitId != "" {
+		if IsLatestCommitKeyword(commitId) {
+			latestCommitId, err := ResolveLatestApplicationCommit(client, application.Id, application.Name)
+			if err != nil {
+				return err
+			}
+			applicationCommitId = &latestCommitId
+		} else if commitId != "" {
 			// commitId is set, use it
 			applicationCommitId = &commitId
 		}
@@ -1709,7 +1715,13 @@ func DeployJobs(client *qovery.APIClient, envId string, jobList []*qovery.JobRes
 
 		if docker != nil {
 			mCommitId = docker.GitRepository.DeployedCommitId
-			if commitId != "" {
+			if IsLatestCommitKeyword(commitId) {
+				latestCommitId, err := ResolveLatestJobCommit(client, GetJobId(job), GetJobName(job))
+				if err != nil {
+					return err
+				}
+				mCommitId = &latestCommitId
+			} else if commitId != "" {
 				mCommitId = &commitId
 			}
 
@@ -1809,6 +1821,11 @@ func DeployHelms(client *qovery.APIClient, envId string, helmList []*qovery.Helm
 		return nil
 	}
 
+	if IsLatestCommitKeyword(valuesOverrideCommitId) {
+		return fmt.Errorf("`%s` is not supported for --values_override_git_commit_id: the API exposes no commit list for the values-override repository. "+
+			"Pass an explicit commit id, or omit the flag to keep the deployed one", LatestCommitKeyword)
+	}
+
 	var helmsToDeploy []qovery.DeployAllRequestHelmsInner
 
 	for _, helm := range helmList {
@@ -1825,7 +1842,13 @@ func DeployHelms(client *qovery.APIClient, envId string, helmList []*qovery.Helm
 		var mValuesOverrideCommitId *string
 
 		if gitSource != nil {
-			if chartGitCommitId != "" {
+			if IsLatestCommitKeyword(chartGitCommitId) {
+				latestCommitId, err := ResolveLatestHelmChartCommit(client, helm.Id, helm.Name)
+				if err != nil {
+					return err
+				}
+				mCommitId = &latestCommitId
+			} else if chartGitCommitId != "" {
 				mCommitId = &chartGitCommitId
 			}
 		}
@@ -1883,17 +1906,24 @@ func DeployTerraforms(client *qovery.APIClient, envId string, terraformList []*q
 	// If action is not nil (PLAN, FORCE_UNLOCK, MIGRATE_STATE), use individual API
 	// DeployAllServices only supports PLAN_AND_APPLY
 	if action != nil {
+		// resolve every commit id first: a failure on a later service must leave no earlier service triggered
+		requests := make([]qovery.TerraformDeployRequest, 0, len(terraformList))
 		for _, terraform := range terraformList {
 			req := qovery.TerraformDeployRequest{
 				Action: *qovery.NewNullableString(action),
 			}
 
-			// Set commit ID if provided
-			if commitId != "" {
-				req.GitCommitId = &commitId
+			terraformCommitId, err := terraformGitCommitId(client, terraform, commitId)
+			if err != nil {
+				return err
 			}
+			req.GitCommitId = terraformCommitId
 
-			_, _, err := client.TerraformActionsAPI.DeployTerraform(context.Background(), terraform.Id).TerraformDeployRequest(req).Execute()
+			requests = append(requests, req)
+		}
+
+		for i, terraform := range terraformList {
+			_, _, err := client.TerraformActionsAPI.DeployTerraform(context.Background(), terraform.Id).TerraformDeployRequest(requests[i]).Execute()
 			if err != nil {
 				return err
 			}
@@ -1909,10 +1939,11 @@ func DeployTerraforms(client *qovery.APIClient, envId string, terraformList []*q
 			Id: *qovery.NewNullableString(&terraform.Id),
 		}
 
-		// Set commit ID if provided
-		if commitId != "" {
-			req.GitCommitId = &commitId
+		terraformCommitId, err := terraformGitCommitId(client, terraform, commitId)
+		if err != nil {
+			return err
 		}
+		req.GitCommitId = terraformCommitId
 
 		terraformsToDeploy = append(terraformsToDeploy, req)
 	}
@@ -1927,6 +1958,23 @@ func DeployTerraforms(client *qovery.APIClient, envId string, terraformList []*q
 	}
 
 	return deployAllServices(client, envId, deployReq)
+}
+
+// terraformGitCommitId returns the commit id to deploy, or nil when none was requested
+func terraformGitCommitId(client *qovery.APIClient, terraform *qovery.TerraformResponse, commitId string) (*string, error) {
+	if IsLatestCommitKeyword(commitId) {
+		latestCommitId, err := ResolveLatestTerraformCommit(client, terraform.Id, terraform.Name)
+		if err != nil {
+			return nil, err
+		}
+		return &latestCommitId, nil
+	}
+
+	if commitId != "" {
+		return &commitId, nil
+	}
+
+	return nil, nil
 }
 
 func DeleteTerraforms(client *qovery.APIClient, envId string, terraformList []*qovery.TerraformResponse, skipDestroy bool, resourcesOnly bool) error {
