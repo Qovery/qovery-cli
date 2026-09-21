@@ -68,8 +68,23 @@ run = '''
 #!/usr/bin/env bash
 set -euo pipefail
 
-REMOTE="${RELEASE_REMOTE:-origin}"
-RELEASE_BRANCH="${RELEASE_BRANCH:-main}"
+REMOTE="origin"
+RELEASE_BRANCH="main"
+
+# vX.Y.Z -> sortable integer, base 10 forced (v1.08.0 is not octal)
+ver_num() {
+  local major minor patch
+  IFS='.' read -r major minor patch <<< "${1#v}"
+  echo $(( 10#$major * 10000000000 + 10#$minor * 100000 + 10#$patch ))
+}
+
+require_in_sync() {
+  git fetch --quiet --tags "$REMOTE"
+  if [ "$(git rev-parse HEAD)" != "$(git rev-parse "$REMOTE/$RELEASE_BRANCH")" ]; then
+    echo "Error: ${1:-local $RELEASE_BRANCH differs from $REMOTE/$RELEASE_BRANCH. Pull or push first.}" >&2
+    exit 1
+  fi
+}
 
 branch="$(git rev-parse --abbrev-ref HEAD)"
 if [ "$branch" != "$RELEASE_BRANCH" ]; then
@@ -83,14 +98,10 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 
 echo "==> Fetching $REMOTE"
-git fetch --quiet --tags "$REMOTE"
+require_in_sync
 
-if [ "$(git rev-parse HEAD)" != "$(git rev-parse "$REMOTE/$RELEASE_BRANCH")" ]; then
-  echo "Error: local $RELEASE_BRANCH differs from $REMOTE/$RELEASE_BRANCH. Pull or push first." >&2
-  exit 1
-fi
-
-current="$(git tag --list 'v*' --sort=-v:refname | head -n1)"
+# for-each-ref, not `git tag | head`: a pipe closed early kills git with SIGPIPE under pipefail
+current="$(git for-each-ref --sort=-v:refname --count=1 --format='%(refname:strip=2)' 'refs/tags/v[0-9]*')"
 if [ -z "$current" ]; then
   echo "Error: no v* tag found." >&2
   exit 1
@@ -108,6 +119,11 @@ if ! echo "$new" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
   exit 1
 fi
 
+if [ "$(ver_num "$new")" -le "$(ver_num "$current")" ]; then
+  echo "Error: $new is not greater than current tag $current." >&2
+  exit 1
+fi
+
 if git rev-parse -q --verify "refs/tags/$new" >/dev/null; then
   echo "Error: tag $new already exists locally." >&2
   exit 1
@@ -119,10 +135,13 @@ if [ -z "$commits" ]; then
   exit 1
 fi
 
+# strip any user:password from the printed URL
+remote_url="$(git remote get-url "$REMOTE" | sed -E 's#://[^/@]*@#://***@#')"
+
 echo
 echo "  current tag : $current"
 echo "  new tag     : $new"
-echo "  remote      : $REMOTE  $(git remote get-url "$REMOTE")"
+echo "  remote      : $REMOTE  $remote_url"
 echo "  commit      : $(git log -1 --oneline HEAD)"
 echo
 echo "  $(echo "$commits" | wc -l | tr -d ' ') commit(s) since $current:"
@@ -144,6 +163,13 @@ if [ "${usage_yes:-}" != "true" ]; then
     y|Y|yes|YES) ;;
     *) echo "Aborted, nothing pushed."; exit 1 ;;
   esac
+fi
+
+# main or the tag may have moved while the prompt was open
+require_in_sync "$REMOTE/$RELEASE_BRANCH moved meanwhile, nothing pushed. Re-run to release the new HEAD."
+if git rev-parse -q --verify "refs/tags/$new" >/dev/null; then
+  echo "Error: tag $new appeared on $REMOTE meanwhile, nothing pushed." >&2
+  exit 1
 fi
 
 git tag -a "$new" -m "$new"
