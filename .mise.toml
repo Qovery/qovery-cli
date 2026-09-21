@@ -71,11 +71,24 @@ set -euo pipefail
 REMOTE="origin"
 RELEASE_BRANCH="main"
 
+is_release_tag() {
+  echo "${1:-}" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'
+}
+
 # vX.Y.Z -> sortable integer, base 10 forced (v1.08.0 is not octal)
 ver_num() {
   local major minor patch
   IFS='.' read -r major minor patch <<< "${1#v}"
-  echo $(( 10#$major * 10000000000 + 10#$minor * 100000 + 10#$patch ))
+  echo $(( 10#${major:-0} * 10000000000 + 10#${minor:-0} * 100000 + 10#${patch:-0} ))
+}
+
+# highest vX.Y.Z tag. Non-release tags (v0.1, v1.2-rc1) are dropped: they sort
+# high and break ver_num. grep reads the whole stream, so git never sees SIGPIPE
+latest_release_tag() {
+  local tags
+  tags="$(git for-each-ref --sort=-v:refname --format='%(refname:strip=2)' 'refs/tags/v*' \
+    | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true)"
+  echo "${tags%%$'\n'*}"
 }
 
 require_in_sync() {
@@ -100,10 +113,9 @@ fi
 echo "==> Fetching $REMOTE"
 require_in_sync
 
-# for-each-ref, not `git tag | head`: a pipe closed early kills git with SIGPIPE under pipefail
-current="$(git for-each-ref --sort=-v:refname --count=1 --format='%(refname:strip=2)' 'refs/tags/v[0-9]*')"
+current="$(latest_release_tag)"
 if [ -z "$current" ]; then
-  echo "Error: no v* tag found." >&2
+  echo "Error: no vX.Y.Z tag found." >&2
   exit 1
 fi
 
@@ -114,7 +126,7 @@ if [ -z "$new" ]; then
   new="v${major}.${minor}.$((patch + 1))"
 fi
 
-if ! echo "$new" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+if ! is_release_tag "$new"; then
   echo "Error: '$new' is not a vX.Y.Z tag." >&2
   exit 1
 fi
@@ -165,10 +177,15 @@ if [ "${usage_yes:-}" != "true" ]; then
   esac
 fi
 
-# main or the tag may have moved while the prompt was open
+# main, the tag, or the latest release may have moved while the prompt was open
 require_in_sync "$REMOTE/$RELEASE_BRANCH moved meanwhile, nothing pushed. Re-run to release the new HEAD."
 if git rev-parse -q --verify "refs/tags/$new" >/dev/null; then
   echo "Error: tag $new appeared on $REMOTE meanwhile, nothing pushed." >&2
+  exit 1
+fi
+latest="$(latest_release_tag)"
+if [ "$(ver_num "$new")" -le "$(ver_num "$latest")" ]; then
+  echo "Error: $latest was released meanwhile, $new would go backwards. Nothing pushed." >&2
   exit 1
 fi
 
