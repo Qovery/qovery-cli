@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"os"
 	//	"github.com/getsentry/sentry-go"
 	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
@@ -23,6 +24,18 @@ func PrintlnInfo(info string) {
 
 func Println(text string) {
 	fmt.Printf("%v\n", text)
+}
+
+// PrintlnErrorToStderr and PrintlnInfoToStderr mirror PrintlnError / PrintlnInfo but write
+// to stderr. Use them from any command whose stdout carries data the caller pipes -- JSON,
+// log lines, a list meant for a shell loop -- where a message printed to stdout would end up
+// mixed into the payload and break the pipe.
+func PrintlnErrorToStderr(err error) {
+	_, _ = fmt.Fprintf(os.Stderr, "%s: %v\n", color.RedString("Error"), err)
+}
+
+func PrintlnInfoToStderr(info string) {
+	_, _ = fmt.Fprintf(os.Stderr, "%v: %v\n", color.CyanString("Info"), info)
 }
 
 func PrintContext() error {

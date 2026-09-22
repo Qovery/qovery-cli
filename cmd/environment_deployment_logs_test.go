@@ -39,10 +39,10 @@ func TestEnvironmentDeploymentLogsCmdFlagParsing(t *testing.T) {
 	// this package -- and make failures depend on test order.
 	restoreDeploymentLogsFlags(t)
 
-	// `id` is bound to --id on the sibling `explain` command; the logs command must carry
-	// its own execution id so the two do not clobber each other.
-	require.Nil(t, environmentDeploymentLogsCmd.Flags().Lookup("id"), "--id should not be registered on the logs command")
-
+	// `explain` binds the shared package-level `id` var to its own --id. This command accepts
+	// --id as an alias for --execution-id (see TestEnvironmentDeploymentLogsCmdAcceptsIdAsAlias...),
+	// but must write to its own var, so the two commands cannot clobber each other.
+	//
 	// Snapshot rather than assert emptiness: another test in this package may legitimately
 	// have parsed `explain --id` first. What matters is that parsing ours does not touch it.
 	idBefore := id
@@ -87,4 +87,29 @@ func restoreDeploymentLogsFlags(t *testing.T) {
 			f.Changed = false
 		}
 	})
+}
+
+func TestEnvironmentDeploymentLogsCmdAcceptsIdAsAliasForExecutionId(t *testing.T) {
+	// `deployment list` prints this id and `deployment explain` takes it as --id, so the
+	// same value must be copyable into this command under either spelling.
+	restoreDeploymentLogsFlags(t)
+
+	require.NoError(t, environmentDeploymentLogsCmd.ParseFlags([]string{"--id", "env-7"}))
+	assert.Equal(t, "env-7", deploymentLogsExecutionId, "--id should set the execution id")
+
+	require.NoError(t, environmentDeploymentLogsCmd.ParseFlags([]string{"--execution-id", "env-9"}))
+	assert.Equal(t, "env-9", deploymentLogsExecutionId, "--execution-id should set the same var")
+
+	// One flag with two spellings, not two flags: help must not list --id separately, and
+	// the alias must resolve to the same flag object.
+	assert.Nil(t, environmentDeploymentLogsCmd.Flags().ShorthandLookup("i"))
+	assert.Same(t,
+		environmentDeploymentLogsCmd.Flags().Lookup("execution-id"),
+		environmentDeploymentLogsCmd.Flags().Lookup("id"),
+		"--id must resolve to the --execution-id flag, not a second one")
+
+	// The alias must not reach the shared `id` var that `explain` binds to --id.
+	idBefore := id
+	require.NoError(t, environmentDeploymentLogsCmd.ParseFlags([]string{"--id", "env-11"}))
+	assert.Equal(t, idBefore, id, "--id here must not write to the shared `id` var")
 }

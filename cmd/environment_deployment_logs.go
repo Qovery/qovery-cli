@@ -7,11 +7,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fatih/color"
-
 	"github.com/qovery/qovery-cli/pkg"
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var (
@@ -44,7 +43,7 @@ appear in a service-scoped view.`,
 		utils.Capture(cmd)
 
 		if deploymentLogsPreCheck && (deploymentLogsServiceName != "" || deploymentLogsServiceId != "") {
-			printlnErrorToStderr(fmt.Errorf("--pre-check cannot be combined with --service or --service-id: pre-check runs before any service is deployed"))
+			utils.PrintlnErrorToStderr(fmt.Errorf("--pre-check cannot be combined with --service or --service-id: pre-check runs before any service is deployed"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -52,14 +51,14 @@ appear in a service-scoped view.`,
 		// They are two spellings of one selector, and the filter matches either, so passing
 		// both would widen the result to two services rather than narrow it.
 		if deploymentLogsServiceName != "" && deploymentLogsServiceId != "" {
-			printlnErrorToStderr(fmt.Errorf("--service and --service-id select the same thing two different ways: pass one, not both"))
+			utils.PrintlnErrorToStderr(fmt.Errorf("--service and --service-id select the same thing two different ways: pass one, not both"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
-			printlnErrorToStderr(err)
+			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -67,7 +66,7 @@ appear in a service-scoped view.`,
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, environmentId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 		if err != nil {
-			printlnErrorToStderr(err)
+			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -79,7 +78,7 @@ appear in a service-scoped view.`,
 
 		logs, _, err := logsQuery.Execute()
 		if err != nil {
-			printlnErrorToStderr(err)
+			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -112,17 +111,17 @@ appear in a service-scoped view.`,
 			// The service contributed nothing, so only environment-wide lines remain -- an
 			// empty-looking success. Name what did emit, so the user can retry.
 			if services := pkg.DeploymentLogServices(all); len(services) == 0 {
-				printlnInfoToStderr("No service emitted deployment logs in this deployment.")
+				utils.PrintlnInfoToStderr("No service emitted deployment logs in this deployment.")
 			} else {
-				printlnInfoToStderr(fmt.Sprintf(
+				utils.PrintlnInfoToStderr(fmt.Sprintf(
 					"No deployment logs for that service. Services in this deployment: %s",
 					strings.Join(services, ", "),
 				))
 			}
 		case filter.ErrorsOnly && len(logs) == 0 && filter.IsServiceScoped():
-			printlnInfoToStderr("No errors for that service in this deployment.")
+			utils.PrintlnInfoToStderr("No errors for that service in this deployment.")
 		case filter.ErrorsOnly && len(logs) == 0:
-			printlnInfoToStderr("No errors in this deployment.")
+			utils.PrintlnInfoToStderr("No errors in this deployment.")
 		}
 
 		if jsonFlag {
@@ -133,7 +132,7 @@ appear in a service-scoped view.`,
 
 			out, err := json.Marshal(projected)
 			if err != nil {
-				printlnErrorToStderr(err)
+				utils.PrintlnErrorToStderr(err)
 				os.Exit(1)
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
@@ -148,25 +147,23 @@ appear in a service-scoped view.`,
 	},
 }
 
-// printlnInfoToStderr and printlnErrorToStderr mirror utils.PrintlnInfo / utils.PrintlnError
-// but write to stderr. The shared helpers print to stdout, which is fine for commands whose
-// output is prose but not for this one: stdout carries the log lines, and an "Error: ..."
-// or "Info: ..." line mixed into them breaks `--json | jq`. Kept local rather than changing
-// the shared helpers, which every other command depends on.
-func printlnInfoToStderr(info string) {
-	_, _ = fmt.Fprintf(os.Stderr, "%v: %v\n", color.CyanString("Info"), info)
-}
-
-func printlnErrorToStderr(err error) {
-	_, _ = fmt.Fprintf(os.Stderr, "%s: %v\n", color.RedString("Error"), err)
-}
-
 func init() {
 	environmentDeploymentCmd.AddCommand(environmentDeploymentLogsCmd)
 	environmentDeploymentLogsCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
 	environmentDeploymentLogsCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
 	environmentDeploymentLogsCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
-	environmentDeploymentLogsCmd.Flags().StringVarP(&deploymentLogsExecutionId, "execution-id", "", "", "Execution Id of a past deployment, as listed by 'qovery environment deployment list' (default: latest deployment)")
+	environmentDeploymentLogsCmd.Flags().StringVarP(&deploymentLogsExecutionId, "execution-id", "", "", "Execution Id of a past deployment, as listed by 'qovery environment deployment list' (default: latest deployment). Also accepted as --id, matching 'deployment explain'")
+
+	// `deployment list` prints this id, `deployment explain` takes it as --id, and all three
+	// end up in the same Version() call -- so accept that spelling here too rather than making
+	// one id need a different flag name per command. A normalizer rather than a second
+	// registration, so there is still exactly one flag, one variable and one help entry.
+	environmentDeploymentLogsCmd.Flags().SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
+		if name == "id" {
+			name = "execution-id"
+		}
+		return pflag.NormalizedName(name)
+	})
 	environmentDeploymentLogsCmd.Flags().StringVarP(&deploymentLogsServiceName, "service", "s", "", "Service Name -- only print the log lines related to that service's deployment")
 	environmentDeploymentLogsCmd.Flags().StringVarP(&deploymentLogsServiceId, "service-id", "", "", "Service Id -- same as --service, skipping the name lookup")
 	environmentDeploymentLogsCmd.Flags().BoolVarP(&deploymentLogsPreCheck, "pre-check", "", false, "Only print the pre-check log lines")
