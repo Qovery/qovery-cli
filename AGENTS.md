@@ -32,6 +32,6 @@ If a linter ever does flag such a line, fix it with a scoped
 Verify with:
 
 ```bash
-grep -rn 'panic("unreachable")' --include='*.go' .   # expect no hits
+rg -n 'panic\("unreachable"\)' --glob '*.go' .   # expect no hits
 golangci-lint run ./...
 ```
