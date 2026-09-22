@@ -30,7 +30,6 @@ var environmentDeployCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("you can't use --skip-paused-services flag with --services, " +
 				"--applications, --containers, --lifecycles, --cronjobs or --helms flags"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if servicesJson != "" {
@@ -123,7 +122,6 @@ func getDeploymentRequestForMultipleServices(
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
 			app := utils.FindByApplicationName(apps.GetResults(), name)
@@ -131,7 +129,6 @@ func getDeploymentRequestForMultipleServices(
 			if app == nil {
 				utils.PrintlnError(fmt.Errorf("application %s not found", name))
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
 			if isLatestVersion(version) {
@@ -139,7 +136,6 @@ func getDeploymentRequestForMultipleServices(
 				if err != nil {
 					utils.PrintlnError(err)
 					os.Exit(1)
-					panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 				}
 				version = &latestCommitId
 			}
@@ -157,7 +153,6 @@ func getDeploymentRequestForMultipleServices(
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
 			container := utils.FindByContainerName(containers.GetResults(), name)
@@ -172,7 +167,6 @@ func getDeploymentRequestForMultipleServices(
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if lifecycleNames != "" {
@@ -184,7 +178,6 @@ func getDeploymentRequestForMultipleServices(
 				if job == nil {
 					utils.PrintlnError(fmt.Errorf("lifecycle %s not found", name))
 					os.Exit(1)
-					panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 				}
 
 				req := qovery.DeployAllRequestJobsInner{Id: &job.LifecycleJobResponse.Id}
@@ -208,7 +201,6 @@ func getDeploymentRequestForMultipleServices(
 				if job == nil {
 					utils.PrintlnError(fmt.Errorf("cronjob %s not found", name))
 					os.Exit(1)
-					panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 				}
 
 				req := qovery.DeployAllRequestJobsInner{Id: &job.CronJobResponse.Id}
@@ -233,7 +225,6 @@ func getDeploymentRequestForMultipleServices(
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
 			helm := utils.FindByHelmName(helms.GetResults(), name)
@@ -241,7 +232,6 @@ func getDeploymentRequestForMultipleServices(
 			if helm == nil {
 				utils.PrintlnError(fmt.Errorf("helm %s not found", name))
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
 			req := qovery.DeployAllRequestHelmsInner{Id: &helm.Id}
@@ -251,7 +241,6 @@ func getDeploymentRequestForMultipleServices(
 					if err != nil {
 						utils.PrintlnError(err)
 						os.Exit(1)
-						panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 					}
 					version = &latestCommitId
 				}
@@ -343,7 +332,6 @@ func resolveLatestJobVersion(client *qovery.APIClient, job *qovery.JobResponse, 
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	return &latestCommitId

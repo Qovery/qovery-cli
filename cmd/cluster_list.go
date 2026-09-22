@@ -23,7 +23,6 @@ var clusterListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -32,14 +31,12 @@ var clusterListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		clusters, err := cluster.NewClusterService(client, &promptuifactory.PromptUiFactoryImpl{}).ListClusters(organizationId)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if jsonFlag {
@@ -58,7 +55,6 @@ var clusterListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 	},
 }
@@ -81,7 +77,6 @@ func getClusterJsonOutput(clusters []qovery.Cluster) string {
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	return string(j)

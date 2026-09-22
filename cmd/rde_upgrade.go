@@ -33,7 +33,6 @@ for faster execution.`,
 		if rdeUpgradeStrategy != "image" && rdeUpgradeStrategy != "reclone" {
 			utils.PrintlnError(fmt.Errorf("unknown strategy '%s'. Use 'image' or 'reclone'", rdeUpgradeStrategy))
 			os.Exit(1)
-			panic("unreachable")
 		}
 
 		client := utils.GetQoveryClientPanicInCaseOfError()
@@ -46,7 +45,6 @@ for faster execution.`,
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable")
 			}
 
 			if rdeUpgradeStrategy == "image" {
@@ -63,7 +61,6 @@ for faster execution.`,
 				if err != nil {
 					utils.PrintlnError(err)
 					os.Exit(1)
-					panic("unreachable")
 				}
 				children, err = rdeListChildren(client, orgId, bp.ProjectId)
 				checkError(err)

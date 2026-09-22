@@ -30,7 +30,6 @@ The project must already exist and contain at least one environment.`,
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("project %s not found in organization", rdeBlueprintProjectName))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		// Check if already registered as a blueprint
@@ -49,7 +48,6 @@ The project must already exist and contain at least one environment.`,
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("failed to create project variable %s: %w", rdeBlueprintProjectIdVar, err))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		// Step 2: Find first environment and set BLUEPRINT_KEY = projectId
@@ -58,14 +56,12 @@ The project must already exist and contain at least one environment.`,
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("failed to list environments: %w", err))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		envResults := environments.GetResults()
 		if len(envResults) == 0 {
 			utils.PrintlnError(fmt.Errorf("project %s has no environments - create at least one environment first", rdeBlueprintProjectName))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		// Prefer the first DEVELOPMENT environment, fallback to first env
@@ -84,7 +80,6 @@ The project must already exist and contain at least one environment.`,
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("failed to create environment variable %s: %w", rdeBlueprintKeyVar, err))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println("")

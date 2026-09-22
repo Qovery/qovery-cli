@@ -35,6 +35,5 @@ func notifyUsersClusterFailure() {
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 }

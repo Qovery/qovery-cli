@@ -31,7 +31,6 @@ Shows name, blueprint, status, uptime, and workspace URL for each RDE.`,
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable")
 			}
 			children, err = rdeListChildren(client, orgId, bp.ProjectId)
 			checkError(err)
@@ -124,7 +123,6 @@ Shows name, blueprint, status, uptime, and workspace URL for each RDE.`,
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable")
 		}
 
 		utils.Println(fmt.Sprintf("\nTotal: %d RDE(s) (%d running, %d stopped, %d error/other)", len(children), running, stopped, errors))

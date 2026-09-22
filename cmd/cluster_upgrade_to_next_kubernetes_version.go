@@ -28,7 +28,6 @@ var clusterUpgradeCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -36,14 +35,12 @@ var clusterUpgradeCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		clusters, _, err := client.ClustersAPI.ListOrganizationCluster(context.Background(), orgId).Execute()
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		cluster := utils.FindByClusterName(clusters.GetResults(), clusterName)
@@ -52,19 +49,16 @@ var clusterUpgradeCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("cluster %s not found", clusterName))
 			utils.PrintlnInfo("You can list all clusters with: qovery cluster list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		status, _, err := client.ClustersAPI.GetClusterStatus(context.Background(), orgId, cluster.Id).Execute()
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 		if status.NextK8sAvailableVersion.Get() == nil {
 			utils.PrintlnError(fmt.Errorf("no available kubernetes version to upgrade to for this cluster"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println(fmt.Sprintf("A new kubernetes version `%s` is available for your cluster %s." /**status.NextK8sAvailableVersion.Get()*/, "", clusterName))
@@ -82,7 +76,6 @@ var clusterUpgradeCmd = &cobra.Command{
 			if strings.ToLower(strings.Trim(upgradePromptResult, " ")) != "yes" {
 				utils.Println("Cluster upgrade aborted")
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 		} else {
 			utils.Println("Skipping confirmation, proceeding with cluster upgrade..")
@@ -99,7 +92,6 @@ var clusterUpgradeCmd = &cobra.Command{
 			}
 
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if watchFlag {

@@ -21,7 +21,6 @@ var lifecycleEnvUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -30,7 +29,6 @@ var lifecycleEnvUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		lifecycles, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
@@ -38,7 +36,6 @@ var lifecycleEnvUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		lifecycle := utils.FindByJobName(lifecycles.GetResults(), lifecycleName)
@@ -47,7 +44,6 @@ var lifecycleEnvUpdateCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
 			utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		err = utils.UpdateServiceVariable(client, utils.Key, utils.Value, lifecycle.LifecycleJobResponse.Id, utils.JobType)
@@ -55,7 +51,6 @@ var lifecycleEnvUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println(fmt.Sprintf("Environment variable %s has been updated", pterm.FgBlue.Sprintf("%s", utils.Key)))

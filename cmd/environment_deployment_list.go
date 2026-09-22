@@ -19,7 +19,6 @@ var environmentDeploymentListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -28,7 +27,6 @@ var environmentDeploymentListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		deployments, _, err := client.EnvironmentDeploymentHistoryAPI.ListEnvironmentDeploymentHistory(context.Background(), environmentId).Execute()
@@ -36,7 +34,6 @@ var environmentDeploymentListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if jsonFlag {
@@ -60,7 +57,6 @@ var environmentDeploymentListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 	},
 }
@@ -82,7 +78,6 @@ func toDeploymentListJsonOutput(deployments []qovery.DeploymentHistoryEnvironmen
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	return string(j)

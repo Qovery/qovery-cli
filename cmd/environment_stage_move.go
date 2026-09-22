@@ -19,7 +19,6 @@ var environmentStageMoveCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -28,7 +27,6 @@ var environmentStageMoveCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		stages, _, err := client.DeploymentStageMainCallsAPI.ListEnvironmentDeploymentStage(context.Background(), environmentId).Execute()
@@ -36,7 +34,6 @@ var environmentStageMoveCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		var service *qovery.DeploymentStageServiceResponse
@@ -51,7 +48,6 @@ var environmentStageMoveCmd = &cobra.Command{
 		if service == nil {
 			utils.PrintlnError(errors.New("service not found"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		stage, err := GetStageByName(stages.GetResults(), stageName)
@@ -59,7 +55,6 @@ var environmentStageMoveCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		req := qovery.DeploymentStageRequest{
@@ -78,7 +73,6 @@ var environmentStageMoveCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println("Application moved into stage \"" + stageName + "\"")

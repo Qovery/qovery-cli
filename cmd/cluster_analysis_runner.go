@@ -24,7 +24,6 @@ func runClusterAnalysis(request *qovery.ClusterAnalysisRequest) {
 	if err != nil {
 		utils.PrintlnError(httpError(res, err))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	analysisId := analysis.GetId()
@@ -43,7 +42,6 @@ func runClusterAnalysis(request *qovery.ClusterAnalysisRequest) {
 		if err != nil {
 			utils.PrintlnError(httpError(res, err))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if current.GetStatus() != lastStatus {
@@ -64,14 +62,12 @@ func runClusterAnalysis(request *qovery.ClusterAnalysisRequest) {
 		if err := printAnalysisLogs(client, clusterAnalysisClusterId, analysisId); err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 	}
 
 	if lastStatus != qovery.CLUSTERANALYSISSTATUS_SUCCEEDED {
 		utils.Println(pterm.Error.Sprintf("Analysis %s ended with status %s", analysisId, string(lastStatus)))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	utils.Println(pterm.FgGreen.Sprintf("Analysis %s succeeded", analysisId))

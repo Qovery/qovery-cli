@@ -21,7 +21,6 @@ var terraformExternalSecretCreateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -30,7 +29,6 @@ var terraformExternalSecretCreateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		terraforms, _, err := client.TerraformsAPI.ListTerraforms(context.Background(), envId).Execute()
@@ -38,7 +36,6 @@ var terraformExternalSecretCreateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		terraform := utils.FindByTerraformName(terraforms.GetResults(), terraformName)
@@ -47,14 +44,12 @@ var terraformExternalSecretCreateCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("terraform %s not found", terraformName))
 			utils.PrintlnInfo("You can list all terraforms with: qovery terraform list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		secretManagerAccessId, err := getSecretManagerAccessIdByName(client, organizationId, envId, utils.SecretManagerAccessName)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		err = utils.CreateServiceExternalSecret(client, projectId, envId, terraform.Id, utils.TerraformScope, utils.Key, utils.Reference, secretManagerAccessId, utils.MountPath)
@@ -62,7 +57,6 @@ var terraformExternalSecretCreateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println(fmt.Sprintf("External secret %s has been created", pterm.FgBlue.Sprintf("%s", utils.Key)))

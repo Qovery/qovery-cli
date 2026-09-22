@@ -130,13 +130,11 @@ func validateServiceDeployArguments(serviceName string, serviceNames string) {
 	if serviceName == "" && serviceNames == "" {
 		utils.PrintlnError(fmt.Errorf("use either --service or --services"))
 		os.Exit(1)
-		panic("unreachable")
 	}
 
 	if serviceName != "" && serviceNames != "" {
 		utils.PrintlnError(fmt.Errorf("use either --service or --services, not both"))
 		os.Exit(1)
-		panic("unreachable")
 	}
 }
 
@@ -238,7 +236,6 @@ func getServicesToDeployByNames(
 			utils.PrintlnError(fmt.Errorf("service '%s' not found", name))
 			utils.PrintlnInfo("You can list all services with: qovery service list")
 			os.Exit(1)
-			panic("unreachable")
 		}
 	}
 

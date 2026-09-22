@@ -21,7 +21,6 @@ var databaseListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -31,7 +30,6 @@ var databaseListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		databases, _, err := client.DatabasesAPI.ListDatabase(context.Background(), envId).Execute()
@@ -39,7 +37,6 @@ var databaseListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		statuses, _, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
@@ -47,7 +44,6 @@ var databaseListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if jsonFlag {
@@ -62,7 +58,6 @@ var databaseListCmd = &cobra.Command{
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
 			login := "********"
@@ -87,7 +82,6 @@ var databaseListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 	},
 }
@@ -100,7 +94,6 @@ func getDatabaseJsonOutput(client qovery.APIClient, statuses []qovery.Status, da
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		results = append(results, map[string]interface{}{
@@ -122,7 +115,6 @@ func getDatabaseJsonOutput(client qovery.APIClient, statuses []qovery.Status, da
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	return string(j)

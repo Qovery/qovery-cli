@@ -67,7 +67,6 @@ func CheckError(err error) {
 	if err != nil {
 		PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 }
 
@@ -830,7 +829,6 @@ func GetAdminUrl() string {
 	if !ok {
 		log.Fatal("You must set the Qovery admin root url (ADMIN_URL).")
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 	return url
 }
@@ -1401,7 +1399,6 @@ func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnu
 
 		if strings.HasSuffix(string(statuses.Environment.LastDeploymentState), "ERROR") {
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		time.Sleep(3 * time.Second)
@@ -1423,7 +1420,6 @@ out:
 			break out
 		case Err:
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		time.Sleep(3 * time.Second)
@@ -1450,7 +1446,6 @@ out:
 			break out
 		case Err:
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		time.Sleep(3 * time.Second)
@@ -1477,7 +1472,6 @@ out:
 			break out
 		case Err:
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		time.Sleep(3 * time.Second)
@@ -1504,7 +1498,6 @@ out:
 			break out
 		case Err:
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		time.Sleep(3 * time.Second)
@@ -1531,7 +1524,6 @@ out:
 			break out
 		case Err:
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		time.Sleep(3 * time.Second)
@@ -1623,7 +1615,6 @@ func GetDeploymentStageId(client *qovery.APIClient, serviceId string) string {
 	if err != nil {
 		PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	return sourceDeploymentStage.Id

@@ -23,7 +23,6 @@ var cronjobDeployCmd = &cobra.Command{
 		if cronjobTag != "" && cronjobCommitId != "" {
 			utils.PrintlnError(fmt.Errorf("you can't use --tag and --commit-id at the same time"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 

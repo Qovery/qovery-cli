@@ -21,7 +21,6 @@ var applicationDomainDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -30,7 +29,6 @@ var applicationDomainDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
@@ -38,7 +36,6 @@ var applicationDomainDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		application := utils.FindByApplicationName(applications.GetResults(), applicationName)
@@ -47,7 +44,6 @@ var applicationDomainDeleteCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("application %s not found", applicationName))
 			utils.PrintlnInfo("You can list all applications with: qovery application list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		customDomains, _, err := client.ApplicationCustomDomainAPI.ListApplicationCustomDomain(context.Background(), application.Id).Execute()
@@ -55,14 +51,12 @@ var applicationDomainDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		customDomain := utils.FindByCustomDomainName(customDomains.GetResults(), applicationCustomDomain)
 		if customDomain == nil {
 			utils.PrintlnError(fmt.Errorf("custom domain %s does not exist", applicationCustomDomain))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		_, err = client.ApplicationCustomDomainAPI.DeleteCustomDomain(context.Background(), application.Id, customDomain.Id).Execute()
@@ -70,7 +64,6 @@ var applicationDomainDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println(fmt.Sprintf("Custom domain %s has been deleted", pterm.FgBlue.Sprintf("%s", applicationCustomDomain)))

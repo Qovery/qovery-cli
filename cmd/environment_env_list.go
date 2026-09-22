@@ -37,7 +37,6 @@ var environmentEnvListCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("environment %s not found", environmentName))
 			utils.PrintlnInfo("You can list all environments with: qovery environment list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		envVars, err := utils.ListEnvironmentVariables(client, environment.Id)

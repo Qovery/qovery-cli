@@ -105,7 +105,6 @@ func deployClusters() {
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	client := utils.GetQoveryClient(tokenType, token)
@@ -120,19 +119,16 @@ func deployClusters() {
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 	deployService, err := pkg.NewAdminClusterBatchDeployServiceImpl(client.ClustersAPI, dryRun, parallelRuns, refreshDelay, executionMode, newK8sVersion, noConfirm)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	err = pkg.DeployClustersByBatch(listService, deployService, noConfirm)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 }

@@ -25,7 +25,6 @@ This will delete the environment, project, RBAC role, and API token for each RDE
 			utils.PrintlnError(fmt.Errorf("this will delete ALL RDE environments permanently"))
 			utils.Println("Run with --confirm to proceed: qovery rde delete-all --confirm")
 			os.Exit(1)
-			panic("unreachable")
 		}
 
 		client := utils.GetQoveryClientPanicInCaseOfError()
@@ -39,7 +38,6 @@ This will delete the environment, project, RBAC role, and API token for each RDE
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable")
 			}
 			children, err = rdeListChildren(client, orgId, bp.ProjectId)
 			checkError(err)

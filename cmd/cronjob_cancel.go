@@ -20,7 +20,6 @@ var cronjobCancelCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -29,7 +28,6 @@ var cronjobCancelCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		cronjobs, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
@@ -37,7 +35,6 @@ var cronjobCancelCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		cronjob := utils.FindByJobName(cronjobs.GetResults(), cronjobName)
@@ -46,7 +43,6 @@ var cronjobCancelCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		msg, err := utils.CancelServiceDeployment(client, envId, cronjob.CronJobResponse.Id, utils.JobType, watchFlag)
@@ -54,7 +50,6 @@ var cronjobCancelCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if msg != "" {

@@ -21,7 +21,6 @@ var containerDomainDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -30,7 +29,6 @@ var containerDomainDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
@@ -38,7 +36,6 @@ var containerDomainDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		container := utils.FindByContainerName(containers.GetResults(), containerName)
@@ -47,7 +44,6 @@ var containerDomainDeleteCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("container %s not found", containerName))
 			utils.PrintlnInfo("You can list all containers with: qovery container list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		customDomains, _, err := client.ContainerCustomDomainAPI.ListContainerCustomDomain(context.Background(), container.Id).Execute()
@@ -55,14 +51,12 @@ var containerDomainDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		customDomain := utils.FindByCustomDomainName(customDomains.GetResults(), containerCustomDomain)
 		if customDomain == nil {
 			utils.PrintlnError(fmt.Errorf("custom domain %s does not exist", containerCustomDomain))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		_, err = client.ContainerCustomDomainAPI.DeleteContainerCustomDomain(context.Background(), container.Id, customDomain.Id).Execute()
@@ -70,7 +64,6 @@ var containerDomainDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println(fmt.Sprintf("Custom domain %s has been deleted", pterm.FgBlue.Sprintf("%s", containerCustomDomain)))

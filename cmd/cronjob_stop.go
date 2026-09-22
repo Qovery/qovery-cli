@@ -54,7 +54,6 @@ func buildCronJobListFromCronjobNames(
 			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 		cronjobList = append(cronjobList, cronjob)
 	}
@@ -66,7 +65,6 @@ func buildCronJobListFromCronjobNames(
 				utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
 				utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 			cronjobList = append(cronjobList, cronjob)
 		}
@@ -79,13 +77,11 @@ func validateCronjobArguments(cronJobName string, cronJobNames string) {
 	if cronJobName == "" && cronJobNames == "" {
 		utils.PrintlnError(fmt.Errorf("use either --cronjob \"<cronjob name>\" or --cronjobs \"<cronjob1 name>, <cronjob2 name>\" but not both at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	if cronJobName != "" && cronJobNames != "" {
 		utils.PrintlnError(fmt.Errorf("you can't use --cronjob and --cronjobs at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 }
 

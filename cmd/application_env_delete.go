@@ -21,7 +21,6 @@ var applicationEnvDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -30,7 +29,6 @@ var applicationEnvDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		applications, _, err := client.ApplicationsAPI.ListApplication(context.Background(), envId).Execute()
@@ -38,7 +36,6 @@ var applicationEnvDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		application := utils.FindByApplicationName(applications.GetResults(), applicationName)
@@ -47,7 +44,6 @@ var applicationEnvDeleteCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("application %s not found", applicationName))
 			utils.PrintlnInfo("You can list all applications with: qovery application list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		err = utils.DeleteServiceVariable(client, application.Id, utils.ApplicationType, utils.Key)
@@ -55,7 +51,6 @@ var applicationEnvDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println(fmt.Sprintf("Variable %s has been deleted", pterm.FgBlue.Sprintf("%s", utils.Key)))

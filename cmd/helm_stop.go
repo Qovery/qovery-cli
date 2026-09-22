@@ -53,7 +53,6 @@ func buildHelmListFromHelmNames(
 			utils.PrintlnError(fmt.Errorf("helm %s not found", helmName))
 			utils.PrintlnInfo("You can list all helms with: qovery helm list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 		helmList = append(helmList, helm)
 	}
@@ -65,7 +64,6 @@ func buildHelmListFromHelmNames(
 				utils.PrintlnError(fmt.Errorf("helm %s not found", helmName))
 				utils.PrintlnInfo("You can list all helms with: qovery helm list")
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 			helmList = append(helmList, helm)
 		}
@@ -78,13 +76,11 @@ func validateHelmArguments(helmName string, helmNames string) {
 	if helmName == "" && helmNames == "" {
 		utils.PrintlnError(fmt.Errorf("use either --helm \"<helm name>\" or --helms \"<helm1 name>, <helm2 name>\" but not both at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	if helmName != "" && helmNames != "" {
 		utils.PrintlnError(fmt.Errorf("you can't use --helm and --helms at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 }
 

@@ -53,7 +53,6 @@ func buildDatabaseListFromDatabaseNames(
 			utils.PrintlnError(fmt.Errorf("database %s not found", databaseName))
 			utils.PrintlnInfo("You can list all databases with: qovery database list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 		databaseList = append(databaseList, database)
 	}
@@ -65,7 +64,6 @@ func buildDatabaseListFromDatabaseNames(
 				utils.PrintlnError(fmt.Errorf("database %s not found", databaseName))
 				utils.PrintlnInfo("You can list all databases with: qovery database list")
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 			databaseList = append(databaseList, database)
 		}
@@ -78,13 +76,11 @@ func validateDatabaseArguments(databaseName string, databaseNames string) {
 	if databaseName == "" && databaseNames == "" {
 		utils.PrintlnError(fmt.Errorf("use either --database \"<database name>\" or --databases \"<database1 name>, <database2 name>\" but not both at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	if databaseName != "" && databaseNames != "" {
 		utils.PrintlnError(fmt.Errorf("you can't use --database and --databases at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 }
 

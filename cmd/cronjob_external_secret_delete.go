@@ -21,7 +21,6 @@ var cronjobExternalSecretDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -30,7 +29,6 @@ var cronjobExternalSecretDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		cronjobs, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
@@ -38,7 +36,6 @@ var cronjobExternalSecretDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		cronjob := utils.FindByJobName(cronjobs.GetResults(), cronjobName)
@@ -47,7 +44,6 @@ var cronjobExternalSecretDeleteCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		err = utils.DeleteServiceVariable(client, cronjob.CronJobResponse.Id, utils.JobType, utils.Key)
@@ -55,7 +51,6 @@ var cronjobExternalSecretDeleteCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println(fmt.Sprintf("External secret %s has been deleted", pterm.FgBlue.Sprintf("%s", utils.Key)))

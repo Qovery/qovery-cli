@@ -19,7 +19,6 @@ var environmentServicesStatusesCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -28,7 +27,6 @@ var environmentServicesStatusesCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		// Get env and services statuses
@@ -37,7 +35,6 @@ var environmentServicesStatusesCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if jsonFlag {
@@ -46,7 +43,6 @@ var environmentServicesStatusesCmd = &cobra.Command{
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 			utils.Println(string(j))
 			return
@@ -100,7 +96,6 @@ var environmentServicesStatusesCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("cannot print services statuses: %s", err))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 	},
 }

@@ -24,7 +24,6 @@ var helmUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -33,7 +32,6 @@ var helmUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		helms, _, err := client.HelmsAPI.ListHelms(context.Background(), envId).Execute()
@@ -41,7 +39,6 @@ var helmUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		helm := utils.FindByHelmName(helms.GetResults(), helmName)
@@ -50,7 +47,6 @@ var helmUpdateCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("helm %s not found", helmName))
 			utils.PrintlnInfo("You can list all helms with: qovery helm list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		var ports []qovery.HelmPortRequestPortsInner
@@ -72,14 +68,12 @@ var helmUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		valuesOverride, err := GetHelmValuesOverride(helm, valuesOverrideCommitBranch)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		autoPreview := qovery.NullableBool{}
@@ -109,7 +103,6 @@ var helmUpdateCmd = &cobra.Command{
 			utils.PrintlnError(err)
 
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println(fmt.Sprintf("helm %s updated!", pterm.FgBlue.Sprintf("%s", helmName)))

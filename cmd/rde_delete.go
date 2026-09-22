@@ -37,7 +37,6 @@ var rdeDeleteCmd = &cobra.Command{
 			// Still try to clean up role and token
 			rdeCleanupRoleAndToken(client, orgId, rdeName)
 			os.Exit(1)
-			panic("unreachable")
 		}
 
 		// Find environment

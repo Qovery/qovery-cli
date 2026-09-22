@@ -25,7 +25,6 @@ var clusterAnalysisListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(httpError(res, err))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if clusterAnalysisJson {
@@ -49,7 +48,6 @@ var clusterAnalysisListCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 	},
 }
@@ -75,7 +73,6 @@ func getAnalysisJsonOutput(analyses []qovery.ClusterAnalysisResponse) string {
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 	return string(j)
 }
