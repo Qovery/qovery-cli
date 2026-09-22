@@ -34,7 +34,7 @@ Without --execution-id, the logs of the latest deployment are printed. The API r
 last 1000 lines.
 
 --service matches the service name carried by each log line, so it works for every service type
-(including Terraform services). Use --service-id to match on the service uuid instead. Either way,
+(including Terraform services). Use --service-id to match on the service uuid instead; the two are mutually exclusive. Either way,
 the environment-level lines are kept for context.
 
 Note: the console additionally scopes lines to the deployment stage the service belongs to, which
@@ -45,6 +45,14 @@ appear in a service-scoped view.`,
 
 		if deploymentLogsPreCheck && (deploymentLogsServiceName != "" || deploymentLogsServiceId != "") {
 			utils.PrintlnError(fmt.Errorf("--pre-check cannot be combined with --service or --service-id: pre-check runs before any service is deployed"))
+			os.Exit(1)
+			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
+		}
+
+		// They are two spellings of one selector, and the filter matches either, so passing
+		// both would widen the result to two services rather than narrow it.
+		if deploymentLogsServiceName != "" && deploymentLogsServiceId != "" {
+			utils.PrintlnError(fmt.Errorf("--service and --service-id select the same thing two different ways: pass one, not both"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -84,14 +92,25 @@ appear in a service-scoped view.`,
 		}
 
 		all := logs
-		logs = pkg.FilterDeploymentLogs(all, filter)
 
-		// A --service that matches nothing leaves only the environment-wide lines, which
-		// looks like a successful but empty result. Say so, and name the services that did
-		// emit something -- the service may simply not be part of this deployment.
-		if filter.IsServiceScoped() && !pkg.HasServiceSpecificLines(logs) {
-			// On stderr, not stdout: the logs themselves are the output of this command and
-			// are routinely piped into jq or a file.
+		// Apply the scope first and the error filter second, so the two reasons a result can
+		// come back empty stay distinguishable: the service matched nothing, or it matched and
+		// simply had no errors. Collapsing them reports a healthy service as a missing one.
+		scopeFilter := filter
+		scopeFilter.ErrorsOnly = false
+		scoped := pkg.FilterDeploymentLogs(all, scopeFilter)
+
+		logs = scoped
+		if filter.ErrorsOnly {
+			logs = pkg.FilterDeploymentLogs(scoped, pkg.DeploymentLogFilter{ErrorsOnly: true})
+		}
+
+		// All of these go to stderr, not stdout: the log lines are this command's output and
+		// are routinely piped into jq or a file.
+		switch {
+		case filter.IsServiceScoped() && !pkg.HasServiceSpecificLines(scoped):
+			// The service contributed nothing, so only environment-wide lines remain -- an
+			// empty-looking success. Name what did emit, so the user can retry.
 			if services := pkg.DeploymentLogServices(all); len(services) == 0 {
 				printlnInfoToStderr("No service emitted deployment logs in this deployment.")
 			} else {
@@ -100,6 +119,10 @@ appear in a service-scoped view.`,
 					strings.Join(services, ", "),
 				))
 			}
+		case filter.ErrorsOnly && len(logs) == 0 && filter.IsServiceScoped():
+			printlnInfoToStderr("No errors for that service in this deployment.")
+		case filter.ErrorsOnly && len(logs) == 0:
+			printlnInfoToStderr("No errors in this deployment.")
 		}
 
 		if jsonFlag {

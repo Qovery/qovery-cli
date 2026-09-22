@@ -61,6 +61,15 @@ func FilterDeploymentLogs(logs []qovery.EnvironmentLogs, f DeploymentLogFilter) 
 		filtered = append(filtered, l)
 	}
 
+	// The API returns lines in chronological order today, so this is a no-op on real
+	// responses -- but callers read the output as a timeline, so make that a property of
+	// this function rather than an assumption about the server. Stable, so lines sharing a
+	// timestamp keep the order the engine emitted them in (interleaved build output would
+	// otherwise scramble).
+	sort.SliceStable(filtered, func(i, j int) bool {
+		return filtered[i].Timestamp.Before(filtered[j].Timestamp)
+	})
+
 	return filtered
 }
 
@@ -110,9 +119,13 @@ func matchesService(l qovery.EnvironmentLogs, f DeploymentLogFilter) bool {
 	return false
 }
 
-// DeploymentLogServices lists the distinct services that emitted at least one of the given
-// lines, as `Type/Name`, sorted. It backs the hint shown when a --service filter matched
-// nothing, which is more useful than a bare "not found": it names what could be asked for.
+// DeploymentLogServices lists the distinct service names that emitted at least one of the
+// given lines, sorted. It backs the hint shown when a --service filter matched nothing,
+// which is more useful than a bare "not found": it names what could be asked for.
+//
+// These are bare names, not the `Type/Name` form used when rendering a log line, precisely
+// because the hint exists to be copied back into --service -- which matches on the name
+// alone. Printing `Terraform/S3` here would suggest a value that never matches.
 func DeploymentLogServices(logs []qovery.EnvironmentLogs) []string {
 	seen := make(map[string]bool)
 
@@ -120,7 +133,7 @@ func DeploymentLogServices(logs []qovery.EnvironmentLogs) []string {
 		if isEnvironmentWide(l) || l.Details.Stage.GetStep() == PreCheckStep {
 			continue
 		}
-		if name := deploymentLogTransmitter(l); name != "" {
+		if name := l.Details.Transmitter.GetName(); name != "" {
 			seen[name] = true
 		}
 	}

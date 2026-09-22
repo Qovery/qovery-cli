@@ -312,7 +312,9 @@ func TestDeploymentLogServices(t *testing.T) {
 	}
 
 	got := DeploymentLogServices(logs)
-	want := []string{"Application/my-app", "Terraform/S3"}
+	// Bare names, not Type/Name: the hint is meant to be copied into --service, which
+	// matches on the name alone.
+	want := []string{"S3", "my-app"}
 
 	if len(got) != len(want) {
 		t.Fatalf("got %v, want %v", got, want)
@@ -338,5 +340,51 @@ func TestHasServiceSpecificLines(t *testing.T) {
 	}))
 	if !HasServiceSpecificLines(withService) {
 		t.Error("with a service line: got false, want true")
+	}
+}
+
+func TestDeploymentLogServicesReturnsValuesServiceFilterAccepts(t *testing.T) {
+	// Guards the bug this pairing had: the hint used to print "Terraform/S3" while
+	// --service only ever matched "S3", so copying the hint silently matched nothing.
+	logs := []qovery.EnvironmentLogs{
+		newDeploymentLog(deploymentLogOpts{step: "Build", transmitterType: "Terraform", transmitterName: "S3"}),
+	}
+
+	for _, name := range DeploymentLogServices(logs) {
+		filtered := FilterDeploymentLogs(logs, DeploymentLogFilter{ServiceName: name})
+		if !HasServiceSpecificLines(filtered) {
+			t.Errorf("hint offers %q but --service %q matches nothing", name, name)
+		}
+	}
+}
+
+func TestFilterDeploymentLogsSortsChronologically(t *testing.T) {
+	at := func(sec int, msg string) qovery.EnvironmentLogs {
+		l := newDeploymentLog(deploymentLogOpts{step: "Build", message: msg})
+		l.Timestamp = time.Date(2026, 9, 6, 14, 0, sec, 0, time.UTC)
+		return l
+	}
+
+	got := FilterDeploymentLogs([]qovery.EnvironmentLogs{at(30, "c"), at(10, "a"), at(20, "b")}, DeploymentLogFilter{})
+
+	if msgs := messagesOf(got); len(msgs) != 3 || msgs[0] != "a" || msgs[1] != "b" || msgs[2] != "c" {
+		t.Errorf("got %v, want [a b c]", msgs)
+	}
+}
+
+func TestFilterDeploymentLogsKeepsEmissionOrderWithinOneTimestamp(t *testing.T) {
+	// Interleaved build output shares a timestamp; a non-stable sort would scramble it.
+	same := func(msg string) qovery.EnvironmentLogs {
+		l := newDeploymentLog(deploymentLogOpts{step: "Build", message: msg})
+		l.Timestamp = time.Date(2026, 9, 6, 14, 0, 0, 0, time.UTC)
+		return l
+	}
+
+	got := FilterDeploymentLogs([]qovery.EnvironmentLogs{same("#1"), same("#2"), same("#3")}, DeploymentLogFilter{})
+
+	for i, want := range []string{"#1", "#2", "#3"} {
+		if got[i].Message.Get().GetSafeMessage() != want {
+			t.Errorf("index %d: got %q, want %q", i, got[i].Message.Get().GetSafeMessage(), want)
+		}
 	}
 }
