@@ -44,7 +44,7 @@ appear in a service-scoped view.`,
 		utils.Capture(cmd)
 
 		if deploymentLogsPreCheck && (deploymentLogsServiceName != "" || deploymentLogsServiceId != "") {
-			utils.PrintlnError(fmt.Errorf("--pre-check cannot be combined with --service or --service-id: pre-check runs before any service is deployed"))
+			printlnErrorToStderr(fmt.Errorf("--pre-check cannot be combined with --service or --service-id: pre-check runs before any service is deployed"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -52,14 +52,14 @@ appear in a service-scoped view.`,
 		// They are two spellings of one selector, and the filter matches either, so passing
 		// both would widen the result to two services rather than narrow it.
 		if deploymentLogsServiceName != "" && deploymentLogsServiceId != "" {
-			utils.PrintlnError(fmt.Errorf("--service and --service-id select the same thing two different ways: pass one, not both"))
+			printlnErrorToStderr(fmt.Errorf("--service and --service-id select the same thing two different ways: pass one, not both"))
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
-			utils.PrintlnError(err)
+			printlnErrorToStderr(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -67,7 +67,7 @@ appear in a service-scoped view.`,
 		client := utils.GetQoveryClient(tokenType, token)
 		_, _, environmentId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 		if err != nil {
-			utils.PrintlnError(err)
+			printlnErrorToStderr(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -79,7 +79,7 @@ appear in a service-scoped view.`,
 
 		logs, _, err := logsQuery.Execute()
 		if err != nil {
-			utils.PrintlnError(err)
+			printlnErrorToStderr(err)
 			os.Exit(1)
 			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
@@ -133,7 +133,7 @@ appear in a service-scoped view.`,
 
 			out, err := json.Marshal(projected)
 			if err != nil {
-				utils.PrintlnError(err)
+				printlnErrorToStderr(err)
 				os.Exit(1)
 				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
@@ -148,10 +148,17 @@ appear in a service-scoped view.`,
 	},
 }
 
-// printlnInfoToStderr mirrors utils.PrintlnInfo but writes to stderr, keeping stdout to the
-// log lines alone so that --json stays pipeable.
+// printlnInfoToStderr and printlnErrorToStderr mirror utils.PrintlnInfo / utils.PrintlnError
+// but write to stderr. The shared helpers print to stdout, which is fine for commands whose
+// output is prose but not for this one: stdout carries the log lines, and an "Error: ..."
+// or "Info: ..." line mixed into them breaks `--json | jq`. Kept local rather than changing
+// the shared helpers, which every other command depends on.
 func printlnInfoToStderr(info string) {
 	_, _ = fmt.Fprintf(os.Stderr, "%v: %v\n", color.CyanString("Info"), info)
+}
+
+func printlnErrorToStderr(err error) {
+	_, _ = fmt.Fprintf(os.Stderr, "%s: %v\n", color.RedString("Error"), err)
 }
 
 func init() {

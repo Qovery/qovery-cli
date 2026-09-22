@@ -341,6 +341,19 @@ func TestHasServiceSpecificLines(t *testing.T) {
 	if !HasServiceSpecificLines(withService) {
 		t.Error("with a service line: got false, want true")
 	}
+
+	// Pre-check runs before any service is deployed, so a pre-check line is environment
+	// context even when its transmitter is a service -- the same call DeploymentLogServices
+	// makes, so the two helpers agree on what "service-specific" means.
+	preCheckOnly := []qovery.EnvironmentLogs{newDeploymentLog(deploymentLogOpts{
+		step: PreCheckStep, transmitterType: "Application", transmitterName: "my-app",
+	})}
+	if HasServiceSpecificLines(preCheckOnly) {
+		t.Error("pre-check line with a service transmitter: got true, want false")
+	}
+	if got := DeploymentLogServices(preCheckOnly); len(got) != 0 {
+		t.Errorf("DeploymentLogServices on the same input: got %v, want none -- the two must agree", got)
+	}
 }
 
 func TestDeploymentLogServicesReturnsValuesServiceFilterAccepts(t *testing.T) {

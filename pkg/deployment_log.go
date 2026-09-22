@@ -149,9 +149,13 @@ func DeploymentLogServices(logs []qovery.EnvironmentLogs) []string {
 
 // HasServiceSpecificLines reports whether logs contain at least one line emitted by a
 // service rather than by the environment itself.
+//
+// Pre-check lines are excluded, matching DeploymentLogServices: pre-check runs before any
+// service is deployed, so those lines describe the environment even when a service name
+// appears in their text.
 func HasServiceSpecificLines(logs []qovery.EnvironmentLogs) bool {
 	for _, l := range logs {
-		if !isEnvironmentWide(l) {
+		if !isEnvironmentWide(l) && l.Details.Stage.GetStep() != PreCheckStep {
 			return true
 		}
 	}
