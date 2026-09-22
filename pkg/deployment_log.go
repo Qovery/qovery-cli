@@ -156,13 +156,14 @@ func HasServiceSpecificLines(logs []qovery.EnvironmentLogs) bool {
 func FormatDeploymentLogLine(l qovery.EnvironmentLogs) string {
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf(
+	fmt.Fprintf(
+		&sb,
 		"| %s | %s | %s | %s",
 		l.Timestamp.Format("2006-01-02 15:04:05.000"),
 		orDash(l.Details.Stage.GetStep()),
 		orDash(deploymentLogTransmitter(l)),
 		l.Message.Get().GetSafeMessage(),
-	))
+	)
 
 	if hasDeploymentLogError(l) {
 		e := l.Error.Get()
@@ -177,7 +178,7 @@ func FormatDeploymentLogLine(l qovery.EnvironmentLogs) string {
 			if follow.value == "" {
 				continue
 			}
-			sb.WriteString(fmt.Sprintf("\n    %s: %s", follow.label, follow.value))
+			fmt.Fprintf(&sb, "\n    %s: %s", follow.label, follow.value)
 		}
 	}
 
@@ -185,7 +186,7 @@ func FormatDeploymentLogLine(l qovery.EnvironmentLogs) string {
 }
 
 // DeploymentLogJSON projects one log line onto the field names shared with the MCP
-// `get_deployment_logs` tool, so both surfaces answer the same question the same way.
+// `get_environment_deployment_logs` tool, so both surfaces answer the same question the same way.
 func DeploymentLogJSON(l qovery.EnvironmentLogs) map[string]interface{} {
 	out := map[string]interface{}{
 		"timestamp":        utils.ToIso8601(&l.Timestamp),
