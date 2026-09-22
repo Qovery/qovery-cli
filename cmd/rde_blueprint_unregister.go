@@ -24,7 +24,6 @@ from the project and its environment. This does NOT delete the project itself.`,
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		// Delete project-level BLUEPRINT_PROJECT_ID var

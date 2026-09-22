@@ -26,7 +26,6 @@ var rdeUrlsCmd = &cobra.Command{
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable")
 			}
 			children, err = rdeListChildren(client, orgId, bp.ProjectId)
 			checkError(err)
@@ -67,7 +66,6 @@ var rdeUrlsCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable")
 		}
 
 		utils.Println(fmt.Sprintf("\n%d running RDE(s) with workspace URLs.", len(data)))

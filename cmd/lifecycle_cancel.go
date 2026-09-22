@@ -20,7 +20,6 @@ var lifecycleCancelCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -29,7 +28,6 @@ var lifecycleCancelCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		lifecycles, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
@@ -37,7 +35,6 @@ var lifecycleCancelCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		lifecycle := utils.FindByJobName(lifecycles.GetResults(), lifecycleName)
@@ -46,7 +43,6 @@ var lifecycleCancelCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
 			utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		msg, err := utils.CancelServiceDeployment(client, envId, lifecycle.LifecycleJobResponse.Id, utils.JobType, watchFlag)
@@ -54,7 +50,6 @@ var lifecycleCancelCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if msg != "" {

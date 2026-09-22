@@ -26,20 +26,17 @@ var rdeBlueprintDeployCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if bp.EnvId == "" {
 			utils.PrintlnError(fmt.Errorf("blueprint %s has no environment with %s set", bp.ProjectName, rdeBlueprintKeyVar))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		_, _, err = client.EnvironmentActionsAPI.DeployEnvironment(context.Background(), bp.EnvId).Execute()
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("deploy failed: %w", err))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println(fmt.Sprintf("Request to deploy blueprint %s has been queued..", pterm.FgBlue.Sprintf("%s", bp.ProjectName)))

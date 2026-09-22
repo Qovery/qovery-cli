@@ -31,13 +31,11 @@ var environmentDeploymentExplainCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if level != "" && level != "all" && level != "stage" && level != "service" && level != "step" && level != "message" {
 			utils.PrintlnError(fmt.Errorf("invalid value for --show-only: %s", level))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -46,7 +44,6 @@ var environmentDeploymentExplainCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		environment, _, err := client.EnvironmentMainCallsAPI.GetEnvironment(context.Background(), environmentId).Execute()
@@ -54,7 +51,6 @@ var environmentDeploymentExplainCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		logsQuery := client.EnvironmentLogsAPI.ListEnvironmentLogs(context.Background(), environmentId)
@@ -67,7 +63,6 @@ var environmentDeploymentExplainCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		mLevel := AllLevel
@@ -142,7 +137,6 @@ var environmentDeploymentExplainCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 	},
 }

@@ -34,12 +34,10 @@ This command:
 		if rdeBlueprintProjectName == "" {
 			utils.PrintlnError(fmt.Errorf("--blueprint is required"))
 			os.Exit(1)
-			panic("unreachable")
 		}
 		if rdeName == "" {
 			utils.PrintlnError(fmt.Errorf("--name is required"))
 			os.Exit(1)
-			panic("unreachable")
 		}
 		if rdeEmail == "" && !rdeSkipInvite {
 			utils.PrintlnInfo("No --email provided, skipping member invitation (use --skip-invite to suppress this message)")
@@ -52,12 +50,10 @@ This command:
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable")
 		}
 		if bp.EnvId == "" {
 			utils.PrintlnError(fmt.Errorf("blueprint %s has no environment with %s set", bp.ProjectName, rdeBlueprintKeyVar))
 			os.Exit(1)
-			panic("unreachable")
 		}
 		utils.Println(fmt.Sprintf("  Blueprint: %s (env: %s)", bp.ProjectName, bp.EnvId))
 
@@ -77,7 +73,6 @@ This command:
 			} else {
 				utils.PrintlnError(fmt.Errorf("failed to create project: %w", err))
 				os.Exit(1)
-				panic("unreachable")
 			}
 		}
 		utils.Println(fmt.Sprintf("  Project: %s", project.Id))
@@ -157,7 +152,6 @@ This command:
 				if !found {
 					utils.PrintlnError(fmt.Errorf("cluster %s not found", clusterName))
 					os.Exit(1)
-					panic("unreachable")
 				}
 			}
 		}
@@ -176,7 +170,6 @@ This command:
 			} else {
 				utils.PrintlnError(fmt.Errorf("failed to clone blueprint: %w", err))
 				os.Exit(1)
-				panic("unreachable")
 			}
 		}
 		utils.Println(fmt.Sprintf("  Environment: %s", clonedEnv.Id))

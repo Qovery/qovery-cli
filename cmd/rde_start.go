@@ -25,14 +25,12 @@ var rdeStartCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable")
 		}
 
 		_, _, err = client.EnvironmentActionsAPI.DeployEnvironment(ctx(), child.EnvId).Execute()
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("deploy failed: %w", err))
 			os.Exit(1)
-			panic("unreachable")
 		}
 
 		utils.Println(fmt.Sprintf("Request to start RDE %s has been queued..", pterm.FgBlue.Sprintf("%s", rdeName)))

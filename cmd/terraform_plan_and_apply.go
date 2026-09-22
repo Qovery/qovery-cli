@@ -48,7 +48,6 @@ func buildTerraformListFromTerraformNames(
 			utils.PrintlnError(fmt.Errorf("terraform %s not found", terraformName))
 			utils.PrintlnInfo("You can list all terraforms with: qovery terraform list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 		terraformList = append(terraformList, terraform)
 	}
@@ -60,7 +59,6 @@ func buildTerraformListFromTerraformNames(
 				utils.PrintlnError(fmt.Errorf("terraform %s not found", name))
 				utils.PrintlnInfo("You can list all terraforms with: qovery terraform list")
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 			terraformList = append(terraformList, terraform)
 		}
@@ -73,13 +71,11 @@ func validateTerraformArguments(terraformName string, terraformNames string) {
 	if terraformName == "" && terraformNames == "" {
 		utils.PrintlnError(fmt.Errorf("use either --terraform \"<terraform name>\" or --terraforms \"<terraform1 name>, <terraform2 name>\" but not both at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	if terraformName != "" && terraformNames != "" {
 		utils.PrintlnError(fmt.Errorf("you can't use --terraform and --terraforms at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 }
 

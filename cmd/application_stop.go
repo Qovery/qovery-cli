@@ -53,7 +53,6 @@ func buildApplicationListFromApplicationNames(
 			utils.PrintlnError(fmt.Errorf("application %s not found", applicationName))
 			utils.PrintlnInfo("You can list all applications with: qovery application list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 		applicationList = append(applicationList, application)
 	}
@@ -65,7 +64,6 @@ func buildApplicationListFromApplicationNames(
 				utils.PrintlnError(fmt.Errorf("application %s not found", applicationName))
 				utils.PrintlnInfo("You can list all applications with: qovery application list")
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 			applicationList = append(applicationList, application)
 		}
@@ -78,13 +76,11 @@ func validateApplicationArguments(applicationName string, applicationNames strin
 	if applicationName == "" && applicationNames == "" {
 		utils.PrintlnError(fmt.Errorf("use either --application \"<app name>\" or --applications \"<app1 name>, <app2 name>\" but not both at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	if applicationName != "" && applicationNames != "" {
 		utils.PrintlnError(fmt.Errorf("you can't use --application and --applications at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 }
 

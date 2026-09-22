@@ -52,7 +52,6 @@ func buildContainerListFromContainerNames(
 			utils.PrintlnError(fmt.Errorf("container %s not found", containerName))
 			utils.PrintlnInfo("You can list all containers with: qovery container list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 		containerList = append(containerList, container)
 	}
@@ -64,7 +63,6 @@ func buildContainerListFromContainerNames(
 				utils.PrintlnError(fmt.Errorf("container %s not found", containerName))
 				utils.PrintlnInfo("You can list all containers with: qovery container list")
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 			containerList = append(containerList, container)
 		}
@@ -77,13 +75,11 @@ func validateContainerArguments(containerName string, containerNames string) {
 	if containerName == "" && containerNames == "" {
 		utils.PrintlnError(fmt.Errorf("use either --container \"<container name>\" or --containers \"<container1 name>, <container2 name>\" but not both at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	if containerName != "" && containerNames != "" {
 		utils.PrintlnError(fmt.Errorf("you can't use --container and --containers at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 }
 

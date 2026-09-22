@@ -32,14 +32,12 @@ var demoUpCmd = &cobra.Command{
 		if runtime.GOOS == "windows" {
 			utils.PrintlnError(fmt.Errorf("qovery demo is not supported from Windows. Please use WSL (Windows Subsystem for Linux) to use qovery demo"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		orgId, _, err := utils.CurrentOrganization(true)

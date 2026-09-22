@@ -24,7 +24,6 @@ var helmCloneCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -33,7 +32,6 @@ var helmCloneCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		helm, err := getHelmContextResource(client, helmName, envId)
@@ -42,7 +40,6 @@ var helmCloneCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("helm %s not found", helmName))
 			utils.PrintlnInfo("You can list all helms with: qovery helm list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		targetProjectId := projectId // use same project as the source project
@@ -53,7 +50,6 @@ var helmCloneCmd = &cobra.Command{
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 		}
 
@@ -65,7 +61,6 @@ var helmCloneCmd = &cobra.Command{
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 		}
 
@@ -90,7 +85,6 @@ var helmCloneCmd = &cobra.Command{
 
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		name := ""

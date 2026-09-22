@@ -23,19 +23,16 @@ var lifecycleUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if (lifecycleTag != "" || lifecycleImageName != "") && lifecycleBranch != "" {
 			utils.PrintlnError(fmt.Errorf("you can't use --tag or --image-name with --branch at the same time"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if lifecycleTag == "" && lifecycleImageName == "" && lifecycleBranch == "" {
 			utils.PrintlnError(fmt.Errorf("you must use --tag or --image-name or --branch"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -44,7 +41,6 @@ var lifecycleUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		lifecycles, err := ListLifecycleJobs(envId, client)
@@ -52,7 +48,6 @@ var lifecycleUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		lifecycle := utils.FindByJobName(lifecycles, lifecycleName)
@@ -61,7 +56,6 @@ var lifecycleUpdateCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
 			utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		var docker = utils.GetJobDocker(lifecycle)
@@ -70,13 +64,11 @@ var lifecycleUpdateCmd = &cobra.Command{
 		if docker != nil && (lifecycleTag != "" || lifecycleImageName != "") {
 			utils.PrintlnError(fmt.Errorf("you can't use --tag or --image-name with a lifecycle targetting a Dockerfile. Use --branch instead"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if image != nil && lifecycleBranch != "" {
 			utils.PrintlnError(fmt.Errorf("you can't use --branch with a lifecycle targetting an image. Use --tag and/or --image-name instead"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		req := utils.ToJobRequest(*lifecycle)
@@ -100,7 +92,6 @@ var lifecycleUpdateCmd = &cobra.Command{
 			result, _ := io.ReadAll(res.Body)
 			utils.PrintlnError(errors.Errorf("status code: %s ; body: %s", res.Status, string(result)))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println(fmt.Sprintf("Lifecycle %s updated!", pterm.FgBlue.Sprintf("%s", lifecycleName)))

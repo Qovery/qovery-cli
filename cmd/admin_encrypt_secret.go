@@ -36,13 +36,11 @@ func encryptSecret() {
 	if organizationId == "" {
 		utils.PrintlnInfo("organization-id is required")
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	if messageToEncrypt == "" {
 		utils.PrintlnInfo("message is required")
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	secret, err := callEncryptSecret(organizationId, messageToEncrypt)

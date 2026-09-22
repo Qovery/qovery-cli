@@ -24,7 +24,6 @@ var rdeStatusCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable")
 		}
 
 		bpName := rdeBlueprintNameForProjectId(client, child.BlueprintProjectId)

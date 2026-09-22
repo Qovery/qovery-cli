@@ -32,14 +32,12 @@ func updateClusterDomain() {
 		utils.PrintlnError(err)
 		utils.PrintlnInfo("cluster-id is required")
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	if clusterDomain == "" {
 		utils.PrintlnError(err)
 		utils.PrintlnInfo("domain is required")
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	err = pkg.UpdateClusterDomainName(clusterId, clusterDomain)

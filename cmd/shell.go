@@ -87,7 +87,6 @@ func shellRequestWithContextFlags() (*pkg.ShellRequest, error) {
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	client := utils.GetQoveryClient(tokenType, token)
@@ -96,35 +95,30 @@ func shellRequestWithContextFlags() (*pkg.ShellRequest, error) {
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	projectID, err := getProjectContextResourceId(client, projectName, organizationID)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	environmentID, err := getEnvironmentContextResourceId(client, environmentName, projectID)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	environment, err := utils.GetEnvironmentById(environmentID)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	service, err := getServiceContextResourceId(client, serviceName, environmentID)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	return &pkg.ShellRequest{
@@ -222,7 +216,6 @@ func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequ
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	client := utils.GetQoveryClient(tokenType, token)

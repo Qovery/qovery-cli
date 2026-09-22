@@ -24,7 +24,6 @@ var cronjobCloneCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -33,7 +32,6 @@ var cronjobCloneCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		job, err := getJobContextResource(client, cronjobName, envId)
@@ -42,7 +40,6 @@ var cronjobCloneCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("cronjobName %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all jobs with: qovery job list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		targetProjectId := projectId // use same project as the source project
@@ -53,7 +50,6 @@ var cronjobCloneCmd = &cobra.Command{
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 		}
 
@@ -65,7 +61,6 @@ var cronjobCloneCmd = &cobra.Command{
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 		}
 
@@ -90,7 +85,6 @@ var cronjobCloneCmd = &cobra.Command{
 
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		name := ""

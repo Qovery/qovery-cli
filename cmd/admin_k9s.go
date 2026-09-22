@@ -80,6 +80,5 @@ func checkEnv() {
 	if _, ok := os.LookupEnv("BASTION_ADDR"); !ok {
 		log.Error("You must set the bastion address (BASTION_ADDR).")
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 }

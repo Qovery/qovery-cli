@@ -26,7 +26,6 @@ var rdeStartAllCmd = &cobra.Command{
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
-				panic("unreachable")
 			}
 			children, err = rdeListChildren(client, orgId, bp.ProjectId)
 			checkError(err)

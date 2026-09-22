@@ -22,7 +22,6 @@ var rdeLogsCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable")
 		}
 
 		// Find the first application in the environment
@@ -30,7 +29,6 @@ var rdeLogsCmd = &cobra.Command{
 		if err != nil || len(apps.GetResults()) == 0 {
 			utils.PrintlnError(fmt.Errorf("no applications found in RDE %s", rdeName))
 			os.Exit(1)
-			panic("unreachable")
 		}
 
 		appId := apps.GetResults()[0].Id
@@ -43,7 +41,6 @@ var rdeLogsCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("failed to fetch logs: %w", err))
 			os.Exit(1)
-			panic("unreachable")
 		}
 
 		logResults := logs.GetResults()

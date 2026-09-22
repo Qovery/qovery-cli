@@ -54,7 +54,6 @@ func buildLifecycleListFromLifecycleNames(
 			utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
 			utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 		lifecycleList = append(lifecycleList, lifecycle)
 	}
@@ -66,7 +65,6 @@ func buildLifecycleListFromLifecycleNames(
 				utils.PrintlnError(fmt.Errorf("lifecycle %s not found", lifecycleName))
 				utils.PrintlnInfo("You can list all lifecycles with: qovery lifecycle list")
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 			lifecycleList = append(lifecycleList, lifecycle)
 		}
@@ -79,13 +77,11 @@ func validateLifecycleArguments(lifecycleName string, lifecycleNames string) {
 	if lifecycleName == "" && lifecycleNames == "" {
 		utils.PrintlnError(fmt.Errorf("use either --lifecycle \"<lifecycle name>\" or --lifecycles \"<lifecycle1 name>, <lifecycle2 name>\" but not both at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 
 	if lifecycleName != "" && lifecycleNames != "" {
 		utils.PrintlnError(fmt.Errorf("you can't use --lifecycle and --lifecycles at the same time"))
 		os.Exit(1)
-		panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 	}
 }
 

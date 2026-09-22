@@ -24,7 +24,6 @@ var lifecycleDeployCmd = &cobra.Command{
 		if lifecycleTag != "" && lifecycleCommitId != "" {
 			utils.PrintlnError(fmt.Errorf("you can't use --tag and --commit-id at the same time"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		lifecyleList := buildLifecycleListFromLifecycleNames(client, envId, lifecycleName, lifecycleNames)

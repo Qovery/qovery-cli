@@ -45,7 +45,6 @@ appear in a service-scoped view.`,
 		if deploymentLogsPreCheck && (deploymentLogsServiceName != "" || deploymentLogsServiceId != "") {
 			utils.PrintlnErrorToStderr(fmt.Errorf("--pre-check cannot be combined with --service or --service-id: pre-check runs before any service is deployed"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		// They are two spellings of one selector, and the filter matches either, so passing
@@ -53,14 +52,12 @@ appear in a service-scoped view.`,
 		if deploymentLogsServiceName != "" && deploymentLogsServiceId != "" {
 			utils.PrintlnErrorToStderr(fmt.Errorf("--service and --service-id select the same thing two different ways: pass one, not both"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
 			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -68,7 +65,6 @@ appear in a service-scoped view.`,
 		if err != nil {
 			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		logsQuery := client.EnvironmentLogsAPI.ListEnvironmentLogs(context.Background(), environmentId)
@@ -80,7 +76,6 @@ appear in a service-scoped view.`,
 		if err != nil {
 			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		filter := pkg.DeploymentLogFilter{
@@ -134,7 +129,6 @@ appear in a service-scoped view.`,
 			if err != nil {
 				utils.PrintlnErrorToStderr(err)
 				os.Exit(1)
-				panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 			}
 
 			fmt.Println(string(out))

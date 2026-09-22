@@ -23,19 +23,16 @@ var cronjobUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if (cronjobTag != "" || cronjobImageName != "") && cronjobBranch != "" {
 			utils.PrintlnError(fmt.Errorf("you can't use --tag or --image-name with --branch at the same time"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if cronjobTag == "" && cronjobImageName == "" && cronjobBranch == "" {
 			utils.PrintlnError(fmt.Errorf("you must use --tag or --image-name or --branch"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		client := utils.GetQoveryClient(tokenType, token)
@@ -44,7 +41,6 @@ var cronjobUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		cronjobs, err := ListCronjobs(envId, client)
@@ -52,7 +48,6 @@ var cronjobUpdateCmd = &cobra.Command{
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		cronjob := utils.FindByJobName(cronjobs, cronjobName)
@@ -61,7 +56,6 @@ var cronjobUpdateCmd = &cobra.Command{
 			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
 			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		var docker = utils.GetJobDocker(cronjob)
@@ -70,13 +64,11 @@ var cronjobUpdateCmd = &cobra.Command{
 		if docker != nil && (cronjobTag != "" || cronjobImageName != "") {
 			utils.PrintlnError(fmt.Errorf("you can't use --tag or --image-name with a cronjob targetting a Dockerfile. Use --branch instead"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		if image != nil && cronjobBranch != "" {
 			utils.PrintlnError(fmt.Errorf("you can't use --branch with a cronjob targetting an image. Use --tag and/or --image-name instead"))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		req := utils.ToJobRequest(*cronjob)
@@ -100,7 +92,6 @@ var cronjobUpdateCmd = &cobra.Command{
 			result, _ := io.ReadAll(res.Body)
 			utils.PrintlnError(errors.Errorf("status code: %s ; body: %s", res.Status, string(result)))
 			os.Exit(1)
-			panic("unreachable") // staticcheck false positive: https://staticcheck.io/docs/checks#SA5011
 		}
 
 		utils.Println(fmt.Sprintf("Cronjob %s updated!", pterm.FgBlue.Sprintf("%s", cronjobName)))
