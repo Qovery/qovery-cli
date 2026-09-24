@@ -1,0 +1,95 @@
+#!/bin/sh
+
+set -eu
+
+QOVERY_API_URL=${QOVERY_API_URL:='https://api.qovery.com'}
+CLUSTER_NAME=$1
+ORGANIZATION_ID=$2
+AUTHORIZATION_HEADER_FILE=$3
+DELETE_QOVERY_CONFIG=$4
+
+POWERSHELL_CMD='powershell.exe'
+if test -f /proc/version && grep -qi microsoft /proc/version; then
+  if which 'powershell.exe' >/dev/null; then
+    echo "powershell is installed"
+    POWERSHELL_CMD='powershell.exe'
+  elif which '/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe' >/dev/null; then
+    echo "powershell is installed"
+    POWERSHELL_CMD='/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe'
+  else
+    echo "Cannot find powershell.exe, please be sure it is installed"
+    exit 1
+  fi
+fi
+
+delete_qovery_demo_cluster() {
+  clusterName=$1
+  clusterId=$(curl -s -X GET --fail-with-body -H "@${AUTHORIZATION_HEADER_FILE}" -H 'Content-Type: application/json' ${QOVERY_API_URL}/organization/"${ORGANIZATION_ID}"/cluster | jq -r '.results[] | select(.name=="'"$clusterName"'") | .id')
+
+  if [ -n "$clusterId" ]; then
+    curl -s -X DELETE --fail-with-body -H "@${AUTHORIZATION_HEADER_FILE}" ${QOVERY_API_URL}'/organization/'"${ORGANIZATION_ID}"'/cluster/'"${clusterId}"'?deleteMode=DELETE_QOVERY_CONFIG' || true
+  fi
+}
+
+delete_k3d_cluster() {
+  clusterName=$1
+  clusterExist=$(k3d cluster list -o json | jq '.[] | select(.name=="'"$clusterName"'") | .name')
+  if [ -n "$clusterExist" ]; then
+    k3d cluster delete "$clusterName" || true
+  fi
+  docker network rm "k3d-${clusterName}" >/dev/null 2>&1 || true
+  k3d registry delete qovery-registry.lan >/dev/null 2>&1 || true
+}
+
+teardown_network() {
+  if [ "$(uname -s)" = 'Darwin' ]; then
+    # MacOs
+    set -x
+    sudo ifconfig lo0 -alias 172.42.0.3/32 up || true
+  elif grep -qi microsoft /proc/version; then
+    # Wsl
+    set -x
+    sudo ip addr del 172.42.0.3/32 dev lo || true
+    ${POWERSHELL_CMD} -Command "Start-Process powershell -Verb RunAs -ArgumentList \"netsh interface ipv4 delete address name='Loopback Pseudo-Interface 1' address=172.42.0.3\""
+  fi
+  set +x
+}
+
+# shellcheck disable=SC2046
+# shellcheck disable=SC2086
+cd "$(dirname $(realpath $0))"
+
+echo ''
+echo '""""""""""""""""""""""""""""""""""""""""""""'
+echo 'Removing Qovery helm repositories'
+echo '""""""""""""""""""""""""""""""""""""""""""""'
+helm repo remove qovery || true
+
+echo ''
+echo '""""""""""""""""""""""""""""""""""""""""""""'
+echo "Removing $CLUSTER_NAME kube cluster"
+echo '""""""""""""""""""""""""""""""""""""""""""""'
+delete_k3d_cluster "$CLUSTER_NAME"
+
+echo ''
+echo '""""""""""""""""""""""""""""""""""""""""""""'
+echo 'Removing network config'
+echo '""""""""""""""""""""""""""""""""""""""""""""'
+teardown_network
+
+if [ "$DELETE_QOVERY_CONFIG" = 'true' ]; then
+  echo ''
+  echo '""""""""""""""""""""""""""""""""""""""""""""'
+  echo 'Deleting cluster Qovery side'
+  echo '""""""""""""""""""""""""""""""""""""""""""""'
+  delete_qovery_demo_cluster "$CLUSTER_NAME"
+fi
+
+echo ''
+echo '""""""""""""""""""""""""""""""""""""""""""""'
+echo "Qovery local demo cluster is now deleted !!!"
+if [ "$DELETE_QOVERY_CONFIG" != 'true' ]; then
+  echo "Your created environments still exits !"
+  echo "Go to https://console.qovery.com/organization/${ORGANIZATION_ID}/clusters to delete Qovery cluster config"
+fi
+echo '""""""""""""""""""""""""""""""""""""""""""""'

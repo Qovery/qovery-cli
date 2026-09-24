@@ -1,0 +1,78 @@
+package cmd
+
+import (
+	"context"
+	"github.com/qovery/qovery-cli/utils"
+	"github.com/qovery/qovery-client-go"
+	"github.com/spf13/cobra"
+	"os"
+)
+
+var environmentStageEditCmd = &cobra.Command{
+	Use:   "edit",
+	Short: "Edit deployment stage",
+	Run: func(cmd *cobra.Command, args []string) {
+		utils.Capture(cmd)
+
+		tokenType, token, err := utils.GetAccessToken(false)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		client := utils.GetQoveryClient(tokenType, token)
+		_, _, environmentId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		stages, _, err := client.DeploymentStageMainCallsAPI.ListEnvironmentDeploymentStage(context.Background(), environmentId).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		stage, err := GetStageByName(stages.GetResults(), stageName)
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		req := qovery.DeploymentStageRequest{
+			Name: newStageName,
+		}
+
+		desc := qovery.NullableString{}
+		desc.Set(&stageDescription)
+
+		if stageDescription != "" {
+			req.Description = desc
+		}
+
+		_, _, err = client.DeploymentStageMainCallsAPI.EditDeploymentStage(context.Background(), stage.GetId()).DeploymentStageRequest(req).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		utils.Println("StageLevel updated successfully")
+	},
+}
+
+func init() {
+	environmentStageCmd.AddCommand(environmentStageEditCmd)
+	environmentStageEditCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	environmentStageEditCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	environmentStageEditCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	environmentStageEditCmd.Flags().StringVarP(&stageName, "name", "n", "", "StageLevel Name")
+	environmentStageEditCmd.Flags().StringVarP(&newStageName, "new-name", "", "", "New StageLevel Name")
+	environmentStageEditCmd.Flags().StringVarP(&stageDescription, "new-description", "", "", "New StageLevel Description")
+
+	_ = environmentStageEditCmd.MarkFlagRequired("name")
+	_ = environmentStageEditCmd.MarkFlagRequired("new-name")
+}

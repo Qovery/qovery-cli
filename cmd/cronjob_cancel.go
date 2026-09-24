@@ -1,0 +1,73 @@
+package cmd
+
+import (
+	"context"
+	"fmt"
+	"github.com/pterm/pterm"
+	"github.com/spf13/cobra"
+	"os"
+
+	"github.com/qovery/qovery-cli/utils"
+)
+
+var cronjobCancelCmd = &cobra.Command{
+	Use:   "cancel",
+	Short: "Cancel a cronjob deployment",
+	Run: func(cmd *cobra.Command, args []string) {
+		utils.Capture(cmd)
+
+		tokenType, token, err := utils.GetAccessToken(false)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		client := utils.GetQoveryClient(tokenType, token)
+		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		cronjobs, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		cronjob := utils.FindByJobName(cronjobs.GetResults(), cronjobName)
+
+		if cronjob == nil || cronjob.CronJobResponse == nil {
+			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
+			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
+			os.Exit(1)
+		}
+
+		msg, err := utils.CancelServiceDeployment(client, envId, cronjob.CronJobResponse.Id, utils.JobType, watchFlag)
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		if msg != "" {
+			utils.PrintlnInfo(msg)
+			return
+		}
+
+		utils.Println(fmt.Sprintf("Cronjob %s deployment cancelled!", pterm.FgBlue.Sprintf("%s", cronjobName)))
+	},
+}
+
+func init() {
+	cronjobCmd.AddCommand(cronjobCancelCmd)
+	cronjobCancelCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	cronjobCancelCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	cronjobCancelCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	cronjobCancelCmd.Flags().StringVarP(&cronjobName, "cronjob", "n", "", "Cronjob Name")
+	cronjobCancelCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch cancel until it's done or an error occurs")
+
+	_ = cronjobCancelCmd.MarkFlagRequired("cronjob")
+}

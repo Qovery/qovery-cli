@@ -1,13 +1,12 @@
 package pkg
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
-	"strings"
+	"strconv"
 	"text/tabwriter"
 	"time"
 
@@ -16,12 +15,12 @@ import (
 )
 
 func LockedClusters() {
-	utils.CheckAdminUrl()
+	utils.GetAdminUrl()
 
 	res := listLockedClusters()
 
 	if res.StatusCode != http.StatusOK {
-		result, _ := ioutil.ReadAll(res.Body)
+		result, _ := io.ReadAll(res.Body)
 		log.Errorf("Could not list locked clusters : %s. %s", res.Status, string(result))
 		return
 	}
@@ -33,10 +32,11 @@ func LockedClusters() {
 			OwnerName string    `json:"owner_name"`
 			Reason    string    `json:"reason"`
 			LockedAt  time.Time `json:"locked_at"`
+			TtlInDays *int      `json:"ttl_in_days"`
 		} `json:"results"`
 	}{}
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -45,93 +45,38 @@ func LockedClusters() {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
-	format := "%s\t | %s\t | %s\t | %s\t | %s\n"
-	fmt.Fprintf(w, format, "", "cluster_id", "locked_at", "locked_by", "reason")
+	format := "%s\t | %s\t | %s\t | %s\t | %s\t | %s\n"
+	if _, err := fmt.Fprintf(w, format, "", "cluster_id", "locked_at", "locked_by", "reason", "ttl_in_days"); err != nil {
+		log.Fatal(err)
+	}
 	for idx, lock := range resp.Results {
-		fmt.Fprintf(w, format, fmt.Sprintf("%d", idx+1), lock.ClusterId, lock.LockedAt.Format(time.RFC1123), lock.OwnerName, lock.Reason)
-	}
-	w.Flush()
-}
+		ttlInDay := "infinite"
+		if lock.TtlInDays != nil {
+			ttlInDay = strconv.Itoa(*lock.TtlInDays)
+		}
 
-func LockById(clusterId string, reason string) {
-	utils.CheckAdminUrl()
-
-	if reason == "" {
-		log.Errorf("Lock reason is required")
-		return
-	}
-
-	if utils.Validate("lock") {
-		res := updateLockById(clusterId, reason, http.MethodPost)
-
-		if res.StatusCode != http.StatusOK {
-			result, _ := ioutil.ReadAll(res.Body)
-			log.Errorf("Could not lock cluster : %s. %s", res.Status, string(result))
-		} else {
-			fmt.Println("Cluster locked.")
+		if _, err := fmt.Fprintf(w, format, fmt.Sprintf("%d", idx+1), lock.ClusterId, lock.LockedAt.Format(time.RFC1123), lock.OwnerName, lock.Reason, ttlInDay); err != nil {
+			log.Fatal(err)
 		}
 	}
-}
-
-func UnockById(clusterId string) {
-	utils.CheckAdminUrl()
-
-	if utils.Validate("unlock") {
-		res := updateLockById(clusterId, "", http.MethodDelete)
-
-		if res.StatusCode != http.StatusOK {
-			result, _ := ioutil.ReadAll(res.Body)
-			log.Errorf("Could not unlock cluster : %s. %s", res.Status, string(result))
-		} else {
-			fmt.Println("Cluster unlocked.")
-		}
+	if err := w.Flush(); err != nil {
+		log.Fatal(err)
 	}
 }
 
 func listLockedClusters() *http.Response {
-	authToken, tokenErr := utils.GetAccessToken()
-	if tokenErr != nil {
-		utils.PrintlnError(tokenErr)
+	tokenType, token, err := utils.GetAccessToken(false)
+	if err != nil {
+		utils.PrintlnError(err)
 		os.Exit(0)
 	}
 
-	url := fmt.Sprintf("%s/cluster/lock", utils.AdminUrl)
+	url := fmt.Sprintf("%s/cluster/lock", utils.GetAdminUrl())
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	req.Header.Set("Authorization", "Bearer "+strings.TrimSpace(string(authToken)))
-	req.Header.Set("Content-Type", "application/json")
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return res
-}
-
-func updateLockById(clusterId string, reason string, method string) *http.Response {
-	authToken, tokenErr := utils.GetAccessToken()
-	if tokenErr != nil {
-		utils.PrintlnError(tokenErr)
-		os.Exit(0)
-	}
-
-	payload := map[string]string{}
-	if method == http.MethodPost {
-		payload["reason"] = reason
-	}
-	body, err := json.Marshal(payload)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	url := fmt.Sprintf("%s/cluster/lock/%s", utils.AdminUrl, clusterId)
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("Authorization", "Bearer "+strings.TrimSpace(string(authToken)))
+	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := http.DefaultClient.Do(req)

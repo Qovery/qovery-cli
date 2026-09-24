@@ -1,0 +1,94 @@
+package cmd
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	"github.com/qovery/qovery-cli/utils"
+	"github.com/spf13/cobra"
+)
+
+var cronjobEnvListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List cronjob environment variables",
+	Run: func(cmd *cobra.Command, args []string) {
+		utils.Capture(cmd)
+
+		tokenType, token, err := utils.GetAccessToken(false)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		client := utils.GetQoveryClient(tokenType, token)
+
+		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		cronjobs, _, err := client.JobsAPI.ListJobs(context.Background(), envId).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		cronjob := utils.FindByJobName(cronjobs.GetResults(), cronjobName)
+
+		if cronjob == nil || cronjob.CronJobResponse == nil {
+			utils.PrintlnError(fmt.Errorf("cronjob %s not found", cronjobName))
+			utils.PrintlnInfo("You can list all cronjobs with: qovery cronjob list")
+			os.Exit(1)
+		}
+
+		envVars, err := utils.ListServiceVariables(
+			client,
+			cronjob.CronJobResponse.Id,
+			utils.JobType,
+		)
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		envVarLines := utils.NewEnvVarLines()
+		var variables []utils.EnvVarLineOutput
+
+		for _, envVar := range envVars {
+			s := utils.FromEnvironmentVariableToEnvVarLineOutput(envVar)
+			variables = append(variables, s)
+			envVarLines.Add(s)
+		}
+
+		if jsonFlag {
+			utils.Println(utils.GetEnvVarJsonOutput(variables, utils.SortKeys))
+			return
+		}
+
+		err = utils.PrintTable(envVarLines.Header(utils.PrettyPrint), envVarLines.Lines(utils.ShowValues, utils.PrettyPrint, utils.SortKeys))
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+	},
+}
+
+func init() {
+	cronjobEnvCmd.AddCommand(cronjobEnvListCmd)
+	cronjobEnvListCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	cronjobEnvListCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	cronjobEnvListCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	cronjobEnvListCmd.Flags().StringVarP(&cronjobName, "cronjob", "n", "", "Cronjob Name")
+	cronjobEnvListCmd.Flags().BoolVarP(&utils.ShowValues, "show-values", "", false, "Show env var values")
+	cronjobEnvListCmd.Flags().BoolVarP(&utils.PrettyPrint, "pretty-print", "", false, "Pretty print output")
+	cronjobEnvListCmd.Flags().BoolVarP(&utils.SortKeys, "sort", "", false, "Sort environment variables by key")
+	cronjobEnvListCmd.Flags().BoolVarP(&jsonFlag, "json", "", false, "JSON output")
+
+	_ = cronjobEnvListCmd.MarkFlagRequired("cronjob")
+}

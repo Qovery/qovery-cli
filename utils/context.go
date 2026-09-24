@@ -1,16 +1,21 @@
 package utils
 
 import (
+	context2 "context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"os"
+	"strings"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/qovery/qovery-client-go"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 const ContextFileName = "context"
+const ContextFilePermissions = 0600
 
 type QoveryContext struct {
 	AccessToken           AccessToken  `json:"access_token"`
@@ -22,16 +27,44 @@ type QoveryContext struct {
 	ProjectName           Name         `json:"project_name"`
 	EnvironmentId         Id           `json:"environment_id"`
 	EnvironmentName       Name         `json:"environment_name"`
-	ApplicationId         Id           `json:"application_id"`
-	ApplicationName       Name         `json:"application_name"`
+	ServiceId             Id           `json:"service_id"`
+	ServiceName           Name         `json:"service_name"`
+	ServiceType           ServiceType  `json:"service_type"`
 	User                  Name         `json:"user"`
 }
 type Name string
+type AccessTokenType string
 type AccessToken string
 type RefreshToken string
 type Id string
 
-func CurrentContext() (QoveryContext, error) {
+func isMinimalContextValid(context QoveryContext) bool {
+	// this is the minimal context that we need to have to be able to use the CLI
+	return context.AccessToken != "" &&
+		context.AccessTokenExpiration.After(time.Now()) &&
+		context.RefreshToken != "" &&
+		context.OrganizationId != ""
+}
+
+func GetOrSetCurrentContext(setProject bool, setEnvironment bool, setService bool) (QoveryContext, error) {
+	context, _ := GetCurrentContext()
+	if isMinimalContextValid(context) &&
+		((setProject && context.ProjectId != "") || !setProject) &&
+		((setEnvironment && context.EnvironmentId != "") || !setEnvironment) &&
+		((setService && context.ServiceId != "") || !setService) {
+		return context, nil
+	}
+
+	err := SetContext(setProject, setEnvironment, setService, false)
+
+	if err != nil {
+		return context, err
+	}
+
+	return GetCurrentContext()
+}
+
+func GetCurrentContext() (QoveryContext, error) {
 	context := QoveryContext{}
 
 	path, err := QoveryContextPath()
@@ -39,7 +72,7 @@ func CurrentContext() (QoveryContext, error) {
 		return context, err
 	}
 
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return context, err
 	}
@@ -52,13 +85,53 @@ func CurrentContext() (QoveryContext, error) {
 	return context, err
 }
 
-func (c QoveryContext) ToPosthogProperties() map[string]interface{} {
-	return map[string]interface{}{
-		"organization": c.OrganizationName,
-		"project":      c.ProjectName,
-		"environment":  c.EnvironmentName,
-		"application":  c.ApplicationName,
+func SetContext(setProject bool, setEnvironment bool, setService bool, printFinalContext bool) error {
+	_ = PrintContext()
+	_ = ResetApplicationContext()
+
+	org, err := SelectAndSetOrganization()
+	if err != nil {
+		return err
 	}
+
+	if !setProject {
+		return nil
+	}
+
+	project, err := SelectAndSetProject(org.ID)
+	if err != nil {
+		return err
+	}
+
+	if !setEnvironment {
+		return nil
+	}
+
+	env, err := SelectAndSetEnvironment(project.ID)
+	if err != nil {
+		return err
+	}
+
+	if !setService {
+		return nil
+	}
+
+	_, err = SelectAndSetService(env.ID)
+	if err != nil {
+		return err
+	}
+	_, _ = CurrentService(false)
+
+	if printFinalContext {
+		println()
+		err = PrintContext()
+		if err != nil {
+			PrintlnError(err)
+		}
+		println()
+	}
+
+	return nil
 }
 
 func StoreContext(context QoveryContext) error {
@@ -72,59 +145,74 @@ func StoreContext(context QoveryContext) error {
 		return err
 	}
 
-	return ioutil.WriteFile(path, bytes, os.ModePerm)
+	err = os.Chmod(path, ContextFilePermissions)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(path, bytes, ContextFilePermissions)
 }
 
-func CurrentOrganization() (Id, Name, error) {
-	context, err := CurrentContext()
+func CurrentOrganization(promptContext bool) (Id, Name, error) {
+	context, err := GetCurrentContext()
+
+	if (err != nil || context.OrganizationId == "") && promptContext {
+		context, err = GetOrSetCurrentContext(false, false, false)
+	}
+
 	if err != nil {
 		return "", "", err
 	}
 
 	id := context.OrganizationId
 	if id == "" {
-		return "", "", errors.New("Current organization has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return "", "", errors.New("current organization has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 	name := context.OrganizationName
 	if name == "" {
-		return "", "", errors.New("Current organization has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return "", "", errors.New("current organization has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
 	return id, name, nil
 }
 
-func SetOrganization(orga *Organization) error {
-	context, err := CurrentContext()
+func SetOrganization(org *Organization) error {
+	context, err := GetCurrentContext()
 	if err != nil {
 		return err
 	}
 
-	context.OrganizationName = orga.Name
-	context.OrganizationId = orga.ID
+	context.OrganizationName = org.Name
+	context.OrganizationId = org.ID
 
 	return StoreContext(context)
 }
 
-func CurrentProject() (Id, Name, error) {
-	context, err := CurrentContext()
+func CurrentProject(promptContext bool) (Id, Name, error) {
+	context, err := GetCurrentContext()
+
+	if (err != nil || context.ProjectId == "") && promptContext {
+		context, err = GetOrSetCurrentContext(true, false, false)
+	}
+
 	if err != nil {
 		return "", "", err
 	}
 
 	id := context.ProjectId
 	if id == "" {
-		return "", "", errors.New("Current project has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return "", "", errors.New("current project has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 	name := context.ProjectName
 	if name == "" {
-		return "", "", errors.New("Current project has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return "", "", errors.New("current project has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
 	return id, name, nil
 }
 
 func SetProject(project *Project) error {
-	context, err := CurrentContext()
+	context, err := GetCurrentContext()
 	if err != nil {
 		return err
 	}
@@ -135,26 +223,31 @@ func SetProject(project *Project) error {
 	return StoreContext(context)
 }
 
-func CurrentEnvironment() (Id, Name, error) {
-	context, err := CurrentContext()
+func CurrentEnvironment(promptContext bool) (Id, Name, error) {
+	context, err := GetCurrentContext()
+
+	if (err != nil || context.EnvironmentId == "") && promptContext {
+		context, err = GetOrSetCurrentContext(true, true, false)
+	}
+
 	if err != nil {
 		return "", "", err
 	}
 
 	id := context.EnvironmentId
 	if id == "" {
-		return "", "", errors.New("Current environment has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return "", "", errors.New("current environment has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 	name := context.EnvironmentName
 	if name == "" {
-		return "", "", errors.New("Current environment has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return "", "", errors.New("current environment has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
 	return id, name, nil
 }
 
 func SetEnvironment(env *Environment) error {
-	context, err := CurrentContext()
+	context, err := GetCurrentContext()
 	if err != nil {
 		return err
 	}
@@ -165,83 +258,125 @@ func SetEnvironment(env *Environment) error {
 	return StoreContext(context)
 }
 
-func CurrentApplication() (Id, Name, error) {
-	context, err := CurrentContext()
+func CurrentService(promptContext bool) (*Service, error) {
+	context, err := GetCurrentContext()
+
+	if (err != nil || context.ServiceId == "") && promptContext {
+		context, err = GetOrSetCurrentContext(true, true, true)
+	}
+
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	id := context.ApplicationId
+	id := context.ServiceId
 	if id == "" {
-		return "", "", errors.New("Current application has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
-	}
-	name := context.ApplicationName
-	if name == "" {
-		return "", "", errors.New("Current application has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+		return nil, errors.New("current service has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
 	}
 
-	return id, name, nil
+	name := context.ServiceName
+	if name == "" {
+		return nil, errors.New("current service has not been selected. Please, use 'qovery context set' to set up Qovery context. ")
+	}
+
+	return &Service{ID: id, Name: name, Type: context.ServiceType}, nil
 }
 
-func SetApplication(application *Application) error {
-	context, err := CurrentContext()
+func SetService(service *Service) error {
+	context, err := GetCurrentContext()
 	if err != nil {
 		return err
 	}
 
-	context.ApplicationName = application.Name
-	context.ApplicationId = application.ID
+	context.ServiceName = service.Name
+	context.ServiceId = service.ID
+	context.ServiceType = service.Type
 
 	return StoreContext(context)
 }
 
-func GetAccessToken() (AccessToken, error) {
-	context, err := CurrentContext()
+func GetAuthorizationHeaderValue(tokenType AccessTokenType, token AccessToken) string {
+	return string(tokenType) + " " + strings.TrimSpace(string(token))
+}
+
+func checkOrgaValid(orgaList *qovery.OrganizationResponseList) error {
+	if len(orgaList.GetResults()) == 0 {
+		return errors.New("you don't have any organization. Please create an account on https://start.qovery.com . ")
+	} else {
+		return nil
+	}
+}
+
+// GetAccessToken returns a valid access token, refreshing it if expired.
+// skipOrgaCheck should be false for every caller except the one legitimate
+// bootstrap case where an empty org list is expected: creating the user's
+// first organization via `qovery api organization --method POST ...`
+// (documented as a first-class example in `qovery api --help`). Passing
+// true anywhere else would let organization-scoped commands run with no
+// organization to scope to.
+func GetAccessToken(skipOrgaCheck bool) (AccessTokenType, AccessToken, error) {
+	apiToken := os.Getenv("QOVERY_CLI_ACCESS_TOKEN")
+	if apiToken == "" {
+		apiToken = os.Getenv("Q_CLI_ACCESS_TOKEN")
+	}
+	if apiToken != "" {
+		_, err := base64.StdEncoding.DecodeString(strings.Split(apiToken, ".")[0])
+		if err == nil {
+			return "Bearer", AccessToken(apiToken), nil
+		}
+		return "Token", AccessToken(apiToken), nil
+	}
+
+	// User does not use a Token, but a Jwt/Bearer token retrieve it from the context and check it has not expired
+	context, err := GetCurrentContext()
 	if err != nil {
-		return AccessToken(""), err
+		return "", "", err
 	}
 
 	token := context.AccessToken
 	if token == "" {
-		return "", errors.New("Access token has not been found. Please, sign in using 'qovery auth' command. ")
+		return "", "", errors.New("access token has not been found. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
 	}
 
-	expired := context.AccessTokenExpiration.Before(time.Now())
-	if expired {
-		RefreshExpiredTokenSilently()
-		refreshed, err := GetAccessToken()
-		if err != nil {
-			return AccessToken(""), err
+	// check the token is valid by trying to list the organizations
+	if orgaList, _, err := GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute(); err == nil {
+		// everything is fine, return the token
+		if !skipOrgaCheck {
+			if err = checkOrgaValid(orgaList); err != nil {
+				return "", "", err
+			}
 		}
-		token = refreshed
+		return "Bearer", token, nil
 	}
 
-	return token, nil
+	// Means the token is expired or invalid. Try to refresh it
+	if token, err = RefreshAccessToken(context.RefreshToken); err != nil {
+		return "", "", err
+	}
+
+	if orgaList, _, err := GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute(); err == nil {
+		// everything is fine, return the token
+		if !skipOrgaCheck {
+			if err = checkOrgaValid(orgaList); err != nil {
+				return "", "", err
+			}
+		}
+
+		return "Bearer", token, nil
+	}
+
+	return "", "", errors.New("access token is invalid or expired. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
 }
 
-func GetAccessTokenExpiration() (time.Time, error) {
-	context, err := CurrentContext()
-	t := time.Time{}
-	if err != nil {
-		return t, err
-	}
-
-	expiration := context.AccessTokenExpiration
-	if expiration == t {
-		return t, errors.New("Access token has not been found. Please, sign in using 'qovery auth' command. ")
-	}
-
-	return expiration, nil
-}
-
-func SetAccessToken(token AccessToken, expiration time.Time) error {
-	context, err := CurrentContext()
+func SetAccessToken(token AccessToken, expiration time.Time, refreshToken RefreshToken) error {
+	context, err := GetCurrentContext()
 	if err != nil {
 		return err
 	}
 
 	context.AccessToken = token
 	context.AccessTokenExpiration = expiration
+	context.RefreshToken = refreshToken
 
 	claims := jwt.MapClaims{}
 	_, _ = jwt.ParseWithClaims(string(token), claims, func(token *jwt.Token) (interface{}, error) {
@@ -253,31 +388,6 @@ func SetAccessToken(token AccessToken, expiration time.Time) error {
 		subStr := sub.(string)
 		context.User = Name(subStr)
 	}
-
-	return StoreContext(context)
-}
-
-func GetRefreshToken() (RefreshToken, error) {
-	context, err := CurrentContext()
-	if err != nil {
-		return RefreshToken(""), err
-	}
-
-	token := context.RefreshToken
-	if token == "" {
-		return "", errors.New("Refresh token has not been found. Please, sign in using 'qovery auth' command. ")
-	}
-
-	return token, nil
-}
-
-func SetRefreshToken(token RefreshToken) error {
-	context, err := CurrentContext()
-	if err != nil {
-		return err
-	}
-
-	context.RefreshToken = token
 
 	return StoreContext(context)
 }
@@ -305,7 +415,12 @@ func InitializeQoveryContext() error {
 		return err
 	}
 
-	err = ioutil.WriteFile(path, []byte("{}"), os.ModePerm)
+	err = os.Chmod(path, ContextFilePermissions)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(path, []byte("{}"), ContextFilePermissions)
 	if err != nil {
 		return err
 	}

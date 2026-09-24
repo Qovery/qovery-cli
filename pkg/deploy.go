@@ -5,52 +5,17 @@ import (
 	"fmt"
 	"github.com/qovery/qovery-cli/utils"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
-func DeployById(clusterId string, dryRunDisabled bool) {
-	utils.CheckAdminUrl()
-
-	utils.DryRunPrint(dryRunDisabled)
-	if utils.Validate("deployment") {
-		res := deploy(utils.AdminUrl+"/cluster/deploy/"+clusterId, http.MethodPost, dryRunDisabled)
-
-		if !strings.Contains(res.Status, "200") {
-			result, _ := ioutil.ReadAll(res.Body)
-			log.Errorf("Could not deploy cluster : %s. %s", res.Status, string(result))
-		} else if !dryRunDisabled {
-			fmt.Println("Cluster " + clusterId + " deployable.")
-		} else {
-			fmt.Println("Cluster " + clusterId + " deploying.")
-		}
-	}
-}
-
-func DeployAll(dryRunDisabled bool) {
-	utils.CheckAdminUrl()
-
-	utils.DryRunPrint(dryRunDisabled)
-	if utils.Validate("deployment") {
-		res := deploy(utils.AdminUrl+"/cluster/deploy", http.MethodPost, dryRunDisabled)
-
-		if !strings.Contains(res.Status, "200") {
-			result, _ := ioutil.ReadAll(res.Body)
-			log.Errorf("Could not deploy clusters : %s. %s", res.Status, string(result))
-		} else if !dryRunDisabled {
-			fmt.Println("Clusters deployable.")
-		} else {
-			fmt.Println("Clusters deploying.")
-		}
-	}
-}
-
-func deploy(url string, method string, dryRunDisabled bool) *http.Response {
-	authToken, tokenErr := utils.GetAccessToken()
-	if tokenErr != nil {
-		utils.PrintlnError(tokenErr)
+func execAdminRequest(url string, method string, dryRunDisabled bool, queryParams map[string]string) *http.Response {
+	tokenType, token, err := utils.GetAccessToken(false)
+	if err != nil {
+		utils.PrintlnError(err)
 		os.Exit(0)
 	}
 
@@ -65,8 +30,13 @@ func deploy(url string, method string, dryRunDisabled bool) *http.Response {
 		log.Fatal(err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+strings.TrimSpace(string(authToken)))
+	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
 	req.Header.Set("Content-Type", "application/json")
+	query := req.URL.Query()
+	for key, value := range queryParams {
+		query.Add(key, value)
+	}
+	req.URL.RawQuery = query.Encode()
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -74,4 +44,24 @@ func deploy(url string, method string, dryRunDisabled bool) *http.Response {
 	}
 
 	return res
+}
+
+func ForceFailedDeploymentsToInternalErrorStatus(safeguardDuration time.Duration) {
+	if !utils.Validate("force deployment status") {
+		return
+	}
+	nbMinutes := int(safeguardDuration.Minutes())
+	if nbMinutes < 5 {
+		log.Errorf("Could not force the deployments if safeguard is lower than 5minutes. Got %d", nbMinutes)
+	}
+
+	durationIso8601 := fmt.Sprintf("PT%dM", nbMinutes)
+	queryParams := map[string]string{"safeguardDuration": durationIso8601}
+	res := execAdminRequest(utils.GetAdminUrl()+"/deployment/forceFailedDeploymentsToInternalErrorStatus", http.MethodPost, true, queryParams)
+	if !strings.Contains(res.Status, "200") {
+		result, _ := io.ReadAll(res.Body)
+		log.Errorf("Could not force the deployments status : %s. %s", res.Status, string(result))
+	} else {
+		fmt.Println("INTERNAL_ERROR status forced")
+	}
 }

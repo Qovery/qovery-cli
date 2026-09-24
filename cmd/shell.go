@@ -3,12 +3,16 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"os"
+	"strings"
+	"context"
+
+	"github.com/pterm/pterm"
+	"github.com/spf13/cobra"
 
 	"github.com/qovery/qovery-cli/pkg"
+	"github.com/qovery/qovery-cli/pkg/usercontext"
 	"github.com/qovery/qovery-cli/utils"
-	"github.com/qovery/qovery-client-go"
-	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 )
 
 var shellCmd = &cobra.Command{
@@ -16,47 +20,158 @@ var shellCmd = &cobra.Command{
 	Short: "Connect to an application container",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		useContext := false
-		currentContext, err := utils.CurrentContext()
-		if err != nil {
-			utils.PrintlnError(err)
-			return
-		}
 
-		utils.PrintlnInfo("Current context:")
-		if currentContext.ApplicationId != "" && currentContext.ApplicationName != "" &&
-			currentContext.EnvironmentId != "" && currentContext.EnvironmentName != "" &&
-			currentContext.ProjectId != "" && currentContext.ProjectName != "" &&
-			currentContext.OrganizationId != "" && currentContext.OrganizationName != "" {
-			if err := utils.PrintlnContext(); err != nil {
-				fmt.Println("Context not yet configured.")
+		var shellRequest *pkg.ShellRequest
+		var err error
+		if strings.TrimSpace(organizationName) != "" || strings.TrimSpace(projectName) != "" || strings.TrimSpace(environmentName) != "" || strings.TrimSpace(serviceName) != "" {
+			if strings.TrimSpace(organizationName) == "" {
+				utils.PrintlnError(errors.New("organization name is required"))
+				return
 			}
-			fmt.Println()
-
-			utils.PrintlnInfo("Continue with shell command using this context ?")
-			useContext = utils.Validate("context")
-			fmt.Println()
-		} else {
-			if err := utils.PrintlnContext(); err != nil {
-				fmt.Println("Context not yet configured.")
-				fmt.Println("Unable to use current context for `shell` command.")
-				fmt.Println()
+			if strings.TrimSpace(projectName) == "" {
+				utils.PrintlnError(errors.New("project name is required"))
+				return
 			}
-		}
+			if strings.TrimSpace(environmentName) == "" {
+				utils.PrintlnError(errors.New("environment name is required"))
+				return
+			}
+			if strings.TrimSpace(serviceName) == "" {
+				utils.PrintlnError(errors.New("service name is required"))
+				return
+			}
 
-		var req *pkg.ShellRequest
-		if useContext {
-			req, err = shellRequestFromContext(currentContext)
+			shellRequest, err = shellRequestWithContextFlags()
+		} else if len(args) == 1 {
+			shellRequest, err = shellRequestWithApplicationUrl(args)
 		} else {
-			req, err = shellRequestFromSelect()
+			shellRequest, err = shellRequestWithoutArg()
 		}
 		if err != nil {
 			utils.PrintlnError(err)
 			return
 		}
 
-		pkg.ExecShell(req)
+		endpoint := "/shell/exec"
+		if ephemeral {
+			if ephemeralMode != "clone" && ephemeralMode != "debug" {
+				utils.PrintlnError(errors.New("--mode must be 'clone' or 'debug'"))
+				return
+			}
+			if ephemeralMode == "debug" && (cpuOverride != "" || memoryOverride != "") {
+				utils.PrintlnInfo("--cpu/--memory only apply to --mode clone; ignoring them in debug mode.")
+			}
+			shellRequest.EphemeralMode = ephemeralMode
+			shellRequest.CpuOverride = cpuOverride
+			shellRequest.MemoryOverride = memoryOverride
+			endpoint = "/shell/ephemeral"
+		} else if cmd.Flags().Changed("mode") {
+			utils.PrintlnInfo("--mode has no effect without --ephemeral; ignoring it.")
+		}
+		pkg.ExecShell(shellRequest, endpoint)
 	},
+}
+
+var (
+	command          []string
+	podName          string
+	podContainerName string
+	ephemeral        bool
+	ephemeralMode    string
+	cpuOverride      string
+	memoryOverride   string
+)
+
+func shellRequestWithContextFlags() (*pkg.ShellRequest, error) {
+	tokenType, token, err := utils.GetAccessToken(false)
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+
+	client := utils.GetQoveryClient(tokenType, token)
+
+	organizationID, err := usercontext.GetOrganizationContextResourceId(client, organizationName)
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+
+	projectID, err := getProjectContextResourceId(client, projectName, organizationID)
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+
+	environmentID, err := getEnvironmentContextResourceId(client, environmentName, projectID)
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+
+	environment, err := utils.GetEnvironmentById(environmentID)
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+
+	service, err := getServiceContextResourceId(client, serviceName, environmentID)
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+
+	return &pkg.ShellRequest{
+		ServiceID:      utils.Id(service.ID),
+		ProjectID:      utils.Id(projectID),
+		OrganizationID: utils.Id(organizationID),
+		EnvironmentID:  utils.Id(environmentID),
+		ClusterID:      environment.ClusterID,
+		PodName:        podName,
+		ContainerName:  podContainerName,
+		Command:        command,
+	}, nil
+}
+
+func shellRequestWithoutArg() (*pkg.ShellRequest, error) {
+	useContext := false
+	currentContext, err := utils.GetCurrentContext()
+	if err != nil {
+		return nil, err
+	}
+
+	utils.PrintlnInfo("Current context:")
+	if currentContext.ServiceId != "" && currentContext.ServiceName != "" &&
+		currentContext.EnvironmentId != "" && currentContext.EnvironmentName != "" &&
+		currentContext.ProjectId != "" && currentContext.ProjectName != "" &&
+		currentContext.OrganizationId != "" && currentContext.OrganizationName != "" {
+		if err := utils.PrintContext(); err != nil {
+			fmt.Println("Context not yet configured.")
+		}
+		fmt.Println()
+
+		utils.PrintlnInfo("Continue with shell command using this context ?")
+		useContext = utils.Validate("context")
+		fmt.Println()
+	} else {
+		if err := utils.PrintContext(); err != nil {
+			fmt.Println("Context not yet configured.")
+			fmt.Println("Unable to use current context for `shell` command.")
+			fmt.Println()
+		}
+	}
+
+	var req *pkg.ShellRequest
+	if useContext {
+		req, err = shellRequestFromContext(currentContext)
+	} else {
+		req, err = shellRequestFromSelect()
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 func shellRequestFromSelect() (*pkg.ShellRequest, error) {
@@ -78,31 +193,34 @@ func shellRequestFromSelect() (*pkg.ShellRequest, error) {
 		return nil, err
 	}
 
-	utils.PrintlnInfo("Select application")
-	app, err := utils.SelectApplication(env.ID)
+	utils.PrintlnInfo("Select service")
+	service, err := utils.SelectService(env.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pkg.ShellRequest{
-		ApplicationID:  app.ID,
+		ServiceID:      service.ID,
 		ProjectID:      project.ID,
 		OrganizationID: orga.ID,
 		EnvironmentID:  env.ID,
 		ClusterID:      env.ClusterID,
+		PodName:        podName,
+		ContainerName:  podContainerName,
+		Command:        command,
 	}, nil
 }
 
 func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequest, error) {
-	token, err := utils.GetAccessToken()
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
-		return nil, err
+		utils.PrintlnError(err)
+		os.Exit(1)
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	client := utils.GetQoveryClient(tokenType, token)
 
-	e, res, err := client.EnvironmentMainCallsApi.GetEnvironment(auth, string(currentContext.EnvironmentId)).Execute()
+	e, res, err := client.EnvironmentMainCallsAPI.GetEnvironment(context.Background(), string(currentContext.EnvironmentId)).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -111,14 +229,148 @@ func shellRequestFromContext(currentContext utils.QoveryContext) (*pkg.ShellRequ
 	}
 
 	return &pkg.ShellRequest{
-		ApplicationID:  currentContext.ApplicationId,
+		ServiceID:      currentContext.ServiceId,
 		ProjectID:      currentContext.ProjectId,
 		OrganizationID: currentContext.OrganizationId,
 		EnvironmentID:  currentContext.EnvironmentId,
 		ClusterID:      utils.Id(e.ClusterId),
+		PodName:        podName,
+		ContainerName:  podContainerName,
+		Command:        command,
+	}, nil
+}
+
+func shellRequestWithApplicationUrl(args []string) (*pkg.ShellRequest, error) {
+	url := args[0]
+	url = strings.Replace(url, "https://console.qovery.com/", "", 1)
+	url = strings.Replace(url, "https://new.console.qovery.com/", "", 1)
+	urlSplit := strings.Split(url, "/")
+
+	if len(urlSplit) < 8 {
+		return nil, errors.New("Wrong URL format: " + url)
+	}
+
+	organizationId := urlSplit[1]
+	organization, err := utils.GetOrganizationById(organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	projectId := urlSplit[3]
+	project, err := utils.GetProjectById(projectId)
+	if err != nil {
+		return nil, err
+	}
+
+	environmentId := urlSplit[5]
+	environment, err := utils.GetEnvironmentById(environmentId)
+	if err != nil {
+		return nil, err
+	}
+
+	environmentServices, err := utils.GetEnvironmentServicesById(environmentId)
+	if err != nil {
+		return nil, err
+	}
+
+	var service utils.Service
+	serviceId := urlSplit[7]
+	for _, envService := range environmentServices {
+		if envService.ID == serviceId {
+			switch envService.Type {
+
+			case utils.ApplicationType:
+				applicationAPI, err := utils.GetApplicationById(serviceId)
+				if err != nil {
+					return nil, err
+				}
+				service = utils.Service{
+					ID:   applicationAPI.ID,
+					Name: applicationAPI.Name,
+					Type: utils.ApplicationType,
+				}
+
+			case utils.ContainerType:
+				containerAPI, err := utils.GetContainerById(serviceId)
+				if err != nil {
+					return nil, err
+				}
+				service = utils.Service{
+					ID:   containerAPI.ID,
+					Name: containerAPI.Name,
+					Type: utils.ContainerType,
+				}
+
+			case utils.JobType:
+				jobAPI, err := utils.GetJobById(serviceId)
+				if err != nil {
+					return nil, err
+				}
+				service = utils.Service{
+					ID:   jobAPI.ID,
+					Name: jobAPI.Name,
+					Type: utils.JobType,
+				}
+
+			case utils.DatabaseType:
+				db, err := utils.GetDatabaseById(serviceId)
+				if err != nil {
+					return nil, err
+				}
+				service = *db
+
+			case utils.HelmType:
+				helm, err := utils.GetHelmById(serviceId)
+				if err != nil {
+					return nil, err
+				}
+				service = *helm
+
+			default:
+				return nil, errors.New("ServiceLevel type `" + string(envService.Type) + "` is not supported for shell")
+			}
+		}
+	}
+
+	_ = pterm.DefaultTable.WithData(pterm.TableData{
+		{"Organization", string(organization.Name)},
+		{"Project", string(project.Name)},
+		{"Environment", string(environment.Name)},
+		{"ServiceLevel", string(service.Name)},
+		{"ServiceType", string(service.Type)},
+	}).Render()
+
+	return &pkg.ShellRequest{
+		OrganizationID: organization.ID,
+		ProjectID:      project.ID,
+		EnvironmentID:  environment.ID,
+		ServiceID:      service.ID,
+		ClusterID:      environment.ClusterID,
+		PodName:        podName,
+		ContainerName:  podContainerName,
+		Command:        command,
 	}, nil
 }
 
 func init() {
+	shellCmd := shellCmd
+	shellCmd.Flags().StringSliceVarP(&command, "command", "c", []string{"sh"}, "command to launch inside the pod")
+	shellCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	shellCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	shellCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	shellCmd.Flags().StringVarP(&serviceName, "service", "", "", "Service Name")
+	shellCmd.Flags().StringVarP(&podName, "pod", "p", "", "pod name where to exec into")
+	shellCmd.Flags().StringVar(&podContainerName, "container", "", "container name inside the pod")
+	shellCmd.Flags().BoolVar(&ephemeral, "ephemeral", false, "spawn an ephemeral shell instead of connecting to an existing pod")
+	shellCmd.Flags().StringVar(&ephemeralMode, "mode", "clone", "ephemeral mode: 'clone' (new isolated pod, Heroku-style) or 'debug' (ephemeral container injected into existing pod, kubectl-debug style)")
+	shellCmd.Flags().StringVar(&cpuOverride, "cpu", "", "override CPU request+limit for the ephemeral pod (e.g. '500m', '2')")
+	shellCmd.Flags().StringVar(&memoryOverride, "memory", "", "override memory request+limit for the ephemeral pod (e.g. '512Mi', '2Gi')")
+	shellCmd.Example = "qovery shell\n" +
+		"qovery shell <qovery_console_service_url>\n" +
+		"qovery shell --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>\n" +
+		"qovery shell --ephemeral --mode clone --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>\n" +
+		"qovery shell --ephemeral --mode clone --memory 2Gi --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>\n" +
+		"qovery shell --ephemeral --mode debug --organization <organization_name> --project <project_name> --environment <environment_name> --service <service_name>"
+
 	rootCmd.AddCommand(shellCmd)
 }

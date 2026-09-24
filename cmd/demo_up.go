@@ -1,0 +1,241 @@
+package cmd
+
+import (
+	"bytes"
+	_ "embed"
+	"encoding/json"
+	"fmt"
+	"github.com/qovery/qovery-cli/utils"
+	"github.com/spf13/cobra"
+	"github.com/tonistiigi/go-rosetta"
+	"io"
+	"net/http"
+	"os"
+	"os/exec"
+	"os/signal"
+	"os/user"
+	"path/filepath"
+	"regexp"
+	"runtime"
+	"strconv"
+	"strings"
+	"syscall"
+	"time"
+)
+
+var demoUpCmd = &cobra.Command{
+	Use:   "up",
+	Short: "Create a k3s kubernetes cluster with Qovery installed on your local machine",
+	Run: func(cmd *cobra.Command, args []string) {
+		utils.Capture(cmd)
+
+		if runtime.GOOS == "windows" {
+			utils.PrintlnError(fmt.Errorf("qovery demo is not supported from Windows. Please use WSL (Windows Subsystem for Linux) to use qovery demo"))
+			os.Exit(1)
+		}
+
+		tokenType, token, err := utils.GetAccessToken(false)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		orgId, _, err := utils.CurrentOrganization(true)
+		if err != nil {
+			utils.PrintlnError(fmt.Errorf("cannot get Bearer or Token to access Qovery API. Please use `qovery auth` first: %s", err))
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		regex := "^[a-zA-Z][-a-z]+[a-zA-Z]$"
+		match, _ := regexp.MatchString(regex, demoClusterName)
+		if !match {
+			utils.PrintlnError(fmt.Errorf("cluster name must match regex %s: got %s", regex, demoClusterName))
+			os.Exit(1)
+		}
+
+		demoChartPath, err = validateDemoChartPath(demoChartPath)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		engineImageRepository, engineImageTag, err := demoEngineImageOverride(demoEngineImage)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		scriptDir := filepath.Join(os.TempDir(), "qovery-demo")
+		mErr := os.MkdirAll(scriptDir, os.FileMode(0700))
+		if mErr != nil {
+			utils.PrintlnError(mErr)
+			os.Exit(1)
+		}
+
+		scriptPath := filepath.Join(scriptDir, "create_demo_cluster.sh")
+		debugLogsPath := filepath.Join(scriptDir, "qovery-demo.log")
+		err = os.WriteFile(scriptPath, demoScriptsCreate, 0700)
+		if err != nil {
+			utils.PrintlnError(fmt.Errorf("cannot write file to disk: %s", err))
+			os.Exit(1)
+		}
+
+		ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+		tokenPath, cleanupToken, err := prepareDemoTokenFile(scriptDir, tokenType, token)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+		defer cleanupToken()
+
+		// Pass values as positional parameters so file paths are not interpreted by bash.
+		cmdArgs := `
+set -eu
+set -o pipefail
+"$1" "$2" "$3" "$4" "$5" "$6" "$7" 2>&1 | tee "$8"
+`
+		shCmd := exec.CommandContext(ctx, "/bin/bash", "-c", cmdArgs, "qovery-demo",
+			scriptPath, demoClusterName, detectArchitecture(), string(orgId), tokenPath,
+			strconv.FormatBool(demoDebug), "CLI "+utils.Version, debugLogsPath)
+		shCmd.Env = append(
+			os.Environ(),
+			"QOVERY_DEMO_CHART_PATH="+demoChartPath,
+			"QOVERY_DEMO_ENGINE_IMAGE_SOURCE="+demoEngineImage,
+			"QOVERY_DEMO_ENGINE_IMAGE_REPOSITORY="+engineImageRepository,
+			"QOVERY_DEMO_ENGINE_IMAGE_TAG="+engineImageTag,
+		)
+		shCmd.Stdout = os.Stdout
+		shCmd.Stderr = os.Stderr
+		err = shCmd.Run()
+		cleanupToken()
+		stop()
+		if err != nil {
+			utils.PrintlnError(fmt.Errorf("error executing the command %s", err))
+			uploadErrorLogs(tokenType, token, orgId, demoClusterName, debugLogsPath)
+			utils.CaptureError(cmd, shCmd.String(), err.Error())
+		}
+
+		utils.CaptureWithEvent(cmd, utils.EndOfExecutionEventName)
+	},
+}
+
+func validateDemoChartPath(chartPath string) (string, error) {
+	if chartPath == "" {
+		return "", nil
+	}
+
+	expandedChartPath, err := expandPath(chartPath)
+	if err != nil {
+		return "", fmt.Errorf("expand demo chart path: %w", err)
+	}
+
+	absChartPath, err := filepath.Abs(expandedChartPath)
+	if err != nil {
+		return "", fmt.Errorf("resolve demo chart path: %w", err)
+	}
+
+	chartInfo, err := os.Stat(absChartPath)
+	if err != nil {
+		return "", fmt.Errorf("read demo chart path %q: %w", absChartPath, err)
+	}
+	if !chartInfo.IsDir() {
+		return "", fmt.Errorf("demo chart path %q must be a directory", absChartPath)
+	}
+
+	for _, filename := range []string{"Chart.yaml", "values-demo-local.yaml"} {
+		if _, err := os.Stat(filepath.Join(absChartPath, filename)); err != nil {
+			return "", fmt.Errorf("demo chart path %q must contain %s: %w", absChartPath, filename, err)
+		}
+	}
+
+	return absChartPath, nil
+}
+
+func demoEngineImageOverride(image string) (string, string, error) {
+	if image == "" {
+		return "", "", nil
+	}
+
+	repository, tag, err := splitImageReference(image)
+	if err != nil {
+		return "", "", fmt.Errorf("invalid demo engine image: %w", err)
+	}
+
+	return normalizeImageRepository(repository), tag, nil
+}
+
+// Only needed due to MacOs when rosetta (x86_64 emulation on ARM64) is turned on.
+// otherwise GOARCH runtime variable is enough to detect the correct arch
+func detectArchitecture() string {
+	if runtime.GOOS != "darwin" {
+		return strings.ToUpper(runtime.GOARCH)
+	}
+
+	return strings.ToUpper(rosetta.NativeArch())
+}
+
+func uploadErrorLogs(tokenType utils.AccessTokenType, token utils.AccessToken, organization utils.Id, clusterName string, debugLogsPath string) {
+	type Payload struct {
+		Organization string    `json:"organization"`
+		ClusterName  string    `json:"cluster_name"`
+		Content      string    `json:"content"`
+		Os           string    `json:"os"`
+		CpuArch      string    `json:"cpu_arch"`
+		CliVersion   string    `json:"cli_version"`
+		Timestamp    time.Time `json:"timestamp"`
+	}
+
+	content, _ := os.ReadFile(debugLogsPath)
+	payload, _ := json.Marshal(Payload{
+		Organization: string(organization),
+		ClusterName:  clusterName,
+		Content:      string(content),
+		Os:           runtime.GOOS,
+		CpuArch:      runtime.GOARCH,
+		CliVersion:   utils.Version,
+		Timestamp:    time.Now(),
+	})
+	client := utils.GetQoveryClient(tokenType, token)
+	url := fmt.Sprintf("%s/admin/demoDebugLog", client.GetConfig().Servers[0].URL)
+	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(payload))
+	query := req.URL.Query()
+	query.Add("organization", string(organization))
+	query.Add("clusterName", clusterName)
+	req.URL.RawQuery = query.Encode()
+
+	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
+	req.Header.Set("Content-Type", "application/json")
+
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		utils.PrintlnError(fmt.Errorf("error uploading debug logs: %s", err))
+		return
+	}
+
+	if response.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(response.Body)
+		utils.PrintlnError(fmt.Errorf("error uploading debug logs: %s %s", response.Status, body))
+		utils.PrintlnInfo("May be caused by a wrong context set, please set it again: `qovery context set`")
+		return
+	}
+}
+
+func init() {
+	var userName string
+	currentUser, err := user.Current()
+	if err != nil {
+		userName = "qovery"
+	} else {
+		userName = currentUser.Username
+	}
+
+	var demoUpCmd = demoUpCmd
+	demoUpCmd.Flags().StringVarP(&demoClusterName, "cluster-name", "c", "local-demo-"+userName, "The name of the cluster to create")
+	demoUpCmd.Flags().BoolVar(&demoDebug, "debug", false, "Enable debug mode")
+	demoUpCmd.Flags().StringVar(&demoChartPath, "chart-path", "", "Local Qovery chart directory to install instead of the published chart")
+	demoUpCmd.Flags().StringVar(&demoEngineImage, "engine-image", "", "Engine image with an explicit tag to use for the demo")
+
+	demoCmd.AddCommand(demoUpCmd)
+}
