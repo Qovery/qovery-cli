@@ -1437,7 +1437,7 @@ func watchServices(
 		if err != nil {
 			consecutiveErrors++
 			if consecutiveErrors >= maxConsecutiveStatusErrors {
-				PrintlnError(fmt.Errorf("cannot get the services status after %d attempts: %w", consecutiveErrors, err))
+				PrintlnErrorToStderr(fmt.Errorf("cannot get the services status after %d attempts: %w", consecutiveErrors, err))
 				return Err
 			}
 			sleep()
@@ -1456,7 +1456,7 @@ func watchServices(
 		log.Println(GetStatusTextWithColor(finalServiceState) + " (" + strconv.Itoa(done) + "/" + strconv.Itoa(len(serviceIds)) + " services " + icon + " )")
 
 		if err != nil {
-			PrintlnError(err)
+			PrintlnErrorToStderr(err)
 		}
 		if status != Continue {
 			return status
