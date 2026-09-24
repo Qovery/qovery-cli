@@ -39,9 +39,11 @@ func WatchDatabaseDeployment(
 	if watchFlag {
 		time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
 		if len(databaseList) == 1 {
-			utils.WatchDatabase(databaseList[0].Id, envId, client)
+			utils.WatchDatabase(databaseList[0].Id, envId, finalServiceState, client)
 		} else {
-			utils.WatchEnvironment(envId, finalServiceState, client)
+			utils.WatchServices(utils.Map(databaseList, func(database *qovery.Database) string {
+				return database.Id
+			}), envId, finalServiceState, client)
 		}
 	}
 }
