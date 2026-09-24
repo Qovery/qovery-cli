@@ -106,6 +106,47 @@ func TestSelectedServicesStatus(t *testing.T) {
 			expectedError: "service app1 no longer exists in the environment",
 		},
 		{
+			name: "service still deployed from the previous deployment is not done",
+			statuses: qovery.EnvironmentStatuses{
+				Containers: []qovery.Status{queuedStatusOf("ctr1", qovery.STATEENUM_DEPLOYED), queuedStatusOf("ctr2", qovery.STATEENUM_DEPLOYED)},
+			},
+			serviceIds:    []string{"ctr1", "ctr2"},
+			expectedState: qovery.STATEENUM_DEPLOYED,
+			expected:      Continue,
+			expectedDone:  0,
+		},
+		{
+			name: "a queued request id alone keeps the service pending",
+			statuses: qovery.EnvironmentStatuses{
+				Containers: []qovery.Status{requestedStatusOf("ctr1", qovery.STATEENUM_DEPLOYED, "req-1"), statusOf("ctr2", qovery.STATEENUM_DEPLOYED)},
+			},
+			serviceIds:    []string{"ctr1", "ctr2"},
+			expectedState: qovery.STATEENUM_DEPLOYED,
+			expected:      Continue,
+			expectedDone:  1,
+		},
+		{
+			name: "a service deployed with nothing queued is done",
+			statuses: qovery.EnvironmentStatuses{
+				Containers: []qovery.Status{statusOf("ctr1", qovery.STATEENUM_DEPLOYED), statusOf("ctr2", qovery.STATEENUM_DEPLOYED)},
+			},
+			serviceIds:    []string{"ctr1", "ctr2"},
+			expectedState: qovery.STATEENUM_DEPLOYED,
+			expected:      Stop,
+			expectedDone:  2,
+		},
+		{
+			name: "a queued service that failed is still an error",
+			statuses: qovery.EnvironmentStatuses{
+				Containers: []qovery.Status{statusOf("ctr1", qovery.STATEENUM_DEPLOYED), queuedStatusOf("ctr2", qovery.STATEENUM_DEPLOYMENT_ERROR)},
+			},
+			serviceIds:    []string{"ctr1", "ctr2"},
+			expectedState: qovery.STATEENUM_DEPLOYED,
+			expected:      Err,
+			expectedDone:  1,
+			expectedError: "service ctr2 is in state DEPLOYMENT_ERROR",
+		},
+		{
 			name: "canceled selected service is an error",
 			statuses: qovery.EnvironmentStatuses{
 				Containers: []qovery.Status{statusOf("ctr1", qovery.STATEENUM_DEPLOYED), statusOf("ctr2", qovery.STATEENUM_CANCELED)},
@@ -138,9 +179,38 @@ func statusOf(id string, state qovery.StateEnum) qovery.Status {
 	return qovery.Status{Id: id, State: state}
 }
 
+// queuedStatusOf is a service whose deployment request is accepted but not started yet:
+// it still reports the state of its previous deployment
+func queuedStatusOf(id string, state qovery.StateEnum) qovery.Status {
+	status := statusOf(id, state)
+	status.DeploymentRequestsCount = 1
+	return status
+}
+
+func requestedStatusOf(id string, state qovery.StateEnum, requestId string) qovery.Status {
+	status := statusOf(id, state)
+	status.DeploymentRequestId = *qovery.NewNullableString(&requestId)
+	return status
+}
+
+// TestSelectedServicesStatusIgnoresNullRequestId guards the IsSet() vs Get() distinction:
+// the API always sends deployment_request_id, so IsSet() is true even when it is null
+func TestSelectedServicesStatusIgnoresNullRequestId(t *testing.T) {
+	status := statusOf("ctr1", qovery.STATEENUM_DEPLOYED)
+	status.DeploymentRequestId = *qovery.NewNullableString(nil)
+	statuses := qovery.EnvironmentStatuses{Containers: []qovery.Status{status}}
+
+	got, done, err := selectedServicesStatus(&statuses, []string{"ctr1"}, qovery.STATEENUM_DEPLOYED)
+	if got != Stop || done != 1 || err != nil {
+		t.Errorf("selectedServicesStatus = (%v, %d, %v), want (Stop, 1, nil)", got, done, err)
+	}
+}
+
 func TestWatchServicesLoop(t *testing.T) {
 	deployed := &qovery.EnvironmentStatuses{Applications: []qovery.Status{statusOf("app1", qovery.STATEENUM_DEPLOYED)}}
 	deploying := &qovery.EnvironmentStatuses{Applications: []qovery.Status{statusOf("app1", qovery.STATEENUM_DEPLOYING)}}
+	// deploy requested, engine not started yet: still DEPLOYED from the previous deployment
+	queued := &qovery.EnvironmentStatuses{Applications: []qovery.Status{queuedStatusOf("app1", qovery.STATEENUM_DEPLOYED)}}
 	apiError := errors.New("503 Service Unavailable")
 
 	type response struct {
@@ -169,6 +239,14 @@ func TestWatchServicesLoop(t *testing.T) {
 			},
 			expected:      Err,
 			expectedCalls: 1 + maxConsecutiveStatusErrors,
+		},
+		{
+			name: "the watch does not stop while the deployment is still queued",
+			responses: []response{
+				{statuses: queued}, {statuses: queued}, {statuses: deploying}, {statuses: deployed},
+			},
+			expected:      Stop,
+			expectedCalls: 4,
 		},
 		{
 			name: "a success resets the error count",
