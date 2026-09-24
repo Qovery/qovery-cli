@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/qovery/qovery-client-go"
@@ -128,4 +129,67 @@ func TestSelectedServicesStatus(t *testing.T) {
 
 func statusOf(id string, state qovery.StateEnum) qovery.Status {
 	return qovery.Status{Id: id, State: state}
+}
+
+func TestWatchServicesLoop(t *testing.T) {
+	deployed := &qovery.EnvironmentStatuses{Applications: []qovery.Status{statusOf("app1", qovery.STATEENUM_DEPLOYED)}}
+	deploying := &qovery.EnvironmentStatuses{Applications: []qovery.Status{statusOf("app1", qovery.STATEENUM_DEPLOYING)}}
+	apiError := errors.New("503 Service Unavailable")
+
+	type response struct {
+		statuses *qovery.EnvironmentStatuses
+		err      error
+	}
+
+	tests := []struct {
+		name          string
+		responses     []response
+		expected      Status
+		expectedCalls int
+	}{
+		{
+			name:          "transient errors are retried",
+			responses:     []response{{err: apiError}, {err: apiError}, {statuses: deploying}, {err: apiError}, {statuses: deployed}},
+			expected:      Stop,
+			expectedCalls: 5,
+		},
+		{
+			name: "errors in a row fail the watch",
+			responses: []response{
+				{statuses: deploying},
+				{err: apiError}, {err: apiError}, {err: apiError}, {err: apiError}, {err: apiError},
+				{statuses: deployed},
+			},
+			expected:      Err,
+			expectedCalls: 1 + maxConsecutiveStatusErrors,
+		},
+		{
+			name: "a success resets the error count",
+			responses: []response{
+				{err: apiError}, {err: apiError}, {err: apiError}, {err: apiError}, {statuses: deploying},
+				{err: apiError}, {err: apiError}, {err: apiError}, {err: apiError}, {statuses: deployed},
+			},
+			expected:      Stop,
+			expectedCalls: 10,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			calls := 0
+			fetch := func() (*qovery.EnvironmentStatuses, error) {
+				r := test.responses[calls]
+				calls++
+				return r.statuses, r.err
+			}
+
+			got := watchServices(fetch, func() {}, []string{"app1"}, qovery.STATEENUM_DEPLOYED)
+			if got != test.expected {
+				t.Errorf("watchServices = %v, want %v", got, test.expected)
+			}
+			if calls != test.expectedCalls {
+				t.Errorf("watchServices fetched %d times, want %d", calls, test.expectedCalls)
+			}
+		})
+	}
 }

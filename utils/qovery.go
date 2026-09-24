@@ -1405,15 +1405,45 @@ func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnu
 	}
 }
 
+// maxConsecutiveStatusErrors bounds how long WatchServices retries a failing status API
+// before giving up, about 15 seconds with the 3 seconds poll interval
+const maxConsecutiveStatusErrors = 5
+
 // WatchServices waits for the given services only, unlike WatchEnvironment which
 // also follows every other service of the environment
 func WatchServices(serviceIds []string, envId string, finalServiceState qovery.StateEnum, client *qovery.APIClient) {
-	for {
+	fetch := func() (*qovery.EnvironmentStatuses, error) {
 		statuses, _, err := client.EnvironmentMainCallsAPI.GetEnvironmentStatuses(context.Background(), envId).Execute()
+		return statuses, err
+	}
+	sleep := func() { time.Sleep(3 * time.Second) }
 
+	if watchServices(fetch, sleep, serviceIds, finalServiceState) == Err {
+		os.Exit(1)
+	}
+}
+
+func watchServices(
+	fetch func() (*qovery.EnvironmentStatuses, error),
+	sleep func(),
+	serviceIds []string,
+	finalServiceState qovery.StateEnum,
+) Status {
+	consecutiveErrors := 0
+	for {
+		statuses, err := fetch()
+
+		// a transient API error must not end the watch as a success
 		if err != nil {
-			return
+			consecutiveErrors++
+			if consecutiveErrors >= maxConsecutiveStatusErrors {
+				PrintlnError(fmt.Errorf("cannot get the services status after %d attempts: %w", consecutiveErrors, err))
+				return Err
+			}
+			sleep()
+			continue
 		}
+		consecutiveErrors = 0
 
 		status, done := selectedServicesStatus(statuses, serviceIds, finalServiceState)
 
@@ -1425,15 +1455,11 @@ func WatchServices(serviceIds []string, envId string, finalServiceState qovery.S
 		// TODO make something more fancy here to display the status. Use UILIVE or something like that
 		log.Println(GetStatusTextWithColor(finalServiceState) + " (" + strconv.Itoa(done) + "/" + strconv.Itoa(len(serviceIds)) + " services " + icon + " )")
 
-		switch status {
-		case Continue:
-		case Stop:
-			return
-		case Err:
-			os.Exit(1)
+		if status != Continue {
+			return status
 		}
 
-		time.Sleep(3 * time.Second)
+		sleep()
 	}
 }
 
