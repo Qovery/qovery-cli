@@ -15,6 +15,7 @@ func TestSelectedServicesStatus(t *testing.T) {
 		expectedState qovery.StateEnum
 		expected      Status
 		expectedDone  int
+		expectedError string
 	}{
 		{
 			name: "unrelated service still deploying is ignored",
@@ -56,6 +57,7 @@ func TestSelectedServicesStatus(t *testing.T) {
 			expectedState: qovery.STATEENUM_RESTARTED,
 			expected:      Err,
 			expectedDone:  0,
+			expectedError: "service db2 is in state RESTART_ERROR",
 		},
 		{
 			name: "selected services across every service type",
@@ -93,14 +95,15 @@ func TestSelectedServicesStatus(t *testing.T) {
 			expectedDone:  2,
 		},
 		{
-			name: "missing service is not done when not deleting",
+			name: "missing service is an error when not deleting",
 			statuses: qovery.EnvironmentStatuses{
 				Applications: []qovery.Status{statusOf("app2", qovery.STATEENUM_STOPPED)},
 			},
 			serviceIds:    []string{"app1", "app2"},
 			expectedState: qovery.STATEENUM_STOPPED,
-			expected:      Continue,
-			expectedDone:  1,
+			expected:      Err,
+			expectedDone:  0,
+			expectedError: "service app1 no longer exists in the environment",
 		},
 		{
 			name: "canceled selected service is an error",
@@ -111,17 +114,21 @@ func TestSelectedServicesStatus(t *testing.T) {
 			expectedState: qovery.STATEENUM_DEPLOYED,
 			expected:      Err,
 			expectedDone:  1,
+			expectedError: "service ctr2 is in state CANCELED",
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got, done := selectedServicesStatus(&test.statuses, test.serviceIds, test.expectedState)
+			got, done, err := selectedServicesStatus(&test.statuses, test.serviceIds, test.expectedState)
 			if got != test.expected {
 				t.Errorf("selectedServicesStatus status = %v, want %v", got, test.expected)
 			}
 			if done != test.expectedDone {
 				t.Errorf("selectedServicesStatus done = %d, want %d", done, test.expectedDone)
+			}
+			if gotError := errorMessage(err); gotError != test.expectedError {
+				t.Errorf("selectedServicesStatus error = %q, want %q", gotError, test.expectedError)
 			}
 		})
 	}
@@ -192,4 +199,11 @@ func TestWatchServicesLoop(t *testing.T) {
 			}
 		})
 	}
+}
+
+func errorMessage(err error) string {
+	if err == nil {
+		return ""
+	}
+	return err.Error()
 }

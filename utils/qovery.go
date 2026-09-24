@@ -1445,7 +1445,7 @@ func watchServices(
 		}
 		consecutiveErrors = 0
 
-		status, done := selectedServicesStatus(statuses, serviceIds, finalServiceState)
+		status, done, err := selectedServicesStatus(statuses, serviceIds, finalServiceState)
 
 		icon := "⏳"
 		if done == len(serviceIds) {
@@ -1455,6 +1455,9 @@ func watchServices(
 		// TODO make something more fancy here to display the status. Use UILIVE or something like that
 		log.Println(GetStatusTextWithColor(finalServiceState) + " (" + strconv.Itoa(done) + "/" + strconv.Itoa(len(serviceIds)) + " services " + icon + " )")
 
+		if err != nil {
+			PrintlnError(err)
+		}
 		if status != Continue {
 			return status
 		}
@@ -1463,10 +1466,10 @@ func watchServices(
 	}
 }
 
-// selectedServicesStatus returns Err as soon as one selected service failed or was canceled,
-// Stop once they all reached finalServiceState, and how many of them did.
+// selectedServicesStatus returns Err with the reason as soon as one selected service failed,
+// was canceled or disappeared, Stop once they all reached finalServiceState, and how many of them did.
 // Another final state means the request is not processed yet (e.g. still DEPLOYED while stopping)
-func selectedServicesStatus(statuses *qovery.EnvironmentStatuses, serviceIds []string, finalServiceState qovery.StateEnum) (Status, int) {
+func selectedServicesStatus(statuses *qovery.EnvironmentStatuses, serviceIds []string, finalServiceState qovery.StateEnum) (Status, int, error) {
 	stateById := make(map[string]qovery.StateEnum)
 	for _, list := range [][]qovery.Status{
 		statuses.Applications, statuses.Containers, statuses.Databases,
@@ -1481,20 +1484,27 @@ func selectedServicesStatus(statuses *qovery.EnvironmentStatuses, serviceIds []s
 	for _, id := range serviceIds {
 		state, found := stateById[id]
 		// a deleted service disappears from the environment statuses
-		if (!found && finalServiceState == qovery.STATEENUM_DELETED) || state == finalServiceState {
+		if !found {
+			if finalServiceState == qovery.STATEENUM_DELETED {
+				done++
+				continue
+			}
+			return Err, done, fmt.Errorf("service %s no longer exists in the environment", id)
+		}
+		if state == finalServiceState {
 			done++
 			continue
 		}
 		if isErrorState(state) || (state == qovery.STATEENUM_CANCELED && finalServiceState != qovery.STATEENUM_CANCELED) {
-			return Err, done
+			return Err, done, fmt.Errorf("service %s is in state %s", id, state)
 		}
 	}
 
 	if done == len(serviceIds) {
-		return Stop, done
+		return Stop, done, nil
 	}
 
-	return Continue, done
+	return Continue, done, nil
 }
 
 func WatchContainer(containerId string, envId string, finalServiceState qovery.StateEnum, client *qovery.APIClient) {
