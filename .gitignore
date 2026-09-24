@@ -90,3 +90,16 @@ dist/
 *.iml
 bin
 qovery
+qovery-cli
+
+# Nix
+result
+
+# Direnv
+.envrc
+.direnv/
+.vscode/
+
+# Test coverage
+coverage.out
+coverage.html

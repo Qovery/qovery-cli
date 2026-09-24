@@ -1,0 +1,82 @@
+package cmd
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	"github.com/pterm/pterm"
+	"github.com/spf13/cobra"
+
+	"github.com/qovery/qovery-cli/utils"
+)
+
+var terraformExternalSecretCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create terraform external secret",
+	Run: func(cmd *cobra.Command, args []string) {
+		utils.Capture(cmd)
+
+		tokenType, token, err := utils.GetAccessToken(false)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		client := utils.GetQoveryClient(tokenType, token)
+		organizationId, projectId, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		terraforms, _, err := client.TerraformsAPI.ListTerraforms(context.Background(), envId).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		terraform := utils.FindByTerraformName(terraforms.GetResults(), terraformName)
+
+		if terraform == nil {
+			utils.PrintlnError(fmt.Errorf("terraform %s not found", terraformName))
+			utils.PrintlnInfo("You can list all terraforms with: qovery terraform list")
+			os.Exit(1)
+		}
+
+		secretManagerAccessId, err := getSecretManagerAccessIdByName(client, organizationId, envId, utils.SecretManagerAccessName)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		err = utils.CreateServiceExternalSecret(client, projectId, envId, terraform.Id, utils.TerraformScope, utils.Key, utils.Reference, secretManagerAccessId, utils.MountPath)
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		utils.Println(fmt.Sprintf("External secret %s has been created", pterm.FgBlue.Sprintf("%s", utils.Key)))
+	},
+}
+
+func init() {
+	terraformExternalSecretCmd.AddCommand(terraformExternalSecretCreateCmd)
+	terraformExternalSecretCreateCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	terraformExternalSecretCreateCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	terraformExternalSecretCreateCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	terraformExternalSecretCreateCmd.Flags().StringVarP(&terraformName, "terraform", "n", "", "Terraform Name")
+	terraformExternalSecretCreateCmd.Flags().StringVarP(&utils.Key, "key", "k", "", "External secret key")
+	terraformExternalSecretCreateCmd.Flags().StringVarP(&utils.Reference, "reference", "r", "", "Reference to the secret in the secrets provider")
+	terraformExternalSecretCreateCmd.Flags().StringVarP(&utils.SecretManagerAccessName, "secret-manager-access-name", "", "", "Secret manager access name")
+	terraformExternalSecretCreateCmd.Flags().StringVarP(&utils.TerraformScope, "scope", "", "TERRAFORM", "Scope of this external secret <PROJECT|ENVIRONMENT|TERRAFORM>")
+	terraformExternalSecretCreateCmd.Flags().StringVarP(&utils.MountPath, "mount-path", "", "", "Path where the secret will be mounted as a file")
+
+	_ = terraformExternalSecretCreateCmd.MarkFlagRequired("key")
+	_ = terraformExternalSecretCreateCmd.MarkFlagRequired("reference")
+	_ = terraformExternalSecretCreateCmd.MarkFlagRequired("secret-manager-access-name")
+	_ = terraformExternalSecretCreateCmd.MarkFlagRequired("terraform")
+}

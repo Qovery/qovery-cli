@@ -1,118 +1,133 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	_ "fmt"
-	"github.com/olekukonko/tablewriter"
-	"github.com/qovery/qovery-cli/utils"
-	"github.com/qovery/qovery-client-go"
-	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 	"os"
-	"time"
+
+	"github.com/qovery/qovery-cli/pkg"
+	"github.com/qovery/qovery-cli/utils"
+	"github.com/spf13/cobra"
 )
 
-var follow bool
+var (
+	rawFormat      bool
+	logJobName     string
+	logServiceName string
+	logServiceId   string
+)
 
 var logCmd = &cobra.Command{
 	Use:   "log",
 	Short: "Print your application logs",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		var logs = getLogs()
-
-		table := setupTable(true)
-		table.AppendBulk(logs)
-		table.Render()
-
-		if len(logs) <= 0 {
-			utils.PrintlnInfo("No logs found. ")
-			os.Exit(0)
-		}
-
-		var lastRenderedLogs = logs
-
-		for follow {
-			table := setupTable(false)
-
-			lastLogDateString := lastRenderedLogs[len(lastRenderedLogs)-1][0]
-			lastLogDate, _ := time.Parse(time.StampMicro, lastLogDateString)
-			var newLogs = getLogs()
-
-			if len(newLogs) > 0 {
-				for _, newLog := range newLogs {
-					newLogDate, _ := time.Parse(time.StampMicro, newLog[0])
-					if lastLogDate.Before(newLogDate) {
-						table.Append(newLog)
-					}
-				}
-				table.Render()
-				lastRenderedLogs = newLogs
-			}
-
-			time.Sleep(time.Second * 5)
-		}
+		getLogs()
 	},
 }
 
-func getLogs() [][]string {
-	token, err := utils.GetAccessToken()
+func getLogs() string {
+	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
 		utils.PrintlnError(err)
-		os.Exit(0)
+		os.Exit(1)
 	}
-	application, _, err := utils.CurrentApplication()
+	client := utils.GetQoveryClient(tokenType, token)
+
+	var service *utils.Service
+
+	orgID, projectID, envID, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
 	if err != nil {
 		utils.PrintlnError(err)
-		os.Exit(0)
+		os.Exit(1)
 	}
 
-	auth := context.WithValue(context.Background(), qovery.ContextAccessToken, string(token))
-	client := qovery.NewAPIClient(qovery.NewConfiguration())
+	switch {
+	case logServiceId != "":
+		service = &utils.Service{ID: utils.Id(logServiceId)}
+	case applicationName != "":
+		app, err := getApplicationContextResource(client, applicationName, envID)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+		service = &utils.Service{ID: utils.Id(app.Id), Name: utils.Name(app.Name), Type: utils.ApplicationType}
+	case containerName != "":
+		container, err := getContainerContextResource(client, containerName, envID)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+		service = &utils.Service{ID: utils.Id(container.Id), Name: utils.Name(container.Name), Type: utils.ContainerType}
+	case databaseName != "":
+		db, err := getDatabaseContextResource(client, databaseName, envID)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+		service = &utils.Service{ID: utils.Id(db.Id), Name: utils.Name(db.Name), Type: utils.DatabaseType}
+	case logJobName != "":
+		job, err := getJobContextResource(client, logJobName, envID)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+		if job.CronJobResponse != nil {
+			service = &utils.Service{ID: utils.Id(job.CronJobResponse.Id), Name: utils.Name(job.CronJobResponse.Name), Type: utils.JobType}
+		} else if job.LifecycleJobResponse != nil {
+			service = &utils.Service{ID: utils.Id(job.LifecycleJobResponse.Id), Name: utils.Name(job.LifecycleJobResponse.Name), Type: utils.JobType}
+		}
+	case logServiceName != "":
+		svc, err := getServiceContextResourceId(client, logServiceName, envID)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+		service = svc
+	default:
+		service, err = utils.CurrentService(true)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(0)
+		}
+	}
 
-	logs, res, err := client.ApplicationLogsApi.ListApplicationLog(auth, string(application)).Execute()
+	e, res, err := client.EnvironmentMainCallsAPI.GetEnvironment(context.Background(), envID).Execute()
 	if err != nil {
 		utils.PrintlnError(err)
-		os.Exit(0)
+		os.Exit(1)
 	}
 	if res.StatusCode >= 400 {
-		utils.PrintlnError(errors.New("Received " + res.Status + " response while listing organizations. "))
+		utils.PrintlnError(errors.New("Received " + res.Status + " response while fetching environment. "))
+		os.Exit(1)
 	}
 
-	var logRows = make([][]string, 0)
-
-	for _, log := range logs.GetResults() {
-		logRows = append(logRows, []string{log.CreatedAt.Format(time.StampMicro), log.Message})
+	req := pkg.LogRequest{
+		ServiceID:      service.ID,
+		OrganizationID: utils.Id(orgID),
+		ProjectID:      utils.Id(projectID),
+		EnvironmentID:  utils.Id(envID),
+		ClusterID:      utils.Id(e.ClusterId),
+		RawFormat:      rawFormat,
 	}
 
-	return logRows
-}
+	pkg.ExecLog(&req)
 
-func setupTable(header bool) *tablewriter.Table {
-	table := tablewriter.NewWriter(os.Stdout)
-
-	if header {
-		table.SetHeader([]string{"TIME", "MESSAGE"})
-	}
-
-	table.SetBorder(false)
-	table.SetHeaderLine(false)
-	table.SetColumnSeparator("")
-	table.SetAutoWrapText(true)
-	table.SetRowLine(false)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetColWidth(160)
-	table.SetBorders(tablewriter.Border{
-		Left:   false,
-		Right:  false,
-		Top:    false,
-		Bottom: false,
-	})
-
-	return table
+	// return logRows
+	return ""
 }
 
 func init() {
 	rootCmd.AddCommand(logCmd)
-	logCmd.Flags().BoolVarP(&follow, "follow", "f", false, "Follow application logs")
+	logCmd.Flags().BoolVarP(&rawFormat, "raw", "r", false, "display logs in raw format (json)")
+	logCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	logCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	logCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	logCmd.Flags().StringVarP(&applicationName, "application", "a", "", "Application Name")
+	logCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
+	logCmd.Flags().StringVarP(&databaseName, "database", "d", "", "Database Name")
+	logCmd.Flags().StringVarP(&logJobName, "job", "j", "", "Job Name")
+	logCmd.Flags().StringVarP(&logServiceName, "service", "s", "", "Service Name")
+	logCmd.Flags().StringVarP(&logServiceId, "service-id", "", "", "Service ID (UUID) - skips name lookup, use when you already have the ID from a console URL")
 }

@@ -1,0 +1,73 @@
+package cmd
+
+import (
+	"context"
+	"fmt"
+	"github.com/pterm/pterm"
+	"github.com/spf13/cobra"
+	"os"
+
+	"github.com/qovery/qovery-cli/utils"
+)
+
+var containerCancelCmd = &cobra.Command{
+	Use:   "cancel",
+	Short: "Cancel a container deployment",
+	Run: func(cmd *cobra.Command, args []string) {
+		utils.Capture(cmd)
+
+		tokenType, token, err := utils.GetAccessToken(false)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		client := utils.GetQoveryClient(tokenType, token)
+		_, _, envId, err := getOrganizationProjectEnvironmentContextResourcesIds(client)
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		containers, _, err := client.ContainersAPI.ListContainer(context.Background(), envId).Execute()
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		container := utils.FindByContainerName(containers.GetResults(), containerName)
+
+		if container == nil {
+			utils.PrintlnError(fmt.Errorf("container %s not found", containerName))
+			utils.PrintlnInfo("You can list all containers with: qovery container list")
+			os.Exit(1)
+		}
+
+		msg, err := utils.CancelServiceDeployment(client, envId, container.Id, utils.ContainerType, watchFlag)
+
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
+
+		if msg != "" {
+			utils.PrintlnInfo(msg)
+			return
+		}
+
+		utils.Println(fmt.Sprintf("Container %s deployment cancelled!", pterm.FgBlue.Sprintf("%s", containerName)))
+	},
+}
+
+func init() {
+	containerCmd.AddCommand(containerCancelCmd)
+	containerCancelCmd.Flags().StringVarP(&organizationName, "organization", "", "", "Organization Name")
+	containerCancelCmd.Flags().StringVarP(&projectName, "project", "", "", "Project Name")
+	containerCancelCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
+	containerCancelCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
+	containerCancelCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch cancel until it's done or an error occurs")
+
+	_ = containerCancelCmd.MarkFlagRequired("container")
+}
