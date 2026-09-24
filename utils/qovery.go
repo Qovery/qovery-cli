@@ -1467,22 +1467,23 @@ func watchServices(
 }
 
 // selectedServicesStatus returns Err with the reason as soon as one selected service failed,
-// was canceled or disappeared, Stop once they all reached finalServiceState, and how many of them did.
+// was canceled or disappeared, Stop once they all reached finalServiceState with nothing left
+// queued for them, and how many of them did.
 // Another final state means the request is not processed yet (e.g. still DEPLOYED while stopping)
 func selectedServicesStatus(statuses *qovery.EnvironmentStatuses, serviceIds []string, finalServiceState qovery.StateEnum) (Status, int, error) {
-	stateById := make(map[string]qovery.StateEnum)
+	statusById := make(map[string]qovery.Status)
 	for _, list := range [][]qovery.Status{
 		statuses.Applications, statuses.Containers, statuses.Databases,
 		statuses.Jobs, statuses.Helms, statuses.Terraforms,
 	} {
 		for _, s := range list {
-			stateById[s.Id] = s.State
+			statusById[s.Id] = s
 		}
 	}
 
 	done := 0
 	for _, id := range serviceIds {
-		state, found := stateById[id]
+		status, found := statusById[id]
 		// a deleted service disappears from the environment statuses
 		if !found {
 			if finalServiceState == qovery.STATEENUM_DELETED {
@@ -1491,12 +1492,14 @@ func selectedServicesStatus(statuses *qovery.EnvironmentStatuses, serviceIds []s
 			}
 			return Err, done, fmt.Errorf("service %s no longer exists in the environment", id)
 		}
-		if state == finalServiceState {
+		// a service keeps the state of its previous deployment until the engine picks up the
+		// request, so the state alone cannot tell "already deployed" from "deploy not started yet"
+		if status.State == finalServiceState && !hasQueuedRequest(status) {
 			done++
 			continue
 		}
-		if isErrorState(state) || (state == qovery.STATEENUM_CANCELED && finalServiceState != qovery.STATEENUM_CANCELED) {
-			return Err, done, fmt.Errorf("service %s is in state %s", id, state)
+		if isErrorState(status.State) || (status.State == qovery.STATEENUM_CANCELED && finalServiceState != qovery.STATEENUM_CANCELED) {
+			return Err, done, fmt.Errorf("service %s is in state %s", id, status.State)
 		}
 	}
 
@@ -1505,6 +1508,14 @@ func selectedServicesStatus(statuses *qovery.EnvironmentStatuses, serviceIds []s
 	}
 
 	return Continue, done, nil
+}
+
+// hasQueuedRequest reports whether the API still has a deployment request waiting for the service.
+// This is what keeps the watch running between the moment the request is accepted and the moment
+// the engine starts it, while the service still reports the final state of its previous deployment
+func hasQueuedRequest(status qovery.Status) bool {
+	// the field is present but null when nothing is queued, so IsSet() is not enough
+	return status.DeploymentRequestsCount > 0 || status.DeploymentRequestId.Get() != nil
 }
 
 func WatchContainer(containerId string, envId string, finalServiceState qovery.StateEnum, client *qovery.APIClient) {
