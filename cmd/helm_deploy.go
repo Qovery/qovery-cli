@@ -37,11 +37,9 @@ func WatchHelmDeployment(
 	if watchFlag {
 		time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
 		if len(helmList) == 1 {
-			utils.WatchHelm(helmList[0].Id, envId, finalServiceState, client)
+			utils.WatchHelm(helmList[0].Id, envId, client)
 		} else {
-			utils.WatchServices(utils.Map(helmList, func(helm *qovery.HelmResponse) string {
-				return helm.Id
-			}), envId, finalServiceState, client)
+			utils.WatchEnvironment(envId, finalServiceState, client)
 		}
 	}
 }

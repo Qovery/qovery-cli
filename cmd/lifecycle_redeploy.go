@@ -27,7 +27,7 @@ var lifecycleRedeployCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to redeploy lifecycle job(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", lifecycleName, lifecycleNames)))
-		WatchJobDeployment(client, envId, lifecycleList, watchFlag, qovery.STATEENUM_DEPLOYED)
+		WatchJobDeployment(client, envId, lifecycleList, watchFlag, qovery.STATEENUM_RESTARTED)
 	},
 }
 

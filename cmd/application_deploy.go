@@ -39,11 +39,9 @@ func WatchApplicationDeployment(
 	if watchFlag {
 		time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
 		if len(applications) == 1 {
-			utils.WatchApplication(applications[0].Id, envId, finalServiceState, client)
+			utils.WatchApplication(applications[0].Id, envId, client)
 		} else {
-			utils.WatchServices(utils.Map(applications, func(application *qovery.Application) string {
-				return application.Id
-			}), envId, finalServiceState, client)
+			utils.WatchEnvironment(envId, finalServiceState, client)
 		}
 	}
 }

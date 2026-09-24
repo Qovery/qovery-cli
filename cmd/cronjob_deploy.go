@@ -44,11 +44,9 @@ func WatchJobDeployment(
 	if watchFlag {
 		time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
 		if len(cronJobs) == 1 {
-			utils.WatchJob(utils.GetJobId(cronJobs[0]), envId, finalServiceState, client)
+			utils.WatchJob(utils.GetJobId(cronJobs[0]), envId, client)
 		} else {
-			utils.WatchServices(utils.Map(cronJobs, func(job *qovery.JobResponse) string {
-				return utils.GetJobId(job)
-			}), envId, finalServiceState, client)
+			utils.WatchEnvironment(envId, finalServiceState, client)
 		}
 	}
 }

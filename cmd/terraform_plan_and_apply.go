@@ -88,9 +88,7 @@ func WatchTerraformDeployment(
 ) {
 	if watchFlag {
 		time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
-		utils.WatchServices(utils.Map(terraforms, func(terraform *qovery.TerraformResponse) string {
-			return terraform.Id
-		}), envId, finalServiceState, client)
+		utils.WatchEnvironment(envId, finalServiceState, client)
 	}
 }
 

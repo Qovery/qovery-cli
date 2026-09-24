@@ -259,37 +259,21 @@ func watchServiceDeployment(
 		svc := services[0]
 		switch svc.Type {
 		case utils.ApplicationType:
-			utils.WatchApplication(svc.Application.Id, envId, qovery.STATEENUM_DEPLOYED, client)
+			utils.WatchApplication(svc.Application.Id, envId, client)
 		case utils.ContainerType:
-			utils.WatchContainer(svc.Container.Id, envId, qovery.STATEENUM_DEPLOYED, client)
+			utils.WatchContainer(svc.Container.Id, envId, client)
 		case utils.DatabaseType:
-			utils.WatchDatabase(svc.Database.Id, envId, qovery.STATEENUM_DEPLOYED, client)
+			utils.WatchDatabase(svc.Database.Id, envId, client)
 		case utils.JobType:
 			jobId := utils.GetJobId(svc.Job)
-			utils.WatchJob(jobId, envId, qovery.STATEENUM_DEPLOYED, client)
+			utils.WatchJob(jobId, envId, client)
 		case utils.HelmType:
-			utils.WatchHelm(svc.Helm.Id, envId, qovery.STATEENUM_DEPLOYED, client)
+			utils.WatchHelm(svc.Helm.Id, envId, client)
 		}
 	} else {
-		utils.WatchServices(utils.Map(services, serviceDeployId), envId, qovery.STATEENUM_DEPLOYED, client)
+		// Watch entire environment
+		utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
 	}
-}
-
-func serviceDeployId(svc serviceDeployInfo) string {
-	switch svc.Type {
-	case utils.ApplicationType:
-		return svc.Application.Id
-	case utils.ContainerType:
-		return svc.Container.Id
-	case utils.DatabaseType:
-		return svc.Database.Id
-	case utils.JobType:
-		return utils.GetJobId(svc.Job)
-	case utils.HelmType:
-		return svc.Helm.Id
-	}
-
-	return ""
 }
 
 func init() {
