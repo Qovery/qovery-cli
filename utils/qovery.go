@@ -1415,7 +1415,7 @@ func WatchServices(serviceIds []string, envId string, finalServiceState qovery.S
 			return
 		}
 
-		status, done := selectedServicesStatus(statuses, serviceIds)
+		status, done := selectedServicesStatus(statuses, serviceIds, finalServiceState)
 
 		icon := "⏳"
 		if done == len(serviceIds) {
@@ -1437,9 +1437,10 @@ func WatchServices(serviceIds []string, envId string, finalServiceState qovery.S
 	}
 }
 
-// selectedServicesStatus returns Err as soon as one selected service failed, Stop once
-// they all reached a final state, and how many of them did
-func selectedServicesStatus(statuses *qovery.EnvironmentStatuses, serviceIds []string) (Status, int) {
+// selectedServicesStatus returns Err as soon as one selected service failed or was canceled,
+// Stop once they all reached finalServiceState, and how many of them did.
+// Another final state means the request is not processed yet (e.g. still DEPLOYED while stopping)
+func selectedServicesStatus(statuses *qovery.EnvironmentStatuses, serviceIds []string, finalServiceState qovery.StateEnum) (Status, int) {
 	stateById := make(map[string]qovery.StateEnum)
 	for _, list := range [][]qovery.Status{
 		statuses.Applications, statuses.Containers, statuses.Databases,
@@ -1454,11 +1455,11 @@ func selectedServicesStatus(statuses *qovery.EnvironmentStatuses, serviceIds []s
 	for _, id := range serviceIds {
 		state, found := stateById[id]
 		// a deleted service disappears from the environment statuses
-		if !found || isFinalState(state) {
+		if (!found && finalServiceState == qovery.STATEENUM_DELETED) || state == finalServiceState {
 			done++
 			continue
 		}
-		if isErrorState(state) {
+		if isErrorState(state) || (state == qovery.STATEENUM_CANCELED && finalServiceState != qovery.STATEENUM_CANCELED) {
 			return Err, done
 		}
 	}
@@ -1490,7 +1491,8 @@ out:
 		time.Sleep(3 * time.Second)
 	}
 
-	// the status call may have failed while the service is still in progress, check it through the environment statuses
+	// the service may have stopped in its previous final state (request not processed yet) or its status call
+	// failed, so wait until it reaches finalServiceState through the environment statuses
 	WatchServices([]string{containerId}, envId, finalServiceState, client)
 }
 
@@ -1514,7 +1516,8 @@ out:
 		time.Sleep(3 * time.Second)
 	}
 
-	// the status call may have failed while the service is still in progress, check it through the environment statuses
+	// the service may have stopped in its previous final state (request not processed yet) or its status call
+	// failed, so wait until it reaches finalServiceState through the environment statuses
 	WatchServices([]string{applicationId}, envId, finalServiceState, client)
 }
 
@@ -1538,7 +1541,8 @@ out:
 		time.Sleep(3 * time.Second)
 	}
 
-	// the status call may have failed while the service is still in progress, check it through the environment statuses
+	// the service may have stopped in its previous final state (request not processed yet) or its status call
+	// failed, so wait until it reaches finalServiceState through the environment statuses
 	WatchServices([]string{databaseId}, envId, finalServiceState, client)
 }
 
@@ -1562,7 +1566,8 @@ out:
 		time.Sleep(3 * time.Second)
 	}
 
-	// the status call may have failed while the service is still in progress, check it through the environment statuses
+	// the service may have stopped in its previous final state (request not processed yet) or its status call
+	// failed, so wait until it reaches finalServiceState through the environment statuses
 	WatchServices([]string{jobId}, envId, finalServiceState, client)
 }
 
@@ -1586,7 +1591,8 @@ out:
 		time.Sleep(3 * time.Second)
 	}
 
-	// the status call may have failed while the service is still in progress, check it through the environment statuses
+	// the service may have stopped in its previous final state (request not processed yet) or its status call
+	// failed, so wait until it reaches finalServiceState through the environment statuses
 	WatchServices([]string{helmId}, envId, finalServiceState, client)
 }
 

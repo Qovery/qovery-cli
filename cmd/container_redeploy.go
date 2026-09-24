@@ -26,7 +26,7 @@ var containerRedeployCmd = &cobra.Command{
 			ContainerDeployRequest(qovery.ContainerDeployRequest{}).Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to redeploy container(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", containerName, containerNames)))
-		WatchContainerDeployment(client, envId, containerList, watchFlag, qovery.STATEENUM_RESTARTED)
+		WatchContainerDeployment(client, envId, containerList, watchFlag, qovery.STATEENUM_DEPLOYED)
 	},
 }
 

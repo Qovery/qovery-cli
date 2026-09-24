@@ -28,7 +28,7 @@ var helmRedeployCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to redeploy helm(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", helmName, helmNames)))
-		WatchHelmDeployment(client, envId, helmList, watchFlag, qovery.STATEENUM_RESTARTED)
+		WatchHelmDeployment(client, envId, helmList, watchFlag, qovery.STATEENUM_DEPLOYED)
 	},
 }
 

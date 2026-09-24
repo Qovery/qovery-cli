@@ -26,7 +26,7 @@ var databaseRedeployCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to redeploy database(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", databaseName, databaseNames)))
-		WatchDatabaseDeployment(client, envId, databaseList, watchFlag, qovery.STATEENUM_RESTARTED)
+		WatchDatabaseDeployment(client, envId, databaseList, watchFlag, qovery.STATEENUM_DEPLOYED)
 	},
 }
 
