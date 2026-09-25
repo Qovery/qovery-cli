@@ -1,5 +1,5 @@
 {
- "description": "containers 1-5 are deployed, then 2s later all 10 are deployed: containers 6-10 wait in the queue behind the first deployment (the Hyperline incident case)",
+ "description": "request A deploys containers 1-5. Request B, sent 2s after A, deploys all 10. Containers 6-10 wait in the queue until A is done (the Hyperline incident case). B then deploys the 10 containers",
  "final_state": "DEPLOYED",
  "service_ids": ["svc-01", "svc-02", "svc-03", "svc-04", "svc-05", "svc-06", "svc-07", "svc-08", "svc-09", "svc-10"],
  "before": {"svc-01": "env-3", "svc-02": "env-3", "svc-03": "env-3", "svc-04": "env-3", "svc-05": "env-3", "svc-06": "env-2", "svc-07": "env-2", "svc-08": "env-2", "svc-09": "env-2", "svc-10": "env-2"},

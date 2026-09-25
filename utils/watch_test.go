@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/qovery/qovery-client-go"
 )
@@ -131,11 +132,23 @@ func TestServicesTracker(t *testing.T) {
 			expected:   Stop,
 		},
 		{
-			name:       "without snapshot, done only after being seen in progress",
-			before:     nil,
+			// a previous request was running when the watch started: its end must not count
+			name:       "previous execution in progress then done is not done",
+			before:     map[string]string{"a": "env-1"},
 			finalState: qovery.STATEENUM_DEPLOYED,
 			polls: []poll{
+				{"a": s(qovery.STATEENUM_DEPLOYING, "env-1")},
 				{"a": s(qovery.STATEENUM_DEPLOYED, "env-1")},
+			},
+			expected: Continue,
+		},
+		{
+			name:       "previous execution in progress, then new execution done",
+			before:     map[string]string{"a": "env-1"},
+			finalState: qovery.STATEENUM_DEPLOYED,
+			polls: []poll{
+				{"a": s(qovery.STATEENUM_DEPLOYING, "env-1")},
+				{"a": s(qovery.STATEENUM_DEPLOYMENT_QUEUED, "env-1")},
 				{"a": s(qovery.STATEENUM_DEPLOYING, "env-2")},
 				{"a": s(qovery.STATEENUM_DEPLOYED, "env-2")},
 			},
@@ -178,6 +191,14 @@ func TestServicesTracker(t *testing.T) {
 			finalState: qovery.STATEENUM_DELETED,
 			polls:      []poll{{"a": s(qovery.STATEENUM_DELETE_QUEUED, "env-1")}, {}},
 			expected:   Stop,
+		},
+		{
+			name:          "service missing when the watch started is not counted as deleted",
+			before:        map[string]string{},
+			finalState:    qovery.STATEENUM_DELETED,
+			polls:         []poll{{}},
+			expected:      Err,
+			expectedError: "service a was not in the environment when the watch started",
 		},
 		{
 			name:          "missing service fails the watch when not deleting",
@@ -257,13 +278,16 @@ func TestWatchServicesRetriesApiErrors(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			calls := 0
 			fetch := func() (*qovery.EnvironmentStatusesWithStages, error) {
+				if calls >= len(test.responses) {
+					t.Fatalf("watchServices fetched more than the %d prepared responses", len(test.responses))
+				}
 				r := test.responses[calls]
 				calls++
 				return r.statuses, r.err
 			}
 
 			tracker := newServicesTracker([]string{"a"}, map[string]string{"a": "env-1"})
-			got := watchServices(fetch, func() {}, tracker, qovery.STATEENUM_DEPLOYED)
+			got := watchServices(fetch, func() {}, func() bool { return false }, tracker, qovery.STATEENUM_DEPLOYED)
 			if got != test.expected {
 				t.Errorf("watchServices = %v, want %v", got, test.expected)
 			}
@@ -279,4 +303,78 @@ func errorMessage(err error) string {
 		return ""
 	}
 	return err.Error()
+}
+
+func TestWatchServicesTimeout(t *testing.T) {
+	deploying := withStages(map[string]traceServiceStatus{"a": {State: qovery.STATEENUM_DEPLOYING, ExecutionId: "env-2"}})
+	calls := 0
+	fetch := func() (*qovery.EnvironmentStatusesWithStages, error) {
+		calls++
+		return deploying, nil
+	}
+	expired := func() bool { return calls >= 3 }
+
+	tracker := newServicesTracker([]string{"a"}, map[string]string{"a": "env-1"})
+	if got := watchServices(fetch, func() {}, expired, tracker, qovery.STATEENUM_DEPLOYED); got != Err {
+		t.Fatalf("watchServices = %v, want Err once the deadline is passed", got)
+	}
+	if calls != 3 {
+		t.Fatalf("watchServices fetched %d times, want 3", calls)
+	}
+}
+
+func TestSnapshotExecutions(t *testing.T) {
+	statuses := withStages(map[string]traceServiceStatus{"a": {State: qovery.STATEENUM_DEPLOYED, ExecutionId: "env-1"}})
+	apiError := errors.New("503 Service Unavailable")
+
+	t.Run("transient errors are retried", func(t *testing.T) {
+		calls := 0
+		fetch := func() (*qovery.EnvironmentStatusesWithStages, error) {
+			calls++
+			if calls < 3 {
+				return nil, apiError
+			}
+			return statuses, nil
+		}
+		before, err := snapshotExecutions(fetch, func() {})
+		if err != nil {
+			t.Fatalf("snapshotExecutions returned %v", err)
+		}
+		if before["a"] != "env-1" {
+			t.Fatalf("snapshot = %v, want a: env-1", before)
+		}
+	})
+
+	t.Run("errors in a row fail before the request is sent", func(t *testing.T) {
+		calls := 0
+		fetch := func() (*qovery.EnvironmentStatusesWithStages, error) {
+			calls++
+			return nil, apiError
+		}
+		if _, err := snapshotExecutions(fetch, func() {}); err == nil {
+			t.Fatal("snapshotExecutions returned no error, want one")
+		}
+		if calls != maxConsecutiveStatusErrors {
+			t.Fatalf("snapshotExecutions fetched %d times, want %d", calls, maxConsecutiveStatusErrors)
+		}
+	})
+}
+
+func TestWatchTimeout(t *testing.T) {
+	tests := []struct {
+		value    string
+		expected time.Duration
+	}{
+		{"", defaultWatchTimeout},
+		{"2h", 2 * time.Hour},
+		{"90m", 90 * time.Minute},
+		{"not-a-duration", defaultWatchTimeout},
+		{"-5m", defaultWatchTimeout},
+	}
+	for _, test := range tests {
+		t.Setenv("QOVERY_CLI_WATCH_TIMEOUT", test.value)
+		if got := watchTimeout(); got != test.expected {
+			t.Errorf("watchTimeout() with %q = %v, want %v", test.value, got, test.expected)
+		}
+	}
 }

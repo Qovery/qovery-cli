@@ -14,6 +14,10 @@ import (
 // giving up, about 15 seconds with the 3 seconds poll interval
 const maxConsecutiveStatusErrors = 5
 
+// defaultWatchTimeout bounds a whole watch, so a request that never runs cannot block a CI job
+// forever. QOVERY_CLI_WATCH_TIMEOUT (a Go duration such as "2h") overrides it for long builds.
+const defaultWatchTimeout = time.Hour
+
 // ServicesWatch follows the services targeted by one request until each of them is done with it.
 //
 // It reads /statusesWithStages rather than /statuses: only the former reports a service as
@@ -29,6 +33,7 @@ type ServicesWatch struct {
 
 // NewServicesWatch must be called before the request is sent: it records the execution of each
 // service at that time, so that Wait can tell a finished new execution from the previous one.
+// Without that record the watch cannot be reliable, so it exits 1 before any request is sent.
 // It returns nil when enabled is false, and Wait on a nil watch does nothing.
 func NewServicesWatch(client *qovery.APIClient, envId string, serviceIds []string, enabled bool) *ServicesWatch {
 	if !enabled {
@@ -36,12 +41,28 @@ func NewServicesWatch(client *qovery.APIClient, envId string, serviceIds []strin
 	}
 
 	w := &ServicesWatch{client: client, envId: envId, serviceIds: serviceIds}
-	// without this snapshot, Wait only relies on seeing each service queued or in progress
-	if statuses, err := w.fetch(); err == nil {
-		w.before = executionIds(statuses)
+	before, err := snapshotExecutions(w.fetch, func() { time.Sleep(3 * time.Second) })
+	if err != nil {
+		PrintlnErrorToStderr(fmt.Errorf("cannot watch the services, no request was sent: %w", err))
+		os.Exit(1)
 	}
+	w.before = before
 
 	return w
+}
+
+func snapshotExecutions(fetch func() (*qovery.EnvironmentStatusesWithStages, error), sleep func()) (map[string]string, error) {
+	var err error
+	for attempt := 1; attempt <= maxConsecutiveStatusErrors; attempt++ {
+		var statuses *qovery.EnvironmentStatusesWithStages
+		if statuses, err = fetch(); err == nil {
+			return executionIds(statuses), nil
+		}
+		if attempt < maxConsecutiveStatusErrors {
+			sleep()
+		}
+	}
+	return nil, fmt.Errorf("cannot get the services status after %d attempts: %w", maxConsecutiveStatusErrors, err)
 }
 
 // Wait blocks until every service reached finalServiceState for this request, and exits 1 if
@@ -53,9 +74,24 @@ func (w *ServicesWatch) Wait(finalServiceState qovery.StateEnum) {
 
 	tracker := newServicesTracker(w.serviceIds, w.before)
 	sleep := func() { time.Sleep(3 * time.Second) }
-	if watchServices(w.fetch, sleep, tracker, finalServiceState) == Err {
+	deadline := time.Now().Add(watchTimeout())
+	expired := func() bool { return time.Now().After(deadline) }
+	if watchServices(w.fetch, sleep, expired, tracker, finalServiceState) == Err {
 		os.Exit(1)
 	}
+}
+
+func watchTimeout() time.Duration {
+	value := os.Getenv("QOVERY_CLI_WATCH_TIMEOUT")
+	if value == "" {
+		return defaultWatchTimeout
+	}
+	timeout, err := time.ParseDuration(value)
+	if err != nil || timeout <= 0 {
+		PrintlnErrorToStderr(fmt.Errorf("invalid QOVERY_CLI_WATCH_TIMEOUT %q, using %s", value, defaultWatchTimeout))
+		return defaultWatchTimeout
+	}
+	return timeout
 }
 
 func (w *ServicesWatch) fetch() (*qovery.EnvironmentStatusesWithStages, error) {
@@ -66,11 +102,17 @@ func (w *ServicesWatch) fetch() (*qovery.EnvironmentStatusesWithStages, error) {
 func watchServices(
 	fetch func() (*qovery.EnvironmentStatusesWithStages, error),
 	sleep func(),
+	expired func() bool,
 	tracker *servicesTracker,
 	finalServiceState qovery.StateEnum,
 ) Status {
 	consecutiveErrors := 0
 	for {
+		if expired() {
+			PrintlnErrorToStderr(fmt.Errorf("the services did not reach %s before the watch timeout, set QOVERY_CLI_WATCH_TIMEOUT to wait longer", finalServiceState))
+			return Err
+		}
+
 		statuses, err := fetch()
 
 		// a transient API error must not end the watch as a success
@@ -107,22 +149,21 @@ func watchServices(
 
 type servicesTracker struct {
 	serviceIds []string
-	// execution id of each service when the watch started, nil if it could not be fetched
+	// execution id of each service when the watch started
 	before map[string]string
-	// services seen queued or in progress since the watch started
-	started map[string]bool
 }
 
 func newServicesTracker(serviceIds []string, before map[string]string) *servicesTracker {
-	return &servicesTracker{serviceIds: serviceIds, before: before, started: make(map[string]bool)}
+	return &servicesTracker{serviceIds: serviceIds, before: before}
 }
 
 // update returns Err with the reason as soon as one service failed, was canceled, ended in
 // another state or disappeared, Stop once they all reached finalServiceState, and how many did.
 //
-// A final state only counts once the service handled the request: it was seen queued or in
-// progress, or its execution changed since the watch started. Otherwise the final state is
-// still the one of the previous execution.
+// A state only counts once it comes from a new execution: every request starts one, so a final
+// or error state under the execution recorded before the request belongs to a previous request.
+// When the new execution ends while our request still waits (another request ran first),
+// /statusesWithStages reports the service as *_QUEUED, so the watch keeps waiting.
 func (t *servicesTracker) update(statuses *qovery.EnvironmentStatusesWithStages, finalServiceState qovery.StateEnum) (Status, int, error) {
 	byId := make(map[string]qovery.Status)
 	for _, s := range allStatuses(statuses) {
@@ -132,8 +173,11 @@ func (t *servicesTracker) update(statuses *qovery.EnvironmentStatusesWithStages,
 	done := 0
 	for _, id := range t.serviceIds {
 		s, found := byId[id]
-		// a deleted service disappears from the environment statuses
 		if !found {
+			if _, existed := t.before[id]; !existed {
+				return Err, done, fmt.Errorf("service %s was not in the environment when the watch started", id)
+			}
+			// a deleted service disappears from the environment statuses
 			if finalServiceState == qovery.STATEENUM_DELETED {
 				done++
 				continue
@@ -141,13 +185,8 @@ func (t *servicesTracker) update(statuses *qovery.EnvironmentStatusesWithStages,
 			return Err, done, fmt.Errorf("service %s no longer exists in the environment", id)
 		}
 
-		if !isFinalState(s.State) && !isErrorState(s.State) {
-			t.started[id] = true
-			continue
-		}
-
-		handled := t.started[id] || (t.before != nil && s.GetExecutionId() != t.before[id])
-		if !handled {
+		// queued, in progress, or still the state of a previous execution
+		if s.GetExecutionId() == t.before[id] || (!isFinalState(s.State) && !isErrorState(s.State)) {
 			continue
 		}
 
