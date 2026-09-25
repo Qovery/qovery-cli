@@ -23,6 +23,7 @@ var helmStopCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		helmList := buildHelmListFromHelmNames(client, envId, helmName, helmNames)
+		watch := utils.NewServicesWatch(client, envId, helmIds(helmList), watchFlag)
 		_, err := client.EnvironmentActionsAPI.
 			StopSelectedServices(context.Background(), envId).
 			EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -33,7 +34,7 @@ var helmStopCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to stop helm(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", helmName, helmNames)))
-		WatchHelmDeployment(client, envId, helmList, watchFlag, qovery.STATEENUM_STOPPED)
+		watch.Wait(qovery.STATEENUM_STOPPED)
 	},
 }
 

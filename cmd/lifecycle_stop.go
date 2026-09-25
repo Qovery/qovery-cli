@@ -24,6 +24,7 @@ var lifecycleStopCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		lifecycleList := buildLifecycleListFromLifecycleNames(client, envId, lifecycleName, lifecycleNames)
+		watch := utils.NewServicesWatch(client, envId, jobIds(lifecycleList), watchFlag)
 		_, err := client.EnvironmentActionsAPI.
 			StopSelectedServices(context.Background(), envId).
 			EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -34,7 +35,7 @@ var lifecycleStopCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to stop lifecycle job(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", lifecycleName, lifecycleNames)))
-		WatchJobDeployment(client, envId, lifecycleList, watchFlag, qovery.STATEENUM_STOPPED)
+		watch.Wait(qovery.STATEENUM_STOPPED)
 	},
 }
 

@@ -21,6 +21,7 @@ var helmRedeployCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		helmList := buildHelmListFromHelmNames(client, envId, helmName, helmNames)
+		watch := utils.NewServicesWatch(client, envId, helmIds(helmList), watchFlag)
 
 		_, _, err := client.HelmActionsAPI.
 			DeployHelm(context.Background(), helmList[0].Id).
@@ -28,7 +29,7 @@ var helmRedeployCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to redeploy helm(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", helmName, helmNames)))
-		WatchHelmDeployment(client, envId, helmList, watchFlag, qovery.STATEENUM_RESTARTED)
+		watch.Wait(qovery.STATEENUM_DEPLOYED)
 	},
 }
 

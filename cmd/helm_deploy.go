@@ -6,7 +6,6 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"time"
 )
 
 var helmDeployCmd = &cobra.Command{
@@ -20,28 +19,12 @@ var helmDeployCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		helmList := buildHelmListFromHelmNames(client, envId, helmName, helmNames)
+		watch := utils.NewServicesWatch(client, envId, helmIds(helmList), watchFlag)
 		err := utils.DeployHelms(client, envId, helmList, chartVersion, chartGitCommitId, valuesOverrideCommitId)
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to deploy helm(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", helmName, helmNames)))
-		WatchHelmDeployment(client, envId, helmList, watchFlag, qovery.STATEENUM_DEPLOYED)
+		watch.Wait(qovery.STATEENUM_DEPLOYED)
 	},
-}
-
-func WatchHelmDeployment(
-	client *qovery.APIClient,
-	envId string,
-	helmList []*qovery.HelmResponse,
-	watchFlag bool,
-	finalServiceState qovery.StateEnum,
-) {
-	if watchFlag {
-		time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
-		if len(helmList) == 1 {
-			utils.WatchHelm(helmList[0].Id, envId, client)
-		} else {
-			utils.WatchEnvironment(envId, finalServiceState, client)
-		}
-	}
 }
 
 func init() {

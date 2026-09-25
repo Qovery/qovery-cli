@@ -20,6 +20,7 @@ var applicationRedeployCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		applicationList := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)
+		watch := utils.NewServicesWatch(client, envId, applicationIds(applicationList), watchFlag)
 		application := applicationList[0]
 
 		var commitId string
@@ -39,7 +40,7 @@ var applicationRedeployCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to redeploy application(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", applicationName, applicationNames)))
-		WatchApplicationDeployment(client, envId, applicationList, watchFlag, qovery.STATEENUM_RESTARTED)
+		watch.Wait(qovery.STATEENUM_DEPLOYED)
 	},
 }
 

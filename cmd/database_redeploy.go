@@ -21,12 +21,13 @@ var databaseRedeployCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		databaseList := buildDatabaseListFromDatabaseNames(client, envId, databaseName, databaseNames)
+		watch := utils.NewServicesWatch(client, envId, databaseIds(databaseList), watchFlag)
 		_, _, err := client.DatabaseActionsAPI.
 			DeployDatabase(context.Background(), databaseList[0].Id).
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to redeploy database(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", databaseName, databaseNames)))
-		WatchDatabaseDeployment(client, envId, databaseList, watchFlag, qovery.STATEENUM_RESTARTED)
+		watch.Wait(qovery.STATEENUM_DEPLOYED)
 	},
 }
 

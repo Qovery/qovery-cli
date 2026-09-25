@@ -21,6 +21,7 @@ var lifecycleDeleteCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		lifecycleList := buildLifecycleListFromLifecycleNames(client, envId, lifecycleName, lifecycleNames)
+		watch := utils.NewServicesWatch(client, envId, jobIds(lifecycleList), watchFlag)
 
 		_, err := client.EnvironmentActionsAPI.
 			DeleteSelectedServices(context.Background(), envId).
@@ -32,7 +33,7 @@ var lifecycleDeleteCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to delete lifecycle job(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", lifecycleName, lifecycleNames)))
-		WatchJobDeployment(client, envId, lifecycleList, watchFlag, qovery.STATEENUM_DELETED)
+		watch.Wait(qovery.STATEENUM_DELETED)
 	},
 }
 

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/pterm/pterm"
@@ -22,17 +21,11 @@ var databaseRestartCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		databaseList := buildDatabaseListFromDatabaseNames(client, envId, databaseName, databaseNames)
-		_, _, err := client.EnvironmentActionsAPI.
-			RebootServices(context.Background(), envId).
-			RebootServicesRequest(qovery.RebootServicesRequest{
-				DatabaseIds: utils.Map(databaseList, func(database *qovery.Database) string {
-					return database.Id
-				}),
-			}).
-			Execute()
+		watch := utils.NewServicesWatch(client, envId, databaseIds(databaseList), watchFlag)
+		err := utils.RebootServices(client, envId, qovery.RebootServicesRequest{DatabaseIds: databaseIds(databaseList)})
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to restart database(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", databaseName, databaseNames)))
-		WatchDatabaseDeployment(client, envId, databaseList, watchFlag, qovery.STATEENUM_RESTARTED)
+		watch.Wait(qovery.STATEENUM_RESTARTED)
 	},
 }
 

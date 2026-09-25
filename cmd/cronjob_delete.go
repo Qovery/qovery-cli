@@ -19,6 +19,7 @@ var cronjobDeleteCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		cronJobList := buildCronJobListFromCronjobNames(client, envId, cronjobName, cronjobNames)
+		watch := utils.NewServicesWatch(client, envId, jobIds(cronJobList), watchFlag)
 		_, err := client.EnvironmentActionsAPI.
 			DeleteSelectedServices(context.Background(), envId).
 			EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -28,7 +29,7 @@ var cronjobDeleteCmd = &cobra.Command{
 			}).
 			Execute()
 		checkError(err)
-		WatchJobDeployment(client, envId, cronJobList, watchFlag, qovery.STATEENUM_DELETED)
+		watch.Wait(qovery.STATEENUM_DELETED)
 	},
 }
 

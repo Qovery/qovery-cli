@@ -26,11 +26,12 @@ operations are running.`,
 
 		// force unlock terraform state
 		terraformList := buildTerraformListFromTerraformNames(client, envId, terraformName, terraformNames)
+		watch := utils.NewServicesWatch(client, envId, terraformIds(terraformList), watchFlag)
 		action := "FORCE_UNLOCK"
 		err := utils.DeployTerraforms(client, envId, terraformList, terraformCommitId, &action)
 		utils.CheckError(err)
 		utils.Println(fmt.Sprintf("Request to force unlock terraform(s) %s state has been queued..", pterm.FgBlue.Sprintf("%s%s", terraformName, terraformNames)))
-		WatchTerraformDeployment(client, envId, terraformList, watchFlag, qovery.STATEENUM_DEPLOYED)
+		watch.Wait(qovery.STATEENUM_DEPLOYED)
 	},
 }
 

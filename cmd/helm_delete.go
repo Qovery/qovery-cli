@@ -21,6 +21,7 @@ var helmDeleteCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		helmList := buildHelmListFromHelmNames(client, envId, helmName, helmNames)
+		watch := utils.NewServicesWatch(client, envId, helmIds(helmList), watchFlag)
 		_, err := client.EnvironmentActionsAPI.
 			DeleteSelectedServices(context.Background(), envId).
 			EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -31,7 +32,7 @@ var helmDeleteCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to delete helm(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", helmName, helmNames)))
-		WatchHelmDeployment(client, envId, helmList, watchFlag, qovery.STATEENUM_DELETED)
+		watch.Wait(qovery.STATEENUM_DELETED)
 	},
 }
 

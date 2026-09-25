@@ -1405,136 +1405,6 @@ func WatchEnvironmentWithOptions(envId string, finalServiceState qovery.StateEnu
 	}
 }
 
-func WatchContainer(containerId string, envId string, client *qovery.APIClient) {
-out:
-	for {
-		status, _, err := client.ContainerMainCallsAPI.GetContainerStatus(context.Background(), containerId).Execute()
-
-		if err != nil {
-			break
-		}
-
-		switch WatchStatus(status) {
-		case Continue:
-		case Stop:
-			break out
-		case Err:
-			os.Exit(1)
-		}
-
-		time.Sleep(3 * time.Second)
-	}
-
-	log.Println("Check environment status..")
-
-	// check status of environment
-	WatchEnvironmentWithOptions(envId, "unused", client, true)
-}
-
-func WatchApplication(applicationId string, envId string, client *qovery.APIClient) {
-out:
-	for {
-		status, _, err := client.ApplicationMainCallsAPI.GetApplicationStatus(context.Background(), applicationId).Execute()
-
-		if err != nil {
-			break
-		}
-
-		switch WatchStatus(status) {
-		case Continue:
-		case Stop:
-			break out
-		case Err:
-			os.Exit(1)
-		}
-
-		time.Sleep(3 * time.Second)
-	}
-
-	log.Println("Check environment status..")
-
-	// check status of environment
-	WatchEnvironmentWithOptions(envId, "unused", client, true)
-}
-
-func WatchDatabase(databaseId string, envId string, client *qovery.APIClient) {
-out:
-	for {
-		status, _, err := client.DatabaseMainCallsAPI.GetDatabaseStatus(context.Background(), databaseId).Execute()
-
-		if err != nil {
-			break
-		}
-
-		switch WatchStatus(status) {
-		case Continue:
-		case Stop:
-			break out
-		case Err:
-			os.Exit(1)
-		}
-
-		time.Sleep(3 * time.Second)
-	}
-
-	log.Println("Check environment status..")
-
-	// check status of environment
-	WatchEnvironmentWithOptions(envId, "unused", client, true)
-}
-
-func WatchJob(jobId string, envId string, client *qovery.APIClient) {
-out:
-	for {
-		status, _, err := client.JobMainCallsAPI.GetJobStatus(context.Background(), jobId).Execute()
-
-		if err != nil {
-			break
-		}
-
-		switch WatchStatus(status) {
-		case Continue:
-		case Stop:
-			break out
-		case Err:
-			os.Exit(1)
-		}
-
-		time.Sleep(3 * time.Second)
-	}
-
-	log.Println("Check environment status..")
-
-	// check status of environment
-	WatchEnvironmentWithOptions(envId, "unused", client, true)
-}
-
-func WatchHelm(helmId string, envId string, client *qovery.APIClient) {
-out:
-	for {
-		status, _, err := client.HelmMainCallsAPI.GetHelmStatus(context.Background(), helmId).Execute()
-
-		if err != nil {
-			break
-		}
-
-		switch WatchStatus(status) {
-		case Continue:
-		case Stop:
-			break out
-		case Err:
-			os.Exit(1)
-		}
-
-		time.Sleep(3 * time.Second)
-	}
-
-	log.Println("Check environment status..")
-
-	// check status of environment
-	WatchEnvironmentWithOptions(envId, "unused", client, true)
-}
-
 type Status int8
 
 const (
@@ -1543,21 +1413,14 @@ const (
 	Err
 )
 
-func WatchStatus(status *qovery.Status) Status {
-	// TODO make something more fancy here to display the status. Use UILIVE or something like that
-	log.Println(GetStatusTextWithColor(status.State))
+func isFinalState(state qovery.StateEnum) bool {
+	return state == qovery.STATEENUM_DEPLOYED || state == qovery.STATEENUM_DELETED ||
+		state == qovery.STATEENUM_STOPPED || state == qovery.STATEENUM_CANCELED ||
+		state == qovery.STATEENUM_RESTARTED
+}
 
-	if status.State == qovery.STATEENUM_DEPLOYED || status.State == qovery.STATEENUM_DELETED ||
-		status.State == qovery.STATEENUM_STOPPED || status.State == qovery.STATEENUM_CANCELED ||
-		status.State == qovery.STATEENUM_RESTARTED {
-		return Stop
-	}
-
-	if strings.HasSuffix(string(status.State), "ERROR") {
-		return Err
-	}
-
-	return Continue
+func isErrorState(state qovery.StateEnum) bool {
+	return strings.HasSuffix(string(state), "ERROR")
 }
 
 func countStatus(statuses []qovery.Status, state qovery.StateEnum) int {
@@ -1991,6 +1854,20 @@ func DeleteTerraforms(client *qovery.APIClient, envId string, terraformList []*q
 		}
 	}
 
+	return nil
+}
+
+// RebootServices restarts the given services of an environment without redeploying them.
+//
+// The OpenAPI spec declares a service Status as the response, but the API returns an
+// EnvironmentStatus, which the generated client refuses to decode ("no value given for required
+// property service_deployment_status"). The request is accepted anyway, so a 2xx response is a
+// success whatever its body. Drop this wrapper once the spec and the client are fixed.
+func RebootServices(client *qovery.APIClient, envId string, request qovery.RebootServicesRequest) error {
+	_, res, err := client.EnvironmentActionsAPI.RebootServices(context.Background(), envId).RebootServicesRequest(request).Execute()
+	if err != nil && (res == nil || res.StatusCode >= 300) {
+		return err
+	}
 	return nil
 }
 

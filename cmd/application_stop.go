@@ -22,6 +22,7 @@ var applicationStopCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		applicationList := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)
+		watch := utils.NewServicesWatch(client, envId, applicationIds(applicationList), watchFlag)
 		serviceIds := utils.Map(applicationList, func(application *qovery.Application) string {
 			return application.Id
 		})
@@ -33,7 +34,7 @@ var applicationStopCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to stop application(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", applicationName, applicationNames)))
-		WatchApplicationDeployment(client, envId, applicationList, watchFlag, qovery.STATEENUM_STOPPED)
+		watch.Wait(qovery.STATEENUM_STOPPED)
 	},
 }
 

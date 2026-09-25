@@ -21,6 +21,7 @@ var containerDeleteCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		containerList := buildContainerListFromContainerNames(client, envId, containerName, containerNames)
+		watch := utils.NewServicesWatch(client, envId, containerIds(containerList), watchFlag)
 		_, err := client.EnvironmentActionsAPI.
 			DeleteSelectedServices(context.Background(), envId).
 			EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -31,7 +32,7 @@ var containerDeleteCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to delete container(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", containerName, containerNames)))
-		WatchContainerDeployment(client, envId, containerList, watchFlag, qovery.STATEENUM_DELETED)
+		watch.Wait(qovery.STATEENUM_DELETED)
 	},
 }
 

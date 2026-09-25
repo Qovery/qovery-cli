@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/qovery/qovery-client-go"
-	"time"
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
@@ -22,28 +21,12 @@ var databaseDeployCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		databaseList := buildDatabaseListFromDatabaseNames(client, envId, databaseName, databaseNames)
+		watch := utils.NewServicesWatch(client, envId, databaseIds(databaseList), watchFlag)
 		err := utils.DeployDatabases(client, envId, databaseList)
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to deploy database(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", databaseName, databaseNames)))
-		WatchDatabaseDeployment(client, envId, databaseList, watchFlag, qovery.STATEENUM_DEPLOYED)
+		watch.Wait(qovery.STATEENUM_DEPLOYED)
 	},
-}
-
-func WatchDatabaseDeployment(
-	client *qovery.APIClient,
-	envId string,
-	databaseList []*qovery.Database,
-	watchFlag bool,
-	finalServiceState qovery.StateEnum,
-) {
-	if watchFlag {
-		time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
-		if len(databaseList) == 1 {
-			utils.WatchDatabase(databaseList[0].Id, envId, client)
-		} else {
-			utils.WatchEnvironment(envId, finalServiceState, client)
-		}
-	}
 }
 
 func init() {

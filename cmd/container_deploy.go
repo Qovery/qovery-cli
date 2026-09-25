@@ -6,7 +6,6 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/qovery/qovery-client-go"
 	"github.com/spf13/cobra"
-	"time"
 )
 
 var containerDeployCmd = &cobra.Command{
@@ -21,28 +20,12 @@ var containerDeployCmd = &cobra.Command{
 
 		// deploy multiple services
 		containerList := buildContainerListFromContainerNames(client, envId, containerName, containerNames)
+		watch := utils.NewServicesWatch(client, envId, containerIds(containerList), watchFlag)
 		err := utils.DeployContainers(client, envId, containerList, containerTag)
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to deploy container(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", containerName, containerNames)))
-		WatchContainerDeployment(client, envId, containerList, watchFlag, qovery.STATEENUM_DEPLOYED)
+		watch.Wait(qovery.STATEENUM_DEPLOYED)
 	},
-}
-
-func WatchContainerDeployment(
-	client *qovery.APIClient,
-	envId string,
-	containers []*qovery.ContainerResponse,
-	watchFlag bool,
-	finalServiceState qovery.StateEnum,
-) {
-	if watchFlag {
-		time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
-		if len(containers) == 1 {
-			utils.WatchContainer(containers[0].Id, envId, client)
-		} else {
-			utils.WatchEnvironment(envId, finalServiceState, client)
-		}
-	}
 }
 
 func init() {
