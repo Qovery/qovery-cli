@@ -162,8 +162,11 @@ func newServicesTracker(serviceIds []string, before map[string]string) *services
 //
 // A state only counts once it comes from a new execution: every request starts one, so a final
 // or error state under the execution recorded before the request belongs to a previous request.
-// When the new execution ends while our request still waits (another request ran first),
-// /statusesWithStages reports the service as *_QUEUED, so the watch keeps waiting.
+// The environment queue is FIFO, and /statusesWithStages reports a service as *_QUEUED while a
+// request for it waits, whatever the state of its current execution. So an execution that ends
+// while our request still waits (a request sent before ours) is never seen in a final state.
+// A request sent after ours runs after it and hides our end the same way: the watch then waits
+// for that request and reports the state the service ends in.
 func (t *servicesTracker) update(statuses *qovery.EnvironmentStatusesWithStages, finalServiceState qovery.StateEnum) (Status, int, error) {
 	byId := make(map[string]qovery.Status)
 	for _, s := range allStatuses(statuses) {

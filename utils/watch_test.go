@@ -155,6 +155,36 @@ func TestServicesTracker(t *testing.T) {
 			expected: Stop,
 		},
 		{
+			// sequence recorded on a real environment: a request sent after ours runs after it
+			// (the environment queue is FIFO), and /statusesWithStages shows our finished
+			// execution as queued while it waits, so the watch waits for the later request
+			name:       "later deploy of the same service is waited for",
+			before:     map[string]string{"a": "env-1"},
+			finalState: qovery.STATEENUM_DEPLOYED,
+			polls: []poll{
+				{"a": s(qovery.STATEENUM_DEPLOYMENT_QUEUED, "env-2")},
+				{"a": s(qovery.STATEENUM_DEPLOYING, "env-2")},
+				{"a": s(qovery.STATEENUM_DEPLOYMENT_QUEUED, "env-3")},
+				{"a": s(qovery.STATEENUM_DEPLOYING, "env-3")},
+				{"a": s(qovery.STATEENUM_DEPLOYED, "env-3")},
+			},
+			expected: Stop,
+		},
+		{
+			name:       "later stop of the same service fails the deploy watch",
+			before:     map[string]string{"a": "env-1"},
+			finalState: qovery.STATEENUM_DEPLOYED,
+			polls: []poll{
+				{"a": s(qovery.STATEENUM_DEPLOYMENT_QUEUED, "env-2")},
+				{"a": s(qovery.STATEENUM_DEPLOYING, "env-2")},
+				{"a": s(qovery.STATEENUM_STOP_QUEUED, "env-3")},
+				{"a": s(qovery.STATEENUM_STOPPING, "env-3")},
+				{"a": s(qovery.STATEENUM_STOPPED, "env-3")},
+			},
+			expected:      Err,
+			expectedError: "service a ended in state STOPPED instead of DEPLOYED",
+		},
+		{
 			name:       "error of the previous execution is ignored",
 			before:     map[string]string{"a": "env-1"},
 			finalState: qovery.STATEENUM_DEPLOYED,
