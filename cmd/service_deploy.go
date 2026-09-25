@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
@@ -80,6 +79,8 @@ Examples:
 			}
 		}
 
+		watch := utils.NewServicesWatch(client, envId, utils.Map(servicesToDeploy, serviceDeployId), serviceDeployWatchFlag)
+
 		// Deploy services
 		var err error
 		if len(applications) > 0 {
@@ -112,7 +113,7 @@ Examples:
 			pterm.FgBlue.Sprintf("%s", strings.Join(serviceNames, ", "))))
 
 		// Watch deployment
-		watchServiceDeployment(client, envId, servicesToDeploy, serviceDeployWatchFlag)
+		watch.Wait(qovery.STATEENUM_DEPLOYED)
 	},
 }
 
@@ -242,38 +243,21 @@ func getServicesToDeployByNames(
 	return result
 }
 
-func watchServiceDeployment(
-	client *qovery.APIClient,
-	envId string,
-	services []serviceDeployInfo,
-	watchFlag bool,
-) {
-	if !watchFlag {
-		return
+func serviceDeployId(svc serviceDeployInfo) string {
+	switch svc.Type {
+	case utils.ApplicationType:
+		return svc.Application.Id
+	case utils.ContainerType:
+		return svc.Container.Id
+	case utils.DatabaseType:
+		return svc.Database.Id
+	case utils.JobType:
+		return utils.GetJobId(svc.Job)
+	case utils.HelmType:
+		return svc.Helm.Id
 	}
 
-	time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
-
-	if len(services) == 1 {
-		// Watch single service
-		svc := services[0]
-		switch svc.Type {
-		case utils.ApplicationType:
-			utils.WatchApplication(svc.Application.Id, envId, client)
-		case utils.ContainerType:
-			utils.WatchContainer(svc.Container.Id, envId, client)
-		case utils.DatabaseType:
-			utils.WatchDatabase(svc.Database.Id, envId, client)
-		case utils.JobType:
-			jobId := utils.GetJobId(svc.Job)
-			utils.WatchJob(jobId, envId, client)
-		case utils.HelmType:
-			utils.WatchHelm(svc.Helm.Id, envId, client)
-		}
-	} else {
-		// Watch entire environment
-		utils.WatchEnvironment(envId, qovery.STATEENUM_DEPLOYED, client)
-	}
+	return ""
 }
 
 func init() {

@@ -1,0 +1,22 @@
+{
+ "description": "2 STOPPED containers are stopped again",
+ "final_state": "STOPPED",
+ "service_ids": ["svc-01", "svc-02"],
+ "before": {"svc-01": "env-9", "svc-02": "env-9"},
+ "polls": [
+  {"t": 1.77, "with_stages": {"svc-01": {"state": "STOP_QUEUED", "execution_id": "env-10"}, "svc-02": {"state": "STOP_QUEUED", "execution_id": "env-10"}}},
+  {"t": 3.85, "with_stages": {"svc-01": {"state": "STOP_QUEUED", "execution_id": "env-10"}, "svc-02": {"state": "STOP_QUEUED", "execution_id": "env-10"}}},
+  {"t": 5.96, "with_stages": {"svc-01": {"state": "STOP_QUEUED", "execution_id": "env-10"}, "svc-02": {"state": "STOP_QUEUED", "execution_id": "env-10"}}},
+  {"t": 8.03, "with_stages": {"svc-01": {"state": "STOP_QUEUED", "execution_id": "env-10"}, "svc-02": {"state": "STOP_QUEUED", "execution_id": "env-10"}}},
+  {"t": 10.12, "with_stages": {"svc-01": {"state": "STOP_QUEUED", "execution_id": "env-10"}, "svc-02": {"state": "STOP_QUEUED", "execution_id": "env-10"}}},
+  {"t": 12.2, "with_stages": {"svc-01": {"state": "STOP_QUEUED", "execution_id": "env-10"}, "svc-02": {"state": "STOP_QUEUED", "execution_id": "env-10"}}},
+  {"t": 14.28, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-10"}, "svc-02": {"state": "STOPPED", "execution_id": "env-10"}}},
+  {"t": 16.4, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-10"}, "svc-02": {"state": "STOPPED", "execution_id": "env-10"}}},
+  {"t": 18.47, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-10"}, "svc-02": {"state": "STOPPED", "execution_id": "env-10"}}},
+  {"t": 20.56, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-10"}, "svc-02": {"state": "STOPPED", "execution_id": "env-10"}}},
+  {"t": 22.69, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-10"}, "svc-02": {"state": "STOPPED", "execution_id": "env-10"}}},
+  {"t": 24.76, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-10"}, "svc-02": {"state": "STOPPED", "execution_id": "env-10"}}},
+  {"t": 26.84, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-10"}, "svc-02": {"state": "STOPPED", "execution_id": "env-10"}}},
+  {"t": 28.93, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-10"}, "svc-02": {"state": "STOPPED", "execution_id": "env-10"}}}
+ ]
+}

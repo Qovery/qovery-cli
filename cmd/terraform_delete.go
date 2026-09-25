@@ -42,6 +42,7 @@ while keeping the terraform service definition in Qovery.`,
 
 		// delete terraform resources
 		terraformList := buildTerraformListFromTerraformNames(client, envId, terraformName, terraformNames)
+		watch := utils.NewServicesWatch(client, envId, terraformIds(terraformList), watchFlag)
 		err := utils.DeleteTerraforms(client, envId, terraformList, skipDestroyFlag, resourcesOnlyFlag)
 		utils.CheckError(err)
 
@@ -53,7 +54,7 @@ while keeping the terraform service definition in Qovery.`,
 			utils.Println(fmt.Sprintf("Request to delete terraform(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", terraformName, terraformNames)))
 		}
 
-		WatchTerraformDeployment(client, envId, terraformList, watchFlag, qovery.STATEENUM_DELETED)
+		watch.Wait(qovery.STATEENUM_DELETED)
 	},
 }
 

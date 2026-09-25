@@ -21,6 +21,7 @@ var applicationDeleteCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		applicationList := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)
+		watch := utils.NewServicesWatch(client, envId, applicationIds(applicationList), watchFlag)
 		serviceIds := utils.Map(applicationList, func(application *qovery.Application) string {
 			return application.Id
 		})
@@ -32,7 +33,7 @@ var applicationDeleteCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to delete application(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", applicationName, applicationNames)))
-		WatchApplicationDeployment(client, envId, applicationList, watchFlag, qovery.STATEENUM_DELETED)
+		watch.Wait(qovery.STATEENUM_DELETED)
 	},
 }
 

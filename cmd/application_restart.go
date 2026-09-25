@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/pterm/pterm"
@@ -22,17 +21,11 @@ var applicationRestartCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		applicationList := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)
-		_, _, err := client.EnvironmentActionsAPI.
-			RebootServices(context.Background(), envId).
-			RebootServicesRequest(qovery.RebootServicesRequest{
-				ApplicationIds: utils.Map(applicationList, func(application *qovery.Application) string {
-					return application.Id
-				}),
-			}).
-			Execute()
+		watch := utils.NewServicesWatch(client, envId, applicationIds(applicationList), watchFlag)
+		err := utils.RebootServices(client, envId, qovery.RebootServicesRequest{ApplicationIds: applicationIds(applicationList)})
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to restart application(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", applicationName, applicationNames)))
-		WatchApplicationDeployment(client, envId, applicationList, watchFlag, qovery.STATEENUM_RESTARTED)
+		watch.Wait(qovery.STATEENUM_RESTARTED)
 	},
 }
 

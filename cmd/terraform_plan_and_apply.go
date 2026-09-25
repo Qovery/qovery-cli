@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-cli/utils"
@@ -25,10 +24,11 @@ var terraformPlanAndApplyCmd = &cobra.Command{
 
 		// deploy multiple terraforms
 		terraformList := buildTerraformListFromTerraformNames(client, envId, terraformName, terraformNames)
+		watch := utils.NewServicesWatch(client, envId, terraformIds(terraformList), watchFlag)
 		err := utils.DeployTerraforms(client, envId, terraformList, terraformCommitId, nil)
 		utils.CheckError(err)
 		utils.Println(fmt.Sprintf("Request to deploy terraform(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", terraformName, terraformNames)))
-		WatchTerraformDeployment(client, envId, terraformList, watchFlag, qovery.STATEENUM_DEPLOYED)
+		watch.Wait(qovery.STATEENUM_DEPLOYED)
 	},
 }
 
@@ -76,19 +76,6 @@ func validateTerraformArguments(terraformName string, terraformNames string) {
 	if terraformName != "" && terraformNames != "" {
 		utils.PrintlnError(fmt.Errorf("you can't use --terraform and --terraforms at the same time"))
 		os.Exit(1)
-	}
-}
-
-func WatchTerraformDeployment(
-	client *qovery.APIClient,
-	envId string,
-	terraforms []*qovery.TerraformResponse,
-	watchFlag bool,
-	finalServiceState qovery.StateEnum,
-) {
-	if watchFlag {
-		time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
-		utils.WatchEnvironment(envId, finalServiceState, client)
 	}
 }
 

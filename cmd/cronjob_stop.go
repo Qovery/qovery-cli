@@ -24,6 +24,7 @@ var cronjobStopCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		cronJobList := buildCronJobListFromCronjobNames(client, envId, cronjobName, cronjobNames)
+		watch := utils.NewServicesWatch(client, envId, jobIds(cronJobList), watchFlag)
 		_, err := client.EnvironmentActionsAPI.
 			StopSelectedServices(context.Background(), envId).
 			EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -34,7 +35,7 @@ var cronjobStopCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to stop cronjob(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", cronjobName, cronjobNames)))
-		WatchJobDeployment(client, envId, cronJobList, watchFlag, qovery.STATEENUM_STOPPED)
+		watch.Wait(qovery.STATEENUM_STOPPED)
 	},
 }
 

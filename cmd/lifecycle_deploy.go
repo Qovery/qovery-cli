@@ -27,10 +27,11 @@ var lifecycleDeployCmd = &cobra.Command{
 		}
 
 		lifecyleList := buildLifecycleListFromLifecycleNames(client, envId, lifecycleName, lifecycleNames)
+		watch := utils.NewServicesWatch(client, envId, jobIds(lifecyleList), watchFlag)
 		err := utils.DeployJobs(client, envId, lifecyleList, lifecycleCommitId, lifecycleTag)
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to deploy lifecycle job(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", lifecycleName, lifecycleNames)))
-		WatchJobDeployment(client, envId, lifecyleList, watchFlag, qovery.STATEENUM_DEPLOYED)
+		watch.Wait(qovery.STATEENUM_DEPLOYED)
 	},
 }
 

@@ -21,12 +21,13 @@ var containerRedeployCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		containerList := buildContainerListFromContainerNames(client, envId, containerName, containerNames)
+		watch := utils.NewServicesWatch(client, envId, containerIds(containerList), watchFlag)
 
 		_, _, err := client.ContainerActionsAPI.DeployContainer(context.Background(), containerList[0].Id).
 			ContainerDeployRequest(qovery.ContainerDeployRequest{}).Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to redeploy container(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", containerName, containerNames)))
-		WatchContainerDeployment(client, envId, containerList, watchFlag, qovery.STATEENUM_RESTARTED)
+		watch.Wait(qovery.STATEENUM_DEPLOYED)
 	},
 }
 

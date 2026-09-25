@@ -1,0 +1,18 @@
+{
+ "description": "1 DEPLOYED container is deployed with an image tag that does not exist",
+ "final_state": "DEPLOYED",
+ "service_ids": ["svc-01"],
+ "before": {"svc-01": "env-7"},
+ "polls": [
+  {"t": 1.85, "with_stages": {"svc-01": {"state": "DEPLOYMENT_QUEUED", "execution_id": "env-11"}}},
+  {"t": 3.93, "with_stages": {"svc-01": {"state": "DEPLOYMENT_QUEUED", "execution_id": "env-11"}}},
+  {"t": 6.02, "with_stages": {"svc-01": {"state": "DEPLOYMENT_QUEUED", "execution_id": "env-11"}}},
+  {"t": 8.12, "with_stages": {"svc-01": {"state": "DEPLOYMENT_QUEUED", "execution_id": "env-11"}}},
+  {"t": 10.21, "with_stages": {"svc-01": {"state": "DEPLOYMENT_QUEUED", "execution_id": "env-11"}}},
+  {"t": 12.28, "with_stages": {"svc-01": {"state": "DEPLOYMENT_QUEUED", "execution_id": "env-11"}}},
+  {"t": 14.4, "with_stages": {"svc-01": {"state": "DEPLOYMENT_ERROR", "execution_id": "env-11"}}},
+  {"t": 16.48, "with_stages": {"svc-01": {"state": "DEPLOYMENT_ERROR", "execution_id": "env-11"}}},
+  {"t": 18.56, "with_stages": {"svc-01": {"state": "DEPLOYMENT_ERROR", "execution_id": "env-11"}}},
+  {"t": 20.66, "with_stages": {"svc-01": {"state": "DEPLOYMENT_ERROR", "execution_id": "env-11"}}}
+ ]
+}

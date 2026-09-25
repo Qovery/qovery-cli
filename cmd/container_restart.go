@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/pterm/pterm"
@@ -22,17 +21,11 @@ var containerRestartCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		containerList := buildContainerListFromContainerNames(client, envId, containerName, containerNames)
-		_, _, err := client.EnvironmentActionsAPI.
-			RebootServices(context.Background(), envId).
-			RebootServicesRequest(qovery.RebootServicesRequest{
-				ContainerIds: utils.Map(containerList, func(container *qovery.ContainerResponse) string {
-					return container.Id
-				}),
-			}).
-			Execute()
+		watch := utils.NewServicesWatch(client, envId, containerIds(containerList), watchFlag)
+		err := utils.RebootServices(client, envId, qovery.RebootServicesRequest{ContainerIds: containerIds(containerList)})
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to restart container(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", containerName, containerNames)))
-		WatchContainerDeployment(client, envId, containerList, watchFlag, qovery.STATEENUM_RESTARTED)
+		watch.Wait(qovery.STATEENUM_RESTARTED)
 	},
 }
 

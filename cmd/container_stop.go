@@ -22,6 +22,7 @@ var containerStopCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		containerList := buildContainerListFromContainerNames(client, envId, containerName, containerNames)
+		watch := utils.NewServicesWatch(client, envId, containerIds(containerList), watchFlag)
 		_, err := client.EnvironmentActionsAPI.
 			StopSelectedServices(context.Background(), envId).
 			EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -32,7 +33,7 @@ var containerStopCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to stop container(s) %s has been queued...", containerName))
-		WatchContainerDeployment(client, envId, containerList, watchFlag, qovery.STATEENUM_STOPPED)
+		watch.Wait(qovery.STATEENUM_STOPPED)
 	},
 }
 

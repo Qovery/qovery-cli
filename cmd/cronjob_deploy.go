@@ -5,7 +5,6 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/qovery/qovery-client-go"
 	"os"
-	"time"
 
 	"github.com/spf13/cobra"
 
@@ -27,28 +26,12 @@ var cronjobDeployCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		cronJobList := buildCronJobListFromCronjobNames(client, envId, cronjobName, cronjobNames)
+		watch := utils.NewServicesWatch(client, envId, jobIds(cronJobList), watchFlag)
 		err := utils.DeployJobs(client, envId, cronJobList, cronjobCommitId, cronjobTag)
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to deploy cronjob(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", cronjobName, cronjobNames)))
-		WatchJobDeployment(client, envId, cronJobList, watchFlag, qovery.STATEENUM_DEPLOYED)
+		watch.Wait(qovery.STATEENUM_DEPLOYED)
 	},
-}
-
-func WatchJobDeployment(
-	client *qovery.APIClient,
-	envId string,
-	cronJobs []*qovery.JobResponse,
-	watchFlag bool,
-	finalServiceState qovery.StateEnum,
-) {
-	if watchFlag {
-		time.Sleep(3 * time.Second) // wait for the deployment request to be processed (prevent from race condition)
-		if len(cronJobs) == 1 {
-			utils.WatchJob(utils.GetJobId(cronJobs[0]), envId, client)
-		} else {
-			utils.WatchEnvironment(envId, finalServiceState, client)
-		}
-	}
 }
 
 func init() {

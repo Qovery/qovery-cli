@@ -20,13 +20,14 @@ var cronjobRedeployCmd = &cobra.Command{
 		validateCronjobArguments(cronjobName, cronjobNames)
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 		cronJobList := buildCronJobListFromCronjobNames(client, envId, cronjobName, cronjobNames)
+		watch := utils.NewServicesWatch(client, envId, jobIds(cronJobList), watchFlag)
 
 		_, _, err := client.JobActionsAPI.DeployJob(context.Background(), utils.GetJobId(cronJobList[0])).
 			JobDeployRequest(qovery.JobDeployRequest{}).
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to redeploy cronjob(s) %s has been queued..", pterm.FgBlue.Sprintf("%s%s", cronjobName, cronjobNames)))
-		WatchJobDeployment(client, envId, cronJobList, watchFlag, qovery.STATEENUM_RESTARTED)
+		watch.Wait(qovery.STATEENUM_DEPLOYED)
 	},
 }
 

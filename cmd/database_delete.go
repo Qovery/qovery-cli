@@ -21,6 +21,7 @@ var databaseDeleteCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		databaseList := buildDatabaseListFromDatabaseNames(client, envId, databaseName, databaseNames)
+		watch := utils.NewServicesWatch(client, envId, databaseIds(databaseList), watchFlag)
 		_, err := client.EnvironmentActionsAPI.
 			DeleteSelectedServices(context.Background(), envId).
 			EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -31,7 +32,7 @@ var databaseDeleteCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to delete database(s) %s has been queued...", pterm.FgBlue.Sprintf("%s%s", databaseName, databaseNames)))
-		WatchDatabaseDeployment(client, envId, databaseList, watchFlag, qovery.STATEENUM_DELETED)
+		watch.Wait(qovery.STATEENUM_DELETED)
 	},
 }
 

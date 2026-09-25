@@ -23,6 +23,7 @@ var databaseStopCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		applicationList := buildDatabaseListFromDatabaseNames(client, envId, databaseName, databaseNames)
+		watch := utils.NewServicesWatch(client, envId, databaseIds(applicationList), watchFlag)
 		_, err := client.EnvironmentActionsAPI.
 			StopSelectedServices(context.Background(), envId).
 			EnvironmentServiceIdsAllRequest(qovery.EnvironmentServiceIdsAllRequest{
@@ -33,7 +34,7 @@ var databaseStopCmd = &cobra.Command{
 			Execute()
 		checkError(err)
 		utils.Println(fmt.Sprintf("Request to stop databases %s has been queued...", pterm.FgBlue.Sprintf("%s%s", databaseName, databaseNames)))
-		WatchDatabaseDeployment(client, envId, applicationList, watchFlag, qovery.STATEENUM_STOPPED)
+		watch.Wait(qovery.STATEENUM_STOPPED)
 	},
 }
 
