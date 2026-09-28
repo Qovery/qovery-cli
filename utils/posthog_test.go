@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 )
 
 // Capture the real SDK's requests locally, without using the user's credentials
@@ -149,6 +150,7 @@ func TestTelemetryPreservesErrorOutput(t *testing.T) {
 						"organization": "test-org", "organization_id": "test-org-id",
 						"project": "", "project_id": "", "environment": "", "environment_id": "",
 						"service": "", "service_id": "", "os": runtime.GOOS, "arch": runtime.GOARCH,
+						"cli_version": Version,
 					}
 					if event.name == EndOfExecutionErrorEventName {
 						want["stdout"] = "demo command output\n"
@@ -187,4 +189,33 @@ func TestTelemetryOptOutAppliesToAllEvents(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCommandExecutionPropertiesContainOnlySafeStructuredValues(t *testing.T) {
+	execution := CommandExecutionProperties{
+		AttemptID:        "0198dc0e-b7ab-7b91-8c42-2169f9302572",
+		WorkflowType:     "demo_installation",
+		Implementation:   "engine_v2",
+		ClusterID:        "cluster-id",
+		Phase:            "operator_bootstrap",
+		Result:           "failed",
+		DurationMillis:   1234,
+		ErrorCode:        "UNKNOWN_FAILURE",
+		SafeErrorMessage: "The demo installation failed.",
+	}
+
+	properties := commandExecutionPostHogProperties(execution)
+
+	assert.Equal(t, "0198dc0e-b7ab-7b91-8c42-2169f9302572", properties["attempt_id"])
+	assert.Equal(t, "0198dc0e-b7ab-7b91-8c42-2169f9302572", properties["$session_id"])
+	assert.Equal(t, "demo_installation", properties["workflow_type"])
+	assert.Equal(t, "engine_v2", properties["implementation"])
+	assert.Equal(t, "cluster-id", properties["cluster_id"])
+	assert.Equal(t, "operator_bootstrap", properties["phase"])
+	assert.Equal(t, "failed", properties["result"])
+	assert.Equal(t, int64(1234), properties["duration_ms"])
+	assert.Equal(t, "UNKNOWN_FAILURE", properties["error_code"])
+	assert.Equal(t, "The demo installation failed.", properties["safe_error_message"])
+	assert.NotContains(t, properties, "stdout")
+	assert.NotContains(t, properties, "stderr")
 }
