@@ -40,6 +40,14 @@ var portForwardCmd = &cobra.Command{
 			utils.PrintlnError(err)
 			return
 		}
+		// A blueprint database runs outside the cluster: the gateway dials the host the blueprint reports.
+		if portForwardRequest.ServiceType == strings.ToUpper(string(utils.TerraformType)) {
+			portForwardRequest.BlueprintID, err = utils.GetTerraformBlueprintId(string(portForwardRequest.ServiceID))
+			if err != nil {
+				utils.PrintlnError(err)
+				return
+			}
+		}
 
 		for _, port := range ports {
 			ps := strings.Split(port, ":")

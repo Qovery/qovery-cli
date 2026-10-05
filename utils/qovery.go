@@ -793,7 +793,7 @@ func GetHelmById(id string) (*Service, error) {
 	}, nil
 }
 
-func GetTerraformById(id string) (*Service, error) {
+func getTerraform(id string) (*qovery.TerraformResponse, error) {
 	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
@@ -809,11 +809,30 @@ func GetTerraformById(id string) (*Service, error) {
 		return nil, err
 	}
 
+	return terraform, nil
+}
+
+func GetTerraformById(id string) (*Service, error) {
+	terraform, err := getTerraform(id)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Service{
 		ID:   Id(terraform.Id),
 		Name: Name(terraform.GetName()),
 		Type: TerraformType,
 	}, nil
+}
+
+// GetTerraformBlueprintId returns "" when the terraform service was not created by a blueprint.
+func GetTerraformBlueprintId(id string) (string, error) {
+	terraform, err := getTerraform(id)
+	if err != nil {
+		return "", err
+	}
+
+	return terraform.GetBlueprintId(), nil
 }
 
 type Job struct {

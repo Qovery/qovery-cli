@@ -22,6 +22,7 @@ type PortForwardRequest struct {
 	OrganizationID utils.Id `url:"organization"`
 	ClusterID      utils.Id `url:"cluster"`
 	PodName        string   `url:"pod_name,omitempty"`
+	BlueprintID    string   `url:"blueprint_id,omitempty"`
 	ServiceType    string   `url:"service_type"`
 	Port           uint16   `url:"port"`
 	LocalPort      uint16
