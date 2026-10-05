@@ -47,7 +47,7 @@ var databaseListCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		blueprintDatabases, err := listBlueprintDatabases(client, envId)
+		blueprintDatabases, err := listBlueprintDatabases(client, envId, showCredentials)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -88,7 +88,7 @@ var databaseListCmd = &cobra.Command{
 		for _, database := range blueprintDatabases {
 			host, port, login, password := database.connection()
 
-			if !showCredentials && database.credentials != nil {
+			if !showCredentials {
 				login = "********"
 				password = "********"
 			}
@@ -193,7 +193,8 @@ func (d blueprintDatabase) connection() (host string, port string, login string,
 	}
 }
 
-func listBlueprintDatabases(client *qovery.APIClient, envId string) ([]blueprintDatabase, error) {
+// Master credentials are fetched only when they are going to be shown.
+func listBlueprintDatabases(client *qovery.APIClient, envId string, withCredentials bool) ([]blueprintDatabase, error) {
 	terraforms, _, err := client.TerraformsAPI.ListTerraforms(context.Background(), envId).Execute()
 	if err != nil {
 		return nil, err
@@ -215,12 +216,15 @@ func listBlueprintDatabases(client *qovery.APIClient, envId string) ([]blueprint
 			return nil, err
 		}
 
-		credentials, res, err := client.BlueprintMainCallsAPI.GetBlueprintDatabaseMasterCredentials(context.Background(), blueprintId).Execute()
-		if res != nil && (res.StatusCode == http.StatusNotFound || res.StatusCode == http.StatusForbidden) {
-			// not deployed yet, or the user may see the database but not its master credentials
-			credentials = nil
-		} else if err != nil {
-			return nil, err
+		var credentials *qovery.Credentials
+		if withCredentials {
+			credentials, res, err = client.BlueprintMainCallsAPI.GetBlueprintDatabaseMasterCredentials(context.Background(), blueprintId).Execute()
+			if res != nil && (res.StatusCode == http.StatusNotFound || res.StatusCode == http.StatusForbidden) {
+				// not deployed yet, or the user may see the database but not its master credentials
+				credentials = nil
+			} else if err != nil {
+				return nil, err
+			}
 		}
 
 		databases = append(databases, blueprintDatabase{
