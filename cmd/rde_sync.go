@@ -335,7 +335,7 @@ func rdeJobResponseToRequestSource(job *qovery.JobResponse) *qovery.JobRequestAl
 			&qovery.JobRequestAllOfSourceImage{
 				ImageName:  &img.ImageName,
 				Tag:        &img.Tag,
-				RegistryId: img.RegistryId,
+				RegistryId: &img.Registry.Id,
 			},
 		)
 		result.Image = *reqImg
