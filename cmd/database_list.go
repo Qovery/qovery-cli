@@ -116,6 +116,11 @@ func getDatabaseJsonOutput(client qovery.APIClient, statuses *qovery.Environment
 			os.Exit(1)
 		}
 
+		var login, password interface{}
+		if showCredentials {
+			login, password = res.Login, res.Password
+		}
+
 		results = append(results, map[string]interface{}{
 			"id":            database.Id,
 			"updated_at":    utils.ToIso8601(database.UpdatedAt),
@@ -125,8 +130,8 @@ func getDatabaseJsonOutput(client qovery.APIClient, statuses *qovery.Environment
 			"status":        utils.FindStatus(statuses.GetDatabases(), database.Id),
 			"host":          database.Host,
 			"port":          res.Port,
-			"login":         res.Login,
-			"password":      res.Password,
+			"login":         login,
+			"password":      password,
 		})
 	}
 
