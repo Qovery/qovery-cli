@@ -505,6 +505,8 @@ type Service struct {
 	ID   Id
 	Name Name
 	Type ServiceType
+	// Set for a terraform service created by a blueprint
+	BlueprintID string
 }
 
 type Application struct {
@@ -631,9 +633,10 @@ func SelectService(environment Id) (*Service, error) {
 	for _, terraform := range terraforms.GetResults() {
 		servicesNames = append(servicesNames, terraform.Name)
 		services[terraform.Name] = Service{
-			ID:   Id(terraform.Id),
-			Name: Name(terraform.Name),
-			Type: TerraformType,
+			ID:          Id(terraform.Id),
+			Name:        Name(terraform.Name),
+			Type:        TerraformType,
+			BlueprintID: terraform.GetBlueprintId(),
 		}
 	}
 	sortNamesCaseInsensitive(servicesNames)
@@ -793,7 +796,7 @@ func GetHelmById(id string) (*Service, error) {
 	}, nil
 }
 
-func getTerraform(id string) (*qovery.TerraformResponse, error) {
+func GetTerraformById(id string) (*Service, error) {
 	tokenType, token, err := GetAccessToken(false)
 	if err != nil {
 		return nil, err
@@ -809,30 +812,12 @@ func getTerraform(id string) (*qovery.TerraformResponse, error) {
 		return nil, err
 	}
 
-	return terraform, nil
-}
-
-func GetTerraformById(id string) (*Service, error) {
-	terraform, err := getTerraform(id)
-	if err != nil {
-		return nil, err
-	}
-
 	return &Service{
-		ID:   Id(terraform.Id),
-		Name: Name(terraform.GetName()),
-		Type: TerraformType,
+		ID:          Id(terraform.Id),
+		Name:        Name(terraform.GetName()),
+		Type:        TerraformType,
+		BlueprintID: terraform.GetBlueprintId(),
 	}, nil
-}
-
-// GetTerraformBlueprintId returns "" when the terraform service was not created by a blueprint.
-func GetTerraformBlueprintId(id string) (string, error) {
-	terraform, err := getTerraform(id)
-	if err != nil {
-		return "", err
-	}
-
-	return terraform.GetBlueprintId(), nil
 }
 
 type Job struct {
