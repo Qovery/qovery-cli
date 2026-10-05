@@ -151,6 +151,7 @@ func portForwardRequestFromSelect() (*pkg.PortForwardRequest, error) {
 		EnvironmentID:  env.ID,
 		ClusterID:      env.ClusterID,
 		PodName:        podName,
+		BlueprintID:    service.BlueprintID,
 		Port:           0,
 		LocalPort:      0,
 	}, nil
@@ -173,6 +174,16 @@ func portForwardRequestFromContext(currentContext utils.QoveryContext) (*pkg.Por
 		return nil, errors.New("Received " + res.Status + " response while fetching environment. ")
 	}
 
+	// The context keeps only ids: a blueprint database still needs its blueprint id for the host to be dialed.
+	var blueprintID string
+	if strings.EqualFold(string(currentContext.ServiceType), string(utils.TerraformType)) {
+		terraform, err := utils.GetTerraformById(string(currentContext.ServiceId))
+		if err != nil {
+			return nil, err
+		}
+		blueprintID = terraform.BlueprintID
+	}
+
 	return &pkg.PortForwardRequest{
 		ServiceID:      currentContext.ServiceId,
 		ServiceType:    strings.ToUpper(string(currentContext.ServiceType)),
@@ -181,6 +192,7 @@ func portForwardRequestFromContext(currentContext utils.QoveryContext) (*pkg.Por
 		EnvironmentID:  currentContext.EnvironmentId,
 		ClusterID:      utils.Id(e.ClusterId),
 		PodName:        podName,
+		BlueprintID:    blueprintID,
 		Port:           0,
 		LocalPort:      0,
 	}, nil
@@ -272,10 +284,20 @@ func portForwardRequestWithApplicationUrl(args []string) (*pkg.PortForwardReques
 				}
 				service = *helm
 
+			case utils.TerraformType:
+				terraform, err := utils.GetTerraformById(serviceId)
+				if err != nil {
+					return nil, err
+				}
+				service = *terraform
+
 			default:
 				return nil, errors.New("ServiceLevel type `" + string(envService.Type) + "` is not supported for port-forward")
 			}
 		}
+	}
+	if service.ID == "" {
+		return nil, errors.New("Service " + serviceId + " not found in environment " + environmentId)
 	}
 
 	_ = pterm.DefaultTable.WithData(pterm.TableData{
@@ -294,6 +316,7 @@ func portForwardRequestWithApplicationUrl(args []string) (*pkg.PortForwardReques
 		ServiceType:    strings.ToUpper(string(service.Type)),
 		ClusterID:      environment.ClusterID,
 		PodName:        podName,
+		BlueprintID:    service.BlueprintID,
 		Port:           0,
 		LocalPort:      0,
 	}, nil
