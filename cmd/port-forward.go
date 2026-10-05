@@ -176,7 +176,7 @@ func portForwardRequestFromContext(currentContext utils.QoveryContext) (*pkg.Por
 
 	// The context keeps only ids: a blueprint database still needs its blueprint id for the host to be dialed.
 	var blueprintID string
-	if currentContext.ServiceType == utils.TerraformType {
+	if strings.EqualFold(string(currentContext.ServiceType), string(utils.TerraformType)) {
 		terraform, err := utils.GetTerraformById(string(currentContext.ServiceId))
 		if err != nil {
 			return nil, err
