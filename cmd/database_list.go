@@ -62,7 +62,7 @@ var databaseListCmd = &cobra.Command{
 		var data [][]string
 
 		for _, database := range databases.GetResults() {
-			res, _, err := client.DatabaseMainCallsAPI.GetDatabaseMasterCredentials(context.Background(), database.Id).Execute()
+			host, port, credentials, err := nativeDatabaseConnection(client, database)
 			if err != nil {
 				utils.PrintlnError(err)
 				os.Exit(1)
@@ -71,18 +71,18 @@ var databaseListCmd = &cobra.Command{
 			login := "********"
 			password := "********"
 
-			if showCredentials {
-				login = res.Login
+			if credentials != nil {
+				login = credentials.Login
 
 				if login == "" {
 					login = "N/A"
 				}
 
-				password = res.Password
+				password = credentials.Password
 			}
 
 			data = append(data, []string{database.Id, database.Name, "Database",
-				utils.FindStatusTextWithColor(statuses.GetDatabases(), database.Id), res.Host, strconv.Itoa(int(res.Port)), login, password, database.UpdatedAt.String()})
+				utils.FindStatusTextWithColor(statuses.GetDatabases(), database.Id), host, strconv.Itoa(int(port)), login, password, database.UpdatedAt.String()})
 		}
 
 		for _, database := range blueprintDatabases {
@@ -110,15 +110,15 @@ func getDatabaseJsonOutput(client qovery.APIClient, statuses *qovery.Environment
 	var results []interface{}
 
 	for _, database := range databases {
-		res, _, err := client.DatabaseMainCallsAPI.GetDatabaseMasterCredentials(context.Background(), database.Id).Execute()
+		host, port, credentials, err := nativeDatabaseConnection(&client, database)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
 
 		var login, password interface{}
-		if showCredentials {
-			login, password = res.Login, res.Password
+		if credentials != nil {
+			login, password = credentials.Login, credentials.Password
 		}
 
 		results = append(results, map[string]interface{}{
@@ -128,8 +128,8 @@ func getDatabaseJsonOutput(client qovery.APIClient, statuses *qovery.Environment
 			"type":          "Database",
 			"database_type": database.Type,
 			"status":        utils.FindStatus(statuses.GetDatabases(), database.Id),
-			"host":          database.Host,
-			"port":          res.Port,
+			"host":          host,
+			"port":          port,
 			"login":         login,
 			"password":      password,
 		})
@@ -174,6 +174,21 @@ func getDatabaseJsonOutput(client qovery.APIClient, statuses *qovery.Environment
 	}
 
 	return string(j)
+}
+
+// nativeDatabaseConnection fetches master credentials only when they are going to be shown; otherwise host and port
+// come from the database itself and credentials is nil.
+func nativeDatabaseConnection(client *qovery.APIClient, database qovery.Database) (string, int32, *qovery.Credentials, error) {
+	if !showCredentials {
+		return database.GetHost(), database.GetPort(), nil, nil
+	}
+
+	credentials, _, err := client.DatabaseMainCallsAPI.GetDatabaseMasterCredentials(context.Background(), database.Id).Execute()
+	if err != nil {
+		return "", 0, nil, err
+	}
+
+	return credentials.Host, credentials.Port, credentials, nil
 }
 
 // blueprintDatabase is a terraform service created by a database blueprint. credentials is nil until a deploy has
