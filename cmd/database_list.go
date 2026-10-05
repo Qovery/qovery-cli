@@ -136,7 +136,10 @@ func getDatabaseJsonOutput(client qovery.APIClient, statuses *qovery.Environment
 		var port interface{}
 		switch {
 		case database.credentials != nil:
-			host, port, login, password = database.credentials.Host, database.credentials.Port, database.credentials.Login, database.credentials.Password
+			host, port = database.credentials.Host, database.credentials.Port
+			if showCredentials {
+				login, password = database.credentials.Login, database.credentials.Password
+			}
 		case database.endpoint != nil:
 			host = database.endpoint.Host
 			if database.endpoint.Port.IsSet() && database.endpoint.Port.Get() != nil {
