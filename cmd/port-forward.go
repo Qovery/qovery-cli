@@ -272,10 +272,20 @@ func portForwardRequestWithApplicationUrl(args []string) (*pkg.PortForwardReques
 				}
 				service = *helm
 
+			case utils.TerraformType:
+				terraform, err := utils.GetTerraformById(serviceId)
+				if err != nil {
+					return nil, err
+				}
+				service = *terraform
+
 			default:
 				return nil, errors.New("ServiceLevel type `" + string(envService.Type) + "` is not supported for port-forward")
 			}
 		}
+	}
+	if service.ID == "" {
+		return nil, errors.New("Service " + serviceId + " not found in environment " + environmentId)
 	}
 
 	_ = pterm.DefaultTable.WithData(pterm.TableData{

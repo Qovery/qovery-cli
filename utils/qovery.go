@@ -480,6 +480,13 @@ func GetEnvironmentServicesById(id string) ([]EnvironmentService, error) {
 		})
 	}
 
+	for _, service := range environmentServices.Terraforms {
+		services = append(services, EnvironmentService{
+			ID:   service.Id,
+			Type: TerraformType,
+		})
+	}
+
 	return services, nil
 }
 
@@ -783,6 +790,29 @@ func GetHelmById(id string) (*Service, error) {
 		ID:   Id(helm.Id),
 		Name: Name(helm.GetName()),
 		Type: HelmType,
+	}, nil
+}
+
+func GetTerraformById(id string) (*Service, error) {
+	tokenType, token, err := GetAccessToken(false)
+	if err != nil {
+		return nil, err
+	}
+
+	client := GetQoveryClient(tokenType, token)
+
+	terraform, res, err := client.TerraformMainCallsAPI.GetTerraform(context.Background(), id).Execute()
+	if err != nil {
+		if res != nil && res.StatusCode >= 400 {
+			return nil, errors.New("Received " + res.Status + " response while getting terraform " + id)
+		}
+		return nil, err
+	}
+
+	return &Service{
+		ID:   Id(terraform.Id),
+		Name: Name(terraform.GetName()),
+		Type: TerraformType,
 	}, nil
 }
 
