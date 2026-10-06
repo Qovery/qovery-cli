@@ -2033,7 +2033,7 @@ func ToJobRequest(job qovery.JobResponse) qovery.JobRequest {
 		sourceImage = qovery.JobRequestAllOfSourceImage{
 			ImageName:  &image.ImageName,
 			Tag:        &image.Tag,
-			RegistryId: image.RegistryId,
+			RegistryId: &image.Registry.Id,
 		}
 	}
 

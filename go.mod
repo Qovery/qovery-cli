@@ -24,7 +24,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/posthog/posthog-go v1.12.5
 	github.com/pterm/pterm v0.12.83
-	github.com/qovery/qovery-client-go v0.0.0-20260929143819-47362fd3db3a
+	github.com/qovery/qovery-client-go v0.0.0-20261005155532-a15d85bf5222
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
