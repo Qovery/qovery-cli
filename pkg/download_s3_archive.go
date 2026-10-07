@@ -17,8 +17,14 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 )
 
-var uuidRegex = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
-var uuidWithTimestampRegex = regexp.MustCompile(`^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-\d+$`)
+const uuidPattern = `[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`
+
+// An archive is stored under a key made of a uuid, optionally followed by a numeric id.
+// Execution ids reach us with a Unix timestamp appended on top of that key. Only a
+// trailing 10 digit segment is a timestamp: a shorter one, such as the "-1211" in
+// "<uuid>-1211-1791383662", is part of the key itself and must be kept.
+var executionIdWithTimestampRegex = regexp.MustCompile(`^(` + uuidPattern + `(?:-\d+)?)-\d{10}$`)
+var executionIdRegex = regexp.MustCompile(`^` + uuidPattern + `(?:-\d+)?$`)
 
 type ArchiveTagsResponse struct {
 	Key   string
@@ -30,13 +36,27 @@ type ArchiveResponse struct {
 	Tags    []ArchiveTagsResponse
 }
 
+// normalizeExecutionId returns the key the archive is stored under, and whether the id
+// is a shape we recognise. A trailing 10 digit Unix timestamp is dropped; any shorter
+// numeric suffix belongs to the key and is kept.
+func normalizeExecutionId(executionId string) (string, bool) {
+	if matches := executionIdWithTimestampRegex.FindStringSubmatch(executionId); matches != nil {
+		return matches[1], true
+	}
+
+	return executionId, executionIdRegex.MatchString(executionId)
+}
+
 func DownloadS3Archive(executionId string, directory string) {
-	if matches := uuidWithTimestampRegex.FindStringSubmatch(executionId); matches != nil {
-		log.Warnf("Execution id '%s' contains a timestamp suffix, stripping it automatically", executionId)
-		executionId = matches[1]
-	} else if !uuidRegex.MatchString(executionId) {
-		log.Errorf("Invalid execution id format: '%s'. Expected a UUID (e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)", executionId)
+	normalizedId, ok := normalizeExecutionId(executionId)
+	if !ok {
+		log.Errorf("Invalid execution id format: '%s'. Expected '<uuid>' or '<uuid>-<id>', optionally followed by a '-<timestamp>'", executionId)
 		return
+	}
+
+	if normalizedId != executionId {
+		log.Warnf("Execution id '%s' ends with a timestamp, stripping it to '%s'", executionId, normalizedId)
+		executionId = normalizedId
 	}
 
 	fileName := executionId + ".tgz"
