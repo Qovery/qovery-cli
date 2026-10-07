@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 
@@ -247,7 +246,6 @@ func runAPI(cmd *cobra.Command, args []string) {
 	// Build the full URL
 	path := strings.TrimLeft(endpoint, "/")
 	path = substitutePathPlaceholders(path)
-	fullURL := utils.GetAPIBaseURL() + "/" + path
 
 	// Build request body
 	var body io.Reader
@@ -269,26 +267,16 @@ func runAPI(cmd *cobra.Command, args []string) {
 		body = bytes.NewReader(jsonBytes)
 	}
 
-	// Create HTTP request
-	req, err := http.NewRequest(method, fullURL, body)
-	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(1)
-	}
-
-	// Get auth token. Creating the very first organization (`qovery api organization
-	// --method POST ...`, documented above as a first-class example) is the one
-	// legitimate case where the caller is expected to have zero organizations yet,
-	// so it skips the usual "you don't have any organization" guard.
+	// Creating the very first organization (`qovery api organization --method POST ...`,
+	// documented above as a first-class example) is the one legitimate case where the
+	// caller is expected to have zero organizations yet, so it skips the usual
+	// "you don't have any organization" guard.
 	isOrgCreation := path == "organization" && method == "POST"
-	tokenType, token, err := utils.GetAccessToken(isOrgCreation)
+	req, err := utils.NewAPIRequest(method, path, body, isOrgCreation)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
 	}
-
-	// Set Authorization header
-	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
 
 	// Set default Content-Type when body is expected (flag presence check, not body-nil check)
 	if hasBody {
@@ -300,9 +288,7 @@ func runAPI(cmd *cobra.Command, args []string) {
 		req.Header.Set(k, v)
 	}
 
-	// Execute request with 60s timeout
-	client := &http.Client{Timeout: 60 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := utils.DoAPIRequest(req)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
