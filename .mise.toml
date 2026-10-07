@@ -4,10 +4,10 @@
 
 [tools]
 # Go version - latest stable release
-go = "1.25.1"
+go = "1.27.1"
 
 # Development tools
-"golangci-lint" = "2.5.0"  # Latest stable version
+"golangci-lint" = "2.14.0"  # Latest stable version
 
 [env]
 # Environment variables can be set here
