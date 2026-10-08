@@ -154,6 +154,9 @@ type runningAuthorization struct {
 type authorizationOptions struct {
 	gate       chan struct{}
 	failWrites bool
+	// untracked drops the connection tracking, so the failing handler cannot
+	// tell which connection carries its response.
+	untracked bool
 }
 
 func startAuthorization(t *testing.T, onTokens func(TokensResponse)) *runningAuthorization {
@@ -179,6 +182,9 @@ func startAuthorizationOn(t *testing.T, onTokens func(TokensResponse), opts auth
 		running.exits <- code
 	}
 	srv := newAuthorizationServer("v", onTokens)
+	if opts.untracked {
+		srv.ConnContext = nil
+	}
 	go func() {
 		defer close(running.done)
 		serveAuthorization(srv, listener)
@@ -439,6 +445,50 @@ func TestAuthorizationServerFailureExitNeverRunsWhenDeliveryIsUnconfirmed(t *tes
 	case <-a.done:
 		t.Fatal("serveAuthorization returned although the failure response was never delivered")
 	case <-time.After(500 * time.Millisecond):
+	}
+}
+
+// Without a tracked connection nothing proves the response was delivered, so a
+// failure must neither exit nor shut the server down, though the browser still
+// gets its complete answer.
+func TestAuthorizationServerFailureWithoutTrackedConnectionNeverExits(t *testing.T) {
+	stubTokenEndpointWith(t, http.StatusForbidden, `{"error":"invalid_grant"}`)
+	a := startAuthorizationOn(t, func(TokensResponse) {}, authorizationOptions{untracked: true})
+
+	res, body := getComplete(t, a.url+"/authorization/valid?code=stale")
+	assertCompleteFailure(t, res, body, http.StatusUnauthorized)
+
+	select {
+	case code := <-a.exits:
+		t.Fatalf("exitProcess(%d) ran without a confirmed delivery", code)
+	case <-a.done:
+		t.Fatal("serveAuthorization returned without a confirmed delivery")
+	case <-time.After(500 * time.Millisecond):
+	}
+	// Still serving: a later callback is refused without a new exchange.
+	if status, _ := getStatus(t, a.url+"/authorization/valid?code=again"); status != http.StatusUnauthorized {
+		t.Errorf("later callback status = %d, want %d", status, http.StatusUnauthorized)
+	}
+}
+
+// The handler alone, mounted without serveAuthorization, must not exit either.
+func TestAuthorizationServerFailureHandlerAloneNeverExits(t *testing.T) {
+	stubTokenEndpointWith(t, http.StatusForbidden, `{"error":"invalid_grant"}`)
+	exits := stubExit(t)
+	srv := newAuthorizationServer("v", func(TokensResponse) {})
+	ts := httptest.NewServer(srv.Handler)
+	defer ts.Close()
+
+	res, body := getComplete(t, ts.URL+"/authorization/valid?code=stale")
+	assertCompleteFailure(t, res, body, http.StatusUnauthorized)
+	ts.Close()
+	if len(exits) != 0 {
+		t.Errorf("the handler exited the process without a confirmed delivery")
+	}
+	select {
+	case <-srv.delivered:
+		t.Error("delivery marked confirmed without a tracked connection")
+	default:
 	}
 }
 

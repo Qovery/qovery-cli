@@ -165,17 +165,16 @@ func (s *authorizationServer) awaitFailureDelivered() {
 // handler only returns: exiting here would kill the process before the response
 // is complete (a flushed response is still chunked and unterminated).
 func (s *authorizationServer) fail(writer http.ResponseWriter, request *http.Request, status int) {
+	// Without a tracked connection nothing can ever confirm delivery, so the
+	// attempt stays failed but neither exits nor shuts down.
 	conn, _ := request.Context().Value(connContextKey{}).(net.Conn)
 	s.failMu.Lock()
 	s.failedConn = conn
 	s.failMu.Unlock()
-	if conn == nil {
-		s.markDelivered() // not served through serveAuthorization: nothing to wait for
-	}
 
 	http.Error(writer, authFailureMessage, status)
 	utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
-	if s.failed.CompareAndSwap(false, true) {
+	if s.failed.CompareAndSwap(false, true) && conn != nil {
 		// Shutdown disables keep-alive, so a response finished during it closes
 		// the connection without ever going idle and delivery could not be
 		// confirmed. Shut down only once it is.
