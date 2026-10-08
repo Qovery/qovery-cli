@@ -1,6 +1,8 @@
 // Runs the callback page script against a minimal fake browser and prints the
 // observable state as JSON. Usage: node auth_page_harness.js <scenario> < script.js
 // Scenarios: pending, success, http-error, network-error.
+// For success and http-error, AUTH_RESPONSE_STATUS and AUTH_RESPONSE_BODY carry
+// the answer the real callback server gave, so the page is run against it.
 const vm = require("vm");
 
 const scenario = process.argv[2];
@@ -76,12 +78,17 @@ Object.defineProperty(sandbox, "status", {
     windowStatus = String(v);
   },
 });
-let location = { search: "?code=abc%20123" };
+// Every way a page can navigate is recorded: assigning window.location,
+// assigning location.href, and location.assign/replace.
+const navigate = (target) => navigations.push(String(target));
+const location = { search: "?code=abc%20123", assign: navigate, replace: navigate };
+Object.defineProperty(location, "href", {
+  get: () => "http://localhost:10999/authorization" + location.search,
+  set: navigate,
+});
 Object.defineProperty(sandbox, "location", {
   get: () => location,
-  set: (v) => {
-    navigations.push(String(v));
-  },
+  set: navigate,
 });
 vm.createContext(sandbox);
 
@@ -102,12 +109,12 @@ try {
 
   const xhr = requests[0];
   if (scenario === "success") {
-    xhr.status = 200;
-    xhr.responseText = "Authentication successful, you'll be redirected. Click: ";
+    xhr.status = Number(process.env.AUTH_RESPONSE_STATUS);
+    xhr.responseText = process.env.AUTH_RESPONSE_BODY;
     xhr.onload();
   } else if (scenario === "http-error") {
-    xhr.status = 401;
-    xhr.responseText = "Authentication failed, run 'qovery auth' again.";
+    xhr.status = Number(process.env.AUTH_RESPONSE_STATUS);
+    xhr.responseText = process.env.AUTH_RESPONSE_BODY;
     xhr.onload();
   } else if (scenario === "network-error") {
     xhr.onerror();

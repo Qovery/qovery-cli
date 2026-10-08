@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -59,6 +60,49 @@ func stubTokenEndpointWith(t *testing.T, status int, body string) *exchangeRecor
 	return recorder
 }
 
+// tokenStore collects stored tokens. onTokens runs on a server goroutine, so
+// the test reads them through snapshot.
+type tokenStore struct {
+	mu     sync.Mutex
+	tokens []TokensResponse
+}
+
+func (s *tokenStore) store(tokens TokensResponse) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.tokens = append(s.tokens, tokens)
+}
+
+func (s *tokenStore) snapshot() []TokensResponse {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return append([]TokensResponse(nil), s.tokens...)
+}
+
+// stubExit replaces exitProcess. The handler calls it on a server goroutine
+// after the response is flushed, so tests wait on the channel instead of
+// reading shared state.
+func stubExit(t *testing.T) chan int {
+	t.Helper()
+	exits := make(chan int, 4)
+	prevExit := exitProcess
+	exitProcess = func(code int) { exits <- code }
+	t.Cleanup(func() { exitProcess = prevExit })
+	return exits
+}
+
+func waitForExit(t *testing.T, exits chan int, want int) {
+	t.Helper()
+	select {
+	case code := <-exits:
+		if code != want {
+			t.Errorf("exit status = %d, want %d", code, want)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("exitProcess was not called")
+	}
+}
+
 func getStatus(t *testing.T, url string) (int, string) {
 	t.Helper()
 	res, err := http.Get(url)
@@ -92,9 +136,9 @@ func TestAuthorizationServerRepeatedAttemptsUseTheirOwnVerifier(t *testing.T) {
 	addr := first.Addr().String()
 	listener := first
 
-	var stored []TokensResponse
+	store := &tokenStore{}
 	for i, verifier := range []string{"verifier-1", "verifier-2", "verifier-3"} {
-		srv := newAuthorizationServer(verifier, func(tokens TokensResponse) { stored = append(stored, tokens) })
+		srv := newAuthorizationServer(verifier, store.store)
 
 		done := make(chan error, 1)
 		// A second attempt used to panic here on the duplicate "/authorization" pattern.
@@ -133,7 +177,7 @@ func TestAuthorizationServerRepeatedAttemptsUseTheirOwnVerifier(t *testing.T) {
 			t.Errorf("exchange %d = %q, want %q", i, got[i], want[i])
 		}
 	}
-	if len(stored) != 3 || stored[0].AccessToken != "at" || stored[0].RefreshToken != "rt" {
+	if stored := store.snapshot(); len(stored) != 3 || stored[0].AccessToken != "at" || stored[0].RefreshToken != "rt" {
 		t.Errorf("stored tokens = %+v", stored)
 	}
 }
@@ -187,12 +231,7 @@ func TestAuthorizationServerRejectedExchangeStoresNothing(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			stubTokenEndpointWith(t, tc.status, tc.body)
 
-			// exitProcess runs in the handler goroutine, after the response is flushed,
-			// so the test waits on the channel instead of reading shared state.
-			exits := make(chan int, 4)
-			prevExit := exitProcess
-			exitProcess = func(code int) { exits <- code }
-			t.Cleanup(func() { exitProcess = prevExit })
+			exits := stubExit(t)
 
 			var stored atomic.Int32
 			ts := httptest.NewServer(newAuthorizationServer("v", func(TokensResponse) { stored.Add(1) }).Handler)
@@ -205,14 +244,7 @@ func TestAuthorizationServerRejectedExchangeStoresNothing(t *testing.T) {
 			body, _ := io.ReadAll(res.Body)
 			_ = res.Body.Close()
 
-			select {
-			case code := <-exits:
-				if code != 1 {
-					t.Errorf("exit status = %d, want 1", code)
-				}
-			case <-time.After(5 * time.Second):
-				t.Fatal("exitProcess was not called")
-			}
+			waitForExit(t, exits, 1)
 			// Close waits for in-flight handlers, so no further exit can arrive after it.
 			ts.Close()
 			if extra := len(exits); extra != 0 {
@@ -231,22 +263,34 @@ func TestAuthorizationServerRejectedExchangeStoresNothing(t *testing.T) {
 	}
 }
 
-func TestAuthorizationServerMissingCodeIsABadRequest(t *testing.T) {
-	exchanges := stubTokenEndpoint(t)
-	ts := httptest.NewServer(newAuthorizationServer("v", func(TokensResponse) { t.Error("tokens stored") }).Handler)
-	defer ts.Close()
-
+func TestAuthorizationServerMissingCodeFailsAndExits(t *testing.T) {
 	for _, path := range []string{"/authorization/valid", "/authorization/valid?code="} {
-		status, body := getStatus(t, ts.URL+path)
-		if status != http.StatusBadRequest {
-			t.Errorf("%s: status = %d, want %d", path, status, http.StatusBadRequest)
-		}
-		if strings.Contains(body, "successful") {
-			t.Errorf("%s: body = %q, want a failure message", path, body)
-		}
-	}
-	if got := exchanges.snapshot(); len(got) != 0 {
-		t.Errorf("token exchanges = %v, want none", got)
+		t.Run(path, func(t *testing.T) {
+			exchanges := stubTokenEndpoint(t)
+			exits := stubExit(t)
+			var stored atomic.Int32
+			ts := httptest.NewServer(newAuthorizationServer("v", func(TokensResponse) { stored.Add(1) }).Handler)
+			defer ts.Close()
+
+			status, body := getStatus(t, ts.URL+path)
+			if status != http.StatusBadRequest {
+				t.Errorf("status = %d, want %d", status, http.StatusBadRequest)
+			}
+			if body != authFailureMessage+"\n" {
+				t.Errorf("body = %q, want the failure message", body)
+			}
+			waitForExit(t, exits, 1)
+			ts.Close()
+			if extra := len(exits); extra != 0 {
+				t.Errorf("%d extra exit call(s), want exactly one", extra)
+			}
+			if got := exchanges.snapshot(); len(got) != 0 {
+				t.Errorf("token exchanges = %v, want none", got)
+			}
+			if n := stored.Load(); n != 0 {
+				t.Errorf("tokens stored %d time(s) without a code", n)
+			}
+		})
 	}
 }
 
@@ -274,15 +318,70 @@ func TestAuthorizationPageDoesNotClaimSuccess(t *testing.T) {
 
 func TestAuthorizationServerSuccessfulExchangeAnswersSuccess(t *testing.T) {
 	stubTokenEndpoint(t)
-	var stored []TokensResponse
-	ts := httptest.NewServer(newAuthorizationServer("v", func(tokens TokensResponse) { stored = append(stored, tokens) }).Handler)
+	store := &tokenStore{}
+	ts := httptest.NewServer(newAuthorizationServer("v", store.store).Handler)
 	defer ts.Close()
 
 	status, body := getStatus(t, ts.URL+"/authorization/valid?code=ok")
-	if status != http.StatusOK || !strings.Contains(body, "Authentication successful") {
+	if status != http.StatusOK || body != authSuccessMessage {
 		t.Errorf("status = %d, body = %q, want 200 with the success message", status, body)
 	}
-	if len(stored) != 1 {
+	if stored := store.snapshot(); len(stored) != 1 {
+		t.Errorf("stored tokens = %+v, want one entry", stored)
+	}
+}
+
+// A repeated callback must not replay the consumed code: with a real token
+// endpoint it would fail and take the CLI down after the tokens were stored.
+func TestAuthorizationServerRepeatedCallbackIsOneShot(t *testing.T) {
+	exchanges := stubTokenEndpoint(t)
+	exits := stubExit(t)
+	store := &tokenStore{}
+	ts := httptest.NewServer(newAuthorizationServer("v", store.store).Handler)
+	defer ts.Close()
+
+	for _, path := range []string{"/authorization/valid?code=ok", "/authorization/valid?code=ok", "/authorization/valid?code=other", "/authorization/valid"} {
+		if status, body := getStatus(t, ts.URL+path); status != http.StatusOK || body != authSuccessMessage {
+			t.Errorf("%s: status = %d, body = %q, want the first success again", path, status, body)
+		}
+	}
+	ts.Close()
+	if got := exchanges.snapshot(); len(got) != 1 {
+		t.Errorf("token exchanges = %v, want exactly one", got)
+	}
+	if stored := store.snapshot(); len(stored) != 1 {
+		t.Errorf("stored tokens = %+v, want one entry", stored)
+	}
+	if len(exits) != 0 {
+		t.Errorf("a repeated callback exited the process")
+	}
+}
+
+func TestAuthorizationServerConcurrentCallbacksExchangeOnce(t *testing.T) {
+	exchanges := stubTokenEndpoint(t)
+	stubExit(t)
+	store := &tokenStore{}
+	ts := httptest.NewServer(newAuthorizationServer("v", store.store).Handler)
+	defer ts.Close()
+
+	var wg sync.WaitGroup
+	for i := 0; i < 8; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			res, err := http.Get(ts.URL + "/authorization/valid?code=ok")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			_ = res.Body.Close()
+		}()
+	}
+	wg.Wait()
+	if got := exchanges.snapshot(); len(got) != 1 {
+		t.Errorf("token exchanges = %v, want exactly one", got)
+	}
+	if stored := store.snapshot(); len(stored) != 1 {
 		t.Errorf("stored tokens = %+v, want one entry", stored)
 	}
 }
@@ -319,7 +418,21 @@ func runAuthorizationPage(t *testing.T, scenario string) pageRun {
 	if err != nil {
 		t.Skip("node is required to run the callback page script")
 	}
-	stubTokenEndpoint(t)
+	// The page runs against what the real callback server answers, not a copy
+	// of its strings.
+	var answerStatus int
+	var answerBody string
+	switch scenario {
+	case "success":
+		stubTokenEndpoint(t)
+		answerStatus, answerBody = callbackAnswer(t)
+	case "http-error":
+		stubTokenEndpointWith(t, http.StatusForbidden, `{"error":"invalid_grant"}`)
+		stubExit(t)
+		answerStatus, answerBody = callbackAnswer(t)
+	default:
+		stubTokenEndpoint(t)
+	}
 	ts := httptest.NewServer(newAuthorizationServer("v", func(TokensResponse) {}).Handler)
 	defer ts.Close()
 
@@ -331,6 +444,7 @@ func runAuthorizationPage(t *testing.T, scenario string) pageRun {
 
 	cmd := exec.Command(node, "testdata/auth_page_harness.js", scenario)
 	cmd.Stdin = strings.NewReader(match[1])
+	cmd.Env = append(os.Environ(), fmt.Sprintf("AUTH_RESPONSE_STATUS=%d", answerStatus), "AUTH_RESPONSE_BODY="+answerBody)
 	stdout, err := cmd.Output()
 	if err != nil {
 		t.Fatalf("harness failed: %v\n%s", err, stdout)
@@ -343,6 +457,14 @@ func runAuthorizationPage(t *testing.T, scenario string) pageRun {
 		t.Fatalf("page script threw: %s", run.Error)
 	}
 	return run
+}
+
+// callbackAnswer asks a real callback server for its /authorization/valid answer.
+func callbackAnswer(t *testing.T) (int, string) {
+	t.Helper()
+	ts := httptest.NewServer(newAuthorizationServer("v", func(TokensResponse) {}).Handler)
+	defer ts.Close()
+	return getStatus(t, ts.URL+"/authorization/valid?code=abc")
 }
 
 func assertPendingPage(t *testing.T, run pageRun) {
@@ -373,8 +495,8 @@ func TestAuthorizationPageSuccessShowsLinkAndSchedulesRedirect(t *testing.T) {
 	assertPendingPage(t, run)
 
 	got := run.AfterResponse
-	if !strings.HasPrefix(got.Text, "Authentication successful") {
-		t.Errorf("text = %q, want the server's success message", got.Text)
+	if got.Text != authSuccessMessage {
+		t.Errorf("text = %q, want the server's success message %q", got.Text, authSuccessMessage)
 	}
 	if len(got.Children) != 1 || got.Children[0].Tag != "a" || got.Children[0].Href != qoveryConsoleUrl || got.Children[0].Text != qoveryConsoleUrl {
 		t.Errorf("children = %+v, want one link to %s", got.Children, qoveryConsoleUrl)
@@ -392,8 +514,8 @@ func TestAuthorizationPageHTTPErrorShowsServerMessage(t *testing.T) {
 	assertPendingPage(t, run)
 
 	got := run.AfterResponse
-	if !strings.Contains(got.Text, "Authentication failed") || strings.Contains(got.Text, "successful") {
-		t.Errorf("text = %q, want the failure message", got.Text)
+	if got.Text != authFailureMessage+"\n" {
+		t.Errorf("text = %q, want the server's failure message %q", got.Text, authFailureMessage+"\n")
 	}
 	if len(got.Children) != 0 || len(got.Timers) != 0 || len(run.AfterTimers.Navigations) != 0 {
 		t.Errorf("failure must not add a link or redirect: %+v", run.AfterTimers)

@@ -15,6 +15,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pkg/browser"
@@ -40,6 +41,7 @@ var (
 	oAuthUrlParamValueRedirect       = "http://localhost:" + strconv.Itoa(httpAuthPort) + "/authorization"
 	oAuthTokenEndpoint               = "https://auth.qovery.com/oauth/token"
 
+	authSuccessMessage = "Authentication successful, you'll be redirected to Qovery console. If it's not the case, click on this link: "
 	authFailureMessage = "Authentication failed. Run 'qovery auth' again, or contact #support on https://discord.qovery.com."
 
 	// exitProcess is replaceable so tests can observe an authentication failure.
@@ -146,26 +148,36 @@ func newAuthorizationServer(verifier string, onTokens func(TokensResponse)) *htt
 		_, _ = writer.Write([]byte(authorizationPage(httpAuthPort)))
 	})
 
+	// The callback is one-shot. A repeat (page reload, double request) must not
+	// replay the consumed code: it gets the first success again, whatever it
+	// carries. The lock also makes a concurrent repeat wait for the first exchange.
+	var (
+		mu   sync.Mutex
+		done bool
+	)
 	mux.HandleFunc("/authorization/valid", func(writer http.ResponseWriter, request *http.Request) {
+		mu.Lock()
+		defer mu.Unlock()
+		if done {
+			_, _ = writer.Write([]byte(authSuccessMessage))
+			return
+		}
+
 		codes := request.URL.Query()["code"]
 		if len(codes) == 0 || codes[0] == "" {
-			http.Error(writer, authFailureMessage, http.StatusBadRequest)
+			failAuthentication(writer, http.StatusBadRequest)
 			return
 		}
 		tokens, err := exchangeAuthorizationCode(verifier, codes[0])
 		if err != nil {
 			// A rejected or stale code must not be stored nor reported as a success.
-			http.Error(writer, authFailureMessage, http.StatusUnauthorized)
-			if flusher, ok := writer.(http.Flusher); ok {
-				flusher.Flush() // the browser must get its answer before the process exits
-			}
-			utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
-			exitProcess(1)
+			failAuthentication(writer, http.StatusUnauthorized)
 			return
 		}
+		done = true
 		onTokens(tokens)
 		utils.PrintlnInfo("Success!")
-		_, _ = writer.Write([]byte("Authentication successful, you'll be redirected to Qovery console. If it's not the case, click on this link: "))
+		_, _ = writer.Write([]byte(authSuccessMessage))
 
 		delay := authShutdownDelay
 		go func() {
@@ -178,6 +190,18 @@ func newAuthorizationServer(verifier string, onTokens func(TokensResponse)) *htt
 
 	srv.Handler = mux
 	return srv
+}
+
+// failAuthentication answers the browser with the failure message, then ends the
+// attempt with a nonzero status so the CLI never keeps waiting on a callback
+// that already failed.
+func failAuthentication(writer http.ResponseWriter, status int) {
+	http.Error(writer, authFailureMessage, status)
+	if flusher, ok := writer.(http.Flusher); ok {
+		flusher.Flush() // the browser must get its answer before the process exits
+	}
+	utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
+	exitProcess(1)
 }
 
 // exchangeAuthorizationCode trades the authorization code for tokens. It fails
