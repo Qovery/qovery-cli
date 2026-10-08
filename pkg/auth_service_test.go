@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -85,26 +86,33 @@ type trackingListener struct {
 	net.Listener
 	// gate, when set, holds back every write on accepted connections until it
 	// is closed. It simulates a slow client.
-	gate  chan struct{}
-	mu    sync.Mutex
-	conns []net.Conn
+	gate chan struct{}
+	// failWrites makes the gated writes fail once the gate opens, like a client
+	// that went away mid-response.
+	failWrites bool
+	mu         sync.Mutex
+	conns      []net.Conn
 }
 
 // gatedConn blocks writes until the gate is closed.
 type gatedConn struct {
 	net.Conn
 	gate <-chan struct{}
+	fail bool
 }
 
 func (c *gatedConn) Write(b []byte) (int, error) {
 	<-c.gate
+	if c.fail {
+		return 0, errors.New("simulated write failure")
+	}
 	return c.Conn.Write(b)
 }
 
 func (l *trackingListener) Accept() (net.Conn, error) {
 	conn, err := l.Listener.Accept()
 	if err == nil && l.gate != nil {
-		conn = &gatedConn{Conn: conn, gate: l.gate}
+		conn = &gatedConn{Conn: conn, gate: l.gate, fail: l.failWrites}
 	}
 	if err == nil {
 		l.mu.Lock()
@@ -143,18 +151,23 @@ type runningAuthorization struct {
 	done  chan struct{}
 }
 
-func startAuthorization(t *testing.T, onTokens func(TokensResponse)) *runningAuthorization {
-	t.Helper()
-	return startAuthorizationOn(t, onTokens, nil)
+type authorizationOptions struct {
+	gate       chan struct{}
+	failWrites bool
 }
 
-func startAuthorizationOn(t *testing.T, onTokens func(TokensResponse), gate chan struct{}) *runningAuthorization {
+func startAuthorization(t *testing.T, onTokens func(TokensResponse)) *runningAuthorization {
+	t.Helper()
+	return startAuthorizationOn(t, onTokens, authorizationOptions{})
+}
+
+func startAuthorizationOn(t *testing.T, onTokens func(TokensResponse), opts authorizationOptions) *runningAuthorization {
 	t.Helper()
 	inner, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
 	}
-	listener := &trackingListener{Listener: inner, gate: gate}
+	listener := &trackingListener{Listener: inner, gate: opts.gate, failWrites: opts.failWrites}
 	running := &runningAuthorization{
 		url:   "http://" + inner.Addr().String(),
 		exits: make(chan int, 4),
@@ -172,6 +185,8 @@ func startAuthorizationOn(t *testing.T, onTokens func(TokensResponse), gate chan
 	}()
 	t.Cleanup(func() {
 		_ = srv.Close()
+		// An unconfirmed failure keeps serveAuthorization waiting by design.
+		srv.markDelivered()
 		<-running.done
 		exitProcess = prevExit
 	})
@@ -348,7 +363,7 @@ func TestAuthorizationServerFailureExitWaitsForSlowDelivery(t *testing.T) {
 	var release sync.Once
 	releaseGate := func() { release.Do(func() { close(gate) }) }
 	t.Cleanup(releaseGate)
-	a := startAuthorizationOn(t, func(TokensResponse) {}, gate)
+	a := startAuthorizationOn(t, func(TokensResponse) {}, authorizationOptions{gate: gate})
 
 	type result struct {
 		res  *http.Response
@@ -384,6 +399,47 @@ func TestAuthorizationServerFailureExitWaitsForSlowDelivery(t *testing.T) {
 	assertCompleteFailure(t, got.res, got.body, http.StatusUnauthorized)
 	waitForExit(t, a.exits, 1)
 	<-a.done
+}
+
+// A failure response that cannot be written is never confirmed delivered. The
+// connection closes without going idle, and that must not release the exit.
+func TestAuthorizationServerFailureExitNeverRunsWhenDeliveryIsUnconfirmed(t *testing.T) {
+	stubTokenEndpointWith(t, http.StatusForbidden, `{"error":"invalid_grant"}`)
+	// The old fixed delivery timeout, shortened: waiting longer than any of
+	// the graceful timeouts must still not exit.
+	prevTimeout := authShutdownTimeout
+	authShutdownTimeout = 20 * time.Millisecond
+	t.Cleanup(func() { authShutdownTimeout = prevTimeout })
+
+	gate := make(chan struct{})
+	a := startAuthorizationOn(t, func(TokensResponse) {}, authorizationOptions{gate: gate, failWrites: true})
+
+	clientErr := make(chan error, 1)
+	go func() {
+		res, err := http.Get(a.url + "/authorization/valid?code=stale")
+		if err == nil {
+			_ = res.Body.Close()
+		}
+		clientErr <- err
+	}()
+	close(gate)
+
+	// The client sees the connection die before any complete response.
+	select {
+	case err := <-clientErr:
+		if err == nil {
+			t.Fatal("client got a response although every write failed")
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("client never saw the connection close")
+	}
+	select {
+	case code := <-a.exits:
+		t.Fatalf("exitProcess(%d) ran although the failure response was never delivered", code)
+	case <-a.done:
+		t.Fatal("serveAuthorization returned although the failure response was never delivered")
+	case <-time.After(500 * time.Millisecond):
+	}
 }
 
 func getComplete(t *testing.T, url string) (*http.Response, string) {

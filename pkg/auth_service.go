@@ -49,10 +49,6 @@ var (
 	// decide when the failure response is complete, see awaitFailureDelivered.
 	authShutdownTimeout = 5 * time.Second
 
-	// Last-resort bound on waiting for the failure response to be written. The
-	// body is one short line, so it only elapses if the connection is wedged.
-	authDeliveryTimeout = 30 * time.Second
-
 	// exitProcess is replaceable so tests can observe an authentication failure.
 	exitProcess = os.Exit
 )
@@ -112,9 +108,14 @@ type authorizationServer struct {
 	*http.Server
 	failed atomic.Bool
 
+	// shutdownTimeout is read once at construction, so the package variable is
+	// not touched from server goroutines.
+	shutdownTimeout time.Duration
+
 	// failedConn is the connection that carries the failure response.
-	// delivered closes once it is idle or closed, which the http server only
-	// reaches after the response is completely written.
+	// delivered closes once that connection is idle again after the failing
+	// handler: the http server only gets there after the response is completely
+	// written. Closed and hijacked connections prove nothing about delivery.
 	failMu        sync.Mutex
 	failedConn    net.Conn
 	delivered     chan struct{}
@@ -130,8 +131,9 @@ func (s *authorizationServer) markDelivered() {
 // serveAuthorization serves until the attempt ends. Serve returns as soon as
 // Shutdown starts, and Shutdown closes the listener first, so the fixed port is
 // free again when this function returns. On failure the process exits here, not
-// in the handler, and only once the failure response is completely written: the
-// browser must not get it truncated.
+// in the handler, and only once the failure response is confirmed completely
+// written: the browser must not get it truncated. If that never gets confirmed
+// (connection lost mid-write), the CLI keeps waiting instead of exiting.
 func serveAuthorization(srv *authorizationServer, listener net.Listener) {
 	_ = srv.Serve(listener)
 	srv.shutdown()
@@ -145,20 +147,18 @@ func serveAuthorization(srv *authorizationServer, listener net.Listener) {
 // requests to finish. It is safe to call more than once. A timeout here does not
 // mean the failure response is complete: see awaitFailureDelivered.
 func (s *authorizationServer) shutdown() {
-	ctx, cancel := context.WithTimeout(context.Background(), authShutdownTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), s.shutdownTimeout)
 	defer cancel()
 	if err := s.Shutdown(ctx); err != nil {
 		utils.PrintlnError(err)
 	}
 }
 
-// awaitFailureDelivered blocks until the failure response is completely
-// written, however long a slow connection takes, up to authDeliveryTimeout.
+// awaitFailureDelivered blocks until the failure response is confirmed
+// completely written. There is no timeout on purpose: exiting earlier could
+// truncate the response the user is about to read.
 func (s *authorizationServer) awaitFailureDelivered() {
-	select {
-	case <-s.delivered:
-	case <-time.After(authDeliveryTimeout):
-	}
+	<-s.delivered
 }
 
 // fail answers the browser with the failure message and ends the attempt. The
@@ -176,7 +176,13 @@ func (s *authorizationServer) fail(writer http.ResponseWriter, request *http.Req
 	http.Error(writer, authFailureMessage, status)
 	utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
 	if s.failed.CompareAndSwap(false, true) {
-		go s.shutdown()
+		// Shutdown disables keep-alive, so a response finished during it closes
+		// the connection without ever going idle and delivery could not be
+		// confirmed. Shut down only once it is.
+		go func() {
+			s.awaitFailureDelivered()
+			s.shutdown()
+		}()
 	}
 }
 
@@ -221,20 +227,22 @@ func newAuthorizationServer(verifier string, onTokens func(TokensResponse)) *aut
 	srv := &authorizationServer{
 		Server:    &http.Server{Addr: fmt.Sprintf("localhost:%d", httpAuthPort)},
 		delivered: make(chan struct{}),
+
+		shutdownTimeout: authShutdownTimeout,
 	}
 	srv.ConnContext = func(ctx context.Context, conn net.Conn) context.Context {
 		return context.WithValue(ctx, connContextKey{}, conn)
 	}
 	srv.ConnState = func(conn net.Conn, state http.ConnState) {
 		switch state {
-		case http.StateIdle, http.StateClosed, http.StateHijacked:
+		case http.StateIdle:
 			srv.failMu.Lock()
 			isFailed := conn == srv.failedConn
 			srv.failMu.Unlock()
 			if isFailed {
 				srv.markDelivered()
 			}
-		case http.StateNew, http.StateActive:
+		case http.StateNew, http.StateActive, http.StateHijacked, http.StateClosed:
 		}
 	}
 	mux := http.NewServeMux()
