@@ -45,9 +45,13 @@ var (
 	authSuccessMessage = "Authentication successful, you'll be redirected to Qovery console. If it's not the case, click on this link: "
 	authFailureMessage = "Authentication failed. Run 'qovery auth' again, or contact #support on https://discord.qovery.com."
 
-	// Upper bound for letting in-flight callback responses finish before the
-	// server closes.
+	// Upper bound for the graceful shutdown. It frees the port; it does not
+	// decide when the failure response is complete, see awaitFailureDelivered.
 	authShutdownTimeout = 5 * time.Second
+
+	// Last-resort bound on waiting for the failure response to be written. The
+	// body is one short line, so it only elapses if the connection is wedged.
+	authDeliveryTimeout = 30 * time.Second
 
 	// exitProcess is replaceable so tests can observe an authentication failure.
 	exitProcess = os.Exit
@@ -107,23 +111,39 @@ func DoRequestUserToAuthenticate(headless bool, skipVersionCheck bool) {
 type authorizationServer struct {
 	*http.Server
 	failed atomic.Bool
+
+	// failedConn is the connection that carries the failure response.
+	// delivered closes once it is idle or closed, which the http server only
+	// reaches after the response is completely written.
+	failMu        sync.Mutex
+	failedConn    net.Conn
+	delivered     chan struct{}
+	deliveredOnce sync.Once
+}
+
+type connContextKey struct{}
+
+func (s *authorizationServer) markDelivered() {
+	s.deliveredOnce.Do(func() { close(s.delivered) })
 }
 
 // serveAuthorization serves until the attempt ends. Serve returns as soon as
 // Shutdown starts, and Shutdown closes the listener first, so the fixed port is
 // free again when this function returns. On failure the process exits here, not
-// in the handler: Shutdown has then waited for the failure response to be
-// written in full and the connection to close, so the browser gets it complete.
+// in the handler, and only once the failure response is completely written: the
+// browser must not get it truncated.
 func serveAuthorization(srv *authorizationServer, listener net.Listener) {
 	_ = srv.Serve(listener)
 	srv.shutdown()
 	if srv.failed.Load() {
+		srv.awaitFailureDelivered()
 		exitProcess(1)
 	}
 }
 
 // shutdown stops the server and waits, within authShutdownTimeout, for in-flight
-// requests to finish. It is safe to call more than once.
+// requests to finish. It is safe to call more than once. A timeout here does not
+// mean the failure response is complete: see awaitFailureDelivered.
 func (s *authorizationServer) shutdown() {
 	ctx, cancel := context.WithTimeout(context.Background(), authShutdownTimeout)
 	defer cancel()
@@ -132,10 +152,27 @@ func (s *authorizationServer) shutdown() {
 	}
 }
 
+// awaitFailureDelivered blocks until the failure response is completely
+// written, however long a slow connection takes, up to authDeliveryTimeout.
+func (s *authorizationServer) awaitFailureDelivered() {
+	select {
+	case <-s.delivered:
+	case <-time.After(authDeliveryTimeout):
+	}
+}
+
 // fail answers the browser with the failure message and ends the attempt. The
 // handler only returns: exiting here would kill the process before the response
 // is complete (a flushed response is still chunked and unterminated).
-func (s *authorizationServer) fail(writer http.ResponseWriter, status int) {
+func (s *authorizationServer) fail(writer http.ResponseWriter, request *http.Request, status int) {
+	conn, _ := request.Context().Value(connContextKey{}).(net.Conn)
+	s.failMu.Lock()
+	s.failedConn = conn
+	s.failMu.Unlock()
+	if conn == nil {
+		s.markDelivered() // not served through serveAuthorization: nothing to wait for
+	}
+
 	http.Error(writer, authFailureMessage, status)
 	utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
 	if s.failed.CompareAndSwap(false, true) {
@@ -181,7 +218,25 @@ func authorizationPage(port int) string {
 // 401) would panic on the duplicate "/authorization" pattern. The PKCE verifier
 // is captured per attempt.
 func newAuthorizationServer(verifier string, onTokens func(TokensResponse)) *authorizationServer {
-	srv := &authorizationServer{Server: &http.Server{Addr: fmt.Sprintf("localhost:%d", httpAuthPort)}}
+	srv := &authorizationServer{
+		Server:    &http.Server{Addr: fmt.Sprintf("localhost:%d", httpAuthPort)},
+		delivered: make(chan struct{}),
+	}
+	srv.ConnContext = func(ctx context.Context, conn net.Conn) context.Context {
+		return context.WithValue(ctx, connContextKey{}, conn)
+	}
+	srv.ConnState = func(conn net.Conn, state http.ConnState) {
+		switch state {
+		case http.StateIdle, http.StateClosed, http.StateHijacked:
+			srv.failMu.Lock()
+			isFailed := conn == srv.failedConn
+			srv.failMu.Unlock()
+			if isFailed {
+				srv.markDelivered()
+			}
+		case http.StateNew, http.StateActive:
+		}
+	}
 	mux := http.NewServeMux()
 
 	// The page only shows what /authorization/valid answers: the success message
@@ -214,13 +269,13 @@ func newAuthorizationServer(verifier string, onTokens func(TokensResponse)) *aut
 
 		codes := request.URL.Query()["code"]
 		if len(codes) == 0 || codes[0] == "" {
-			srv.fail(writer, http.StatusBadRequest)
+			srv.fail(writer, request, http.StatusBadRequest)
 			return
 		}
 		tokens, err := exchangeAuthorizationCode(verifier, codes[0])
 		if err != nil {
 			// A rejected or stale code must not be stored nor reported as a success.
-			srv.fail(writer, http.StatusUnauthorized)
+			srv.fail(writer, request, http.StatusUnauthorized)
 			return
 		}
 		done = true

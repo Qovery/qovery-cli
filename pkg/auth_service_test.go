@@ -83,12 +83,29 @@ func (s *tokenStore) snapshot() []TokensResponse {
 // way a dying process would.
 type trackingListener struct {
 	net.Listener
+	// gate, when set, holds back every write on accepted connections until it
+	// is closed. It simulates a slow client.
+	gate  chan struct{}
 	mu    sync.Mutex
 	conns []net.Conn
 }
 
+// gatedConn blocks writes until the gate is closed.
+type gatedConn struct {
+	net.Conn
+	gate <-chan struct{}
+}
+
+func (c *gatedConn) Write(b []byte) (int, error) {
+	<-c.gate
+	return c.Conn.Write(b)
+}
+
 func (l *trackingListener) Accept() (net.Conn, error) {
 	conn, err := l.Listener.Accept()
+	if err == nil && l.gate != nil {
+		conn = &gatedConn{Conn: conn, gate: l.gate}
+	}
 	if err == nil {
 		l.mu.Lock()
 		l.conns = append(l.conns, conn)
@@ -128,11 +145,16 @@ type runningAuthorization struct {
 
 func startAuthorization(t *testing.T, onTokens func(TokensResponse)) *runningAuthorization {
 	t.Helper()
+	return startAuthorizationOn(t, onTokens, nil)
+}
+
+func startAuthorizationOn(t *testing.T, onTokens func(TokensResponse), gate chan struct{}) *runningAuthorization {
+	t.Helper()
 	inner, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
 	}
-	listener := &trackingListener{Listener: inner}
+	listener := &trackingListener{Listener: inner, gate: gate}
 	running := &runningAuthorization{
 		url:   "http://" + inner.Addr().String(),
 		exits: make(chan int, 4),
@@ -314,6 +336,56 @@ func TestAuthorizationServerRejectedExchangeStoresNothing(t *testing.T) {
 
 // getComplete reads the whole response and fails if the connection was cut
 // before the body was complete.
+// The graceful shutdown gives up after authShutdownTimeout, but a failure
+// response still being written must not be cut by the exit that follows.
+func TestAuthorizationServerFailureExitWaitsForSlowDelivery(t *testing.T) {
+	stubTokenEndpointWith(t, http.StatusForbidden, `{"error":"invalid_grant"}`)
+	prevTimeout := authShutdownTimeout
+	authShutdownTimeout = 20 * time.Millisecond
+	t.Cleanup(func() { authShutdownTimeout = prevTimeout })
+
+	gate := make(chan struct{})
+	var release sync.Once
+	releaseGate := func() { release.Do(func() { close(gate) }) }
+	t.Cleanup(releaseGate)
+	a := startAuthorizationOn(t, func(TokensResponse) {}, gate)
+
+	type result struct {
+		res  *http.Response
+		body string
+		err  error
+	}
+	delivered := make(chan result, 1)
+	go func() {
+		res, err := http.Get(a.url + "/authorization/valid?code=stale")
+		if err != nil {
+			delivered <- result{err: err}
+			return
+		}
+		defer func() { _ = res.Body.Close() }()
+		body, err := io.ReadAll(res.Body)
+		delivered <- result{res, string(body), err}
+	}()
+
+	// Well past the graceful timeout, the response is still held back.
+	select {
+	case code := <-a.exits:
+		t.Fatalf("exitProcess(%d) ran while the failure response was not delivered", code)
+	case got := <-delivered:
+		t.Fatalf("response arrived while the connection was gated: %+v", got)
+	case <-time.After(300 * time.Millisecond):
+	}
+
+	releaseGate()
+	got := <-delivered
+	if got.err != nil {
+		t.Fatalf("response truncated: %v (got %q)", got.err, got.body)
+	}
+	assertCompleteFailure(t, got.res, got.body, http.StatusUnauthorized)
+	waitForExit(t, a.exits, 1)
+	<-a.done
+}
+
 func getComplete(t *testing.T, url string) (*http.Response, string) {
 	t.Helper()
 	res, err := http.Get(url)
