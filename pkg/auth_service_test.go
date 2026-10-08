@@ -199,8 +199,8 @@ func TestAuthorizationServerRejectedExchangeStoresNothing(t *testing.T) {
 			if stored != 0 {
 				t.Errorf("tokens stored %d time(s) after a rejected exchange", stored)
 			}
-			if len(exits) != 1 || exits[0] == 0 {
-				t.Errorf("exit calls = %v, want exactly one nonzero exit", exits)
+			if len(exits) != 1 || exits[0] != 1 {
+				t.Errorf("exit calls = %v, want exactly one exit with status 1", exits)
 			}
 			if res.StatusCode != http.StatusUnauthorized {
 				t.Errorf("status = %d, want %d", res.StatusCode, http.StatusUnauthorized)
