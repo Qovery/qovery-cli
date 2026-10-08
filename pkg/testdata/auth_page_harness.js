@@ -108,11 +108,7 @@ try {
   out.pending = snapshot();
 
   const xhr = requests[0];
-  if (scenario === "success") {
-    xhr.status = Number(process.env.AUTH_RESPONSE_STATUS);
-    xhr.responseText = process.env.AUTH_RESPONSE_BODY;
-    xhr.onload();
-  } else if (scenario === "http-error") {
+  if (scenario === "success" || scenario === "http-error") {
     xhr.status = Number(process.env.AUTH_RESPONSE_STATUS);
     xhr.responseText = process.env.AUTH_RESPONSE_BODY;
     xhr.onload();
