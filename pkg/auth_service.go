@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"math/rand"
 	"net"
 	"net/http"
@@ -39,6 +38,9 @@ var (
 	oAuthUrlParamValueScopes         = "offline_access openid profile email"
 	oAuthUrlParamValueRedirect       = "http://localhost:" + strconv.Itoa(httpAuthPort) + "/authorization"
 	oAuthTokenEndpoint               = "https://auth.qovery.com/oauth/token"
+
+	// exitProcess is replaceable so tests can observe an authentication failure.
+	exitProcess = os.Exit
 )
 
 type TokensResponse struct {
@@ -122,32 +124,21 @@ func newAuthorizationServer(verifier string, onTokens func(TokensResponse)) *htt
 	})
 
 	mux.HandleFunc("/authorization/valid", func(writer http.ResponseWriter, request *http.Request) {
-		code := request.URL.Query()["code"][0]
-		res, err := http.PostForm(oAuthTokenEndpoint, url.Values{
-			"grant_type":    {"authorization_code"},
-			"client_id":     {oAuthUrlParamValueClient},
-			"code":          {code},
-			"redirect_uri":  {oAuthUrlParamValueRedirect},
-			"code_verifier": {verifier},
-		})
-
-		if err != nil {
-			utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
-			os.Exit(0)
-		} else {
-			defer func(Body io.ReadCloser) {
-				_ = Body.Close()
-			}(res.Body)
-
-			tokens := TokensResponse{}
-			err := json.NewDecoder(res.Body).Decode(&tokens)
-			if err != nil {
-				utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
-				os.Exit(0)
-			}
-			onTokens(tokens)
-			utils.PrintlnInfo("Success!")
+		codes := request.URL.Query()["code"]
+		if len(codes) == 0 {
+			http.Error(writer, "missing authorization code", http.StatusBadRequest)
+			return
 		}
+		tokens, err := exchangeAuthorizationCode(verifier, codes[0])
+		if err != nil {
+			// A rejected or stale code must not be stored nor reported as a success.
+			http.Error(writer, "authentication unsuccessful", http.StatusUnauthorized)
+			utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
+			exitProcess(0)
+			return
+		}
+		onTokens(tokens)
+		utils.PrintlnInfo("Success!")
 
 		delay := authShutdownDelay
 		go func() {
@@ -160,6 +151,35 @@ func newAuthorizationServer(verifier string, onTokens func(TokensResponse)) *htt
 
 	srv.Handler = mux
 	return srv
+}
+
+// exchangeAuthorizationCode trades the authorization code for tokens. It fails
+// on a non-200 answer or an empty access token, which is how the token endpoint
+// reports a rejected or already used code.
+func exchangeAuthorizationCode(verifier string, code string) (TokensResponse, error) {
+	res, err := http.PostForm(oAuthTokenEndpoint, url.Values{
+		"grant_type":    {"authorization_code"},
+		"client_id":     {oAuthUrlParamValueClient},
+		"code":          {code},
+		"redirect_uri":  {oAuthUrlParamValueRedirect},
+		"code_verifier": {verifier},
+	})
+	if err != nil {
+		return TokensResponse{}, err
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	if res.StatusCode != http.StatusOK {
+		return TokensResponse{}, fmt.Errorf("token endpoint answered %d", res.StatusCode)
+	}
+	tokens := TokensResponse{}
+	if err := json.NewDecoder(res.Body).Decode(&tokens); err != nil {
+		return TokensResponse{}, err
+	}
+	if tokens.AccessToken == "" {
+		return TokensResponse{}, errors.New("token endpoint returned an empty access token")
+	}
+	return tokens, nil
 }
 
 func createCodeVerifier() string {
@@ -201,8 +221,7 @@ func runHeadlessFlow() {
 		tokens, err := getTokensWith(parameters)
 
 		if err == nil {
-			expiredAt := time.Now().Local().Add(time.Duration(tokens.ExpiresIn-60) * time.Second)
-			_ = utils.SetAccessToken(utils.AccessToken(tokens.AccessToken), expiredAt, utils.RefreshToken(tokens.RefreshToken))
+			storeTokens(tokens)
 			utils.PrintlnInfo("Success!")
 			return
 		}

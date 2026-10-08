@@ -10,17 +10,39 @@ import (
 	"time"
 )
 
-// stubTokenEndpoint records the code_verifier of every token exchange.
-func stubTokenEndpoint(t *testing.T) *[]string {
+// exchangeRecorder records the code_verifier of every token exchange. The
+// handler runs on server goroutines, so reads go through snapshot.
+type exchangeRecorder struct {
+	mu        sync.Mutex
+	exchanges []string
+}
+
+func (r *exchangeRecorder) record(entry string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.exchanges = append(r.exchanges, entry)
+}
+
+func (r *exchangeRecorder) snapshot() []string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return append([]string(nil), r.exchanges...)
+}
+
+// stubTokenEndpoint answers every token exchange with a success.
+func stubTokenEndpoint(t *testing.T) *exchangeRecorder {
 	t.Helper()
-	var mu sync.Mutex
-	verifiers := []string{}
+	return stubTokenEndpointWith(t, http.StatusOK, `{"access_token":"at","refresh_token":"rt","expires_in":3600}`)
+}
+
+func stubTokenEndpointWith(t *testing.T, status int, body string) *exchangeRecorder {
+	t.Helper()
+	recorder := &exchangeRecorder{}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_ = r.ParseForm()
-		mu.Lock()
-		verifiers = append(verifiers, r.PostForm.Get("code_verifier")+"|"+r.PostForm.Get("code"))
-		mu.Unlock()
-		_, _ = w.Write([]byte(`{"access_token":"at","refresh_token":"rt","expires_in":3600}`))
+		recorder.record(r.PostForm.Get("code_verifier") + "|" + r.PostForm.Get("code"))
+		w.WriteHeader(status)
+		_, _ = w.Write([]byte(body))
 	}))
 	t.Cleanup(ts.Close)
 
@@ -28,7 +50,7 @@ func stubTokenEndpoint(t *testing.T) *[]string {
 	oAuthTokenEndpoint = ts.URL
 	authShutdownDelay = 0
 	t.Cleanup(func() { oAuthTokenEndpoint, authShutdownDelay = prevEndpoint, prevDelay })
-	return &verifiers
+	return recorder
 }
 
 func get(t *testing.T, url string) string {
@@ -85,12 +107,13 @@ func TestAuthorizationServerRepeatedAttemptsUseTheirOwnVerifier(t *testing.T) {
 	_ = listener.Close()
 
 	want := []string{"verifier-1|code-verifier-1", "verifier-2|code-verifier-2", "verifier-3|code-verifier-3"}
-	if len(*verifiers) != len(want) {
-		t.Fatalf("token exchanges = %v, want %v", *verifiers, want)
+	got := verifiers.snapshot()
+	if len(got) != len(want) {
+		t.Fatalf("token exchanges = %v, want %v", got, want)
 	}
 	for i := range want {
-		if (*verifiers)[i] != want[i] {
-			t.Errorf("exchange %d = %q, want %q", i, (*verifiers)[i], want[i])
+		if got[i] != want[i] {
+			t.Errorf("exchange %d = %q, want %q", i, got[i], want[i])
 		}
 	}
 	if len(stored) != 3 || stored[0].AccessToken != "at" || stored[0].RefreshToken != "rt" {
@@ -110,13 +133,14 @@ func TestAuthorizationServersDoNotShareHandlers(t *testing.T) {
 	get(t, a.URL+"/authorization/valid?code=c")
 
 	want := []string{"verifier-b|c", "verifier-a|c"}
-	for i := range want {
-		if (*verifiers)[i] != want[i] {
-			t.Errorf("exchange %d = %q, want %q", i, (*verifiers)[i], want[i])
-		}
+	got := verifiers.snapshot()
+	if len(got) != len(want) {
+		t.Fatalf("token exchanges = %v, want %v", got, want)
 	}
-	if len(*verifiers) != 2 {
-		t.Errorf("token exchanges = %v, want %v", *verifiers, want)
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("exchange %d = %q, want %q", i, got[i], want[i])
+		}
 	}
 }
 
@@ -127,5 +151,62 @@ func TestAuthorizationServerDoesNotUseDefaultServeMux(t *testing.T) {
 
 	if _, pattern := http.DefaultServeMux.Handler(httptest.NewRequest(http.MethodGet, "/authorization", nil)); pattern != "" {
 		t.Errorf("/authorization registered on http.DefaultServeMux (pattern %q)", pattern)
+	}
+}
+
+func TestAuthorizationServerRejectedExchangeStoresNothing(t *testing.T) {
+	cases := map[string]struct {
+		status int
+		body   string
+	}{
+		"non-200 answer":     {http.StatusForbidden, `{"error":"invalid_grant"}`},
+		"200, empty tokens":  {http.StatusOK, `{}`},
+		"200, invalid JSON":  {http.StatusOK, `not json`},
+		"200, error payload": {http.StatusOK, `{"error":"invalid_grant"}`},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			stubTokenEndpointWith(t, tc.status, tc.body)
+
+			var exits []int
+			prevExit := exitProcess
+			exitProcess = func(code int) { exits = append(exits, code) }
+			t.Cleanup(func() { exitProcess = prevExit })
+
+			stored := 0
+			ts := httptest.NewServer(newAuthorizationServer("v", func(TokensResponse) { stored++ }).Handler)
+			defer ts.Close()
+
+			res, err := http.Get(ts.URL + "/authorization/valid?code=stale")
+			if err != nil {
+				t.Fatal(err)
+			}
+			_ = res.Body.Close()
+
+			if stored != 0 {
+				t.Errorf("tokens stored %d time(s) after a rejected exchange", stored)
+			}
+			if len(exits) != 1 {
+				t.Errorf("exit calls = %v, want exactly one", exits)
+			}
+			if res.StatusCode != http.StatusUnauthorized {
+				t.Errorf("status = %d, want %d", res.StatusCode, http.StatusUnauthorized)
+			}
+		})
+	}
+}
+
+func TestAuthorizationServerMissingCodeIsABadRequest(t *testing.T) {
+	stubTokenEndpoint(t)
+	ts := httptest.NewServer(newAuthorizationServer("v", func(TokensResponse) { t.Error("tokens stored") }).Handler)
+	defer ts.Close()
+
+	res, err := http.Get(ts.URL + "/authorization/valid")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = res.Body.Close()
+	if res.StatusCode != http.StatusBadRequest {
+		t.Errorf("status = %d, want %d", res.StatusCode, http.StatusBadRequest)
 	}
 }
