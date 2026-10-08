@@ -102,6 +102,33 @@ func storeTokens(tokens TokensResponse) {
 	_ = utils.SetAccessToken(utils.AccessToken(tokens.AccessToken), expiredAt, utils.RefreshToken(tokens.RefreshToken))
 }
 
+// authorizationPage is the callback page. The script avoids top-level `var`
+// declarations: they become window properties, and names like `status` are
+// read-only strings there, which breaks DOM updates.
+func authorizationPage(port int) string {
+	return fmt.Sprintf(`<p id="status">Authenticating...</p>
+<script type="text/javascript" charset="utf-8">
+	var statusElement = document.getElementById("status");
+	var code = new URLSearchParams(window.location.search).get("code") || "";
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open("GET", "http://localhost:%d/authorization/valid?code=" + encodeURIComponent(code), true);
+	xmlHttp.onload = function () {
+		statusElement.textContent = xmlHttp.responseText;
+		if (xmlHttp.status === 200) {
+			var link = document.createElement("a");
+			link.href = %q;
+			link.textContent = %q;
+			statusElement.appendChild(link);
+			window.setTimeout(function () { window.location = %q; }, 2000);
+		}
+	};
+	xmlHttp.onerror = function () {
+		statusElement.textContent = "Authentication failed, the Qovery CLI could not be reached. Run 'qovery auth' again.";
+	};
+	xmlHttp.send(null);
+</script>`, port, qoveryConsoleUrl, qoveryConsoleUrl, qoveryConsoleUrl)
+}
+
 // newAuthorizationServer builds a server with its own mux for one interactive
 // authentication attempt. The handlers must not be registered on
 // http.DefaultServeMux: a second attempt in the same process (re-auth after a
@@ -114,30 +141,8 @@ func newAuthorizationServer(verifier string, onTokens func(TokensResponse)) *htt
 	// The page only shows what /authorization/valid answers: the success message
 	// is not part of it, so a failed token exchange can never look like a success.
 	mux.HandleFunc("/authorization", func(writer http.ResponseWriter, request *http.Request) {
-		page := fmt.Sprintf(`<p id="status">Authenticating...</p>
-<script type="text/javascript" charset="utf-8">
-	var status = document.getElementById("status");
-	var code = new URLSearchParams(window.location.search).get("code") || "";
-	var xmlHttp = new XMLHttpRequest();
-	xmlHttp.open("GET", "http://localhost:%d/authorization/valid?code=" + encodeURIComponent(code), true);
-	xmlHttp.onload = function () {
-		status.textContent = xmlHttp.responseText;
-		if (xmlHttp.status === 200) {
-			var link = document.createElement("a");
-			link.href = %q;
-			link.textContent = %q;
-			status.appendChild(link);
-			window.setTimeout(function () { window.location = %q; }, 2000);
-		}
-	};
-	xmlHttp.onerror = function () {
-		status.textContent = "Authentication failed, the Qovery CLI could not be reached. Run 'qovery auth' again.";
-	};
-	xmlHttp.send(null);
-</script>`, httpAuthPort, qoveryConsoleUrl, qoveryConsoleUrl, qoveryConsoleUrl)
-
 		writer.Header().Set("Content-Type", "text/html; charset=utf-8")
-		_, _ = writer.Write([]byte(page))
+		_, _ = writer.Write([]byte(authorizationPage(httpAuthPort)))
 	})
 
 	mux.HandleFunc("/authorization/valid", func(writer http.ResponseWriter, request *http.Request) {

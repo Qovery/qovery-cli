@@ -1,10 +1,14 @@
 package pkg
 
 import (
+	"encoding/json"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os/exec"
+	"regexp"
 	"strings"
 	"sync"
 	"testing"
@@ -265,5 +269,131 @@ func TestAuthorizationServerSuccessfulExchangeAnswersSuccess(t *testing.T) {
 	}
 	if len(stored) != 1 {
 		t.Errorf("stored tokens = %+v, want one entry", stored)
+	}
+}
+
+type pageSnapshot struct {
+	Text     string `json:"text"`
+	Children []struct {
+		Tag  string `json:"tag"`
+		Href string `json:"href"`
+		Text string `json:"text"`
+	} `json:"children"`
+	Requests []struct {
+		Method string `json:"method"`
+		URL    string `json:"url"`
+		Async  bool   `json:"async"`
+		Sent   bool   `json:"sent"`
+	} `json:"requests"`
+	Timers      []int    `json:"timers"`
+	Navigations []string `json:"navigations"`
+}
+
+type pageRun struct {
+	Pending       pageSnapshot `json:"pending"`
+	AfterResponse pageSnapshot `json:"afterResponse"`
+	AfterTimers   pageSnapshot `json:"afterTimers"`
+	Error         string       `json:"error"`
+}
+
+// runAuthorizationPage serves the real /authorization page, extracts its inline
+// script and runs it in node against a fake browser (testdata/auth_page_harness.js).
+func runAuthorizationPage(t *testing.T, scenario string) pageRun {
+	t.Helper()
+	node, err := exec.LookPath("node")
+	if err != nil {
+		t.Skip("node is required to run the callback page script")
+	}
+	stubTokenEndpoint(t)
+	ts := httptest.NewServer(newAuthorizationServer("v", func(TokensResponse) {}).Handler)
+	defer ts.Close()
+
+	_, page := getStatus(t, ts.URL+"/authorization?code=abc%20123")
+	match := regexp.MustCompile(`(?s)<script[^>]*>(.*)</script>`).FindStringSubmatch(page)
+	if match == nil {
+		t.Fatalf("no inline script in page: %q", page)
+	}
+
+	cmd := exec.Command(node, "testdata/auth_page_harness.js", scenario)
+	cmd.Stdin = strings.NewReader(match[1])
+	stdout, err := cmd.Output()
+	if err != nil {
+		t.Fatalf("harness failed: %v\n%s", err, stdout)
+	}
+	var run pageRun
+	if err := json.Unmarshal(stdout, &run); err != nil {
+		t.Fatalf("harness output %q: %v", stdout, err)
+	}
+	if run.Error != "" {
+		t.Fatalf("page script threw: %s", run.Error)
+	}
+	return run
+}
+
+func assertPendingPage(t *testing.T, run pageRun) {
+	t.Helper()
+	p := run.Pending
+	if p.Text != "Authenticating..." || len(p.Children) != 0 {
+		t.Errorf("pending text = %q with %d children, want the Authenticating... placeholder", p.Text, len(p.Children))
+	}
+	wantURL := fmt.Sprintf("http://localhost:%d/authorization/valid?code=abc%%20123", httpAuthPort)
+	if len(p.Requests) != 1 || p.Requests[0].Method != "GET" || p.Requests[0].URL != wantURL || !p.Requests[0].Async || !p.Requests[0].Sent {
+		t.Errorf("requests = %+v, want one sent async GET %s", p.Requests, wantURL)
+	}
+	if len(p.Timers) != 0 || len(p.Navigations) != 0 {
+		t.Errorf("pending page scheduled timers %v / navigations %v", p.Timers, p.Navigations)
+	}
+}
+
+func TestAuthorizationPagePending(t *testing.T) {
+	run := runAuthorizationPage(t, "pending")
+	assertPendingPage(t, run)
+	if got := run.AfterResponse; got.Text != "Authenticating..." || len(got.Timers) != 0 {
+		t.Errorf("page changed without an answer: %+v", got)
+	}
+}
+
+func TestAuthorizationPageSuccessShowsLinkAndSchedulesRedirect(t *testing.T) {
+	run := runAuthorizationPage(t, "success")
+	assertPendingPage(t, run)
+
+	got := run.AfterResponse
+	if !strings.HasPrefix(got.Text, "Authentication successful") {
+		t.Errorf("text = %q, want the server's success message", got.Text)
+	}
+	if len(got.Children) != 1 || got.Children[0].Tag != "a" || got.Children[0].Href != qoveryConsoleUrl || got.Children[0].Text != qoveryConsoleUrl {
+		t.Errorf("children = %+v, want one link to %s", got.Children, qoveryConsoleUrl)
+	}
+	if len(got.Timers) != 1 || got.Timers[0] != 2000 || len(got.Navigations) != 0 {
+		t.Errorf("timers = %v, navigations = %v, want one 2000ms timer and no navigation yet", got.Timers, got.Navigations)
+	}
+	if after := run.AfterTimers; len(after.Navigations) != 1 || after.Navigations[0] != qoveryConsoleUrl {
+		t.Errorf("navigations after the timer = %v, want [%s]", after.Navigations, qoveryConsoleUrl)
+	}
+}
+
+func TestAuthorizationPageHTTPErrorShowsServerMessage(t *testing.T) {
+	run := runAuthorizationPage(t, "http-error")
+	assertPendingPage(t, run)
+
+	got := run.AfterResponse
+	if !strings.Contains(got.Text, "Authentication failed") || strings.Contains(got.Text, "successful") {
+		t.Errorf("text = %q, want the failure message", got.Text)
+	}
+	if len(got.Children) != 0 || len(got.Timers) != 0 || len(run.AfterTimers.Navigations) != 0 {
+		t.Errorf("failure must not add a link or redirect: %+v", run.AfterTimers)
+	}
+}
+
+func TestAuthorizationPageNetworkErrorShowsUnreachableMessage(t *testing.T) {
+	run := runAuthorizationPage(t, "network-error")
+	assertPendingPage(t, run)
+
+	got := run.AfterResponse
+	if !strings.Contains(got.Text, "could not be reached") || strings.Contains(got.Text, "successful") {
+		t.Errorf("text = %q, want the unreachable message", got.Text)
+	}
+	if len(got.Children) != 0 || len(got.Timers) != 0 || len(run.AfterTimers.Navigations) != 0 {
+		t.Errorf("failure must not add a link or redirect: %+v", run.AfterTimers)
 	}
 }
