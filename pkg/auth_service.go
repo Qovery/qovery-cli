@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -22,11 +23,15 @@ import (
 )
 
 const (
-	httpAuthPort   = 10999
-	oAuthQoveryUrl = "https://auth.qovery.com/login?code_challenge_method=S256&scope=%s&client=%s&protocol=oauth2&response_type=%s&audience=%s&redirect_uri=%s&code_challenge=%s"
+	httpAuthPort     = 10999
+	qoveryConsoleUrl = "https://console.qovery.com"
+	oAuthQoveryUrl   = "https://auth.qovery.com/login?code_challenge_method=S256&scope=%s&client=%s&protocol=oauth2&response_type=%s&audience=%s&redirect_uri=%s&code_challenge=%s"
 )
 
 var (
+	// Delay before the callback server shuts down, so the browser gets its response.
+	authShutdownDelay = time.Second
+
 	oAuthUrlParamValueClient         = "MJ2SJpu12PxIzgmc5z5Y7N8m5MnaF7Y0"
 	oAuthUrlParamValueHeadlessClient = "f9drkTNpxsEw2VU2PVDrxhyT3vVuFT0Y"
 	oAuthUrlParamValueAudience       = "https://core.qovery.com"
@@ -51,8 +56,6 @@ type DeviceFlowParameters struct {
 }
 
 func DoRequestUserToAuthenticate(headless bool, skipVersionCheck bool) {
-	qoveryConsoleUrl := "https://console.qovery.com"
-
 	if !skipVersionCheck {
 		available, message, _ := CheckAvailableNewVersion()
 		if available {
@@ -74,11 +77,41 @@ func DoRequestUserToAuthenticate(headless bool, skipVersionCheck bool) {
 	_ = browser.OpenURL(fmt.Sprintf(oAuthQoveryUrl, url.QueryEscape(oAuthUrlParamValueScopes), oAuthUrlParamValueClient, url.QueryEscape(oAuthUrlParamValueResponseType),
 		url.QueryEscape(oAuthUrlParamValueAudience), url.QueryEscape(oAuthUrlParamValueRedirect), challenge))
 
+	// Listen before opening the browser so a busy port is reported instead of
+	// leaving the user waiting on a callback that can never arrive.
+	srv := newAuthorizationServer(verifier, storeTokens)
+	listener, err := net.Listen("tcp", srv.Addr)
+	if err != nil {
+		utils.PrintlnError(fmt.Errorf("can not listen on %s for the authentication callback, is another 'qovery auth' running? %w", srv.Addr, err))
+		os.Exit(1)
+	}
+
+	// TODO link to web auth
+	_ = browser.OpenURL(fmt.Sprintf(oAuthQoveryUrl, url.QueryEscape(oAuthUrlParamValueScopes), oAuthUrlParamValueClient, url.QueryEscape(oAuthUrlParamValueResponseType),
+		url.QueryEscape(oAuthUrlParamValueAudience), url.QueryEscape(oAuthUrlParamValueRedirect), challenge))
+
 	fmt.Println("\nOpening your browser, waiting for your authentication... ")
 
-	srv := &http.Server{Addr: fmt.Sprintf("localhost:%d", httpAuthPort)}
+	// Serve returns as soon as Shutdown starts, and Shutdown closes the listener
+	// first, so the fixed port is free again when this function returns.
+	_ = srv.Serve(listener)
+}
 
-	http.HandleFunc("/authorization", func(writer http.ResponseWriter, request *http.Request) {
+func storeTokens(tokens TokensResponse) {
+	expiredAt := time.Now().Local().Add(time.Duration(tokens.ExpiresIn-60) * time.Second)
+	_ = utils.SetAccessToken(utils.AccessToken(tokens.AccessToken), expiredAt, utils.RefreshToken(tokens.RefreshToken))
+}
+
+// newAuthorizationServer builds a server with its own mux for one interactive
+// authentication attempt. The handlers must not be registered on
+// http.DefaultServeMux: a second attempt in the same process (re-auth after a
+// 401) would panic on the duplicate "/authorization" pattern. The PKCE verifier
+// is captured per attempt.
+func newAuthorizationServer(verifier string, onTokens func(TokensResponse)) *http.Server {
+	srv := &http.Server{Addr: fmt.Sprintf("localhost:%d", httpAuthPort)}
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/authorization", func(writer http.ResponseWriter, request *http.Request) {
 		js := fmt.Sprintf(`<script type="text/javascript" charset="utf-8">
 				var hash = window.location.search.split("=")[1].split("&")[0];
 				var xmlHttp = new XMLHttpRequest();
@@ -92,7 +125,7 @@ func DoRequestUserToAuthenticate(headless bool, skipVersionCheck bool) {
 		_, _ = writer.Write([]byte("Authentication successful, you'll be redirected to Qovery console. If it's not the case, click on this link: <a href='" + qoveryConsoleUrl + "'>" + qoveryConsoleUrl + "</a>"))
 	})
 
-	http.HandleFunc("/authorization/valid", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/authorization/valid", func(writer http.ResponseWriter, request *http.Request) {
 		code := request.URL.Query()["code"][0]
 		res, err := http.PostForm(oAuthTokenEndpoint, url.Values{
 			"grant_type":    {"authorization_code"},
@@ -116,20 +149,21 @@ func DoRequestUserToAuthenticate(headless bool, skipVersionCheck bool) {
 				utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
 				os.Exit(0)
 			}
-			expiredAt := time.Now().Local().Add(time.Duration(tokens.ExpiresIn-60) * time.Second)
-			_ = utils.SetAccessToken(utils.AccessToken(tokens.AccessToken), expiredAt, utils.RefreshToken(tokens.RefreshToken))
+			onTokens(tokens)
 			utils.PrintlnInfo("Success!")
 		}
 
+		delay := authShutdownDelay
 		go func() {
-			time.Sleep(time.Second)
+			time.Sleep(delay)
 			if err := srv.Shutdown(context.TODO()); err != nil {
 				utils.PrintlnError(err)
 			}
 		}()
 	})
 
-	_ = srv.ListenAndServe()
+	srv.Handler = mux
+	return srv
 }
 
 func createCodeVerifier() string {
