@@ -73,10 +73,6 @@ func DoRequestUserToAuthenticate(headless bool, skipVersionCheck bool) {
 		utils.PrintlnError(errors.New("can not create authorization code challenge. Please contact the #support at 'https://discord.qovery.com'. "))
 		os.Exit(0)
 	}
-	// TODO link to web auth
-	_ = browser.OpenURL(fmt.Sprintf(oAuthQoveryUrl, url.QueryEscape(oAuthUrlParamValueScopes), oAuthUrlParamValueClient, url.QueryEscape(oAuthUrlParamValueResponseType),
-		url.QueryEscape(oAuthUrlParamValueAudience), url.QueryEscape(oAuthUrlParamValueRedirect), challenge))
-
 	// Listen before opening the browser so a busy port is reported instead of
 	// leaving the user waiting on a callback that can never arrive.
 	srv := newAuthorizationServer(verifier, storeTokens)
