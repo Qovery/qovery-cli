@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"math/rand"
 	"net"
 	"net/http"
@@ -102,8 +103,9 @@ func storeTokens(tokens TokensResponse) {
 	_ = utils.SetAccessToken(utils.AccessToken(tokens.AccessToken), expiredAt, utils.RefreshToken(tokens.RefreshToken))
 }
 
-// authorizationPage is the callback page. It names the DOM element statusElement
-// to avoid using the global name status, which conflicts with window.status.
+// authorizationPage is the callback page. The element is named statusElement
+// because a global status resolves to window.status, which is string-valued:
+// assigning the DOM element to it would store a string and lose the element.
 func authorizationPage(port int) string {
 	return fmt.Sprintf(`<p id="status">Authenticating...</p>
 <script type="text/javascript" charset="utf-8">
@@ -197,8 +199,14 @@ func exchangeAuthorizationCode(verifier string, code string) (TokensResponse, er
 	if res.StatusCode != http.StatusOK {
 		return TokensResponse{}, fmt.Errorf("token endpoint answered %d", res.StatusCode)
 	}
+	// Read the whole body: Unmarshal rejects trailing data after the first JSON
+	// value, which a streaming Decode would accept.
+	payload, err := io.ReadAll(res.Body)
+	if err != nil {
+		return TokensResponse{}, err
+	}
 	tokens := TokensResponse{}
-	if err := json.NewDecoder(res.Body).Decode(&tokens); err != nil {
+	if err := json.Unmarshal(payload, &tokens); err != nil {
 		return TokensResponse{}, err
 	}
 	if tokens.AccessToken == "" {

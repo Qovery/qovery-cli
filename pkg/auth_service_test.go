@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -175,22 +176,26 @@ func TestAuthorizationServerRejectedExchangeStoresNothing(t *testing.T) {
 		status int
 		body   string
 	}{
-		"non-200 answer":     {http.StatusForbidden, `{"error":"invalid_grant"}`},
-		"200, empty tokens":  {http.StatusOK, `{}`},
-		"200, invalid JSON":  {http.StatusOK, `not json`},
-		"200, error payload": {http.StatusOK, `{"error":"invalid_grant"}`},
+		"non-200 answer":                          {http.StatusForbidden, `{"error":"invalid_grant"}`},
+		"200, empty tokens":                       {http.StatusOK, `{}`},
+		"200, invalid JSON":                       {http.StatusOK, `not json`},
+		"200, error payload":                      {http.StatusOK, `{"error":"invalid_grant"}`},
+		"200, valid tokens then trailing garbage": {http.StatusOK, `{"access_token":"at","refresh_token":"rt","expires_in":3600} not json`},
+		"200, valid tokens then a second value":   {http.StatusOK, `{"access_token":"at","refresh_token":"rt","expires_in":3600}{}`},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			stubTokenEndpointWith(t, tc.status, tc.body)
 
-			var exits []int
+			// exitProcess runs in the handler goroutine, after the response is flushed,
+			// so the test waits on the channel instead of reading shared state.
+			exits := make(chan int, 4)
 			prevExit := exitProcess
-			exitProcess = func(code int) { exits = append(exits, code) }
+			exitProcess = func(code int) { exits <- code }
 			t.Cleanup(func() { exitProcess = prevExit })
 
-			stored := 0
-			ts := httptest.NewServer(newAuthorizationServer("v", func(TokensResponse) { stored++ }).Handler)
+			var stored atomic.Int32
+			ts := httptest.NewServer(newAuthorizationServer("v", func(TokensResponse) { stored.Add(1) }).Handler)
 			defer ts.Close()
 
 			res, err := http.Get(ts.URL + "/authorization/valid?code=stale")
@@ -200,11 +205,21 @@ func TestAuthorizationServerRejectedExchangeStoresNothing(t *testing.T) {
 			body, _ := io.ReadAll(res.Body)
 			_ = res.Body.Close()
 
-			if stored != 0 {
-				t.Errorf("tokens stored %d time(s) after a rejected exchange", stored)
+			select {
+			case code := <-exits:
+				if code != 1 {
+					t.Errorf("exit status = %d, want 1", code)
+				}
+			case <-time.After(5 * time.Second):
+				t.Fatal("exitProcess was not called")
 			}
-			if len(exits) != 1 || exits[0] != 1 {
-				t.Errorf("exit calls = %v, want exactly one exit with status 1", exits)
+			// Close waits for in-flight handlers, so no further exit can arrive after it.
+			ts.Close()
+			if extra := len(exits); extra != 0 {
+				t.Errorf("%d extra exit call(s), want exactly one", extra)
+			}
+			if n := stored.Load(); n != 0 {
+				t.Errorf("tokens stored %d time(s) after a rejected exchange", n)
 			}
 			if res.StatusCode != http.StatusUnauthorized {
 				t.Errorf("status = %d, want %d", res.StatusCode, http.StatusUnauthorized)
