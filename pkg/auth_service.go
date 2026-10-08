@@ -102,10 +102,8 @@ func storeTokens(tokens TokensResponse) {
 	_ = utils.SetAccessToken(utils.AccessToken(tokens.AccessToken), expiredAt, utils.RefreshToken(tokens.RefreshToken))
 }
 
-// authorizationPage is the callback page. Top-level `var` declarations in the
-// script become window properties, and `window.status` is a string property
-// that would coerce an element to text. The element is named statusElement to
-// avoid that clash.
+// authorizationPage is the callback page. It names the DOM element statusElement
+// to avoid using the global name status, which conflicts with window.status.
 func authorizationPage(port int) string {
 	return fmt.Sprintf(`<p id="status">Authenticating...</p>
 <script type="text/javascript" charset="utf-8">
