@@ -39,6 +39,8 @@ var (
 	oAuthUrlParamValueRedirect       = "http://localhost:" + strconv.Itoa(httpAuthPort) + "/authorization"
 	oAuthTokenEndpoint               = "https://auth.qovery.com/oauth/token"
 
+	authFailureMessage = "Authentication failed. Run 'qovery auth' again, or contact #support on https://discord.qovery.com."
+
 	// exitProcess is replaceable so tests can observe an authentication failure.
 	exitProcess = os.Exit
 )
@@ -109,36 +111,55 @@ func newAuthorizationServer(verifier string, onTokens func(TokensResponse)) *htt
 	srv := &http.Server{Addr: fmt.Sprintf("localhost:%d", httpAuthPort)}
 	mux := http.NewServeMux()
 
+	// The page only shows what /authorization/valid answers: the success message
+	// is not part of it, so a failed token exchange can never look like a success.
 	mux.HandleFunc("/authorization", func(writer http.ResponseWriter, request *http.Request) {
-		js := fmt.Sprintf(`<script type="text/javascript" charset="utf-8">
-				var hash = window.location.search.split("=")[1].split("&")[0];
-				var xmlHttp = new XMLHttpRequest();
-				xmlHttp.open("GET", "http://localhost:%d/authorization/valid?code=" + hash, false);
-				xmlHttp.send(null);
-				xmlHttp.responseText;
-				window.setTimeout('window.location="`+qoveryConsoleUrl+`"; ',2000);
-             </script>`, httpAuthPort)
+		page := fmt.Sprintf(`<p id="status">Authenticating...</p>
+<script type="text/javascript" charset="utf-8">
+	var status = document.getElementById("status");
+	var code = new URLSearchParams(window.location.search).get("code") || "";
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open("GET", "http://localhost:%d/authorization/valid?code=" + encodeURIComponent(code), true);
+	xmlHttp.onload = function () {
+		status.textContent = xmlHttp.responseText;
+		if (xmlHttp.status === 200) {
+			var link = document.createElement("a");
+			link.href = %q;
+			link.textContent = %q;
+			status.appendChild(link);
+			window.setTimeout(function () { window.location = %q; }, 2000);
+		}
+	};
+	xmlHttp.onerror = function () {
+		status.textContent = "Authentication failed, the Qovery CLI could not be reached. Run 'qovery auth' again.";
+	};
+	xmlHttp.send(null);
+</script>`, httpAuthPort, qoveryConsoleUrl, qoveryConsoleUrl, qoveryConsoleUrl)
 
-		_, _ = writer.Write([]byte(js))
-		_, _ = writer.Write([]byte("Authentication successful, you'll be redirected to Qovery console. If it's not the case, click on this link: <a href='" + qoveryConsoleUrl + "'>" + qoveryConsoleUrl + "</a>"))
+		writer.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = writer.Write([]byte(page))
 	})
 
 	mux.HandleFunc("/authorization/valid", func(writer http.ResponseWriter, request *http.Request) {
 		codes := request.URL.Query()["code"]
-		if len(codes) == 0 {
-			http.Error(writer, "missing authorization code", http.StatusBadRequest)
+		if len(codes) == 0 || codes[0] == "" {
+			http.Error(writer, authFailureMessage, http.StatusBadRequest)
 			return
 		}
 		tokens, err := exchangeAuthorizationCode(verifier, codes[0])
 		if err != nil {
 			// A rejected or stale code must not be stored nor reported as a success.
-			http.Error(writer, "authentication unsuccessful", http.StatusUnauthorized)
+			http.Error(writer, authFailureMessage, http.StatusUnauthorized)
+			if flusher, ok := writer.(http.Flusher); ok {
+				flusher.Flush() // the browser must get its answer before the process exits
+			}
 			utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
-			exitProcess(0)
+			exitProcess(1)
 			return
 		}
 		onTokens(tokens)
 		utils.PrintlnInfo("Success!")
+		_, _ = writer.Write([]byte("Authentication successful, you'll be redirected to Qovery console. If it's not the case, click on this link: "))
 
 		delay := authShutdownDelay
 		go func() {

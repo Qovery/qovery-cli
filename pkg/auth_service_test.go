@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -51,6 +52,17 @@ func stubTokenEndpointWith(t *testing.T, status int, body string) *exchangeRecor
 	authShutdownDelay = 0
 	t.Cleanup(func() { oAuthTokenEndpoint, authShutdownDelay = prevEndpoint, prevDelay })
 	return recorder
+}
+
+func getStatus(t *testing.T, url string) (int, string) {
+	t.Helper()
+	res, err := http.Get(url)
+	if err != nil {
+		t.Fatalf("GET %s: %v", url, err)
+	}
+	defer func() { _ = res.Body.Close() }()
+	body, _ := io.ReadAll(res.Body)
+	return res.StatusCode, string(body)
 }
 
 func get(t *testing.T, url string) string {
@@ -181,32 +193,77 @@ func TestAuthorizationServerRejectedExchangeStoresNothing(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			body, _ := io.ReadAll(res.Body)
 			_ = res.Body.Close()
 
 			if stored != 0 {
 				t.Errorf("tokens stored %d time(s) after a rejected exchange", stored)
 			}
-			if len(exits) != 1 {
-				t.Errorf("exit calls = %v, want exactly one", exits)
+			if len(exits) != 1 || exits[0] == 0 {
+				t.Errorf("exit calls = %v, want exactly one nonzero exit", exits)
 			}
 			if res.StatusCode != http.StatusUnauthorized {
 				t.Errorf("status = %d, want %d", res.StatusCode, http.StatusUnauthorized)
+			}
+			if body := string(body); strings.Contains(body, "successful") || !strings.Contains(body, "failed") {
+				t.Errorf("browser body = %q, want a failure message", body)
 			}
 		})
 	}
 }
 
 func TestAuthorizationServerMissingCodeIsABadRequest(t *testing.T) {
-	stubTokenEndpoint(t)
+	exchanges := stubTokenEndpoint(t)
 	ts := httptest.NewServer(newAuthorizationServer("v", func(TokensResponse) { t.Error("tokens stored") }).Handler)
 	defer ts.Close()
 
-	res, err := http.Get(ts.URL + "/authorization/valid")
-	if err != nil {
-		t.Fatal(err)
+	for _, path := range []string{"/authorization/valid", "/authorization/valid?code="} {
+		status, body := getStatus(t, ts.URL+path)
+		if status != http.StatusBadRequest {
+			t.Errorf("%s: status = %d, want %d", path, status, http.StatusBadRequest)
+		}
+		if strings.Contains(body, "successful") {
+			t.Errorf("%s: body = %q, want a failure message", path, body)
+		}
 	}
-	_ = res.Body.Close()
-	if res.StatusCode != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", res.StatusCode, http.StatusBadRequest)
+	if got := exchanges.snapshot(); len(got) != 0 {
+		t.Errorf("token exchanges = %v, want none", got)
+	}
+}
+
+// The callback page is served before the token exchange runs, so it must not
+// claim success itself.
+func TestAuthorizationPageDoesNotClaimSuccess(t *testing.T) {
+	exchanges := stubTokenEndpoint(t)
+	ts := httptest.NewServer(newAuthorizationServer("v", func(TokensResponse) {}).Handler)
+	defer ts.Close()
+
+	status, body := getStatus(t, ts.URL+"/authorization?code=abc")
+	if status != http.StatusOK {
+		t.Fatalf("status = %d, want %d", status, http.StatusOK)
+	}
+	if strings.Contains(strings.ToLower(body), "successful") {
+		t.Errorf("page claims success before the exchange: %q", body)
+	}
+	if !strings.Contains(body, "/authorization/valid") {
+		t.Errorf("page does not call /authorization/valid: %q", body)
+	}
+	if got := exchanges.snapshot(); len(got) != 0 {
+		t.Errorf("serving the page triggered token exchanges: %v", got)
+	}
+}
+
+func TestAuthorizationServerSuccessfulExchangeAnswersSuccess(t *testing.T) {
+	stubTokenEndpoint(t)
+	var stored []TokensResponse
+	ts := httptest.NewServer(newAuthorizationServer("v", func(tokens TokensResponse) { stored = append(stored, tokens) }).Handler)
+	defer ts.Close()
+
+	status, body := getStatus(t, ts.URL+"/authorization/valid?code=ok")
+	if status != http.StatusOK || !strings.Contains(body, "Authentication successful") {
+		t.Errorf("status = %d, body = %q, want 200 with the success message", status, body)
+	}
+	if len(stored) != 1 {
+		t.Errorf("stored tokens = %+v, want one entry", stored)
 	}
 }
