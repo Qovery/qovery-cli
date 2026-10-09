@@ -35,13 +35,13 @@ func init() {
 }
 
 func launchSofka(clusterID string) error {
-	return launchSofkaWithDependencies(clusterID, pkg.GetKubeconfigByClusterIdWithError, pkg.SetBastionConnection)
+	return launchSofkaWithDependencies(clusterID, pkg.GetKubeconfigByClusterIdWithError, pkg.SetBastionConnectionWithError)
 }
 
 func launchSofkaWithDependencies(
 	clusterID string,
 	fetchKubeconfig func(string, bool) (string, error),
-	connectToBastion func() func(),
+	connectToBastion func() (func(), error),
 ) (returnErr error) {
 	sofkaPath, err := findSofka()
 	if err != nil {
@@ -53,7 +53,13 @@ func launchSofkaWithDependencies(
 			return fmt.Errorf("you must set a non-empty bastion address (BASTION_ADDR) or pass --no-bastion")
 		}
 
-		cleanup := connectToBastion()
+		cleanup, err := connectToBastion()
+		if err != nil {
+			if cleanup != nil {
+				cleanup()
+			}
+			return fmt.Errorf("failed to connect to bastion: %w", err)
+		}
 		if cleanup != nil {
 			defer func() {
 				logrus.Info("Cleaning up SSH tunnel...")

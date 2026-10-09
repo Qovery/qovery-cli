@@ -117,7 +117,7 @@ func TestSofkaSignalCleanupHarness(t *testing.T) {
 	err := launchSofkaWithDependencies(
 		"cluster-id",
 		func(string, bool) (string, error) { return "apiVersion: v1\n", nil },
-		func() func() { return func() { tunnelCleaned = true } },
+		func() (func(), error) { return func() { tunnelCleaned = true }, nil },
 	)
 	if err == nil || !strings.Contains(err.Error(), "sofka exited unsuccessfully") {
 		t.Fatalf("expected Sofka to stop after SIGTERM, got %v", err)

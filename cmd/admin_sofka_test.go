@@ -106,9 +106,9 @@ func TestLaunchSofkaUsesPrivateKubeconfigAndCleansItUp(t *testing.T) {
 				fetchedReadOnly = readOnly
 				return "apiVersion: v1\n", nil
 			}
-			connectToBastion := func() func() {
+			connectToBastion := func() (func(), error) {
 				t.Fatal("no-bastion must skip tunnel setup")
-				return func() {}
+				return nil, nil
 			}
 
 			if err := launchSofkaWithDependencies("cluster-id", fetchKubeconfig, connectToBastion); err != nil {
@@ -218,9 +218,9 @@ func TestLaunchSofkaCleansUpAfterKubeconfigFetchFailure(t *testing.T) {
 		func(string, bool) (string, error) {
 			return "", errors.New("kubeconfig API unavailable")
 		},
-		func() func() {
+		func() (func(), error) {
 			tunnelStarted = true
-			return func() { tunnelCleaned = true }
+			return func() { tunnelCleaned = true }, nil
 		},
 	)
 	if err == nil || !strings.Contains(err.Error(), "kubeconfig API unavailable") {
@@ -228,6 +228,38 @@ func TestLaunchSofkaCleansUpAfterKubeconfigFetchFailure(t *testing.T) {
 	}
 	if !tunnelStarted || !tunnelCleaned {
 		t.Fatalf("expected tunnel cleanup after fetch failure, started=%t cleaned=%t", tunnelStarted, tunnelCleaned)
+	}
+}
+
+func TestLaunchSofkaReturnsBastionConnectorFailureBeforeFetchingKubeconfig(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("test executable uses a shell script")
+	}
+
+	binDir, _, _, _ := installFakeSofka(t, 0)
+	t.Setenv("PATH", binDir)
+	t.Setenv("BASTION_ADDR", "bastion.example")
+	setSofkaFlags(t, false, false)
+	fetched := false
+	connectorCleanupCalled := false
+	err := launchSofkaWithDependencies(
+		"cluster-id",
+		func(string, bool) (string, error) {
+			fetched = true
+			return "apiVersion: v1\n", nil
+		},
+		func() (func(), error) {
+			return func() { connectorCleanupCalled = true }, errors.New("injected SSH startup failure")
+		},
+	)
+	if err == nil || !strings.Contains(err.Error(), "injected SSH startup failure") {
+		t.Fatalf("expected bastion setup error, got %v", err)
+	}
+	if fetched {
+		t.Fatal("must not fetch kubeconfig after bastion setup failure")
+	}
+	if !connectorCleanupCalled {
+		t.Fatal("expected partial connector cleanup after setup failure")
 	}
 }
 
@@ -250,7 +282,7 @@ func TestLaunchSofkaRejectsEmptyBastionAddress(t *testing.T) {
 					fetched = true
 					return "apiVersion: v1\n", nil
 				},
-				func() func() { t.Fatal("must not connect with an empty bastion address"); return nil },
+				func() (func(), error) { t.Fatal("must not connect with an empty bastion address"); return nil, nil },
 			)
 			if err == nil || !strings.Contains(err.Error(), "BASTION_ADDR") {
 				t.Fatalf("expected an explicit bastion address error, got %v", err)
@@ -281,7 +313,7 @@ func TestLaunchSofkaCleansUpAfterSofkaExitsWithError(t *testing.T) {
 	err := launchSofkaWithDependencies(
 		"cluster-id",
 		func(string, bool) (string, error) { return "apiVersion: v1\n", nil },
-		func() func() { return func() {} },
+		func() (func(), error) { return func() {}, nil },
 	)
 	if err == nil || !strings.Contains(err.Error(), "sofka exited with status 7") {
 		t.Fatalf("expected child exit status error, got %v", err)
