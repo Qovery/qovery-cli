@@ -1,13 +1,15 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 
 	"github.com/qovery/qovery-cli/pkg"
-	"github.com/qovery/qovery-cli/utils"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -15,9 +17,11 @@ var (
 	sofkaNoBastion     bool
 	sofkaReadWriteMode bool
 	sofkaCmd           = &cobra.Command{
-		Use:   "sofka <cluster-id>",
-		Short: "Launch Sofka with a cluster ID",
-		Args:  cobra.ExactArgs(1),
+		Use:           "sofka <cluster-id>",
+		Short:         "Launch Sofka with a cluster ID",
+		Args:          cobra.ExactArgs(1),
+		SilenceErrors: true,
+		SilenceUsage:  true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return launchSofka(args[0])
 		},
@@ -31,6 +35,14 @@ func init() {
 }
 
 func launchSofka(clusterID string) error {
+	return launchSofkaWithDependencies(clusterID, pkg.GetKubeconfigByClusterIdWithError, pkg.SetBastionConnection)
+}
+
+func launchSofkaWithDependencies(
+	clusterID string,
+	fetchKubeconfig func(string, bool) (string, error),
+	connectToBastion func() func(),
+) (returnErr error) {
 	sofkaPath, err := findSofka()
 	if err != nil {
 		return err
@@ -41,41 +53,52 @@ func launchSofka(clusterID string) error {
 			return fmt.Errorf("you must set the bastion address (BASTION_ADDR) or pass --no-bastion")
 		}
 
-		cleanup := pkg.SetBastionConnection()
-		defer func() {
-			log.Info("Cleaning up SSH tunnel...")
-			cleanup()
-		}()
+		cleanup := connectToBastion()
+		if cleanup != nil {
+			defer func() {
+				logrus.Info("Cleaning up SSH tunnel...")
+				cleanup()
+			}()
+		}
 	}
 
-	kubeconfig := pkg.GetKubeconfigByClusterId(clusterID, false)
-	kubeconfigDir := utils.GetFullPath(clusterID)
-	kubeconfigPath := utils.WriteInFile(clusterID, "kubeconfig", []byte(kubeconfig))
-	defer utils.DeleteFolder(kubeconfigDir)
-	if kubeconfigPath == "" {
-		return fmt.Errorf("failed to write kubeconfig for cluster %s", clusterID)
+	kubeconfig, err := fetchKubeconfig(clusterID, sofkaKubeconfigReadOnly(sofkaReadWriteMode))
+	if err != nil {
+		return fmt.Errorf("failed to retrieve kubeconfig for cluster %s: %w", clusterID, err)
 	}
+
+	kubeconfigPath, cleanupKubeconfig, err := createSofkaKubeconfig(kubeconfig)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := cleanupKubeconfig(); err != nil {
+			returnErr = errors.Join(returnErr, fmt.Errorf("failed to remove temporary kubeconfig directory: %w", err))
+		}
+	}()
 
 	previousKubeconfig, hadPreviousKubeconfig := os.LookupEnv("KUBECONFIG")
 	if err := os.Setenv("KUBECONFIG", kubeconfigPath); err != nil {
 		return fmt.Errorf("failed to set KUBECONFIG: %w", err)
 	}
 	defer func() {
+		var err error
 		if hadPreviousKubeconfig {
-			if err := os.Setenv("KUBECONFIG", previousKubeconfig); err != nil {
-				log.Warnf("Failed to restore KUBECONFIG: %v", err)
-			}
-		} else if err := os.Unsetenv("KUBECONFIG"); err != nil {
-			log.Warnf("Failed to clear KUBECONFIG: %v", err)
+			err = os.Setenv("KUBECONFIG", previousKubeconfig)
+		} else {
+			err = os.Unsetenv("KUBECONFIG")
+		}
+		if err != nil {
+			returnErr = errors.Join(returnErr, fmt.Errorf("failed to restore KUBECONFIG: %w", err))
 		}
 	}()
 
 	if sofkaReadWriteMode {
-		log.Info("Running Sofka in read-write mode.")
+		logrus.Info("Running Sofka in read-write mode.")
 	} else {
-		log.Info("Running Sofka in read-only mode. Use --read-write to enable write operations.")
+		logrus.Info("Running Sofka in read-only mode. Use --read-write to enable write operations.")
 	}
-	log.Info("Launching Sofka.")
+	logrus.Info("Launching Sofka.")
 
 	return runSofka(sofkaPath, sofkaArguments(sofkaReadWriteMode))
 }
@@ -85,6 +108,41 @@ func sofkaArguments(readWrite bool) []string {
 		return []string{"--write"}
 	}
 	return []string{"--readonly"}
+}
+
+func sofkaKubeconfigReadOnly(readWrite bool) bool {
+	return !readWrite
+}
+
+func createSofkaKubeconfig(kubeconfig string) (string, func() error, error) {
+	if strings.TrimSpace(kubeconfig) == "" {
+		return "", nil, errors.New("received an empty kubeconfig")
+	}
+
+	tempDir, err := os.MkdirTemp("", "qovery-sofka-")
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to create temporary kubeconfig directory: %w", err)
+	}
+	cleanup := func() error {
+		return os.RemoveAll(tempDir)
+	}
+
+	kubeconfigPath := filepath.Join(tempDir, "kubeconfig")
+	if err := writeSofkaKubeconfig(kubeconfigPath, kubeconfig); err != nil {
+		if cleanupErr := cleanup(); cleanupErr != nil {
+			err = errors.Join(err, fmt.Errorf("failed to remove temporary kubeconfig directory: %w", cleanupErr))
+		}
+		return "", nil, err
+	}
+
+	return kubeconfigPath, cleanup, nil
+}
+
+func writeSofkaKubeconfig(path, kubeconfig string) error {
+	if err := os.WriteFile(path, []byte(kubeconfig), 0600); err != nil {
+		return fmt.Errorf("failed to write temporary kubeconfig: %w", err)
+	}
+	return nil
 }
 
 func findSofka() (string, error) {
@@ -102,7 +160,14 @@ func runSofka(sofkaPath string, args []string) error {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to launch sofka: %w", err)
+		var exitError *exec.ExitError
+		if errors.As(err, &exitError) {
+			if status := exitError.ExitCode(); status >= 0 {
+				return fmt.Errorf("sofka exited with status %d", status)
+			}
+			return fmt.Errorf("sofka exited unsuccessfully: %w", err)
+		}
+		return fmt.Errorf("failed to start sofka: %w", err)
 	}
 	return nil
 }

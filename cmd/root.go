@@ -18,10 +18,18 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	utils.Capture(rootCmd)
-	if err := rootCmd.Execute(); err != nil {
+	command, err := rootCmd.ExecuteC()
+	if err != nil {
 		utils.PrintlnError(err)
-		os.Exit(0)
+		os.Exit(commandErrorExitCode(command))
 	}
+}
+
+func commandErrorExitCode(command *cobra.Command) int {
+	if command == sofkaCmd {
+		return 1
+	}
+	return 0
 }
 
 func init() {

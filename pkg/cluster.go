@@ -2,8 +2,10 @@ package pkg
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -33,6 +35,35 @@ func GetKubeconfigByClusterId(clusterId string, readOnly bool) string {
 		os.Exit(1)
 	}
 	return response
+}
+
+func GetKubeconfigByClusterIdWithError(clusterId string, readOnly bool) (string, error) {
+	tokenType, token, err := utils.GetAccessToken(false)
+	if err != nil {
+		return "", fmt.Errorf("failed to get Qovery access token: %w", err)
+	}
+
+	qoveryClient := utils.GetQoveryClient(tokenType, token)
+	request := qoveryClient.ClustersAPI.GetClusterKubeconfig(
+		context.Background(),
+		"00000000-0000-0000-0000-000000000000",
+		clusterId,
+	).WithTokenFromCli(true)
+	if readOnly {
+		request = request.ReadOnly(true)
+	}
+
+	response, httpResponse, err := qoveryClient.ClustersAPI.GetClusterKubeconfigExecute(request)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch cluster kubeconfig: %w", err)
+	}
+	if httpResponse == nil {
+		return "", errors.New("missing HTTP response while fetching cluster kubeconfig")
+	}
+	if httpResponse.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("cannot fetch cluster kubeconfig (status_code=%d)", httpResponse.StatusCode)
+	}
+	return response, nil
 }
 
 func UpdateClusterKubeconfig(organizationId string, clusterId string, kubeconfig string) error {
