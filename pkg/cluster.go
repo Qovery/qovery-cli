@@ -12,25 +12,16 @@ import (
 	"github.com/qovery/qovery-client-go"
 )
 
+const kubeconfigOrganizationID = "00000000-0000-0000-0000-000000000000"
+
 func GetKubeconfigByClusterId(clusterId string, readOnly bool) string {
 	qoveryClient := GetQoveryClientInstance()
-
-	request := qoveryClient.ClustersAPI.GetClusterKubeconfig(
-		context.Background(),
-		"00000000-0000-0000-000000000000",
-		clusterId,
-	).WithTokenFromCli(true)
-
-	if readOnly {
-		request = request.ReadOnly(true)
-	}
-
-	response, httpResponse, err := qoveryClient.ClustersAPI.GetClusterKubeconfigExecute(request)
+	response, httpResponse, err := getClusterKubeconfig(qoveryClient, clusterId, readOnly)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
 	}
-	if httpResponse.StatusCode != 200 {
+	if httpResponse.StatusCode != http.StatusOK {
 		utils.PrintlnInfo(fmt.Sprintf("cannot fetch cluster token (status_code=%d)", httpResponse.StatusCode))
 		os.Exit(1)
 	}
@@ -44,16 +35,7 @@ func GetKubeconfigByClusterIdWithError(clusterId string, readOnly bool) (string,
 	}
 
 	qoveryClient := utils.GetQoveryClient(tokenType, token)
-	request := qoveryClient.ClustersAPI.GetClusterKubeconfig(
-		context.Background(),
-		"00000000-0000-0000-0000-000000000000",
-		clusterId,
-	).WithTokenFromCli(true)
-	if readOnly {
-		request = request.ReadOnly(true)
-	}
-
-	response, httpResponse, err := qoveryClient.ClustersAPI.GetClusterKubeconfigExecute(request)
+	response, httpResponse, err := getClusterKubeconfig(qoveryClient, clusterId, readOnly)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch cluster kubeconfig: %w", err)
 	}
@@ -64,6 +46,18 @@ func GetKubeconfigByClusterIdWithError(clusterId string, readOnly bool) (string,
 		return "", fmt.Errorf("cannot fetch cluster kubeconfig (status_code=%d)", httpResponse.StatusCode)
 	}
 	return response, nil
+}
+
+func getClusterKubeconfig(client *qovery.APIClient, clusterId string, readOnly bool) (string, *http.Response, error) {
+	request := client.ClustersAPI.GetClusterKubeconfig(
+		context.Background(),
+		kubeconfigOrganizationID,
+		clusterId,
+	).WithTokenFromCli(true)
+	if readOnly {
+		request = request.ReadOnly(true)
+	}
+	return client.ClustersAPI.GetClusterKubeconfigExecute(request)
 }
 
 func UpdateClusterKubeconfig(organizationId string, clusterId string, kubeconfig string) error {

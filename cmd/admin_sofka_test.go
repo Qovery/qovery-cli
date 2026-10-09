@@ -42,6 +42,31 @@ func TestSofkaMode(t *testing.T) {
 	}
 }
 
+func TestEnvironmentWithKubeconfigOverridesOnlyChildEnvironment(t *testing.T) {
+	t.Setenv("KUBECONFIG", "inherited-kubeconfig")
+
+	got := environmentWithKubeconfig("private-kubeconfig")
+	found := false
+	for _, entry := range got {
+		key, value, ok := strings.Cut(entry, "=")
+		if ok && strings.EqualFold(key, "KUBECONFIG") {
+			if found {
+				t.Fatal("expected only one KUBECONFIG entry in child environment")
+			}
+			found = true
+			if value != "private-kubeconfig" {
+				t.Fatalf("expected child KUBECONFIG to be private-kubeconfig, got %q", value)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("expected child environment to contain KUBECONFIG")
+	}
+	if got := os.Getenv("KUBECONFIG"); got != "inherited-kubeconfig" {
+		t.Fatalf("expected parent KUBECONFIG to remain unchanged, got %q", got)
+	}
+}
+
 func TestLaunchSofkaUsesPrivateKubeconfigAndCleansItUp(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("test executable uses a shell script")
@@ -178,6 +203,10 @@ func TestSofkaKubeconfigWriteFailureIsReturned(t *testing.T) {
 }
 
 func TestLaunchSofkaCleansUpAfterKubeconfigFetchFailure(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("test executable uses a shell script")
+	}
+
 	binDir, _, _, _ := installFakeSofka(t, 0)
 	t.Setenv("PATH", binDir)
 	t.Setenv("BASTION_ADDR", "bastion.example")
@@ -199,6 +228,37 @@ func TestLaunchSofkaCleansUpAfterKubeconfigFetchFailure(t *testing.T) {
 	}
 	if !tunnelStarted || !tunnelCleaned {
 		t.Fatalf("expected tunnel cleanup after fetch failure, started=%t cleaned=%t", tunnelStarted, tunnelCleaned)
+	}
+}
+
+func TestLaunchSofkaRejectsEmptyBastionAddress(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("test executable uses a shell script")
+	}
+
+	binDir, _, _, _ := installFakeSofka(t, 0)
+	t.Setenv("PATH", binDir)
+	setSofkaFlags(t, false, false)
+
+	for _, address := range []string{"", " \t"} {
+		t.Run(fmt.Sprintf("address_%q", address), func(t *testing.T) {
+			t.Setenv("BASTION_ADDR", address)
+			fetched := false
+			err := launchSofkaWithDependencies(
+				"cluster-id",
+				func(string, bool) (string, error) {
+					fetched = true
+					return "apiVersion: v1\n", nil
+				},
+				func() func() { t.Fatal("must not connect with an empty bastion address"); return nil },
+			)
+			if err == nil || !strings.Contains(err.Error(), "BASTION_ADDR") {
+				t.Fatalf("expected an explicit bastion address error, got %v", err)
+			}
+			if fetched {
+				t.Fatal("must not fetch kubeconfig with an empty bastion address")
+			}
+		})
 	}
 }
 
@@ -251,7 +311,7 @@ func TestRunSofkaDistinguishesChildExitFromLaunchFailure(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected to find Sofka, got %v", err)
 	}
-	if err := runSofka(sofkaPath, nil); err == nil || !strings.Contains(err.Error(), "sofka exited with status 7") || strings.Contains(err.Error(), "failed to launch") {
+	if err := runSofka(sofkaPath, nil, "test-kubeconfig"); err == nil || !strings.Contains(err.Error(), "sofka exited with status 7") || strings.Contains(err.Error(), "failed to launch") {
 		t.Fatalf("expected a child exit status error, got %v", err)
 	}
 
@@ -259,7 +319,7 @@ func TestRunSofkaDistinguishesChildExitFromLaunchFailure(t *testing.T) {
 	if err := os.WriteFile(failedLaunchPath, []byte("#!/missing/interpreter\n"), 0755); err != nil {
 		t.Fatal(err)
 	}
-	if err := runSofka(failedLaunchPath, nil); err == nil || !strings.Contains(err.Error(), "failed to start sofka") {
+	if err := runSofka(failedLaunchPath, nil, "test-kubeconfig"); err == nil || !strings.Contains(err.Error(), "failed to start sofka") {
 		t.Fatalf("expected an executable launch error, got %v", err)
 	}
 }

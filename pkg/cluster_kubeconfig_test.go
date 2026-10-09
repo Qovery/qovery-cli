@@ -71,3 +71,25 @@ func TestGetKubeconfigByClusterIdWithError(t *testing.T) {
 		})
 	}
 }
+
+func TestGetKubeconfigByClusterIdLegacyUsesReadOnlyRequest(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if got, want := r.URL.Path, "/organization/00000000-0000-0000-0000-000000000000/cluster/cluster-id/kubeconfig"; got != want {
+			t.Errorf("expected request path %q, got %q", want, got)
+		}
+		if got := r.URL.Query().Get("read_only"); got != "true" {
+			t.Errorf("expected read_only=true, got %q", got)
+		}
+		w.Header().Set("Content-Type", "application/x-yaml")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("apiVersion: v1\n"))
+	}))
+	defer server.Close()
+
+	t.Setenv("QOVERY_API_URL", server.URL)
+	t.Setenv("QOVERY_CLI_ACCESS_TOKEN", "test-token")
+
+	if got, want := GetKubeconfigByClusterId("cluster-id", true), "apiVersion: v1\n"; got != want {
+		t.Fatalf("expected kubeconfig %q, got %q", want, got)
+	}
+}

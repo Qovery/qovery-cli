@@ -49,8 +49,8 @@ func launchSofkaWithDependencies(
 	}
 
 	if !sofkaNoBastion {
-		if _, ok := os.LookupEnv("BASTION_ADDR"); !ok {
-			return fmt.Errorf("you must set the bastion address (BASTION_ADDR) or pass --no-bastion")
+		if bastionAddress, ok := os.LookupEnv("BASTION_ADDR"); !ok || strings.TrimSpace(bastionAddress) == "" {
+			return fmt.Errorf("you must set a non-empty bastion address (BASTION_ADDR) or pass --no-bastion")
 		}
 
 		cleanup := connectToBastion()
@@ -77,22 +77,6 @@ func launchSofkaWithDependencies(
 		}
 	}()
 
-	previousKubeconfig, hadPreviousKubeconfig := os.LookupEnv("KUBECONFIG")
-	if err := os.Setenv("KUBECONFIG", kubeconfigPath); err != nil {
-		return fmt.Errorf("failed to set KUBECONFIG: %w", err)
-	}
-	defer func() {
-		var err error
-		if hadPreviousKubeconfig {
-			err = os.Setenv("KUBECONFIG", previousKubeconfig)
-		} else {
-			err = os.Unsetenv("KUBECONFIG")
-		}
-		if err != nil {
-			returnErr = errors.Join(returnErr, fmt.Errorf("failed to restore KUBECONFIG: %w", err))
-		}
-	}()
-
 	if sofkaReadWriteMode {
 		logrus.Info("Running Sofka in read-write mode.")
 	} else {
@@ -100,7 +84,7 @@ func launchSofkaWithDependencies(
 	}
 	logrus.Info("Launching Sofka.")
 
-	return runSofka(sofkaPath, sofkaArguments(sofkaReadWriteMode))
+	return runSofka(sofkaPath, sofkaArguments(sofkaReadWriteMode), kubeconfigPath)
 }
 
 func sofkaArguments(readWrite bool) []string {
@@ -153,13 +137,8 @@ func findSofka() (string, error) {
 	return sofkaPath, nil
 }
 
-func runSofka(sofkaPath string, args []string) error {
-	cmd := exec.Command(sofkaPath, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stdin = os.Stdin
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
+func runSofka(sofkaPath string, args []string, kubeconfigPath string) error {
+	if err := runInteractiveCommandWithSignalForwarding(sofkaPath, args, environmentWithKubeconfig(kubeconfigPath)); err != nil {
 		var exitError *exec.ExitError
 		if errors.As(err, &exitError) {
 			if status := exitError.ExitCode(); status >= 0 {

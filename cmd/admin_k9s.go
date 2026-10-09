@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"os"
-	"os/exec"
 
 	"github.com/qovery/qovery-cli/pkg"
 
@@ -63,12 +62,7 @@ func launchK9s(args []string) {
 		log.Info("Running k9s in read-write mode.")
 	}
 
-	cmd := exec.Command("k9s", k9sArgs...)
-	cmd.Stdout = os.Stdout
-	cmd.Stdin = os.Stdin
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
+	err := runInteractiveCommand("k9s", k9sArgs, nil)
 	if err != nil {
 		log.Error("Can't launch k9s : " + err.Error())
 	}
