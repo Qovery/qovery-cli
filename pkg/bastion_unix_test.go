@@ -108,6 +108,37 @@ func installFakeSSH(t *testing.T) (sshPath, pidFile string) {
 	return sshPath, pidFile
 }
 
+func TestWaitForPIDFileWaitsForParseablePID(t *testing.T) {
+	pidFile := filepath.Join(t.TempDir(), "ssh.pid")
+	if err := os.WriteFile(pidFile, nil, 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	writeDone := make(chan error, 1)
+	timer := time.AfterFunc(50*time.Millisecond, func() {
+		writeDone <- os.WriteFile(pidFile, []byte("12345\n"), 0600)
+	})
+	defer timer.Stop()
+
+	if err := waitForPIDFile(t, pidFile); err != nil {
+		t.Fatal(err)
+	}
+	if timer.Stop() {
+		t.Fatal("waitForPIDFile returned before a parseable PID was written")
+	}
+	if err := <-writeDone; err != nil {
+		t.Fatal(err)
+	}
+
+	pidBytes, err := os.ReadFile(pidFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.TrimSpace(string(pidBytes)); got != "12345" {
+		t.Fatalf("expected PID file contents %q, got %q", "12345", got)
+	}
+}
+
 func waitForPIDFile(t *testing.T, pidFile string) error {
 	t.Helper()
 	deadline := time.NewTimer(3 * time.Second)
@@ -115,8 +146,14 @@ func waitForPIDFile(t *testing.T, pidFile string) error {
 	ticker := time.NewTicker(10 * time.Millisecond)
 	defer ticker.Stop()
 	for {
-		if _, err := os.Stat(pidFile); err == nil {
-			return nil
+		pidBytes, err := os.ReadFile(pidFile)
+		if err == nil {
+			pid, parseErr := strconv.Atoi(strings.TrimSpace(string(pidBytes)))
+			if parseErr == nil && pid > 0 {
+				return nil
+			}
+		} else if !errors.Is(err, os.ErrNotExist) {
+			return err
 		}
 		select {
 		case <-deadline.C:
