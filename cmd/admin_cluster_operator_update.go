@@ -224,9 +224,21 @@ func clusterOperatorDiffersFromTarget(
 	if target.imageVersion != "" && nullableStringValue(cluster.ReportedImageVersion) != target.imageVersion {
 		return true
 	}
-	return cluster.ReportedRuntime == qovery.CLUSTEROPERATORRUNTIME_KUBERNETES &&
-		target.chartVersion != "" &&
-		nullableStringValue(cluster.ReportedChartVersion) != target.chartVersion
+	chartVersion := effectiveChartVersion(cluster, target)
+	return chartVersion != "" && nullableStringValue(cluster.ReportedChartVersion) != chartVersion
+}
+
+func effectiveChartVersion(
+	cluster qovery.ClusterOperatorFleetInventoryResponse,
+	target clusterOperatorUpdateTarget,
+) string {
+	if cluster.ReportedRuntime != qovery.CLUSTEROPERATORRUNTIME_KUBERNETES {
+		return ""
+	}
+	if target.chartVersion != "" {
+		return target.chartVersion
+	}
+	return nullableStringValue(cluster.DesiredChartVersion)
 }
 
 func buildClusterOperatorUpdateRequest(
@@ -237,14 +249,8 @@ func buildClusterOperatorUpdateRequest(
 	if target.imageVersion != "" {
 		request.SetImageVersion(target.imageVersion)
 	}
-	if cluster.ReportedRuntime == qovery.CLUSTEROPERATORRUNTIME_KUBERNETES {
-		chartVersion := target.chartVersion
-		if chartVersion == "" {
-			chartVersion = nullableStringValue(cluster.DesiredChartVersion)
-		}
-		if chartVersion != "" {
-			request.SetChartVersion(chartVersion)
-		}
+	if chartVersion := effectiveChartVersion(cluster, target); chartVersion != "" {
+		request.SetChartVersion(chartVersion)
 	}
 	return request
 }

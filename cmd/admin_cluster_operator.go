@@ -10,12 +10,11 @@ import (
 var adminClusterOperatorCmd = &cobra.Command{
 	Use:   "operator",
 	Short: "Manage the Qovery Operator fleet",
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
-		if len(args) == 0 {
-			_ = cmd.Help()
-			os.Exit(0)
-		}
+		_ = cmd.Help()
+		os.Exit(0)
 	},
 }
 

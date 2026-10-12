@@ -15,6 +15,7 @@ import (
 
 	"github.com/qovery/qovery-cli/utils"
 	qovery "github.com/qovery/qovery-client-go"
+	"github.com/spf13/cobra"
 )
 
 func operatorCluster(
@@ -145,6 +146,18 @@ func TestClusterOperatorUpdateEligibility(t *testing.T) {
 			cluster:      operatorCluster(docker, true, current, "v2", "", ""),
 			target:       clusterOperatorUpdateTarget{imageVersion: "release-v1.3.0"},
 			expectedSkip: "DOCKER heartbeat cannot confirm a non-release image tag",
+		},
+		{
+			name:            "kubernetes requested image already reported with stale chart",
+			cluster:         operatorCluster(kubernetes, true, qovery.CLUSTEROPERATORFLEETSTATUS_OUTDATED_CHART, "v1.3.0", "0.1.0", "0.2.0"),
+			target:          clusterOperatorUpdateTarget{imageVersion: "v1.3.0"},
+			expectedRequest: `{"chart_version":"0.2.0","image_version":"v1.3.0"}`,
+		},
+		{
+			name:         "kubernetes requested image already reported with desired chart",
+			cluster:      operatorCluster(kubernetes, true, current, "v1.3.0", "0.2.0", "0.2.0"),
+			target:       clusterOperatorUpdateTarget{imageVersion: "v1.3.0"},
+			expectedSkip: "already on requested version",
 		},
 		{
 			name:            "kubernetes requested non-release tag",
@@ -630,6 +643,17 @@ func TestNewClusterOperatorUpdateOptionsBounds(t *testing.T) {
 		_, err := newClusterOperatorUpdateOptions(testCase.parallelRuns, testCase.refreshDelay, testCase.timeout)
 		if (err == nil) != testCase.valid {
 			t.Fatalf("unexpected validation for %#v: %v", testCase, err)
+		}
+	}
+}
+
+func TestOperatorCommandsRejectArguments(t *testing.T) {
+	for _, command := range []*cobra.Command{adminClusterOperatorCmd, clusterOperatorCmd} {
+		if err := command.ValidateArgs([]string{"typo"}); err == nil {
+			t.Fatalf("%s must reject unknown arguments", command.CommandPath())
+		}
+		if err := command.ValidateArgs(nil); err != nil {
+			t.Fatalf("%s must accept no arguments: %v", command.CommandPath(), err)
 		}
 	}
 }

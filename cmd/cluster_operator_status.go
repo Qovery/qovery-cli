@@ -21,21 +21,21 @@ var clusterOperatorStatusCmd = &cobra.Command{
 
 		commandContext, err := newOperatorCommandContext(operatorStatusOrganization, operatorStatusCluster)
 		if err != nil {
-			utils.PrintlnError(err)
+			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
 		}
 		status, _, err := commandContext.api.ClusterOperatorAPI.
 			GetClusterOperatorStatus(context.Background(), commandContext.organizationID, commandContext.clusterID).
 			Execute()
 		if err != nil {
-			utils.PrintlnError(err)
+			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
 		}
 
 		if operatorStatusJSON {
 			output, err := json.MarshalIndent(status, "", "  ")
 			if err != nil {
-				utils.PrintlnError(err)
+				utils.PrintlnErrorToStderr(err)
 				os.Exit(1)
 			}
 			utils.Println(string(output))
@@ -64,7 +64,7 @@ var clusterOperatorStatusCmd = &cobra.Command{
 			[]string{"Status", "Connected", "Runtime", "Last heartbeat", "Image", "Target image", "Chart", "Target chart"},
 			data,
 		); err != nil {
-			utils.PrintlnError(err)
+			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
 		}
 	},

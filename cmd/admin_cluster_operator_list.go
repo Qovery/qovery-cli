@@ -51,12 +51,12 @@ qovery admin cluster operator list -f Connected=false --json`,
 		utils.Capture(cmd)
 
 		if _, err := parseClusterOperatorFilters(adminClusterOperatorFilters); err != nil {
-			utils.PrintlnError(err)
+			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
 		}
 		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
-			utils.PrintlnError(err)
+			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
 		}
 		fleet, err := getClusterOperatorFleet(
@@ -66,19 +66,19 @@ qovery admin cluster operator list -f Connected=false --json`,
 			&http.Client{Timeout: 60 * time.Second},
 		)
 		if err != nil {
-			utils.PrintlnError(err)
+			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
 		}
 
 		clusters, err := selectClusterOperators(fleet.GetResults(), adminClusterOperatorFilters, adminClusterOperatorOutdated)
 		if err != nil {
-			utils.PrintlnError(err)
+			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
 		}
 		if adminClusterOperatorJSON {
 			output, err := json.MarshalIndent(clusters, "", "  ")
 			if err != nil {
-				utils.PrintlnError(err)
+				utils.PrintlnErrorToStderr(err)
 				os.Exit(1)
 			}
 			utils.Println(string(output))
@@ -103,7 +103,7 @@ qovery admin cluster operator list -f Connected=false --json`,
 			},
 			clusterOperatorFleetRows(clusters),
 		); err != nil {
-			utils.PrintlnError(err)
+			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
 		}
 	},

@@ -31,7 +31,7 @@ func newOperatorCommandContext(organizationName string, clusterName string) (*op
 	if err != nil {
 		return nil, err
 	}
-	cluster := findCluster(clusters.GetResults(), clusterName)
+	cluster := utils.FindByClusterName(clusters.GetResults(), clusterName)
 	if cluster == nil {
 		return nil, fmt.Errorf("cluster %s not found", clusterName)
 	}
@@ -41,15 +41,6 @@ func newOperatorCommandContext(organizationName string, clusterName string) (*op
 		clusterID:      cluster.Id,
 		organizationID: organizationID,
 	}, nil
-}
-
-func findCluster(clusters []qovery.Cluster, name string) *qovery.Cluster {
-	for index := range clusters {
-		if clusters[index].Name == name {
-			return &clusters[index]
-		}
-	}
-	return nil
 }
 
 func displayVersion(version qovery.NullableString) string {
