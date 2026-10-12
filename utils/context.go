@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -365,7 +366,8 @@ func GetAccessToken(skipOrgaCheck bool) (AccessTokenType, AccessToken, error) {
 		return "", "", err
 	}
 
-	if orgaList, _, err := GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute(); err == nil {
+	orgaList, response, err := GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute()
+	if err == nil {
 		// everything is fine, return the token
 		if !skipOrgaCheck {
 			if err = checkOrgaValid(orgaList); err != nil {
@@ -376,7 +378,12 @@ func GetAccessToken(skipOrgaCheck bool) (AccessTokenType, AccessToken, error) {
 		return "Bearer", token, nil
 	}
 
-	return "", "", fmt.Errorf("access token is invalid or expired. Please, %w. ", ErrSignInRequired)
+	// Only a 401 on the refreshed token means the credentials are unusable. Anything else (network error, API outage)
+	// is transient and signing in again would not fix it
+	if response != nil && response.StatusCode == http.StatusUnauthorized {
+		return "", "", fmt.Errorf("access token is invalid or expired. Please, %w. ", ErrSignInRequired)
+	}
+	return "", "", fmt.Errorf("could not validate the access token: %w", err)
 }
 
 func SetAccessToken(token AccessToken, expiration time.Time, refreshToken RefreshToken) error {
