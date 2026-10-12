@@ -22,21 +22,21 @@ var clusterOperatorStatusCmd = &cobra.Command{
 		commandContext, err := newOperatorCommandContext(operatorStatusOrganization, operatorStatusCluster)
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 		status, _, err := commandContext.api.ClusterOperatorAPI.
 			GetClusterOperatorStatus(context.Background(), commandContext.organizationID, commandContext.clusterID).
 			Execute()
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		if operatorStatusJSON {
 			output, err := json.MarshalIndent(status, "", "  ")
 			if err != nil {
 				utils.PrintlnError(err)
-				return
+				os.Exit(1)
 			}
 			utils.Println(string(output))
 			return

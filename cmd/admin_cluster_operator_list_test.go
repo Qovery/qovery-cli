@@ -174,6 +174,38 @@ func TestSelectClusterOperators(t *testing.T) {
 	}
 }
 
+func TestSelectClusterOperatorsNormalizesConnected(t *testing.T) {
+	fleet := []qovery.ClusterOperatorFleetInventoryResponse{
+		fleetEntry("c1", qovery.CLUSTEROPERATORRUNTIME_KUBERNETES, true, qovery.CLUSTEROPERATORFLEETSTATUS_CURRENT),
+		fleetEntry("c2", qovery.CLUSTEROPERATORRUNTIME_KUBERNETES, false, qovery.CLUSTEROPERATORFLEETSTATUS_DISCONNECTED),
+	}
+	selected, err := selectClusterOperators(fleet, map[string]string{"Connected": "TRUE"}, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := clusterIDs(selected); !slices.Equal(got, []string{"c1"}) {
+		t.Fatalf("expected [c1], got %v", got)
+	}
+}
+
+func TestSelectClusterOperatorsRejectsInvalidFilterValues(t *testing.T) {
+	cases := []struct {
+		filters  map[string]string
+		expected string
+	}{
+		{filters: map[string]string{"Runtime": "KUBERNETES,docker"}, expected: "invalid value 'docker' for filter Runtime: valid values are: KUBERNETES, DOCKER, UNKNOWN"},
+		{filters: map[string]string{"Status": "OUTDATED"}, expected: "invalid value 'OUTDATED' for filter Status: valid values are: NOT_ATTACHED,"},
+		{filters: map[string]string{"ClusterKind": "EKS"}, expected: "invalid value 'EKS' for filter ClusterKind: valid values are:"},
+		{filters: map[string]string{"Connected": "yes"}, expected: "invalid value 'yes' for filter Connected: valid values are: true, false"},
+	}
+	for _, testCase := range cases {
+		_, err := selectClusterOperators(nil, testCase.filters, false)
+		if err == nil || !strings.HasPrefix(err.Error(), testCase.expected) {
+			t.Fatalf("expected error starting with %q, got %v", testCase.expected, err)
+		}
+	}
+}
+
 func TestSelectClusterOperatorsRejectsUnknownFilter(t *testing.T) {
 	_, err := selectClusterOperators(nil, map[string]string{"CurrentStatus": "DEPLOYED"}, false)
 	if err == nil || !strings.Contains(err.Error(), "CurrentStatus") {

@@ -50,10 +50,14 @@ qovery admin cluster operator list -f Connected=false --json`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
+		if _, err := parseClusterOperatorFilters(adminClusterOperatorFilters); err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
 		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 		fleet, err := getClusterOperatorFleet(
 			context.Background(),
@@ -63,7 +67,7 @@ qovery admin cluster operator list -f Connected=false --json`,
 		)
 		if err != nil {
 			utils.PrintlnError(err)
-			return
+			os.Exit(1)
 		}
 
 		clusters, err := selectClusterOperators(fleet.GetResults(), adminClusterOperatorFilters, adminClusterOperatorOutdated)
@@ -75,7 +79,7 @@ qovery admin cluster operator list -f Connected=false --json`,
 			output, err := json.MarshalIndent(clusters, "", "  ")
 			if err != nil {
 				utils.PrintlnError(err)
-				return
+				os.Exit(1)
 			}
 			utils.Println(string(output))
 			return
@@ -144,11 +148,47 @@ func parseClusterOperatorFilters(filters map[string]string) (map[string]map[stri
 		}
 		values := make(map[string]bool)
 		for _, item := range strings.Split(value, ",") {
-			values[strings.TrimSpace(item)] = true
+			normalized, err := normalizeClusterOperatorFilterValue(key, strings.TrimSpace(item))
+			if err != nil {
+				return nil, err
+			}
+			values[normalized] = true
 		}
 		parsed[key] = values
 	}
 	return parsed, nil
+}
+
+func normalizeClusterOperatorFilterValue(key string, value string) (string, error) {
+	var allowed []string
+	switch key {
+	case "ClusterKind":
+		allowed = enumStrings(qovery.AllowedSelfManagedClusterKindEnumValues)
+	case "Runtime":
+		allowed = enumStrings(qovery.AllowedClusterOperatorRuntimeEnumValues)
+	case "Status":
+		allowed = enumStrings(qovery.AllowedClusterOperatorFleetStatusEnumValues)
+	case "Connected":
+		connected, err := strconv.ParseBool(value)
+		if err != nil {
+			return "", fmt.Errorf("invalid value '%s' for filter Connected: valid values are: true, false", value)
+		}
+		return strconv.FormatBool(connected), nil
+	default:
+		return value, nil
+	}
+	if !slices.Contains(allowed, value) {
+		return "", fmt.Errorf("invalid value '%s' for filter %s: valid values are: %s", value, key, strings.Join(allowed, ", "))
+	}
+	return value, nil
+}
+
+func enumStrings[T ~string](values []T) []string {
+	result := make([]string, 0, len(values))
+	for _, value := range values {
+		result = append(result, string(value))
+	}
+	return result
 }
 
 func matchesClusterOperatorFilters(cluster qovery.ClusterOperatorFleetInventoryResponse, filters map[string]map[string]bool) bool {

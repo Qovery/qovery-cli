@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -65,6 +67,10 @@ qovery admin cluster operator update -f Status=OUTDATED_IMAGE -n 5 --refresh-del
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
+		if _, err := parseClusterOperatorFilters(adminClusterOperatorUpdateFilters); err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
+		}
 		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
 			utils.PrintlnError(err)
@@ -74,8 +80,12 @@ qovery admin cluster operator update -f Status=OUTDATED_IMAGE -n 5 --refresh-del
 			adminURL:   utils.GetAdminUrl(),
 			httpClient: &http.Client{Timeout: 60 * time.Second},
 			credentials: &adminCredentials{
-				tokenType: tokenType,
-				token:     token,
+				tokenType:               tokenType,
+				token:                   token,
+				browserReauthentication: !accessTokenFromEnvironment(),
+				reload: func() (utils.AccessTokenType, utils.AccessToken, error) {
+					return utils.GetAccessToken(false)
+				},
 				reauthenticate: func() (utils.AccessTokenType, utils.AccessToken, error) {
 					pkg.DoRequestUserToAuthenticate(false, true)
 					return utils.GetAccessToken(false)
@@ -191,10 +201,20 @@ func clusterOperatorUpdateEligibility(
 	if cluster.ReportedRuntime == qovery.CLUSTEROPERATORRUNTIME_DOCKER && target.imageVersion == "" {
 		return nil, "chart version does not apply to DOCKER"
 	}
+	if cluster.ReportedRuntime == qovery.CLUSTEROPERATORRUNTIME_DOCKER &&
+		!dockerHeartbeatCanConfirmImage(target.imageVersion, cluster.DesiredImageVersion) {
+		return nil, "DOCKER heartbeat cannot confirm a non-release image tag"
+	}
 	if !clusterOperatorDiffersFromTarget(cluster, target) {
 		return nil, "already on requested version"
 	}
 	return request, ""
+}
+
+var releaseImageVersionPattern = regexp.MustCompile(`^v\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$`)
+
+func dockerHeartbeatCanConfirmImage(imageVersion string, desiredImageVersion qovery.NullableString) bool {
+	return imageVersion == nullableStringValue(desiredImageVersion) || releaseImageVersionPattern.MatchString(imageVersion)
 }
 
 func clusterOperatorDiffersFromTarget(
@@ -375,19 +395,19 @@ func updateClusterOperator(
 	for {
 		select {
 		case <-ctx.Done():
-			if executionFinished {
-				return response.ExecutionId, fmt.Errorf("timed out after %s waiting for the Operator to report the target version (last poll error: %v)", options.timeout, lastPollError)
-			}
-			return response.ExecutionId, fmt.Errorf("timed out after %s waiting for execution %s (last poll error: %v)", options.timeout, response.ExecutionId, lastPollError)
+			return response.ExecutionId, clusterOperatorUpdateTimeoutError(options.timeout, response.ExecutionId, executionFinished, lastPollError)
 		case <-time.After(options.refreshDelay):
 		}
 
 		if !executionFinished {
 			history, err := api.history(ctx, cluster.OrganizationId, cluster.ClusterId)
 			if err != nil {
-				lastPollError = err
+				if ctx.Err() == nil {
+					lastPollError = err
+				}
 				continue
 			}
+			lastPollError = nil
 			finished, err := evaluateClusterOperatorUpdateExecution(history, response.ExecutionId)
 			if err != nil {
 				return response.ExecutionId, err
@@ -401,14 +421,28 @@ func updateClusterOperator(
 
 		fleet, err := api.fleet(ctx)
 		if err != nil {
-			lastPollError = err
+			if ctx.Err() == nil {
+				lastPollError = err
+			}
 			continue
 		}
+		lastPollError = nil
 		if clusterOperatorReportsTarget(fleet, cluster.ClusterId, *response) {
 			options.print(fmt.Sprintf("%s Operator reports %s", prefix, clusterOperatorUpdateVersions(*response)))
 			return response.ExecutionId, nil
 		}
 	}
+}
+
+func clusterOperatorUpdateTimeoutError(timeout time.Duration, executionID string, executionFinished bool, lastPollError error) error {
+	message := fmt.Sprintf("timed out after %s waiting for execution %s", timeout, executionID)
+	if executionFinished {
+		message = fmt.Sprintf("timed out after %s waiting for the Operator to report the target version", timeout)
+	}
+	if lastPollError != nil {
+		message += fmt.Sprintf(" (last poll error: %s)", lastPollError)
+	}
+	return errors.New(message)
 }
 
 func evaluateClusterOperatorUpdateExecution(history []qovery.ClusterDeploymentHistory, executionID string) (bool, error) {
@@ -538,10 +572,17 @@ func postClusterOperatorUpdate(
 }
 
 type adminCredentials struct {
-	mutex          sync.Mutex
-	tokenType      utils.AccessTokenType
-	token          utils.AccessToken
-	reauthenticate func() (utils.AccessTokenType, utils.AccessToken, error)
+	mutex                   sync.Mutex
+	tokenType               utils.AccessTokenType
+	token                   utils.AccessToken
+	browserReauthentication bool
+	browserReauthenticated  bool
+	reload                  func() (utils.AccessTokenType, utils.AccessToken, error)
+	reauthenticate          func() (utils.AccessTokenType, utils.AccessToken, error)
+}
+
+func accessTokenFromEnvironment() bool {
+	return os.Getenv("QOVERY_CLI_ACCESS_TOKEN") != "" || os.Getenv("Q_CLI_ACCESS_TOKEN") != ""
 }
 
 func (credentials *adminCredentials) current() (utils.AccessTokenType, utils.AccessToken) {
@@ -550,12 +591,21 @@ func (credentials *adminCredentials) current() (utils.AccessTokenType, utils.Acc
 	return credentials.tokenType, credentials.token
 }
 
-func (credentials *adminCredentials) refresh(staleToken utils.AccessToken) error {
+func (credentials *adminCredentials) refresh(staleToken utils.AccessToken, unauthorized error) error {
 	credentials.mutex.Lock()
 	defer credentials.mutex.Unlock()
 	if credentials.token != staleToken {
 		return nil
 	}
+	if tokenType, token, err := credentials.reload(); err == nil && token != staleToken {
+		credentials.tokenType = tokenType
+		credentials.token = token
+		return nil
+	}
+	if !credentials.browserReauthentication || credentials.browserReauthenticated {
+		return unauthorized
+	}
+	credentials.browserReauthenticated = true
 	utils.Println("Needs to re-authenticate as the response is UNAUTHORIZED (401)")
 	tokenType, token, err := credentials.reauthenticate()
 	if err != nil {
@@ -575,7 +625,7 @@ func withAdminReauthentication[T any](
 	if !isUnauthorizedError(err) {
 		return result, err
 	}
-	if err := credentials.refresh(token); err != nil {
+	if err := credentials.refresh(token, err); err != nil {
 		var zero T
 		return zero, err
 	}

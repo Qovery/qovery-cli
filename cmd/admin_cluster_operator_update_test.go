@@ -106,15 +106,51 @@ func TestClusterOperatorUpdateEligibility(t *testing.T) {
 		},
 		{
 			name:         "docker already on requested image",
-			cluster:      operatorCluster(docker, true, current, "v3", "", ""),
-			target:       clusterOperatorUpdateTarget{imageVersion: "v3"},
+			cluster:      operatorCluster(docker, true, current, "v1.3.0", "", ""),
+			target:       clusterOperatorUpdateTarget{imageVersion: "v1.3.0"},
 			expectedSkip: "already on requested version",
 		},
 		{
 			name:            "docker requested image ignores requested chart",
 			cluster:         operatorCluster(docker, true, current, "v2", "", ""),
-			target:          clusterOperatorUpdateTarget{imageVersion: "v3", chartVersion: "0.3.0"},
-			expectedRequest: `{"image_version":"v3"}`,
+			target:          clusterOperatorUpdateTarget{imageVersion: "v1.3.0", chartVersion: "0.3.0"},
+			expectedRequest: `{"image_version":"v1.3.0"}`,
+		},
+		{
+			name:            "docker requested pre-release tag",
+			cluster:         operatorCluster(docker, true, current, "v2", "", ""),
+			target:          clusterOperatorUpdateTarget{imageVersion: "v1.3.0-rc.1"},
+			expectedRequest: `{"image_version":"v1.3.0-rc.1"}`,
+		},
+		{
+			name:            "docker requested non-release tag equal to desired",
+			cluster:         operatorCluster(docker, true, outdated, "v1", "", ""),
+			target:          clusterOperatorUpdateTarget{imageVersion: "v2"},
+			expectedRequest: `{"image_version":"v2"}`,
+		},
+		{
+			name:         "docker requested non-release tag",
+			cluster:      operatorCluster(docker, true, current, "v2", "", ""),
+			target:       clusterOperatorUpdateTarget{imageVersion: "main-3f2a1c"},
+			expectedSkip: "DOCKER heartbeat cannot confirm a non-release image tag",
+		},
+		{
+			name:         "docker requested tag with build metadata",
+			cluster:      operatorCluster(docker, true, current, "v2", "", ""),
+			target:       clusterOperatorUpdateTarget{imageVersion: "v1.3.0+build"},
+			expectedSkip: "DOCKER heartbeat cannot confirm a non-release image tag",
+		},
+		{
+			name:         "docker requested tag with prefix",
+			cluster:      operatorCluster(docker, true, current, "v2", "", ""),
+			target:       clusterOperatorUpdateTarget{imageVersion: "release-v1.3.0"},
+			expectedSkip: "DOCKER heartbeat cannot confirm a non-release image tag",
+		},
+		{
+			name:            "kubernetes requested non-release tag",
+			cluster:         operatorCluster(kubernetes, true, current, "v2", "0.2.0", "0.2.0"),
+			target:          clusterOperatorUpdateTarget{imageVersion: "main-3f2a1c"},
+			expectedRequest: `{"chart_version":"0.2.0","image_version":"main-3f2a1c"}`,
 		},
 		{
 			name:         "docker with chart version only",
@@ -227,8 +263,12 @@ func TestPostClusterOperatorUpdateSurfacesErrors(t *testing.T) {
 func TestWithAdminReauthenticationRetriesOnceAfterUnauthorized(t *testing.T) {
 	reauthentications := 0
 	credentials := &adminCredentials{
-		tokenType: "Bearer",
-		token:     "expired",
+		tokenType:               "Bearer",
+		token:                   "expired",
+		browserReauthentication: true,
+		reload: func() (utils.AccessTokenType, utils.AccessToken, error) {
+			return "Bearer", "expired", nil
+		},
 		reauthenticate: func() (utils.AccessTokenType, utils.AccessToken, error) {
 			reauthentications++
 			return "Bearer", "fresh", nil
@@ -245,6 +285,101 @@ func TestWithAdminReauthenticationRetriesOnceAfterUnauthorized(t *testing.T) {
 
 	if err != nil || result != "ok" || reauthentications != 1 || len(tokens) != 2 || tokens[1] != "fresh" {
 		t.Fatalf("unexpected retry: result=%q err=%v reauthentications=%d tokens=%v", result, err, reauthentications, tokens)
+	}
+}
+
+func unauthorizedCall(_ utils.AccessTokenType, _ utils.AccessToken) (string, error) {
+	return "", &httpStatusError{statusCode: http.StatusUnauthorized, status: "401 Unauthorized"}
+}
+
+func TestWithAdminReauthenticationPrefersSilentToken(t *testing.T) {
+	reauthentications := 0
+	credentials := &adminCredentials{
+		tokenType:               "Bearer",
+		token:                   "expired",
+		browserReauthentication: true,
+		reload: func() (utils.AccessTokenType, utils.AccessToken, error) {
+			return "Bearer", "refreshed", nil
+		},
+		reauthenticate: func() (utils.AccessTokenType, utils.AccessToken, error) {
+			reauthentications++
+			return "Bearer", "fresh", nil
+		},
+	}
+	result, err := withAdminReauthentication(credentials, func(_ utils.AccessTokenType, token utils.AccessToken) (string, error) {
+		if token != "refreshed" {
+			return unauthorizedCall("", token)
+		}
+		return "ok", nil
+	})
+
+	if err != nil || result != "ok" || reauthentications != 0 {
+		t.Fatalf("expected silent refresh: result=%q err=%v reauthentications=%d", result, err, reauthentications)
+	}
+}
+
+func TestWithAdminReauthenticationOpensBrowserAtMostOnce(t *testing.T) {
+	reauthentications := 0
+	credentials := &adminCredentials{
+		tokenType:               "Bearer",
+		token:                   "expired",
+		browserReauthentication: true,
+		reauthenticate: func() (utils.AccessTokenType, utils.AccessToken, error) {
+			reauthentications++
+			return "Bearer", "fresh", nil
+		},
+	}
+	credentials.reload = func() (utils.AccessTokenType, utils.AccessToken, error) {
+		return credentials.tokenType, credentials.token, nil
+	}
+
+	for attempt := 0; attempt < 3; attempt++ {
+		if _, err := withAdminReauthentication(credentials, unauthorizedCall); !isUnauthorizedError(err) {
+			t.Fatalf("attempt %d: expected unauthorized error, got %v", attempt, err)
+		}
+	}
+	if reauthentications != 1 {
+		t.Fatalf("expected one browser re-authentication, got %d", reauthentications)
+	}
+}
+
+func TestWithAdminReauthenticationNeverOpensBrowserForEnvironmentToken(t *testing.T) {
+	reauthentications := 0
+	credentials := &adminCredentials{
+		tokenType:               "Bearer",
+		token:                   "environment",
+		browserReauthentication: false,
+		reload: func() (utils.AccessTokenType, utils.AccessToken, error) {
+			return "Bearer", "environment", nil
+		},
+		reauthenticate: func() (utils.AccessTokenType, utils.AccessToken, error) {
+			reauthentications++
+			return "Bearer", "fresh", nil
+		},
+	}
+
+	if _, err := withAdminReauthentication(credentials, unauthorizedCall); !isUnauthorizedError(err) {
+		t.Fatalf("expected unauthorized error, got %v", err)
+	}
+	if reauthentications != 0 {
+		t.Fatalf("expected no browser re-authentication, got %d", reauthentications)
+	}
+}
+
+func TestAccessTokenFromEnvironment(t *testing.T) {
+	t.Setenv("QOVERY_CLI_ACCESS_TOKEN", "")
+	t.Setenv("Q_CLI_ACCESS_TOKEN", "")
+	if accessTokenFromEnvironment() {
+		t.Fatal("no environment token expected")
+	}
+	t.Setenv("Q_CLI_ACCESS_TOKEN", "token")
+	if !accessTokenFromEnvironment() {
+		t.Fatal("Q_CLI_ACCESS_TOKEN must count as an environment token")
+	}
+	t.Setenv("Q_CLI_ACCESS_TOKEN", "")
+	t.Setenv("QOVERY_CLI_ACCESS_TOKEN", "token")
+	if !accessTokenFromEnvironment() {
+		t.Fatal("QOVERY_CLI_ACCESS_TOKEN must count as an environment token")
 	}
 }
 
@@ -310,11 +445,14 @@ func TestClusterOperatorReportsTarget(t *testing.T) {
 }
 
 type fakeClusterOperatorUpdateAPI struct {
-	mutex          sync.Mutex
-	updateErrors   map[string]error
-	historyStatus  qovery.StateEnum
-	reportedImages map[string]string
-	updated        []string
+	mutex           sync.Mutex
+	updateErrors    map[string]error
+	historyFailures int
+	fleetFailures   int
+	historyBlocks   bool
+	historyStatus   qovery.StateEnum
+	reportedImages  map[string]string
+	updated         []string
 }
 
 func (api *fakeClusterOperatorUpdateAPI) update(_ context.Context, clusterID string, _ qovery.ClusterOperatorUpdateRequest) (*qovery.ClusterOperatorUpdateResponse, error) {
@@ -332,6 +470,10 @@ func (api *fakeClusterOperatorUpdateAPI) update(_ context.Context, clusterID str
 func (api *fakeClusterOperatorUpdateAPI) fleet(context.Context) ([]qovery.ClusterOperatorFleetInventoryResponse, error) {
 	api.mutex.Lock()
 	defer api.mutex.Unlock()
+	if api.fleetFailures > 0 {
+		api.fleetFailures--
+		return nil, errors.New("fleet unavailable")
+	}
 	fleet := make([]qovery.ClusterOperatorFleetInventoryResponse, 0, len(api.reportedImages))
 	for clusterID, image := range api.reportedImages {
 		cluster := fleetEntry(clusterID, qovery.CLUSTEROPERATORRUNTIME_DOCKER, true, qovery.CLUSTEROPERATORFLEETSTATUS_CURRENT)
@@ -341,7 +483,17 @@ func (api *fakeClusterOperatorUpdateAPI) fleet(context.Context) ([]qovery.Cluste
 	return fleet, nil
 }
 
-func (api *fakeClusterOperatorUpdateAPI) history(_ context.Context, _ string, clusterID string) ([]qovery.ClusterDeploymentHistory, error) {
+func (api *fakeClusterOperatorUpdateAPI) history(ctx context.Context, _ string, clusterID string) ([]qovery.ClusterDeploymentHistory, error) {
+	if api.historyBlocks {
+		<-ctx.Done()
+		return nil, ctx.Err()
+	}
+	api.mutex.Lock()
+	defer api.mutex.Unlock()
+	if api.historyFailures > 0 {
+		api.historyFailures--
+		return nil, errors.New("history unavailable")
+	}
 	return []qovery.ClusterDeploymentHistory{historyEntry("exec-"+clusterID, api.historyStatus)}, nil
 }
 
@@ -389,6 +541,50 @@ func TestRunClusterOperatorUpdatesTimesOutUntilTargetIsReported(t *testing.T) {
 
 	if results[0].err == nil || !strings.Contains(results[0].err.Error(), "timed out") {
 		t.Fatalf("expected timeout, got %#v", results[0])
+	}
+}
+
+func TestRunClusterOperatorUpdatesTimeoutForgetsRecoveredPollError(t *testing.T) {
+	cases := []struct {
+		name     string
+		api      *fakeClusterOperatorUpdateAPI
+		expected string
+	}{
+		{
+			name:     "history recovered",
+			api:      &fakeClusterOperatorUpdateAPI{historyFailures: 1, historyStatus: qovery.STATEENUM_DEPLOYING},
+			expected: "timed out after 50ms waiting for execution exec-c1",
+		},
+		{
+			name:     "history cut by the timeout",
+			api:      &fakeClusterOperatorUpdateAPI{historyBlocks: true},
+			expected: "timed out after 50ms waiting for execution exec-c1",
+		},
+		{
+			name:     "fleet recovered",
+			api:      &fakeClusterOperatorUpdateAPI{fleetFailures: 1, historyStatus: qovery.STATEENUM_DEPLOYED, reportedImages: map[string]string{"c1": "v2"}},
+			expected: "timed out after 50ms waiting for the Operator to report the target version",
+		},
+	}
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			results := runClusterOperatorUpdates(context.Background(), testCase.api, dockerUpdates("c1"), testUpdateOptions(50*time.Millisecond))
+
+			if results[0].err == nil || results[0].err.Error() != testCase.expected {
+				t.Fatalf("expected %q, got %v", testCase.expected, results[0].err)
+			}
+		})
+	}
+}
+
+func TestClusterOperatorUpdateTimeoutError(t *testing.T) {
+	withoutPollError := clusterOperatorUpdateTimeoutError(time.Minute, "exec-1", false, nil).Error()
+	if withoutPollError != "timed out after 1m0s waiting for execution exec-1" {
+		t.Fatalf("unexpected message %q", withoutPollError)
+	}
+	withPollError := clusterOperatorUpdateTimeoutError(time.Minute, "exec-1", true, errors.New("503")).Error()
+	if withPollError != "timed out after 1m0s waiting for the Operator to report the target version (last poll error: 503)" {
+		t.Fatalf("unexpected message %q", withPollError)
 	}
 }
 
