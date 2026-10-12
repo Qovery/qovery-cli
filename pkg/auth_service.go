@@ -270,11 +270,20 @@ func getTokensWith(params DeviceFlowParameters) (TokensResponse, error) {
 
 type QoveryClientApiRequest[T any] func(needToRefetchClient bool) (*T, *http.Response, error)
 
-// RetryQoveryClientApiRequestOnUnauthorized To be able to ask for re-auth when first attempt leads to unauthorized
+// requestUserToAuthenticate runs the interactive login. It is a variable so tests can stub the browser flow
+var requestUserToAuthenticate = func() { DoRequestUserToAuthenticate(false, true) }
+
+// RetryQoveryClientApiRequestOnUnauthorized retries the request once with a refreshed token when the first attempt is
+// unauthorized (401), and falls back to an interactive login when the stored credentials cannot be refreshed
 func RetryQoveryClientApiRequestOnUnauthorized[T any](request QoveryClientApiRequest[T]) (*T, *http.Response, error) {
 	qoveryStruct, response, err := request(false)
 	if !isUnauthorized(response) {
 		return qoveryStruct, response, err
+	}
+
+	// A token set in the environment can neither be refreshed nor replaced by an interactive login
+	if utils.AccessTokenFromEnv() != "" {
+		return nil, response, errors.New("the access token set in QOVERY_CLI_ACCESS_TOKEN (or Q_CLI_ACCESS_TOKEN) is rejected (401 Unauthorized): check it is valid and has not expired")
 	}
 
 	// The access token has most likely expired: refresh it silently using the refresh token before asking for an interactive login
@@ -283,10 +292,13 @@ func RetryQoveryClientApiRequestOnUnauthorized[T any](request QoveryClientApiReq
 		if !isUnauthorized(response) {
 			return qoveryStruct, response, err
 		}
+	} else if !errors.Is(errToken, utils.ErrSignInRequired) {
+		// A transport or organization error cannot be solved by signing in again: surface it instead of opening the browser
+		return nil, response, errToken
 	}
 
 	utils.Println("Needs to re-authenticate as the response is UNAUTHORIZED (401)")
-	DoRequestUserToAuthenticate(false, true)
+	requestUserToAuthenticate()
 	return request(true)
 }
 

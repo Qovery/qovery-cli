@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -23,7 +24,7 @@ var (
 func RefreshAccessToken(token RefreshToken) (AccessToken, error) {
 	refreshToken := strings.TrimSpace(string(token))
 	if refreshToken == "" {
-		return "", errors.New("could not reauthenticate automatically. Please, run 'qovery auth' to authenticate. ")
+		return "", fmt.Errorf("could not reauthenticate automatically. Please, %w. ", ErrSignInRequired)
 	}
 	res, err := http.PostForm(oAuthTokenEndpoint, url.Values{
 		"grant_type":    {"refresh_token"},
