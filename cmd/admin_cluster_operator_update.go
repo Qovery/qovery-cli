@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/qovery/qovery-cli/pkg"
@@ -37,24 +37,26 @@ var adminClusterOperatorUpdateCmd = &cobra.Command{
 	Short: "Update the Qovery Operator on attached clusters",
 	Long: `Update the Qovery Operator image (and Helm chart for Kubernetes) on attached clusters.
 
-The selection is the attached Operator fleet, narrowed with the same filters as "list" (-f, --filters):
-OrganizationId, ClusterId, ClusterName, ClusterKind, Runtime, Status, Connected.
+The selection is the attached Operator fleet, narrowed with the filters below.
 Without filters the whole attached fleet is considered.
 
 A cluster is updated only when its Operator is connected, its runtime is KUBERNETES or DOCKER, and there is something to do:
 * without --image-version / --chart-version: its status is OUTDATED_IMAGE, OUTDATED_CHART or OUTDATED_IMAGE_AND_CHART;
-* with explicit versions: its reported image (or chart, for KUBERNETES) differs from the requested one.
+* with explicit versions: its reported image (or chart, for KUBERNETES) differs from the version the update would install.
 Without --image-version q-core picks its target image. A KUBERNETES cluster without --chart-version gets its desired chart.
 DOCKER clusters never receive a chart version.
 
 The command runs in dry run by default and only prints the plan. Use --disable-dry-run (-y) to trigger the updates.
 Up to --parallel-run updates run at the same time. After the first failure no new update is started.
 
+` + clusterOperatorFilterHelp() + `
 Examples:
 qovery admin cluster operator update
 qovery admin cluster operator update -f Runtime=DOCKER -y
 qovery admin cluster operator update -f ClusterId=<cluster-id> --image-version=v1.204.0 --chart-version=0.3.0 -y
-qovery admin cluster operator update -f Status=OUTDATED_IMAGE -n 5 --refresh-delay=30 --timeout=20m -y -c`,
+qovery admin cluster operator update -f Status=OUTDATED_IMAGE -n 5 --refresh-delay=30 --timeout=20m -y -c
+qovery admin cluster operator update -f ClusterKind=EKS_ANYWHERE
+qovery admin cluster operator update -f Runtime=DOCKER,KUBERNETES -f Connected=true`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -105,14 +107,17 @@ qovery admin cluster operator update -f Status=OUTDATED_IMAGE -n 5 --refresh-del
 			os.Exit(1)
 		}
 		sortClusterOperators(clusters)
+		organizationNames := lookupOrganizationNames(ctx, clusterOrganizationIDs(clusters), api.organizationName, 15*time.Second, 10*time.Second)
+		options.organizationNames = organizationNames
 
-		plan := planClusterOperatorUpdates(clusters, clusterOperatorUpdateTarget{
+		target := clusterOperatorUpdateTarget{
 			imageVersion: adminClusterOperatorUpdateImageVersion,
 			chartVersion: adminClusterOperatorUpdateChartVersion,
-		})
+		}
+		plan := planClusterOperatorUpdates(clusters, target)
 		if err := utils.PrintTable(
-			[]string{"Organization ID", "Cluster ID", "Cluster", "Kind", "Runtime", "Image", "Chart", "Action"},
-			clusterOperatorUpdatePlanRows(plan, adminClusterOperatorUpdateImageVersion, adminClusterOperatorUpdateChartVersion),
+			[]string{"Organization", "Cluster ID", "Cluster", "Kind", "Runtime", "Image", "Chart", "Action"},
+			clusterOperatorUpdatePlanRows(plan, target.imageVersion, target.chartVersion, organizationNames),
 		); err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -127,6 +132,9 @@ qovery admin cluster operator update -f Status=OUTDATED_IMAGE -n 5 --refresh-del
 			utils.Println("Dry run: no update triggered. Use --disable-dry-run (-y) to execute.")
 			return
 		}
+		for _, line := range clusterOperatorUpdateParameters(options, target) {
+			utils.Println(line)
+		}
 		if !adminClusterOperatorUpdateNoConfirm {
 			utils.Println("Do you want to continue the Operator update?")
 			if !utils.Validate("operator update") {
@@ -136,7 +144,7 @@ qovery admin cluster operator update -f Status=OUTDATED_IMAGE -n 5 --refresh-del
 		}
 
 		results := runClusterOperatorUpdates(ctx, api, updates, options)
-		failed, err := printClusterOperatorUpdateSummary(results)
+		failed, err := printClusterOperatorUpdateSummary(results, organizationNames)
 		if err != nil {
 			utils.PrintlnError(err)
 			os.Exit(1)
@@ -221,11 +229,21 @@ func clusterOperatorDiffersFromTarget(
 	cluster qovery.ClusterOperatorFleetInventoryResponse,
 	target clusterOperatorUpdateTarget,
 ) bool {
-	if target.imageVersion != "" && nullableStringValue(cluster.ReportedImageVersion) != target.imageVersion {
+	if imageVersion := effectiveImageVersion(cluster, target); imageVersion != "" && nullableStringValue(cluster.ReportedImageVersion) != imageVersion {
 		return true
 	}
 	chartVersion := effectiveChartVersion(cluster, target)
 	return chartVersion != "" && nullableStringValue(cluster.ReportedChartVersion) != chartVersion
+}
+
+func effectiveImageVersion(
+	cluster qovery.ClusterOperatorFleetInventoryResponse,
+	target clusterOperatorUpdateTarget,
+) string {
+	if target.imageVersion != "" {
+		return target.imageVersion
+	}
+	return nullableStringValue(cluster.DesiredImageVersion)
 }
 
 func effectiveChartVersion(
@@ -265,7 +283,12 @@ func eligibleClusterOperatorUpdates(plan []clusterOperatorUpdatePlanItem) []clus
 	return eligible
 }
 
-func clusterOperatorUpdatePlanRows(plan []clusterOperatorUpdatePlanItem, imageVersion string, chartVersion string) [][]string {
+func clusterOperatorUpdatePlanRows(
+	plan []clusterOperatorUpdatePlanItem,
+	imageVersion string,
+	chartVersion string,
+	organizationNames map[string]string,
+) [][]string {
 	rows := make([][]string, 0, len(plan))
 	for _, item := range plan {
 		cluster := item.cluster
@@ -286,7 +309,7 @@ func clusterOperatorUpdatePlanRows(plan []clusterOperatorUpdatePlanItem, imageVe
 			action = "skip: " + item.skipReason
 		}
 		rows = append(rows, []string{
-			cluster.OrganizationId,
+			organizationDisplayName(organizationNames, cluster.OrganizationId),
 			cluster.ClusterId,
 			cluster.ClusterName,
 			string(cluster.ClusterKind),
@@ -313,15 +336,20 @@ func newClusterOperatorUpdateOptions(parallelRuns int, refreshDelaySeconds int, 
 		parallelRuns: parallelRuns,
 		refreshDelay: time.Duration(refreshDelaySeconds) * time.Second,
 		timeout:      timeout,
+		pollTimeout:  60 * time.Second,
+		expiryGrace:  10 * time.Second,
 		print:        utils.Println,
 	}, nil
 }
 
 type clusterOperatorUpdateOptions struct {
-	parallelRuns int
-	refreshDelay time.Duration
-	timeout      time.Duration
-	print        func(string)
+	parallelRuns      int
+	refreshDelay      time.Duration
+	timeout           time.Duration
+	pollTimeout       time.Duration
+	expiryGrace       time.Duration
+	organizationNames map[string]string
+	print             func(string)
 }
 
 type clusterOperatorUpdateAPI interface {
@@ -337,6 +365,25 @@ type clusterOperatorUpdateResult struct {
 	err         error
 }
 
+type clusterOperatorUpdateRun struct {
+	index             int
+	cluster           qovery.ClusterOperatorFleetInventoryResponse
+	response          qovery.ClusterOperatorUpdateResponse
+	ctx               context.Context
+	cancel            context.CancelFunc
+	startedAt         time.Time
+	executionStatus   qovery.StateEnum
+	executionFinished bool
+	reported          *qovery.ClusterOperatorFleetInventoryResponse
+	lastPollError     error
+}
+
+type clusterOperatorFleetSnapshot struct {
+	fetched  bool
+	clusters []qovery.ClusterOperatorFleetInventoryResponse
+	err      error
+}
+
 func runClusterOperatorUpdates(
 	ctx context.Context,
 	api clusterOperatorUpdateAPI,
@@ -344,99 +391,246 @@ func runClusterOperatorUpdates(
 	options clusterOperatorUpdateOptions,
 ) []clusterOperatorUpdateResult {
 	results := make([]clusterOperatorUpdateResult, len(updates))
-	slots := make(chan struct{}, options.parallelRuns)
-	var failed atomic.Bool
-	var running sync.WaitGroup
-
 	for index, item := range updates {
 		results[index].cluster = item.cluster
-		if failed.Load() {
-			continue
-		}
-		slots <- struct{}{}
-		if failed.Load() {
-			<-slots
-			continue
-		}
-		results[index].started = true
-		running.Add(1)
-		go func() {
-			defer running.Done()
-			defer func() { <-slots }()
-			executionID, err := updateClusterOperator(ctx, api, item, options)
-			results[index].executionID = executionID
-			results[index].err = err
-			if err != nil {
-				failed.Store(true)
-				options.print(fmt.Sprintf("%s failed: %s", clusterOperatorLogPrefix(item.cluster), err))
-			}
-		}()
 	}
-	running.Wait()
-	return results
+	finish := func(run *clusterOperatorUpdateRun, err error) {
+		run.cancel()
+		results[run.index].err = err
+		if err != nil {
+			options.print(fmt.Sprintf("%s failed: %s", clusterOperatorLogPrefix(run.cluster, options.organizationNames), err))
+		}
+	}
+
+	var running []*clusterOperatorUpdateRun
+	next := 0
+	failed := false
+	for {
+		for !failed && next < len(updates) && len(running) < options.parallelRuns {
+			index := next
+			next++
+			results[index].started = true
+			run, err := startClusterOperatorUpdate(ctx, api, index, updates[index], options)
+			if err != nil {
+				failed = true
+				results[index].err = err
+				options.print(fmt.Sprintf("%s failed: %s", clusterOperatorLogPrefix(updates[index].cluster, options.organizationNames), err))
+				continue
+			}
+			results[index].executionID = run.response.ExecutionId
+			running = append(running, run)
+		}
+		if len(running) == 0 {
+			return results
+		}
+
+		options.print(fmt.Sprintf("Checking Operator updates in %d seconds", int(options.refreshDelay.Seconds())))
+		time.Sleep(options.refreshDelay)
+
+		snapshot := &clusterOperatorFleetSnapshot{}
+		stillRunning := running[:0]
+		for _, run := range running {
+			done, err := pollClusterOperatorUpdate(ctx, api, run, snapshot, options)
+			if !done {
+				stillRunning = append(stillRunning, run)
+				continue
+			}
+			finish(run, err)
+			if err != nil {
+				failed = true
+			}
+		}
+		running = stillRunning
+	}
 }
 
-func updateClusterOperator(
+func startClusterOperatorUpdate(
 	ctx context.Context,
 	api clusterOperatorUpdateAPI,
+	index int,
 	item clusterOperatorUpdatePlanItem,
 	options clusterOperatorUpdateOptions,
-) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, options.timeout)
-	defer cancel()
+) (*clusterOperatorUpdateRun, error) {
+	runContext, cancel := context.WithTimeout(ctx, options.timeout)
 	cluster := item.cluster
-	prefix := clusterOperatorLogPrefix(cluster)
-
-	response, err := api.update(ctx, cluster.ClusterId, *item.request)
+	response, err := api.update(runContext, cluster.ClusterId, *item.request)
 	if err != nil {
-		return "", fmt.Errorf("update request failed: %w", err)
+		cancel()
+		return nil, fmt.Errorf("update request failed: %w", err)
 	}
 	options.print(fmt.Sprintf(
-		"%s update queued: execution %s, %s - https://console.qovery.com/organization/%s/cluster/%s/cluster-logs",
-		prefix, response.ExecutionId, clusterOperatorUpdateVersions(*response), cluster.OrganizationId, cluster.ClusterId,
+		"%s - Starting Operator update %s -> %s - execution %s - https://console.qovery.com/organization/%s/cluster/%s/cluster-logs",
+		clusterOperatorLogPrefix(cluster, options.organizationNames),
+		clusterOperatorVersionPair(cluster.ReportedRuntime, nullableStringValue(cluster.ReportedImageVersion), nullableStringValue(cluster.ReportedChartVersion)),
+		clusterOperatorVersionPair(cluster.ReportedRuntime, response.ImageVersion, nullableStringValue(response.ChartVersion)),
+		response.ExecutionId,
+		cluster.OrganizationId,
+		cluster.ClusterId,
 	))
+	return &clusterOperatorUpdateRun{
+		index:     index,
+		cluster:   cluster,
+		response:  *response,
+		ctx:       runContext,
+		cancel:    cancel,
+		startedAt: time.Now(),
+	}, nil
+}
 
-	executionFinished := false
-	var lastPollError error
-	for {
-		select {
-		case <-ctx.Done():
-			return response.ExecutionId, clusterOperatorUpdateTimeoutError(options.timeout, response.ExecutionId, executionFinished, lastPollError)
-		case <-time.After(options.refreshDelay):
-		}
+func pollClusterOperatorUpdate(
+	ctx context.Context,
+	api clusterOperatorUpdateAPI,
+	run *clusterOperatorUpdateRun,
+	snapshot *clusterOperatorFleetSnapshot,
+	options clusterOperatorUpdateOptions,
+) (bool, error) {
+	prefix := clusterOperatorLogPrefix(run.cluster, options.organizationNames)
+	expired := run.ctx.Err() != nil
+	timeoutError := func() error {
+		return clusterOperatorUpdateTimeoutError(options.timeout, run.response.ExecutionId, run.executionFinished, run.lastPollError)
+	}
+	historyParent := run.ctx
+	fleetParent := ctx
+	if expired {
+		graceContext, cancelGrace := context.WithTimeout(ctx, options.expiryGrace)
+		defer cancelGrace()
+		historyParent = graceContext
+		fleetParent = graceContext
+	}
 
-		if !executionFinished {
-			history, err := api.history(ctx, cluster.OrganizationId, cluster.ClusterId)
-			if err != nil {
-				if ctx.Err() == nil {
-					lastPollError = err
-				}
-				continue
-			}
-			lastPollError = nil
-			finished, err := evaluateClusterOperatorUpdateExecution(history, response.ExecutionId)
-			if err != nil {
-				return response.ExecutionId, err
-			}
-			if !finished {
-				continue
-			}
-			executionFinished = true
-			options.print(fmt.Sprintf("%s execution %s finished, waiting for the Operator to report the target version", prefix, response.ExecutionId))
-		}
-
-		fleet, err := api.fleet(ctx)
+	if !run.executionFinished {
+		historyContext, cancel := context.WithTimeout(historyParent, options.pollTimeout)
+		history, err := api.history(historyContext, run.cluster.OrganizationId, run.cluster.ClusterId)
+		cancel()
 		if err != nil {
-			if ctx.Err() == nil {
-				lastPollError = err
+			if expired || run.ctx.Err() != nil {
+				return true, timeoutError()
 			}
-			continue
+			run.lastPollError = err
+			options.print(run.progressLine(prefix, time.Since(run.startedAt)))
+			return false, nil
 		}
-		lastPollError = nil
-		if clusterOperatorReportsTarget(fleet, cluster.ClusterId, *response) {
-			options.print(fmt.Sprintf("%s Operator reports %s", prefix, clusterOperatorUpdateVersions(*response)))
-			return response.ExecutionId, nil
+		run.lastPollError = nil
+		if status, found := clusterOperatorExecutionStatus(history, run.response.ExecutionId); found {
+			run.executionStatus = status
 		}
+		finished, err := evaluateClusterOperatorUpdateExecution(history, run.response.ExecutionId)
+		if err != nil {
+			return true, err
+		}
+		if !finished {
+			if expired {
+				return true, timeoutError()
+			}
+			options.print(run.progressLine(prefix, time.Since(run.startedAt)))
+			return false, nil
+		}
+		run.executionFinished = true
+		options.print(fmt.Sprintf("%s execution %s finished, waiting for the Operator to report the target version", prefix, run.response.ExecutionId))
+	}
+
+	if !snapshot.fetched {
+		fleetContext, cancel := context.WithTimeout(fleetParent, options.pollTimeout)
+		snapshot.clusters, snapshot.err = api.fleet(fleetContext)
+		cancel()
+		snapshot.fetched = true
+	}
+	if snapshot.err != nil {
+		run.lastPollError = snapshot.err
+		if expired || run.ctx.Err() != nil {
+			return true, timeoutError()
+		}
+		options.print(run.progressLine(prefix, time.Since(run.startedAt)))
+		return false, nil
+	}
+	run.lastPollError = nil
+	run.reported = findClusterOperator(snapshot.clusters, run.cluster.ClusterId)
+	if clusterOperatorReportsTarget(snapshot.clusters, run.cluster.ClusterId, run.response) {
+		options.print(fmt.Sprintf("%s Operator reports %s", prefix, clusterOperatorUpdateVersions(run.response)))
+		return true, nil
+	}
+	if expired || run.ctx.Err() != nil {
+		return true, timeoutError()
+	}
+	options.print(run.progressLine(prefix, time.Since(run.startedAt)))
+	return false, nil
+}
+
+func (run *clusterOperatorUpdateRun) progressLine(prefix string, elapsed time.Duration) string {
+	elapsedText := elapsed.Round(time.Second).String()
+	var line string
+	switch {
+	case run.executionFinished:
+		reported := "unknown"
+		if run.reported != nil {
+			reported = clusterOperatorVersionPair(run.cluster.ReportedRuntime, nullableStringValue(run.reported.ReportedImageVersion), nullableStringValue(run.reported.ReportedChartVersion))
+			if !run.reported.Connected {
+				reported += " (disconnected)"
+			}
+		}
+		target := clusterOperatorVersionPair(run.cluster.ReportedRuntime, run.response.ImageVersion, nullableStringValue(run.response.ChartVersion))
+		line = fmt.Sprintf("%s - waiting for the Operator heartbeat: reports %s, target %s - %s elapsed", prefix, reported, target, elapsedText)
+	case run.executionStatus == "":
+		line = fmt.Sprintf("%s - execution %s not in the deployment history yet - %s elapsed", prefix, run.response.ExecutionId, elapsedText)
+	default:
+		line = fmt.Sprintf("%s - execution %s %s - %s elapsed", prefix, run.response.ExecutionId, run.executionStatus, elapsedText)
+	}
+	if run.lastPollError != nil {
+		line += fmt.Sprintf(" - last poll error: %s", run.lastPollError)
+	}
+	return line
+}
+
+func clusterOperatorExecutionStatus(history []qovery.ClusterDeploymentHistory, executionID string) (qovery.StateEnum, bool) {
+	for _, entry := range history {
+		if nullableStringValue(entry.Identifier.ExecutionId) == executionID {
+			return entry.Status, true
+		}
+	}
+	return "", false
+}
+
+func findClusterOperator(fleet []qovery.ClusterOperatorFleetInventoryResponse, clusterID string) *qovery.ClusterOperatorFleetInventoryResponse {
+	for index := range fleet {
+		if fleet[index].ClusterId == clusterID {
+			return &fleet[index]
+		}
+	}
+	return nil
+}
+
+func clusterOperatorVersionPair(runtime qovery.ClusterOperatorRuntime, imageVersion string, chartVersion string) string {
+	image := imageVersion
+	if image == "" {
+		image = "unknown"
+	}
+	if runtime != qovery.CLUSTEROPERATORRUNTIME_KUBERNETES {
+		return image
+	}
+	if chartVersion == "" {
+		chartVersion = "unknown"
+	}
+	return image + "/" + chartVersion
+}
+
+func clusterOperatorUpdateParameters(options clusterOperatorUpdateOptions, target clusterOperatorUpdateTarget) []string {
+	imageVersion := target.imageVersion
+	if imageVersion == "" {
+		imageVersion = "q-core target"
+	}
+	chartVersion := target.chartVersion
+	if chartVersion == "" {
+		chartVersion = "desired chart (KUBERNETES only)"
+	}
+	return []string{
+		"-------------------------------------------",
+		"- DryRunDisabled: true",
+		fmt.Sprintf("- ParallelRun: %d", options.parallelRuns),
+		fmt.Sprintf("- RefreshDelay: %d seconds", int(options.refreshDelay.Seconds())),
+		fmt.Sprintf("- Timeout: %s", options.timeout),
+		fmt.Sprintf("- ImageVersion: %s", imageVersion),
+		fmt.Sprintf("- ChartVersion: %s", chartVersion),
+		"-------------------------------------------",
 	}
 }
 
@@ -487,7 +681,7 @@ func clusterOperatorReportsTarget(
 	return false
 }
 
-func printClusterOperatorUpdateSummary(results []clusterOperatorUpdateResult) (bool, error) {
+func printClusterOperatorUpdateSummary(results []clusterOperatorUpdateResult, organizationNames map[string]string) (bool, error) {
 	failed := false
 	rows := make([][]string, 0, len(results))
 	for _, result := range results {
@@ -500,7 +694,7 @@ func printClusterOperatorUpdateSummary(results []clusterOperatorUpdateResult) (b
 			outcome = "failed: " + result.err.Error()
 		}
 		rows = append(rows, []string{
-			result.cluster.OrganizationId,
+			organizationDisplayName(organizationNames, result.cluster.OrganizationId),
 			result.cluster.ClusterId,
 			result.cluster.ClusterName,
 			result.executionID,
@@ -508,7 +702,7 @@ func printClusterOperatorUpdateSummary(results []clusterOperatorUpdateResult) (b
 		})
 	}
 	utils.Println("")
-	return failed, utils.PrintTable([]string{"Organization ID", "Cluster ID", "Cluster", "Execution ID", "Result"}, rows)
+	return failed, utils.PrintTable([]string{"Organization", "Cluster ID", "Cluster", "Execution ID", "Result"}, rows)
 }
 
 func clusterOperatorUpdateVersions(response qovery.ClusterOperatorUpdateResponse) string {
@@ -518,8 +712,15 @@ func clusterOperatorUpdateVersions(response qovery.ClusterOperatorUpdateResponse
 	return "image " + response.ImageVersion
 }
 
-func clusterOperatorLogPrefix(cluster qovery.ClusterOperatorFleetInventoryResponse) string {
-	return fmt.Sprintf("[Organization '%s' - Cluster '%s']", cluster.OrganizationId, cluster.ClusterName)
+func clusterOperatorLogPrefix(cluster qovery.ClusterOperatorFleetInventoryResponse, organizationNames map[string]string) string {
+	return fmt.Sprintf("[Organization '%s' - Cluster '%s']", organizationDisplayName(organizationNames, cluster.OrganizationId), cluster.ClusterName)
+}
+
+func organizationDisplayName(organizationNames map[string]string, organizationID string) string {
+	if name := organizationNames[organizationID]; name != "" {
+		return name
+	}
+	return organizationID
 }
 
 func displayRuntime(runtime qovery.ClusterOperatorRuntime) string {
@@ -665,6 +866,59 @@ func (api *adminClusterOperatorUpdateAPI) fleet(ctx context.Context) ([]qovery.C
 	})
 }
 
+func (api *adminClusterOperatorUpdateAPI) organizationName(ctx context.Context, organizationID string) (string, error) {
+	tokenType, token := api.credentials.current()
+	return organizationNameLookup(tokenType, token)(ctx, organizationID)
+}
+
+func organizationNameLookup(
+	tokenType utils.AccessTokenType,
+	token utils.AccessToken,
+) func(ctx context.Context, organizationID string) (string, error) {
+	client := utils.GetQoveryClient(tokenType, token)
+	return func(ctx context.Context, organizationID string) (string, error) {
+		organization, _, err := client.OrganizationMainCallsAPI.GetOrganization(ctx, organizationID).Execute()
+		if err != nil {
+			return "", err
+		}
+		return organization.Name, nil
+	}
+}
+
+func clusterOrganizationIDs(clusters []qovery.ClusterOperatorFleetInventoryResponse) []string {
+	ids := make([]string, 0, len(clusters))
+	for _, cluster := range clusters {
+		if !slices.Contains(ids, cluster.OrganizationId) {
+			ids = append(ids, cluster.OrganizationId)
+		}
+	}
+	return ids
+}
+
+func lookupOrganizationNames(
+	ctx context.Context,
+	organizationIDs []string,
+	lookup func(ctx context.Context, organizationID string) (string, error),
+	overallTimeout time.Duration,
+	callTimeout time.Duration,
+) map[string]string {
+	names := make(map[string]string, len(organizationIDs))
+	overallContext, cancelOverall := context.WithTimeout(ctx, overallTimeout)
+	defer cancelOverall()
+	for _, organizationID := range organizationIDs {
+		if overallContext.Err() != nil {
+			break
+		}
+		lookupContext, cancel := context.WithTimeout(overallContext, callTimeout)
+		name, err := lookup(lookupContext, organizationID)
+		cancel()
+		if err == nil && name != "" {
+			names[organizationID] = name
+		}
+	}
+	return names
+}
+
 func (api *adminClusterOperatorUpdateAPI) history(
 	ctx context.Context,
 	organizationID string,
@@ -694,6 +948,6 @@ func init() {
 	flags.BoolVarP(&adminClusterOperatorUpdateExecute, "disable-dry-run", "y", false, "Disable dry run mode")
 	flags.BoolVarP(&adminClusterOperatorUpdateNoConfirm, "no-confirm", "c", false, "Do not prompt for confirmation")
 	flags.IntVarP(&adminClusterOperatorUpdateParallelRuns, "parallel-run", "n", 1, "Number of clusters to update in parallel - must be between 1 and 10")
-	flags.IntVarP(&adminClusterOperatorUpdateRefreshDelay, "refresh-delay", "r", 15, "Time in seconds between progress checks - must be between 5 and 120")
+	flags.IntVarP(&adminClusterOperatorUpdateRefreshDelay, "refresh-delay", "r", 30, "Time in seconds between progress checks - must be between 5 and 120")
 	flags.DurationVar(&adminClusterOperatorUpdateTimeout, "timeout", 15*time.Minute, "Maximum time to wait for each cluster update")
 }

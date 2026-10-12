@@ -160,6 +160,18 @@ func TestClusterOperatorUpdateEligibility(t *testing.T) {
 			expectedSkip: "already on requested version",
 		},
 		{
+			name:            "kubernetes requested chart already reported with outdated image",
+			cluster:         operatorCluster(kubernetes, true, outdated, "v1", "0.3.0", "0.2.0"),
+			target:          clusterOperatorUpdateTarget{chartVersion: "0.3.0"},
+			expectedRequest: `{"chart_version":"0.3.0"}`,
+		},
+		{
+			name:         "kubernetes requested chart with image and chart already current",
+			cluster:      operatorCluster(kubernetes, true, current, "v2", "0.3.0", "0.2.0"),
+			target:       clusterOperatorUpdateTarget{chartVersion: "0.3.0"},
+			expectedSkip: "already on requested version",
+		},
+		{
 			name:            "kubernetes requested non-release tag",
 			cluster:         operatorCluster(kubernetes, true, current, "v2", "0.2.0", "0.2.0"),
 			target:          clusterOperatorUpdateTarget{imageVersion: "main-3f2a1c"},
@@ -208,10 +220,13 @@ func TestPlanClusterOperatorUpdatesKeepsSkippedClusters(t *testing.T) {
 	disconnected := fleetEntry("cluster-2", qovery.CLUSTEROPERATORRUNTIME_DOCKER, false, qovery.CLUSTEROPERATORFLEETSTATUS_DISCONNECTED)
 
 	plan := planClusterOperatorUpdates([]qovery.ClusterOperatorFleetInventoryResponse{updatable, disconnected}, clusterOperatorUpdateTarget{})
-	rows := clusterOperatorUpdatePlanRows(plan, "", "")
+	rows := clusterOperatorUpdatePlanRows(plan, "", "", map[string]string{"org-cluster-1": "Acme"})
 
 	if len(eligibleClusterOperatorUpdates(plan)) != 1 {
 		t.Fatalf("expected one eligible update, got %#v", plan)
+	}
+	if rows[0][0] != "Acme" || rows[1][0] != "org-cluster-2" {
+		t.Fatalf("expected organization name with ID fallback, got %q and %q", rows[0][0], rows[1][0])
 	}
 	if rows[0][5] != "v1 -> v2" || rows[0][6] != "-" || rows[0][7] != "update" {
 		t.Fatalf("unexpected update row: %#v", rows[0])
@@ -463,9 +478,25 @@ type fakeClusterOperatorUpdateAPI struct {
 	historyFailures int
 	fleetFailures   int
 	historyBlocks   bool
+	blockedHistory  map[string]bool
+	fleetBlocks     bool
 	historyStatus   qovery.StateEnum
+	deployedAfter   int
+	historyCalls    int
 	reportedImages  map[string]string
 	updated         []string
+	cancelAfter     int
+	cancel          context.CancelFunc
+	calls           int
+}
+
+func (api *fakeClusterOperatorUpdateAPI) countCall() {
+	api.mutex.Lock()
+	defer api.mutex.Unlock()
+	api.calls++
+	if api.cancel != nil && api.calls == api.cancelAfter {
+		api.cancel()
+	}
 }
 
 func (api *fakeClusterOperatorUpdateAPI) update(_ context.Context, clusterID string, _ qovery.ClusterOperatorUpdateRequest) (*qovery.ClusterOperatorUpdateResponse, error) {
@@ -480,7 +511,12 @@ func (api *fakeClusterOperatorUpdateAPI) update(_ context.Context, clusterID str
 	return response, nil
 }
 
-func (api *fakeClusterOperatorUpdateAPI) fleet(context.Context) ([]qovery.ClusterOperatorFleetInventoryResponse, error) {
+func (api *fakeClusterOperatorUpdateAPI) fleet(ctx context.Context) ([]qovery.ClusterOperatorFleetInventoryResponse, error) {
+	api.countCall()
+	if api.fleetBlocks {
+		<-ctx.Done()
+		return nil, ctx.Err()
+	}
 	api.mutex.Lock()
 	defer api.mutex.Unlock()
 	if api.fleetFailures > 0 {
@@ -497,15 +533,23 @@ func (api *fakeClusterOperatorUpdateAPI) fleet(context.Context) ([]qovery.Cluste
 }
 
 func (api *fakeClusterOperatorUpdateAPI) history(ctx context.Context, _ string, clusterID string) ([]qovery.ClusterDeploymentHistory, error) {
-	if api.historyBlocks {
+	api.countCall()
+	if api.historyBlocks || api.blockedHistory[clusterID] {
 		<-ctx.Done()
 		return nil, ctx.Err()
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
 	api.mutex.Lock()
 	defer api.mutex.Unlock()
 	if api.historyFailures > 0 {
 		api.historyFailures--
 		return nil, errors.New("history unavailable")
+	}
+	api.historyCalls++
+	if api.deployedAfter > 0 && api.historyCalls > api.deployedAfter {
+		return []qovery.ClusterDeploymentHistory{historyEntry("exec-"+clusterID, qovery.STATEENUM_DEPLOYED)}, nil
 	}
 	return []qovery.ClusterDeploymentHistory{historyEntry("exec-"+clusterID, api.historyStatus)}, nil
 }
@@ -522,13 +566,20 @@ func dockerUpdates(clusterIDs ...string) []clusterOperatorUpdatePlanItem {
 }
 
 func testUpdateOptions(timeout time.Duration) clusterOperatorUpdateOptions {
-	return clusterOperatorUpdateOptions{parallelRuns: 1, refreshDelay: time.Millisecond, timeout: timeout, print: func(string) {}}
+	return clusterOperatorUpdateOptions{
+		parallelRuns: 1,
+		refreshDelay: time.Millisecond,
+		timeout:      timeout,
+		pollTimeout:  time.Second,
+		expiryGrace:  time.Second,
+		print:        func(string) {},
+	}
 }
 
 func TestRunClusterOperatorUpdatesSucceedsWhenTargetIsReported(t *testing.T) {
 	api := &fakeClusterOperatorUpdateAPI{historyStatus: qovery.STATEENUM_DEPLOYED, reportedImages: map[string]string{"c1": "v3", "c2": "v3"}}
 
-	results := runClusterOperatorUpdates(context.Background(), api, dockerUpdates("c1", "c2"), testUpdateOptions(time.Second))
+	results := runClusterOperatorUpdates(context.Background(), api, dockerUpdates("c1", "c2"), testUpdateOptions(time.Minute))
 
 	for _, result := range results {
 		if !result.started || result.err != nil || result.executionID != "exec-"+result.cluster.ClusterId {
@@ -540,7 +591,7 @@ func TestRunClusterOperatorUpdatesSucceedsWhenTargetIsReported(t *testing.T) {
 func TestRunClusterOperatorUpdatesFailsOnHistoryError(t *testing.T) {
 	api := &fakeClusterOperatorUpdateAPI{historyStatus: qovery.STATEENUM_DEPLOYMENT_ERROR, reportedImages: map[string]string{"c1": "v3"}}
 
-	results := runClusterOperatorUpdates(context.Background(), api, dockerUpdates("c1"), testUpdateOptions(time.Second))
+	results := runClusterOperatorUpdates(context.Background(), api, dockerUpdates("c1"), testUpdateOptions(time.Minute))
 
 	if results[0].err == nil || !strings.Contains(results[0].err.Error(), "DEPLOYMENT_ERROR") {
 		t.Fatalf("expected history failure, got %#v", results[0])
@@ -565,26 +616,68 @@ func TestRunClusterOperatorUpdatesTimeoutForgetsRecoveredPollError(t *testing.T)
 	}{
 		{
 			name:     "history recovered",
-			api:      &fakeClusterOperatorUpdateAPI{historyFailures: 1, historyStatus: qovery.STATEENUM_DEPLOYING},
-			expected: "timed out after 50ms waiting for execution exec-c1",
+			api:      &fakeClusterOperatorUpdateAPI{historyFailures: 1, historyStatus: qovery.STATEENUM_DEPLOYING, cancelAfter: 3},
+			expected: "timed out after 1m0s waiting for execution exec-c1",
 		},
 		{
 			name:     "history cut by the timeout",
-			api:      &fakeClusterOperatorUpdateAPI{historyBlocks: true},
-			expected: "timed out after 50ms waiting for execution exec-c1",
+			api:      &fakeClusterOperatorUpdateAPI{historyBlocks: true, cancelAfter: 1},
+			expected: "timed out after 1m0s waiting for execution exec-c1",
 		},
 		{
 			name:     "fleet recovered",
-			api:      &fakeClusterOperatorUpdateAPI{fleetFailures: 1, historyStatus: qovery.STATEENUM_DEPLOYED, reportedImages: map[string]string{"c1": "v2"}},
-			expected: "timed out after 50ms waiting for the Operator to report the target version",
+			api:      &fakeClusterOperatorUpdateAPI{fleetFailures: 1, historyStatus: qovery.STATEENUM_DEPLOYED, reportedImages: map[string]string{"c1": "v2"}, cancelAfter: 3},
+			expected: "timed out after 1m0s waiting for the Operator to report the target version",
 		},
 	}
 	for _, testCase := range cases {
 		t.Run(testCase.name, func(t *testing.T) {
-			results := runClusterOperatorUpdates(context.Background(), testCase.api, dockerUpdates("c1"), testUpdateOptions(50*time.Millisecond))
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			testCase.api.cancel = cancel
+
+			results := runClusterOperatorUpdates(ctx, testCase.api, dockerUpdates("c1"), testUpdateOptions(time.Minute))
 
 			if results[0].err == nil || results[0].err.Error() != testCase.expected {
 				t.Fatalf("expected %q, got %v", testCase.expected, results[0].err)
+			}
+		})
+	}
+}
+
+func TestPollClusterOperatorUpdateBoundsFinalVerification(t *testing.T) {
+	cases := []struct {
+		name              string
+		api               *fakeClusterOperatorUpdateAPI
+		executionFinished bool
+	}{
+		{name: "history hangs", api: &fakeClusterOperatorUpdateAPI{historyBlocks: true}},
+		{name: "fleet hangs", api: &fakeClusterOperatorUpdateAPI{fleetBlocks: true}, executionFinished: true},
+	}
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			expiredContext, cancel := context.WithCancel(context.Background())
+			cancel()
+			run := &clusterOperatorUpdateRun{
+				cluster:           fleetEntry("c1", qovery.CLUSTEROPERATORRUNTIME_DOCKER, true, qovery.CLUSTEROPERATORFLEETSTATUS_OUTDATED_IMAGE),
+				response:          *qovery.NewClusterOperatorUpdateResponse("exec-c1", "v3"),
+				ctx:               expiredContext,
+				cancel:            cancel,
+				startedAt:         time.Now(),
+				executionFinished: testCase.executionFinished,
+			}
+			options := testUpdateOptions(time.Minute)
+			options.pollTimeout = 3 * time.Second
+			options.expiryGrace = 30 * time.Millisecond
+
+			started := time.Now()
+			done, err := pollClusterOperatorUpdate(context.Background(), testCase.api, run, &clusterOperatorFleetSnapshot{}, options)
+
+			if elapsed := time.Since(started); elapsed > time.Second {
+				t.Fatalf("final verification took %s, expected the grace period", elapsed)
+			}
+			if !done || err == nil || !strings.Contains(err.Error(), "timed out") {
+				t.Fatalf("expected timeout, got done=%t err=%v", done, err)
 			}
 		})
 	}
@@ -608,7 +701,7 @@ func TestRunClusterOperatorUpdatesStopsAfterFirstFailure(t *testing.T) {
 		reportedImages: map[string]string{"c1": "v3", "c2": "v3", "c3": "v3", "c4": "v3"},
 	}
 
-	results := runClusterOperatorUpdates(context.Background(), api, dockerUpdates("c1", "c2", "c3", "c4"), testUpdateOptions(time.Second))
+	results := runClusterOperatorUpdates(context.Background(), api, dockerUpdates("c1", "c2", "c3", "c4"), testUpdateOptions(time.Minute))
 
 	if results[0].err != nil || !results[0].started {
 		t.Fatalf("first cluster should succeed: %#v", results[0])
@@ -655,5 +748,290 @@ func TestOperatorCommandsRejectArguments(t *testing.T) {
 		if err := command.ValidateArgs(nil); err != nil {
 			t.Fatalf("%s must accept no arguments: %v", command.CommandPath(), err)
 		}
+	}
+}
+
+func TestClusterOperatorLogPrefix(t *testing.T) {
+	cluster := fleetEntry("c1", qovery.CLUSTEROPERATORRUNTIME_DOCKER, true, qovery.CLUSTEROPERATORFLEETSTATUS_CURRENT)
+	cases := []struct {
+		name     string
+		names    map[string]string
+		expected string
+	}{
+		{name: "known organization", names: map[string]string{"org-c1": "Acme"}, expected: "[Organization 'Acme' - Cluster 'name-c1']"},
+		{name: "unknown organization", names: map[string]string{"org-other": "Other"}, expected: "[Organization 'org-c1' - Cluster 'name-c1']"},
+		{name: "empty name", names: map[string]string{"org-c1": ""}, expected: "[Organization 'org-c1' - Cluster 'name-c1']"},
+		{name: "names unavailable", names: nil, expected: "[Organization 'org-c1' - Cluster 'name-c1']"},
+	}
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if got := clusterOperatorLogPrefix(cluster, testCase.names); got != testCase.expected {
+				t.Fatalf("expected %q, got %q", testCase.expected, got)
+			}
+		})
+	}
+}
+
+func TestClusterOperatorUpdateProgressLine(t *testing.T) {
+	kubernetes := fleetEntry("c1", qovery.CLUSTEROPERATORRUNTIME_KUBERNETES, true, qovery.CLUSTEROPERATORFLEETSTATUS_OUTDATED_IMAGE)
+	docker := fleetEntry("c2", qovery.CLUSTEROPERATORRUNTIME_DOCKER, true, qovery.CLUSTEROPERATORFLEETSTATUS_OUTDATED_IMAGE)
+	kubernetesResponse := qovery.NewClusterOperatorUpdateResponse("exec-1", "v2")
+	kubernetesResponse.SetChartVersion("0.2.0")
+	dockerResponse := qovery.NewClusterOperatorUpdateResponse("exec-2", "v2")
+	reportedKubernetes := operatorCluster(qovery.CLUSTEROPERATORRUNTIME_KUBERNETES, true, qovery.CLUSTEROPERATORFLEETSTATUS_OUTDATED_IMAGE, "v1", "0.2.0", "0.2.0")
+	reportedDocker := operatorCluster(qovery.CLUSTEROPERATORRUNTIME_DOCKER, false, qovery.CLUSTEROPERATORFLEETSTATUS_DISCONNECTED, "v1", "", "")
+
+	cases := []struct {
+		name     string
+		run      clusterOperatorUpdateRun
+		expected string
+	}{
+		{
+			name:     "not recorded yet",
+			run:      clusterOperatorUpdateRun{cluster: kubernetes, response: *kubernetesResponse},
+			expected: "[P] - execution exec-1 not in the deployment history yet - 1m30s elapsed",
+		},
+		{
+			name:     "queued",
+			run:      clusterOperatorUpdateRun{cluster: kubernetes, response: *kubernetesResponse, executionStatus: qovery.STATEENUM_DEPLOYMENT_QUEUED},
+			expected: "[P] - execution exec-1 DEPLOYMENT_QUEUED - 1m30s elapsed",
+		},
+		{
+			name:     "deploying with poll error",
+			run:      clusterOperatorUpdateRun{cluster: kubernetes, response: *kubernetesResponse, executionStatus: qovery.STATEENUM_DEPLOYING, lastPollError: errors.New("503")},
+			expected: "[P] - execution exec-1 DEPLOYING - 1m30s elapsed - last poll error: 503",
+		},
+		{
+			name:     "kubernetes heartbeat",
+			run:      clusterOperatorUpdateRun{cluster: kubernetes, response: *kubernetesResponse, executionFinished: true, reported: &reportedKubernetes},
+			expected: "[P] - waiting for the Operator heartbeat: reports v1/0.2.0, target v2/0.2.0 - 1m30s elapsed",
+		},
+		{
+			name:     "heartbeat before first fleet poll",
+			run:      clusterOperatorUpdateRun{cluster: kubernetes, response: *kubernetesResponse, executionFinished: true},
+			expected: "[P] - waiting for the Operator heartbeat: reports unknown, target v2/0.2.0 - 1m30s elapsed",
+		},
+		{
+			name:     "docker heartbeat disconnected",
+			run:      clusterOperatorUpdateRun{cluster: docker, response: *dockerResponse, executionFinished: true, reported: &reportedDocker},
+			expected: "[P] - waiting for the Operator heartbeat: reports v1 (disconnected), target v2 - 1m30s elapsed",
+		},
+	}
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if got := testCase.run.progressLine("[P]", 90*time.Second+400*time.Millisecond); got != testCase.expected {
+				t.Fatalf("expected %q, got %q", testCase.expected, got)
+			}
+		})
+	}
+}
+
+func TestClusterOperatorUpdateParameters(t *testing.T) {
+	options := clusterOperatorUpdateOptions{parallelRuns: 2, refreshDelay: 30 * time.Second, timeout: 15 * time.Minute}
+
+	defaults := strings.Join(clusterOperatorUpdateParameters(options, clusterOperatorUpdateTarget{}), "\n")
+	explicit := strings.Join(clusterOperatorUpdateParameters(options, clusterOperatorUpdateTarget{imageVersion: "v1.3.0", chartVersion: "0.3.0"}), "\n")
+
+	for _, expected := range []string{"- DryRunDisabled: true", "- ParallelRun: 2", "- RefreshDelay: 30 seconds", "- Timeout: 15m0s", "- ImageVersion: q-core target", "- ChartVersion: desired chart (KUBERNETES only)"} {
+		if !strings.Contains(defaults, expected) {
+			t.Fatalf("missing %q in %s", expected, defaults)
+		}
+	}
+	if !strings.Contains(explicit, "- ImageVersion: v1.3.0") || !strings.Contains(explicit, "- ChartVersion: 0.3.0") {
+		t.Fatalf("unexpected parameters %s", explicit)
+	}
+}
+
+func TestLookupOrganizationNames(t *testing.T) {
+	fleet := []qovery.ClusterOperatorFleetInventoryResponse{
+		fleetEntry("c1", qovery.CLUSTEROPERATORRUNTIME_DOCKER, true, qovery.CLUSTEROPERATORFLEETSTATUS_CURRENT),
+		fleetEntry("c2", qovery.CLUSTEROPERATORRUNTIME_DOCKER, true, qovery.CLUSTEROPERATORFLEETSTATUS_CURRENT),
+		fleetEntry("c3", qovery.CLUSTEROPERATORRUNTIME_DOCKER, true, qovery.CLUSTEROPERATORFLEETSTATUS_CURRENT),
+	}
+	fleet[1].OrganizationId = "org-c1"
+	var lookedUp []string
+	names := lookupOrganizationNames(context.Background(), clusterOrganizationIDs(fleet), func(ctx context.Context, organizationID string) (string, error) {
+		if _, hasDeadline := ctx.Deadline(); !hasDeadline {
+			t.Error("organization lookup must be bounded")
+		}
+		lookedUp = append(lookedUp, organizationID)
+		if organizationID == "org-c3" {
+			return "", errors.New("403 Forbidden")
+		}
+		return "Acme", nil
+	}, time.Second, time.Second)
+
+	if strings.Join(lookedUp, ",") != "org-c1,org-c3" {
+		t.Fatalf("expected one lookup per distinct organization, got %v", lookedUp)
+	}
+	if len(names) != 1 || names["org-c1"] != "Acme" {
+		t.Fatalf("unexpected names %v", names)
+	}
+}
+
+func TestLookupOrganizationNamesStopsAtOverallDeadline(t *testing.T) {
+	organizationIDs := make([]string, 0, 20)
+	for index := 0; index < 20; index++ {
+		organizationIDs = append(organizationIDs, fmt.Sprintf("org-%d", index))
+	}
+	started := time.Now()
+	names := lookupOrganizationNames(context.Background(), organizationIDs, func(ctx context.Context, _ string) (string, error) {
+		<-ctx.Done()
+		return "", ctx.Err()
+	}, 50*time.Millisecond, 30*time.Millisecond)
+
+	if elapsed := time.Since(started); elapsed > 500*time.Millisecond {
+		t.Fatalf("lookup took %s, expected to stop at the overall deadline", elapsed)
+	}
+	if len(names) != 0 {
+		t.Fatalf("expected no names, got %v", names)
+	}
+	cluster := fleetEntry("c1", qovery.CLUSTEROPERATORRUNTIME_DOCKER, true, qovery.CLUSTEROPERATORFLEETSTATUS_CURRENT)
+	if got := clusterOperatorLogPrefix(cluster, names); got != "[Organization 'org-c1' - Cluster 'name-c1']" {
+		t.Fatalf("expected ID fallback, got %q", got)
+	}
+}
+
+func TestAdminOrganizationNameUsesPublicRouteWithoutReauthentication(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.Header.Get("Authorization") != "Bearer token" {
+			t.Errorf("missing authorization header")
+		}
+		switch request.URL.Path {
+		case "/organization/org-1":
+			writer.Header().Set("Content-Type", "application/json")
+			_, _ = fmt.Fprint(writer, `{"id":"org-1","created_at":"2026-01-01T00:00:00Z","name":"Acme","plan":"ENTERPRISE"}`)
+		default:
+			writer.WriteHeader(http.StatusUnauthorized)
+		}
+	}))
+	defer server.Close()
+	t.Setenv("QOVERY_API_URL", server.URL)
+	reauthentications := 0
+	api := &adminClusterOperatorUpdateAPI{credentials: &adminCredentials{
+		tokenType:               "Bearer",
+		token:                   "token",
+		browserReauthentication: true,
+		reload: func() (utils.AccessTokenType, utils.AccessToken, error) {
+			return "Bearer", "token", nil
+		},
+		reauthenticate: func() (utils.AccessTokenType, utils.AccessToken, error) {
+			reauthentications++
+			return "Bearer", "fresh", nil
+		},
+	}}
+
+	name, err := api.organizationName(context.Background(), "org-1")
+	if err != nil || name != "Acme" {
+		t.Fatalf("unexpected name %q (err %v)", name, err)
+	}
+	if _, err := api.organizationName(context.Background(), "org-2"); err == nil {
+		t.Fatal("expected an error on 401")
+	}
+	if reauthentications != 0 {
+		t.Fatalf("organization lookups must not re-authenticate, got %d", reauthentications)
+	}
+}
+
+func TestRunClusterOperatorUpdatesEvaluatesExpiredClusterBeforeTimingOut(t *testing.T) {
+	api := &fakeClusterOperatorUpdateAPI{
+		blockedHistory: map[string]bool{"c1": true},
+		historyStatus:  qovery.STATEENUM_DEPLOYED,
+		reportedImages: map[string]string{"c2": "v3"},
+	}
+	options := testUpdateOptions(100 * time.Millisecond)
+	options.parallelRuns = 2
+
+	results := runClusterOperatorUpdates(context.Background(), api, dockerUpdates("c1", "c2"), options)
+
+	if results[0].err == nil || !strings.Contains(results[0].err.Error(), "timed out") {
+		t.Fatalf("expected c1 to time out, got %v", results[0].err)
+	}
+	if results[1].err != nil {
+		t.Fatalf("c2 reached its target and must succeed, got %v", results[1].err)
+	}
+}
+
+func TestRunClusterOperatorUpdatesBoundsEachHistoryCall(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	api := &fakeClusterOperatorUpdateAPI{blockedHistory: map[string]bool{"c1": true}, cancelAfter: 3, cancel: cancel}
+	options := testUpdateOptions(time.Minute)
+	options.pollTimeout = 20 * time.Millisecond
+	recorder := &lineRecorder{}
+	options.print = recorder.print
+
+	runClusterOperatorUpdates(ctx, api, dockerUpdates("c1"), options)
+
+	pollErrors := 0
+	for _, line := range recorder.lines {
+		if strings.HasSuffix(line, "elapsed - last poll error: context deadline exceeded") {
+			pollErrors++
+		}
+	}
+	if pollErrors != 2 {
+		t.Fatalf("expected two bounded history calls before cancellation, got:\n%s", strings.Join(recorder.lines, "\n"))
+	}
+}
+
+type lineRecorder struct {
+	mutex sync.Mutex
+	lines []string
+}
+
+func (recorder *lineRecorder) print(line string) {
+	recorder.mutex.Lock()
+	defer recorder.mutex.Unlock()
+	recorder.lines = append(recorder.lines, line)
+}
+
+func TestRunClusterOperatorUpdatesReportsProgress(t *testing.T) {
+	api := &fakeClusterOperatorUpdateAPI{historyStatus: qovery.STATEENUM_DEPLOYED, reportedImages: map[string]string{"c1": "v3"}}
+	recorder := &lineRecorder{}
+	options := testUpdateOptions(time.Minute)
+	options.organizationNames = map[string]string{"org-c1": "Acme"}
+	options.print = recorder.print
+
+	results := runClusterOperatorUpdates(context.Background(), api, dockerUpdates("c1"), options)
+
+	if results[0].err != nil {
+		t.Fatal(results[0].err)
+	}
+	expected := []string{
+		"[Organization 'Acme' - Cluster 'name-c1'] - Starting Operator update unknown -> v3 - execution exec-c1 - https://console.qovery.com/organization/org-c1/cluster/c1/cluster-logs",
+		"Checking Operator updates in 0 seconds",
+		"[Organization 'Acme' - Cluster 'name-c1'] execution exec-c1 finished, waiting for the Operator to report the target version",
+		"[Organization 'Acme' - Cluster 'name-c1'] Operator reports image v3",
+	}
+	if strings.Join(recorder.lines, "\n") != strings.Join(expected, "\n") {
+		t.Fatalf("unexpected output:\n%s", strings.Join(recorder.lines, "\n"))
+	}
+}
+
+func TestRunClusterOperatorUpdatesReportsExecutionState(t *testing.T) {
+	api := &fakeClusterOperatorUpdateAPI{historyStatus: qovery.STATEENUM_DEPLOYING, deployedAfter: 2, reportedImages: map[string]string{"c1": "v3"}}
+	recorder := &lineRecorder{}
+	options := testUpdateOptions(time.Minute)
+	options.print = recorder.print
+
+	results := runClusterOperatorUpdates(context.Background(), api, dockerUpdates("c1"), options)
+
+	if results[0].err != nil {
+		t.Fatal(results[0].err)
+	}
+	progress := 0
+	for _, line := range recorder.lines {
+		if strings.HasPrefix(line, "[Organization 'org-c1' - Cluster 'name-c1'] - execution exec-c1 DEPLOYING - ") {
+			progress++
+		}
+	}
+	if progress != 2 {
+		t.Fatalf("expected DEPLOYING progress lines, got:\n%s", strings.Join(recorder.lines, "\n"))
+	}
+}
+
+func TestClusterOperatorUpdateRefreshDelayDefault(t *testing.T) {
+	if got := adminClusterOperatorUpdateCmd.Flags().Lookup("refresh-delay").DefValue; got != "30" {
+		t.Fatalf("expected default refresh delay 30, got %s", got)
 	}
 }

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	qovery "github.com/qovery/qovery-client-go"
+	"github.com/spf13/cobra"
 )
 
 func TestGetClusterOperatorFleetUsesAdminRoute(t *testing.T) {
@@ -63,10 +64,35 @@ func TestClusterOperatorFleetRows(t *testing.T) {
 		qovery.CLUSTEROPERATORFLEETSTATUS_DISCONNECTED,
 	)
 
-	rows := clusterOperatorFleetRows([]qovery.ClusterOperatorFleetInventoryResponse{*current, *disconnected})
+	powens := qovery.NewClusterOperatorFleetInventoryResponse(
+		"org-2",
+		"cluster-3",
+		"powens",
+		qovery.SELFMANAGEDCLUSTERKIND_EKS_ANYWHERE,
+		true,
+		true,
+		qovery.CLUSTEROPERATORRUNTIME_DOCKER,
+		qovery.CLUSTEROPERATORFLEETSTATUS_CURRENT,
+	)
+	powens.SetLastHeartbeat(heartbeat)
+	powens.SetReportedImageVersion("v1.203.0")
+	powens.SetDesiredImageVersion("v1.203.0")
+	powens.SetDesiredChartVersion("0.2.3")
 
-	if len(rows) != 2 {
-		t.Fatalf("expected 2 rows, got %d", len(rows))
+	rows := clusterOperatorFleetRows(
+		[]qovery.ClusterOperatorFleetInventoryResponse{*powens, *current, *disconnected},
+		map[string]string{"org-1": "Acme"},
+	)
+
+	if len(rows) != 3 {
+		t.Fatalf("expected 3 rows, got %d", len(rows))
+	}
+	if rows[0][0] != "Acme" || rows[1][0] != "Acme" {
+		t.Fatalf("expected organization name, got %q and %q", rows[0][0], rows[1][0])
+	}
+	expectedDocker := []string{"org-2", "cluster-3", "powens", "EKS_ANYWHERE", "DOCKER", "true", "true", "2026-08-18T12:28:46Z", "CURRENT", "v1.203.0", "v1.203.0", "-", "-"}
+	if !slices.Equal(rows[2], expectedDocker) {
+		t.Fatalf("unexpected DOCKER row with organization ID fallback:\n got %#v\nwant %#v", rows[2], expectedDocker)
 	}
 	if rows[0][2] != "another-cluster" || rows[0][4] != "DOCKER" || rows[0][7] != "never" || rows[0][8] != "DISCONNECTED" {
 		t.Fatalf("unexpected disconnected row: %#v", rows[0])
@@ -210,5 +236,41 @@ func TestSelectClusterOperatorsRejectsUnknownFilter(t *testing.T) {
 	_, err := selectClusterOperators(nil, map[string]string{"CurrentStatus": "DEPLOYED"}, false)
 	if err == nil || !strings.Contains(err.Error(), "CurrentStatus") {
 		t.Fatalf("expected unknown filter error, got %v", err)
+	}
+}
+
+func TestClusterOperatorFilterHelpListsEveryAllowedValue(t *testing.T) {
+	help := clusterOperatorFilterHelp()
+	lines := strings.Split(help, "\n")
+	valuesOf := func(key string) []string {
+		for _, line := range lines {
+			fields := strings.Fields(line)
+			if len(fields) > 1 && fields[0] == key {
+				return strings.Split(strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), key)), ", ")
+			}
+		}
+		return nil
+	}
+
+	if got, want := valuesOf("ClusterKind"), enumStrings(qovery.AllowedSelfManagedClusterKindEnumValues); !slices.Equal(got, want) {
+		t.Errorf("ClusterKind help lists %v, want %v", got, want)
+	}
+	if got, want := valuesOf("Runtime"), enumStrings(qovery.AllowedClusterOperatorRuntimeEnumValues); !slices.Equal(got, want) {
+		t.Errorf("Runtime help lists %v, want %v", got, want)
+	}
+	for _, key := range clusterOperatorFilterKeys {
+		if valuesOf(key) == nil {
+			t.Errorf("filter key %s is not documented", key)
+		}
+	}
+	for _, status := range qovery.AllowedClusterOperatorFleetStatusEnumValues {
+		if len(valuesOf(string(status))) == 0 || clusterOperatorFleetStatusDescriptions[status] == "" {
+			t.Errorf("fleet status %s is not documented", status)
+		}
+	}
+	for _, command := range []*cobra.Command{adminClusterOperatorListCmd, adminClusterOperatorUpdateCmd} {
+		if !strings.Contains(command.Long, help) {
+			t.Errorf("%s help does not include the filter help", command.CommandPath())
+		}
 	}
 }

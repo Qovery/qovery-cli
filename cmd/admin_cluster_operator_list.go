@@ -38,15 +38,14 @@ var clusterOperatorFilterKeys = []string{
 var adminClusterOperatorListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List the Qovery Operator fleet",
-	Long: `List the clusters attached to the Qovery Operator execution path.
-
-Filters (-f, --filters) accept comma separated values interpreted as a logical OR, on:
-OrganizationId, ClusterId, ClusterName, ClusterKind, Runtime, Status, Connected.
-
+	Long: "List the clusters attached to the Qovery Operator execution path.\n\n" +
+		clusterOperatorFilterHelp() + `
 Examples:
 qovery admin cluster operator list --outdated
 qovery admin cluster operator list -f Runtime=KUBERNETES -f Status=OUTDATED_IMAGE,OUTDATED_CHART
-qovery admin cluster operator list -f Connected=false --json`,
+qovery admin cluster operator list -f Connected=false --json
+qovery admin cluster operator list -f ClusterKind=EKS_ANYWHERE
+qovery admin cluster operator list -f Runtime=DOCKER,KUBERNETES -f Connected=true`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
@@ -85,9 +84,16 @@ qovery admin cluster operator list -f Connected=false --json`,
 			return
 		}
 
+		organizationNames := lookupOrganizationNames(
+			context.Background(),
+			clusterOrganizationIDs(clusters),
+			organizationNameLookup(tokenType, token),
+			15*time.Second,
+			10*time.Second,
+		)
 		if err := utils.PrintTable(
 			[]string{
-				"Organization ID",
+				"Organization",
 				"Cluster ID",
 				"Cluster",
 				"Kind",
@@ -101,7 +107,7 @@ qovery admin cluster operator list -f Connected=false --json`,
 				"Chart",
 				"Target chart",
 			},
-			clusterOperatorFleetRows(clusters),
+			clusterOperatorFleetRows(clusters, organizationNames),
 		); err != nil {
 			utils.PrintlnErrorToStderr(err)
 			os.Exit(1)
@@ -117,6 +123,44 @@ func attachedClusterOperators(clusters []qovery.ClusterOperatorFleetInventoryRes
 		}
 	}
 	return attached
+}
+
+var clusterOperatorFleetStatusDescriptions = map[qovery.ClusterOperatorFleetStatus]string{
+	qovery.CLUSTEROPERATORFLEETSTATUS_NOT_ATTACHED:             "cluster not attached to the Operator path (never selected: only attached clusters are)",
+	qovery.CLUSTEROPERATORFLEETSTATUS_DISCONNECTED:             "no Operator heartbeat in the last 2 minutes",
+	qovery.CLUSTEROPERATORFLEETSTATUS_TARGET_UNKNOWN:           "q-core has no target image or chart version",
+	qovery.CLUSTEROPERATORFLEETSTATUS_REPORTED_VERSION_UNKNOWN: "the Operator did not report its image or chart version",
+	qovery.CLUSTEROPERATORFLEETSTATUS_CURRENT:                  "reported image and chart match the target",
+	qovery.CLUSTEROPERATORFLEETSTATUS_OUTDATED_IMAGE:           "reported image differs from the target",
+	qovery.CLUSTEROPERATORFLEETSTATUS_OUTDATED_CHART:           "reported chart differs from the target",
+	qovery.CLUSTEROPERATORFLEETSTATUS_OUTDATED_IMAGE_AND_CHART: "reported image and chart both differ from the target",
+}
+
+func clusterOperatorFilterHelp() string {
+	var help strings.Builder
+	help.WriteString(`Filters (-f, --filters Key=Values):
+  Comma separated values are a logical OR; different keys are a logical AND.
+  Values are matched exactly and are case-sensitive, except Connected. A key repeated in several -f keeps only
+  the last one: put all values of a key in one -f, separated by commas.
+
+`)
+	keys := [][2]string{
+		{"OrganizationId", "organization UUID"},
+		{"ClusterId", "cluster UUID"},
+		{"ClusterName", "exact cluster name"},
+		{"ClusterKind", strings.Join(enumStrings(qovery.AllowedSelfManagedClusterKindEnumValues), ", ")},
+		{"Runtime", strings.Join(enumStrings(qovery.AllowedClusterOperatorRuntimeEnumValues), ", ")},
+		{"Status", "a fleet status below"},
+		{"Connected", "true or false"},
+	}
+	for _, key := range keys {
+		fmt.Fprintf(&help, "  %-15s %s\n", key[0], key[1])
+	}
+	help.WriteString("\nFleet statuses:\n")
+	for _, status := range qovery.AllowedClusterOperatorFleetStatusEnumValues {
+		fmt.Fprintf(&help, "  %-25s %s\n", status, clusterOperatorFleetStatusDescriptions[status])
+	}
+	return help.String()
 }
 
 func selectClusterOperators(
@@ -276,7 +320,10 @@ func sortClusterOperators(clusters []qovery.ClusterOperatorFleetInventoryRespons
 	})
 }
 
-func clusterOperatorFleetRows(clusters []qovery.ClusterOperatorFleetInventoryResponse) [][]string {
+func clusterOperatorFleetRows(
+	clusters []qovery.ClusterOperatorFleetInventoryResponse,
+	organizationNames map[string]string,
+) [][]string {
 	sortClusterOperators(clusters)
 
 	rows := make([][]string, 0, len(clusters))
@@ -285,8 +332,14 @@ func clusterOperatorFleetRows(clusters []qovery.ClusterOperatorFleetInventoryRes
 		if heartbeat := cluster.LastHeartbeat.Get(); heartbeat != nil {
 			lastHeartbeat = heartbeat.Format(time.RFC3339)
 		}
+		reportedChart := displayVersion(cluster.ReportedChartVersion)
+		desiredChart := displayVersion(cluster.DesiredChartVersion)
+		if cluster.ReportedRuntime == qovery.CLUSTEROPERATORRUNTIME_DOCKER {
+			reportedChart = "-"
+			desiredChart = "-"
+		}
 		rows = append(rows, []string{
-			cluster.OrganizationId,
+			organizationDisplayName(organizationNames, cluster.OrganizationId),
 			cluster.ClusterId,
 			cluster.ClusterName,
 			string(cluster.ClusterKind),
@@ -297,8 +350,8 @@ func clusterOperatorFleetRows(clusters []qovery.ClusterOperatorFleetInventoryRes
 			string(cluster.Status),
 			displayVersion(cluster.ReportedImageVersion),
 			displayVersion(cluster.DesiredImageVersion),
-			displayVersion(cluster.ReportedChartVersion),
-			displayVersion(cluster.DesiredChartVersion),
+			reportedChart,
+			desiredChart,
 		})
 	}
 	return rows
