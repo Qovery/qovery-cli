@@ -53,6 +53,7 @@ var clusterOperatorStatusCmd = &cobra.Command{
 		data := [][]string{{
 			string(status.Status),
 			connected,
+			string(status.ReportedRuntime),
 			lastHeartbeat,
 			displayVersion(status.OperatorVersion),
 			displayVersion(status.DesiredImageVersion),
@@ -60,7 +61,7 @@ var clusterOperatorStatusCmd = &cobra.Command{
 			displayVersion(status.DesiredChartVersion),
 		}}
 		if err := utils.PrintTable(
-			[]string{"Status", "Connected", "Last heartbeat", "Image", "Target image", "Chart", "Target chart"},
+			[]string{"Status", "Connected", "Runtime", "Last heartbeat", "Image", "Target image", "Chart", "Target chart"},
 			data,
 		); err != nil {
 			utils.PrintlnError(err)
