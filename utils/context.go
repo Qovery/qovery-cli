@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -16,6 +18,10 @@ import (
 
 const ContextFileName = "context"
 const ContextFilePermissions = 0600
+
+// ErrSignInRequired is returned when the stored credentials are missing, invalid or expired and cannot be refreshed:
+// the user has to sign in again
+var ErrSignInRequired = errors.New("sign in using 'qovery auth' or 'qovery auth --headless' command")
 
 type QoveryContext struct {
 	AccessToken           AccessToken  `json:"access_token"`
@@ -307,6 +313,15 @@ func checkOrgaValid(orgaList *qovery.OrganizationResponseList) error {
 	}
 }
 
+// AccessTokenFromEnv returns the access token set in QOVERY_CLI_ACCESS_TOKEN or Q_CLI_ACCESS_TOKEN,
+// or an empty string when the CLI relies on the stored context
+func AccessTokenFromEnv() string {
+	if token := os.Getenv("QOVERY_CLI_ACCESS_TOKEN"); token != "" {
+		return token
+	}
+	return os.Getenv("Q_CLI_ACCESS_TOKEN")
+}
+
 // GetAccessToken returns a valid access token, refreshing it if expired.
 // skipOrgaCheck should be false for every caller except the one legitimate
 // bootstrap case where an empty org list is expected: creating the user's
@@ -315,10 +330,7 @@ func checkOrgaValid(orgaList *qovery.OrganizationResponseList) error {
 // true anywhere else would let organization-scoped commands run with no
 // organization to scope to.
 func GetAccessToken(skipOrgaCheck bool) (AccessTokenType, AccessToken, error) {
-	apiToken := os.Getenv("QOVERY_CLI_ACCESS_TOKEN")
-	if apiToken == "" {
-		apiToken = os.Getenv("Q_CLI_ACCESS_TOKEN")
-	}
+	apiToken := AccessTokenFromEnv()
 	if apiToken != "" {
 		_, err := base64.StdEncoding.DecodeString(strings.Split(apiToken, ".")[0])
 		if err == nil {
@@ -335,7 +347,7 @@ func GetAccessToken(skipOrgaCheck bool) (AccessTokenType, AccessToken, error) {
 
 	token := context.AccessToken
 	if token == "" {
-		return "", "", errors.New("access token has not been found. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
+		return "", "", fmt.Errorf("access token has not been found. Please, %w. ", ErrSignInRequired)
 	}
 
 	// check the token is valid by trying to list the organizations
@@ -354,7 +366,8 @@ func GetAccessToken(skipOrgaCheck bool) (AccessTokenType, AccessToken, error) {
 		return "", "", err
 	}
 
-	if orgaList, _, err := GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute(); err == nil {
+	orgaList, response, err := GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute()
+	if err == nil {
 		// everything is fine, return the token
 		if !skipOrgaCheck {
 			if err = checkOrgaValid(orgaList); err != nil {
@@ -365,7 +378,12 @@ func GetAccessToken(skipOrgaCheck bool) (AccessTokenType, AccessToken, error) {
 		return "Bearer", token, nil
 	}
 
-	return "", "", errors.New("access token is invalid or expired. Sign in using 'qovery auth' or 'qovery auth --headless' command. ")
+	// Only a 401 on the refreshed token means the credentials are unusable. Anything else (network error, API outage)
+	// is transient and signing in again would not fix it
+	if response != nil && response.StatusCode == http.StatusUnauthorized {
+		return "", "", fmt.Errorf("access token is invalid or expired. Please, %w. ", ErrSignInRequired)
+	}
+	return "", "", fmt.Errorf("could not validate the access token: %w", err)
 }
 
 func SetAccessToken(token AccessToken, expiration time.Time, refreshToken RefreshToken) error {
