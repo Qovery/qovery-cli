@@ -1,14 +1,6 @@
-FROM public.ecr.aws/r3m4q3r9/pub-mirror-go:1.25.1 AS builder
+FROM public.ecr.aws/r3m4q3r9/pub-mirror-go:1.27.1 AS builder
 
 ARG APP_VERSION=unknown
-
-# The ECR mirror only carries Go 1.25.x while go.mod pins a newer toolchain.
-# Official Go images set GOTOOLCHAIN=local, which makes `go` refuse a go.mod
-# that requires a newer version instead of fetching it. "auto" lets the base
-# toolchain download the one go.mod asks for (cached under /go/pkg/mod, same
-# mount as the modules), so the image keeps building across go.mod bumps.
-# Drop this once pub-mirror-go has a tag matching go.mod.
-ENV GOTOOLCHAIN=auto
 
 # Set the working directory within the container
 WORKDIR /app
