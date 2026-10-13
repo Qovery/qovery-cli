@@ -1,4 +1,4 @@
-FROM public.ecr.aws/r3m4q3r9/pub-mirror-go:1.25.1 as builder
+FROM public.ecr.aws/r3m4q3r9/pub-mirror-go:1.27.1 AS builder
 
 ARG APP_VERSION=unknown
 
@@ -17,7 +17,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     for attempt in 1 2 3 4 5; do \
         if go mod download >/tmp/godl.log 2>&1; then exit 0; fi; \
         cat /tmp/godl.log; \
-        if grep -qE 'SECURITY ERROR|checksum mismatch|missing go.sum entry|errors parsing go.mod|invalid version|unknown revision|malformed module path|module lookup disabled' /tmp/godl.log; then \
+        if grep -qE 'SECURITY ERROR|requires go >=|checksum mismatch|missing go.sum entry|errors parsing go.mod|invalid version|unknown revision|malformed module path|module lookup disabled' /tmp/godl.log; then \
             echo "go mod download failed with a non-transient error; not retrying"; \
             exit 1; \
         fi; \
@@ -35,7 +35,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     go build -o qovery -ldflags "-X github.com/qovery/qovery-cli/utils.Version=$APP_VERSION"
 
-FROM public.ecr.aws/r3m4q3r9/pub-mirror-debian:bookworm-slim as runner
+FROM public.ecr.aws/r3m4q3r9/pub-mirror-debian:bookworm-slim AS runner
 
 RUN apt-get update && \
     apt-get -y upgrade && \
