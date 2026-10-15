@@ -44,15 +44,15 @@ func TestPickMajorListsTheAvailableMajorsWhenMissing(t *testing.T) {
 func TestPickMajorSaysWhenAlreadyOnTheLatestMajor(t *testing.T) {
 	_, err := pickMajor(nil, "18")
 
-	if err == nil || err.Error() != "major 18 is not available: the database is already on the latest major" {
+	if err == nil || err.Error() != "major 18 is not available: the blueprint is already on the latest major" {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
 func TestConfirmationTextPerMode(t *testing.T) {
 	cases := map[qovery.BlueprintMajorSwitchMode]string{
-		qovery.BLUEPRINTMAJORSWITCHMODE_RELABEL: "The database already runs 18: only Qovery's records change, the database is not touched.",
-		qovery.BLUEPRINTMAJORSWITCHMODE_UPGRADE: "This upgrades the database from 14 to 18 in place, with downtime. Review the preview in the Console first if needed.",
+		qovery.BLUEPRINTMAJORSWITCHMODE_RELABEL: "The service already runs 18: only Qovery's records change, the service is not touched.",
+		qovery.BLUEPRINTMAJORSWITCHMODE_UPGRADE: "This upgrades the service from 14 to 18 in place on the next deploy (downtime for databases). Review the preview in the Console first if needed.",
 	}
 	for mode, expected := range cases {
 		if got := confirmationText(mode, "14", "18"); got != expected {
@@ -92,5 +92,37 @@ func TestUpgradeApiErrorKeepsPlainErrors(t *testing.T) {
 	}
 	if apiError(nil) != nil {
 		t.Fatal("nil must stay nil")
+	}
+}
+
+func TestPickBlueprintServiceFindsTerraformAndHelmBlueprints(t *testing.T) {
+	services := []blueprintService{
+		{serviceId: "tf-1", name: "orders-db", blueprintId: "bp-1", iconUri: "app://qovery-console/postgresql"},
+		{serviceId: "helm-1", name: "cache", blueprintId: "bp-2", iconUri: "app://qovery-console/redis"},
+	}
+
+	for _, name := range []string{"orders-db", "cache"} {
+		service, err := pickBlueprintService(services, name)
+		if err != nil || service.name != name {
+			t.Fatalf("%s: got %+v, %v", name, service, err)
+		}
+	}
+}
+
+func TestPickBlueprintServiceRejectsAServiceWithoutBlueprint(t *testing.T) {
+	services := []blueprintService{{serviceId: "tf-1", name: "plain-terraform"}}
+
+	_, err := pickBlueprintService(services, "plain-terraform")
+
+	if err == nil || err.Error() != "plain-terraform is not a blueprint service" {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestPickBlueprintServiceReportsAnUnknownName(t *testing.T) {
+	_, err := pickBlueprintService(nil, "missing")
+
+	if err == nil || err.Error() != "no blueprint service named missing in this environment" {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
