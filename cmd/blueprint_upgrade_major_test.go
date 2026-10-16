@@ -126,3 +126,29 @@ func TestPickBlueprintServiceReportsAnUnknownName(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
+
+func TestRefusedSwitchLetsOnlyRelabelAndUpgradeThrough(t *testing.T) {
+	for _, mode := range []qovery.BlueprintMajorSwitchMode{qovery.BLUEPRINTMAJORSWITCHMODE_RELABEL, qovery.BLUEPRINTMAJORSWITCHMODE_UPGRADE} {
+		if err := refusedSwitch("db", newMajor("18", mode)); err != nil {
+			t.Fatalf("mode %s: unexpected error: %v", mode, err)
+		}
+	}
+
+	unsupported := newMajor("13", qovery.BLUEPRINTMAJORSWITCHMODE_UNSUPPORTED)
+	unsupported.SetUnsupportedReason("the target major is lower than the version running")
+	if err := refusedSwitch("db", unsupported); err == nil || err.Error() != "cannot move db to major 13: the target major is lower than the version running" {
+		t.Fatalf("unsupported mode: got %v", err)
+	}
+
+	for _, mode := range []qovery.BlueprintMajorSwitchMode{"", "SOMETHING_NEW"} {
+		if err := refusedSwitch("db", newMajor("18", mode)); err == nil {
+			t.Fatalf("mode %q must be refused", mode)
+		}
+	}
+}
+
+func TestBlueprintCommandRejectsUnknownArguments(t *testing.T) {
+	if err := blueprintCmd.Args(blueprintCmd, []string{"bogus"}); err == nil {
+		t.Fatal("expected an error for an unknown argument")
+	}
+}

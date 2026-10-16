@@ -48,8 +48,8 @@ Without --major, lists the newer majors and what moving to each one does:
 
 		target, err := pickMajor(majors, blueprintUpgradeMajor)
 		checkError(err)
-		if target.GetMode() == qovery.BLUEPRINTMAJORSWITCHMODE_UNSUPPORTED {
-			utils.PrintlnError(fmt.Errorf("cannot move %s to major %s: %s", blueprintServiceName, target.GetServiceVersion(), target.GetUnsupportedReason()))
+		if err := refusedSwitch(blueprintServiceName, target); err != nil {
+			utils.PrintlnError(err)
 			os.Exit(1)
 		}
 
@@ -198,4 +198,17 @@ func init() {
 	blueprintUpgradeMajorCmd.Flags().BoolVarP(&blueprintUpgradeSkipConfirmation, "yes", "y", false, "Skip the confirmation prompt")
 	blueprintUpgradeMajorCmd.Flags().BoolVarP(&watchFlag, "watch", "w", false, "Watch the service status until it's ready or an error occurs")
 	_ = blueprintUpgradeMajorCmd.MarkFlagRequired("name")
+}
+
+// refusedSwitch lets only RELABEL and UPGRADE through: UNSUPPORTED, an empty mode, or one this CLI
+// version doesn't know yet must never reach the update and the deploy.
+func refusedSwitch(serviceName string, target qovery.BlueprintUpdateNewMajorVersion) error {
+	switch target.GetMode() {
+	case qovery.BLUEPRINTMAJORSWITCHMODE_RELABEL, qovery.BLUEPRINTMAJORSWITCHMODE_UPGRADE:
+		return nil
+	case qovery.BLUEPRINTMAJORSWITCHMODE_UNSUPPORTED:
+		return fmt.Errorf("cannot move %s to major %s: %s", serviceName, target.GetServiceVersion(), target.GetUnsupportedReason())
+	default:
+		return fmt.Errorf("cannot move %s to major %s: unknown switch mode %q, update the Qovery CLI", serviceName, target.GetServiceVersion(), target.GetMode())
+	}
 }
