@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
@@ -15,8 +16,8 @@ import (
 	"github.com/qovery/qovery-cli/utils"
 )
 
-func LoadAwsCredentials(roleArn string) error {
-	awsStsCredentialsBody, err := fetchAwsCredentials(roleArn)
+func LoadAwsCredentials(roleArn string, organizationId string, clusterId string) error {
+	awsStsCredentialsBody, err := fetchAwsCredentials(roleArn, organizationId, clusterId)
 	utils.CheckError(err)
 
 	awsStsCredentials := AwsStsCredentials{}
@@ -95,11 +96,11 @@ type AwsStsCredentials struct {
 	SessionToken    string `json:"session_token"`
 }
 
-func fetchAwsCredentials(roleArn string) ([]byte, error) {
+func fetchAwsCredentials(roleArn string, organizationId string, clusterId string) ([]byte, error) {
 	tokenType, token, err := utils.GetAccessToken(false)
 	utils.CheckError(err)
 
-	req, err := http.NewRequest(http.MethodPost, utils.GetAdminUrl()+"/aws/credentials/assume-role?role_arn="+roleArn, nil)
+	req, err := http.NewRequest(http.MethodPost, assumeRoleUrl(utils.GetAdminUrl(), roleArn, organizationId, clusterId), nil)
 	utils.CheckError(err)
 	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
 	req.Header.Set("Content-Type", "application/json")
@@ -112,6 +113,17 @@ func fetchAwsCredentials(roleArn string) ([]byte, error) {
 	}
 	utils.CheckError(err)
 	return body, nil
+}
+
+// The organization and cluster ids make up the external id the role is assumed with
+func assumeRoleUrl(adminUrl string, roleArn string, organizationId string, clusterId string) string {
+	query := url.Values{}
+	query.Set("role_arn", roleArn)
+	query.Set("organization_id", organizationId)
+	if clusterId != "" {
+		query.Set("cluster_id", clusterId)
+	}
+	return adminUrl + "/aws/credentials/assume-role?" + query.Encode()
 }
 
 func getClusterCredentials(clusterId string) []utils.Var {

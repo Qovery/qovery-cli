@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -80,5 +81,32 @@ func TestClusterCredentialsFromPayload(t *testing.T) {
 
 		// then
 		assert.Contains(t, credentials, utils.Var{Key: "AWS_DEFAULT_REGION", Value: "eu-west-3"})
+	})
+}
+
+func TestAssumeRoleUrl(t *testing.T) {
+	roleArn := "arn:aws:iam::123456789012:role/qovery-user-role"
+	organizationId := "11111111-1111-1111-1111-111111111111"
+
+	t.Run("Should send the role ARN and the organization id", func(t *testing.T) {
+		// when
+		assumeRole, err := url.Parse(assumeRoleUrl("https://admin.qovery.com/admin", roleArn, organizationId, ""))
+
+		// then
+		assert.NoError(t, err)
+		assert.Equal(t, "/admin/aws/credentials/assume-role", assumeRole.Path)
+		assert.Equal(t, url.Values{"role_arn": {roleArn}, "organization_id": {organizationId}}, assumeRole.Query())
+	})
+
+	t.Run("Should also send the cluster id when given", func(t *testing.T) {
+		// given
+		clusterId := "22222222-2222-2222-2222-222222222222"
+
+		// when
+		assumeRole, err := url.Parse(assumeRoleUrl("https://admin.qovery.com/admin", roleArn, organizationId, clusterId))
+
+		// then
+		assert.NoError(t, err)
+		assert.Equal(t, url.Values{"role_arn": {roleArn}, "organization_id": {organizationId}, "cluster_id": {clusterId}}, assumeRole.Query())
 	})
 }
