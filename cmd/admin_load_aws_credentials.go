@@ -13,7 +13,7 @@ var (
 		Use:   "load-aws-credentials",
 		Short: "Load aws credentials from a role ARN",
 		Long: `This command is used to load aws credentials
-The role is assumed with the external id "<organization id>:<cluster id>", the one its trust policy can require.
+The role is assumed with the external id "<organization id>:<cluster id>", or "<organization id>:00000000-0000-0000-0000-000000000000" when no cluster id is given. The trust policy must require that external id.
 
 > Examples
 ----------
