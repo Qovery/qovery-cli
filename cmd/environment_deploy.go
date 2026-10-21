@@ -157,6 +157,11 @@ func getDeploymentRequestForMultipleServices(
 
 			container := utils.FindByContainerName(containers.GetResults(), name)
 
+			if container == nil {
+				utils.PrintlnError(fmt.Errorf("container %s not found", name))
+				os.Exit(1)
+			}
+
 			request.Containers = append(request.Containers, qovery.DeployAllRequestContainersInner{Id: container.Id, ImageTag: version})
 		}
 	}
