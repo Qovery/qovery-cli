@@ -12,15 +12,20 @@ var (
 	adminLoadAwsCredentialsCmd = &cobra.Command{
 		Use:   "load-aws-credentials",
 		Short: "Load aws credentials from a role ARN",
-		Long: `This command is used to load aws credentials 
+		Long: `This command is used to load aws credentials
+The role is assumed with the external id "<organization id>:<cluster id>", or "<organization id>:00000000-0000-0000-0000-000000000000" when no cluster id is given. The trust policy must require that external id.
+
 > Examples
 ----------
-* Load AWS credentials from a role ARN arn:aws:iam::123456789012:role/qovery-user-role-xxx
-qovery admin load-aws-credentials --role-arn arn:aws:iam::123456789012:role/qovery-user-role-xxx
+* Load AWS credentials from a role ARN arn:aws:iam::123456789012:role/qovery-user-role-xxx of an organization
+qovery admin load-aws-credentials --role-arn arn:aws:iam::123456789012:role/qovery-user-role-xxx --organization-id 12345678-1234-1234-1234-123456789012
+
+* Load AWS credentials from a role ARN on behalf of one of the organization clusters
+qovery admin load-aws-credentials --role-arn arn:aws:iam::123456789012:role/qovery-user-role-xxx --organization-id 12345678-1234-1234-1234-123456789012 --cluster-id 87654321-4321-4321-4321-210987654321
 
 `,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := pkg.LoadAwsCredentials(roleArn)
+			err := pkg.LoadAwsCredentials(roleArn, organizationId, clusterId)
 			utils.CheckError(err)
 		},
 	}
@@ -28,5 +33,8 @@ qovery admin load-aws-credentials --role-arn arn:aws:iam::123456789012:role/qove
 
 func init() {
 	adminLoadAwsCredentialsCmd.Flags().StringVarP(&roleArn, "role-arn", "r", "", "ARN of the AWS IAM role to assume")
+	adminLoadAwsCredentialsCmd.Flags().StringVarP(&organizationId, "organization-id", "o", "", "ID of the organization the role belongs to")
+	adminLoadAwsCredentialsCmd.Flags().StringVarP(&clusterId, "cluster-id", "c", "", "ID of the cluster to assume the role for (optional)")
+	_ = adminLoadAwsCredentialsCmd.MarkFlagRequired("organization-id")
 	adminCmd.AddCommand(adminLoadAwsCredentialsCmd)
 }
