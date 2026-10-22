@@ -239,7 +239,7 @@ func CreateServiceExternalSecret(
 	}
 
 	_, _, err = client.VariableMainCallsAPI.CreateVariable(context.Background()).VariableRequest(variableRequest).Execute()
-	return err
+	return withAPIErrorDetail(err)
 }
 
 func UpdateServiceExternalSecret(
