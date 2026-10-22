@@ -76,7 +76,7 @@ The project must already exist and contain at least one environment.`,
 			targetEnv = &envResults[0]
 		}
 
-		err = utils.CreateEnvironmentVariable(client, project.Id, targetEnv.Id, rdeBlueprintKeyVar, project.Id, false)
+		err = utils.CreateEnvironmentVariable(client, project.Id, targetEnv.Id, rdeBlueprintKeyVar, project.Id, false, false)
 		if err != nil {
 			utils.PrintlnError(fmt.Errorf("failed to create environment variable %s: %w", rdeBlueprintKeyVar, err))
 			os.Exit(1)

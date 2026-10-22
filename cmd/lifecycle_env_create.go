@@ -46,7 +46,7 @@ var lifecycleEnvCreateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		err = utils.CreateServiceVariable(client, projectId, envId, lifecycle.LifecycleJobResponse.Id, utils.JobScope, utils.Key, utils.Value, utils.IsSecret)
+		err = utils.CreateServiceVariable(client, projectId, envId, lifecycle.LifecycleJobResponse.Id, utils.JobScope, utils.Key, utils.Value, utils.IsSecret, utils.OverrideIfExists)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -67,6 +67,7 @@ func init() {
 	lifecycleEnvCreateCmd.Flags().StringVarP(&utils.Value, "value", "v", "", "Environment variable or secret value")
 	lifecycleEnvCreateCmd.Flags().StringVarP(&utils.JobScope, "scope", "", "JOB", "Scope of this env var <PROJECT|ENVIRONMENT|JOB>")
 	lifecycleEnvCreateCmd.Flags().BoolVarP(&utils.IsSecret, "secret", "", false, "This environment variable is a secret")
+	lifecycleEnvCreateCmd.Flags().BoolVarP(&utils.OverrideIfExists, "override-if-exists", "", false, "If the key already exists at a higher scope, create an override of it instead of failing")
 
 	_ = lifecycleEnvCreateCmd.MarkFlagRequired("key")
 	_ = lifecycleEnvCreateCmd.MarkFlagRequired("value")

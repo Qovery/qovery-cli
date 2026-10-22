@@ -17,6 +17,7 @@ var ShowValues bool
 var PrettyPrint bool
 var SortKeys bool
 var IsSecret bool
+var OverrideIfExists bool
 var ApplicationScope string
 var JobScope string
 var ContainerScope string
@@ -185,6 +186,7 @@ func CreateServiceVariable(
 	key string,
 	value string,
 	isSecret bool,
+	overrideIfExists bool,
 ) error {
 
 	parentId, parentScope, err := getParentIdByScope(scope, projectId, environmentId, serviceId)
@@ -200,9 +202,12 @@ func CreateServiceVariable(
 		VariableScope:    parentScope,
 		VariableParentId: parentId,
 	}
+	if overrideIfExists {
+		variableRequest.SetOverrideIfExists(true)
+	}
 
 	_, _, err = client.VariableMainCallsAPI.CreateVariable(context.Background()).VariableRequest(variableRequest).Execute()
-	return err
+	return withAPIErrorDetail(err)
 }
 
 func CreateServiceExternalSecret(
@@ -234,7 +239,7 @@ func CreateServiceExternalSecret(
 	}
 
 	_, _, err = client.VariableMainCallsAPI.CreateVariable(context.Background()).VariableRequest(variableRequest).Execute()
-	return err
+	return withAPIErrorDetail(err)
 }
 
 func UpdateServiceExternalSecret(
@@ -307,6 +312,7 @@ func CreateEnvironmentVariable(
 	key string,
 	value string,
 	isSecret bool,
+	overrideIfExists bool,
 ) error {
 	variableRequest := qovery.VariableRequest{
 		Key:              key,
@@ -316,9 +322,12 @@ func CreateEnvironmentVariable(
 		VariableScope:    qovery.APIVARIABLESCOPEENUM_ENVIRONMENT,
 		VariableParentId: environmentId,
 	}
+	if overrideIfExists {
+		variableRequest.SetOverrideIfExists(true)
+	}
 
 	_, _, err := client.VariableMainCallsAPI.CreateVariable(context.Background()).VariableRequest(variableRequest).Execute()
-	return err
+	return withAPIErrorDetail(err)
 }
 
 func CreateProjectVariable(
@@ -338,7 +347,23 @@ func CreateProjectVariable(
 	}
 
 	_, _, err := client.VariableMainCallsAPI.CreateVariable(context.Background()).VariableRequest(variableRequest).Execute()
-	return err
+	return withAPIErrorDetail(err)
+}
+
+// withAPIErrorDetail appends the API's own message (the `detail` of the problem response, e.g. which
+// scope already holds the key on a 409) to the bare status line the generated client returns.
+func withAPIErrorDetail(err error) error {
+	var openAPIError *qovery.GenericOpenAPIError
+	if !errors.As(err, &openAPIError) || len(openAPIError.Body()) == 0 {
+		return err
+	}
+	var problem struct {
+		Detail string `json:"detail"`
+	}
+	if json.Unmarshal(openAPIError.Body(), &problem) == nil && problem.Detail != "" {
+		return fmt.Errorf("%s: %s", openAPIError.Error(), problem.Detail)
+	}
+	return fmt.Errorf("%s: %s", openAPIError.Error(), string(openAPIError.Body()))
 }
 
 func UpdateServiceVariable(
