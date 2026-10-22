@@ -46,7 +46,7 @@ var helmEnvCreateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		err = utils.CreateServiceVariable(client, projectId, envId, helm.Id, utils.HelmScope, utils.Key, utils.Value, utils.IsSecret)
+		err = utils.CreateServiceVariable(client, projectId, envId, helm.Id, utils.HelmScope, utils.Key, utils.Value, utils.IsSecret, utils.OverrideIfExists)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -67,6 +67,7 @@ func init() {
 	helmEnvCreateCmd.Flags().StringVarP(&utils.Value, "value", "v", "", "Environment variable or secret value")
 	helmEnvCreateCmd.Flags().StringVarP(&utils.HelmScope, "scope", "", "HELM", "Scope of this env var <PROJECT|ENVIRONMENT|HELM>")
 	helmEnvCreateCmd.Flags().BoolVarP(&utils.IsSecret, "secret", "", false, "This environment variable is a secret")
+	helmEnvCreateCmd.Flags().BoolVarP(&utils.OverrideIfExists, "override-if-exists", "", false, "If the key already exists at a higher scope, create an override of it instead of failing")
 
 	_ = helmEnvCreateCmd.MarkFlagRequired("key")
 	_ = helmEnvCreateCmd.MarkFlagRequired("value")

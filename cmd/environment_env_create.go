@@ -40,7 +40,7 @@ var environmentEnvCreateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		err = utils.CreateEnvironmentVariable(client, projectId, environment.Id, utils.Key, utils.Value, utils.IsSecret)
+		err = utils.CreateEnvironmentVariable(client, projectId, environment.Id, utils.Key, utils.Value, utils.IsSecret, utils.OverrideIfExists)
 		checkError(err)
 
 		utils.Println(fmt.Sprintf("Environment variable %s has been created", pterm.FgBlue.Sprintf("%s", utils.Key)))
@@ -56,6 +56,7 @@ func init() {
 	environmentEnvCreateCmd.Flags().StringVarP(&utils.Value, "value", "v", "", "Environment variable or secret value")
 	environmentEnvCreateCmd.Flags().StringVarP(&utils.EnvironmentScope, "scope", "", "ENVIRONMENT", "Scope of this env var <PROJECT|ENVIRONMENT>")
 	environmentEnvCreateCmd.Flags().BoolVarP(&utils.IsSecret, "secret", "", false, "This environment variable is a secret")
+	environmentEnvCreateCmd.Flags().BoolVarP(&utils.OverrideIfExists, "override-if-exists", "", false, "If the key already exists at a higher scope, create an override of it instead of failing")
 
 	_ = environmentEnvCreateCmd.MarkFlagRequired("project")
 	_ = environmentEnvCreateCmd.MarkFlagRequired("environment")
