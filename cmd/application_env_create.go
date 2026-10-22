@@ -46,7 +46,7 @@ var applicationEnvCreateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		err = utils.CreateServiceVariable(client, projectId, envId, application.Id, utils.ApplicationScope, utils.Key, utils.Value, utils.IsSecret)
+		err = utils.CreateServiceVariable(client, projectId, envId, application.Id, utils.ApplicationScope, utils.Key, utils.Value, utils.IsSecret, utils.OverrideIfExists)
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -67,6 +67,7 @@ func init() {
 	applicationEnvCreateCmd.Flags().StringVarP(&utils.Value, "value", "v", "", "Environment variable or secret value")
 	applicationEnvCreateCmd.Flags().StringVarP(&utils.ApplicationScope, "scope", "", "APPLICATION", "Scope of this env var <PROJECT|ENVIRONMENT|APPLICATION>")
 	applicationEnvCreateCmd.Flags().BoolVarP(&utils.IsSecret, "secret", "", false, "This environment variable is a secret")
+	applicationEnvCreateCmd.Flags().BoolVarP(&utils.OverrideIfExists, "override-if-exists", "", false, "If the key already exists at a higher scope, create an override of it instead of failing")
 
 	_ = applicationEnvCreateCmd.MarkFlagRequired("key")
 	_ = applicationEnvCreateCmd.MarkFlagRequired("value")
