@@ -23,7 +23,7 @@ require (
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
 	github.com/posthog/posthog-go v1.12.5
-	github.com/pterm/pterm v0.12.83
+	github.com/pterm/pterm v0.12.84
 	github.com/qovery/qovery-client-go v0.0.0-20261030144809-3aa18684b1e6
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
@@ -70,7 +70,6 @@ require (
 	github.com/go-openapi/swag/yamlutils v0.27.1 // indirect
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
-	github.com/gookit/color v1.6.1 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -80,7 +79,7 @@ require (
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
-	github.com/mattn/go-runewidth v0.0.23 // indirect
+	github.com/mattn/go-runewidth v0.0.24 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mikelolasagasti/xz v1.0.1 // indirect
 	github.com/minio/minlz v1.1.1 // indirect
@@ -93,7 +92,6 @@ require (
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/ulikunitz/xz v0.5.15 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
-	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	go4.org v0.0.0-20260112195520-a5071408f32f // indirect
