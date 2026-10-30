@@ -152,7 +152,7 @@ func rdeUpgradeRecloneSingle(client *qovery.APIClient, child *rdeChildInfo) {
 
 	// Restore owner email
 	if ownerEmail != "" {
-		_ = utils.CreateEnvironmentVariable(client, child.ProjectId, newEnv.Id, rdeOwnerEmailVar, ownerEmail, false)
+		_ = utils.CreateEnvironmentVariable(client, child.ProjectId, newEnv.Id, rdeOwnerEmailVar, ownerEmail, false, false)
 	}
 
 	// Update TTL job
@@ -234,7 +234,7 @@ func rdeUpgradeRecloneAll(client *qovery.APIClient, children []rdeChildInfo) {
 
 		// Restore owner email
 		if child.OwnerEmail != "" {
-			_ = utils.CreateEnvironmentVariable(client, child.ProjectId, newEnv.Id, rdeOwnerEmailVar, child.OwnerEmail, false)
+			_ = utils.CreateEnvironmentVariable(client, child.ProjectId, newEnv.Id, rdeOwnerEmailVar, child.OwnerEmail, false, false)
 		}
 
 		// Update TTL job

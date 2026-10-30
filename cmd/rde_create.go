@@ -176,7 +176,7 @@ This command:
 
 		// Set RDE_OWNER_EMAIL on the cloned environment if email was provided
 		if rdeEmail != "" {
-			_ = utils.CreateEnvironmentVariable(client, project.Id, clonedEnv.Id, rdeOwnerEmailVar, rdeEmail, false)
+			_ = utils.CreateEnvironmentVariable(client, project.Id, clonedEnv.Id, rdeOwnerEmailVar, rdeEmail, false, false)
 		}
 
 		// Step 5: Update TTL job (if present)
