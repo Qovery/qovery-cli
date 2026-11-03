@@ -14,6 +14,19 @@ import (
 const DefaultEventName = "cli-command-execution"
 const EndOfExecutionEventName = "cli-command-execution-end"
 const EndOfExecutionErrorEventName = "cli-command-execution-error"
+const PhaseFinishedEventName = "cli-command-phase-finished"
+
+type CommandExecutionProperties struct {
+	AttemptID        string
+	WorkflowType     string
+	Implementation   string
+	ClusterID        string
+	Phase            string
+	Result           string
+	DurationMillis   int64
+	ErrorCode        string
+	SafeErrorMessage string
+}
 
 func Capture(command *cobra.Command) {
 	CaptureWithEvent(command, DefaultEventName)
@@ -29,6 +42,41 @@ func CaptureError(command *cobra.Command, stdout string, stderr string) {
 
 func CaptureWithEvent(command *cobra.Command, event string) {
 	CaptureWithEventAndProperties(command, event, posthog.Properties{})
+}
+
+func CaptureCommandExecution(command *cobra.Command, event string, execution CommandExecutionProperties) {
+	CaptureWithEventAndProperties(command, event, commandExecutionPostHogProperties(execution))
+}
+
+func commandExecutionPostHogProperties(execution CommandExecutionProperties) posthog.Properties {
+	properties := posthog.Properties{
+		"attempt_id":     execution.AttemptID,
+		"workflow_type":  execution.WorkflowType,
+		"implementation": execution.Implementation,
+	}
+	if execution.AttemptID != "" {
+		properties["$session_id"] = execution.AttemptID
+	}
+	if execution.Result != "" {
+		properties["result"] = execution.Result
+	}
+	if execution.ClusterID != "" {
+		properties["cluster_id"] = execution.ClusterID
+	}
+	if execution.Phase != "" {
+		properties["phase"] = execution.Phase
+	}
+	if execution.DurationMillis > 0 {
+		properties["duration_ms"] = execution.DurationMillis
+	}
+	if execution.ErrorCode != "" {
+		properties["error_code"] = execution.ErrorCode
+	}
+	if execution.SafeErrorMessage != "" {
+		properties["safe_error_message"] = execution.SafeErrorMessage
+	}
+
+	return properties
 }
 
 func CaptureWithEventAndProperties(command *cobra.Command, event string, properties posthog.Properties) {
@@ -74,6 +122,7 @@ func CaptureWithEventAndProperties(command *cobra.Command, event string, propert
 		Set("token_type", tokenType).
 		Set("os", runtime.GOOS).
 		Set("arch", runtime.GOARCH).
+		Set("cli_version", Version).
 		Set("command", commandName(command))
 
 	flags := []string{}
