@@ -1,20 +1,29 @@
 package pkg
 
 import (
-	"bytes"
-	"encoding/base64"
-	"encoding/json"
+	"context"
+	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials/ssocreds"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/smithy-go"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/qovery/qovery-cli/utils"
+)
+
+const (
+	DefaultArchiveProfile = "qovery-archive-reader"
+	archiveBucket         = "s3-qovery-user-logs"
+	archiveRegion         = "us-east-2"
 )
 
 const uuidPattern = `[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`
@@ -25,16 +34,6 @@ const uuidPattern = `[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 // "<uuid>-1211-1791383662", is part of the key itself and must be kept.
 var executionIdWithTimestampRegex = regexp.MustCompile(`^(` + uuidPattern + `(?:-\d+)?)-\d{10}$`)
 var executionIdRegex = regexp.MustCompile(`^` + uuidPattern + `(?:-\d+)?$`)
-
-type ArchiveTagsResponse struct {
-	Key   string
-	Value string
-}
-
-type ArchiveResponse struct {
-	Archive string
-	Tags    []ArchiveTagsResponse
-}
 
 // normalizeExecutionId returns the key the archive is stored under, and whether the id
 // is a shape we recognise. A trailing 10 digit Unix timestamp is dropped; any shorter
@@ -47,7 +46,7 @@ func normalizeExecutionId(executionId string) (string, bool) {
 	return executionId, executionIdRegex.MatchString(executionId)
 }
 
-func DownloadS3Archive(executionId string, directory string) {
+func DownloadS3Archive(executionId string, directory string, profile string) {
 	normalizedId, ok := normalizeExecutionId(executionId)
 	if !ok {
 		log.Errorf("Invalid execution id format: '%s'. Expected '<uuid>' or '<uuid>-<id>', optionally followed by a '-<timestamp>'", executionId)
@@ -60,24 +59,10 @@ func DownloadS3Archive(executionId string, directory string) {
 	}
 
 	fileName := executionId + ".tgz"
-	res := download(utils.GetAdminUrl()+"/getS3ArchiveObject", fileName)
-
-	if !strings.Contains(res.Status, "200") {
-		result, _ := io.ReadAll(res.Body)
-		log.Errorf("Could not download archive for key %s: %s. %s", fileName, res.Status, string(result))
-		return
-	}
-
-	archiveResponse := ArchiveResponse{}
-	err := json.NewDecoder(res.Body).Decode(&archiveResponse)
+	archive, err := getArchive(context.Background(), profile, fileName)
 	if err != nil {
-		log.Errorf("Could not decode JSON: %v", err)
+		log.Error(describeArchiveError(err, profile, fileName))
 		return
-	}
-
-	organizationId := findOrganizationInTag(archiveResponse.Tags)
-	if organizationId == nil {
-		log.Warning("Could not find organization tags")
 	}
 
 	path := filepath.Join(directory, fileName)
@@ -87,59 +72,78 @@ func DownloadS3Archive(executionId string, directory string) {
 	}
 
 	utils.PrintlnInfo(fmt.Sprintf("Would you like to write the file in '%s' ?", location))
-	// check if it is the expected org
 	if !utils.Validate("") {
 		return
 	}
 
-	decodedBytes, err := base64.StdEncoding.DecodeString(archiveResponse.Archive)
-	if err != nil {
-		log.Fatalf("Failed to decode base64 archive: %v", err)
-	}
-
-	err = writeFile(path, decodedBytes)
+	err = writePrivateFile(path, archive)
 	if err != nil {
 		log.Fatalf("Failed to write archive to file: %v", err)
 	} else {
-		utils.PrintlnInfo(fmt.Sprintf("File '%s' has been written", location))
+		utils.PrintlnInfo(fmt.Sprintf("File '%s' has been written. It holds customer secrets: delete it once done", location))
 	}
 }
 
-func findOrganizationInTag(tags []ArchiveTagsResponse) *string {
-	for _, tag := range tags {
-		if tag.Key == "OrganizationLongId" {
-			return &tag.Value
-		}
+func writePrivateFile(path string, data []byte) error {
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
 	}
-	return nil
+
+	err = file.Chmod(0600)
+	if err == nil {
+		_, err = file.Write(data)
+	}
+
+	return errors.Join(err, file.Close())
 }
 
-func download(url string, executionId string) *http.Response {
-	tokenType, token, err := utils.GetAccessToken(false)
+func getArchive(ctx context.Context, profile string, key string) ([]byte, error) {
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithSharedConfigProfile(profile), config.WithRegion(archiveRegion))
 	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(0)
+		return nil, err
 	}
 
-	content := fmt.Sprintf(`{ "key": "%s" }`, executionId)
-	body := bytes.NewBuffer([]byte(content))
-
-	req, err := http.NewRequest(http.MethodGet, url, body)
+	object, err := s3.NewFromConfig(cfg).GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(archiveBucket),
+		Key:    aws.String(key),
+	})
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
+	defer func() { _ = object.Body.Close() }()
 
-	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
-	req.Header.Set("Content-Type", "application/json")
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return res
+	return io.ReadAll(object.Body)
 }
 
-func writeFile(path string, data []byte) error {
-	return os.WriteFile(path, data, 0644)
+func describeArchiveError(err error, profile string, key string) string {
+	var missingProfile config.SharedConfigProfileNotExistError
+	if errors.As(err, &missingProfile) {
+		return fmt.Sprintf("AWS profile '%s' not found in ~/.aws/config. Profile '%s' needs 'role_arn' set to the archive-reader role and 'source_profile' set to your SSO profile of the qovery-prod account", missingProfile.Profile, profile)
+	}
+
+	if isSSOSessionError(err) {
+		return "No valid AWS SSO session: run 'aws sso login --profile <your SSO profile of the qovery-prod account>', then retry"
+	}
+
+	var apiErr smithy.APIError
+	if errors.As(err, &apiErr) && apiErr.ErrorCode() == "AccessDenied" {
+		return fmt.Sprintf("Access denied to archive %s with AWS profile '%s': either the archive does not exist (archives expire after 30 days) or the profile does not assume the archive-reader role", key, profile)
+	}
+
+	return fmt.Sprintf("Could not download archive %s with AWS profile '%s': %v", key, profile, err)
+}
+
+func isSSOSessionError(err error) bool {
+	var invalidToken *ssocreds.InvalidTokenError
+	if errors.As(err, &invalidToken) {
+		return true
+	}
+
+	var apiErr smithy.APIError
+	if errors.As(err, &apiErr) && (apiErr.ErrorCode() == "InvalidGrantException" || apiErr.ErrorCode() == "UnauthorizedException") {
+		return true
+	}
+
+	return strings.Contains(err.Error(), "SSO token")
 }
