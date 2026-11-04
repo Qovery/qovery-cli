@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/qovery/qovery-cli/pkg/cluster"
 	"github.com/qovery/qovery-cli/pkg/cluster/containerregistry"
@@ -90,4 +91,28 @@ func validateClusterInstallBaseValuesFile(path string) (string, error) {
 func init() {
 	clusterInstallCmd.Flags().StringVar(&clusterInstallBaseValuesFile, "base-values-file", "", "Local Helm values base file to use instead of downloading values-demo-<provider>.yaml from qovery-chart")
 	clusterCmd.AddCommand(clusterInstallCmd)
+}
+
+func expandPath(path string) (string, error) {
+	if path == "" {
+		return "", nil
+	}
+
+	if path == "~" {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		return homeDir, nil
+	}
+
+	if strings.HasPrefix(path, "~/") || strings.HasPrefix(path, "~"+string(filepath.Separator)) {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		return filepath.Join(homeDir, strings.TrimPrefix(strings.TrimPrefix(path, "~/"), "~"+string(filepath.Separator))), nil
+	}
+
+	return path, nil
 }
