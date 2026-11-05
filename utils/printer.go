@@ -7,6 +7,7 @@ import (
 	//	"github.com/getsentry/sentry-go"
 	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/term"
 	//	"time"
 )
 
@@ -31,11 +32,21 @@ func Println(text string) {
 // log lines, a list meant for a shell loop -- where a message printed to stdout would end up
 // mixed into the payload and break the pipe.
 func PrintlnErrorToStderr(err error) {
-	_, _ = fmt.Fprintf(os.Stderr, "%s: %v\n", color.RedString("Error"), err)
+	_, _ = fmt.Fprintf(os.Stderr, "%s: %v\n", stderrColor(color.FgRed).Sprint("Error"), err)
 }
 
 func PrintlnInfoToStderr(info string) {
-	_, _ = fmt.Fprintf(os.Stderr, "%v: %v\n", color.CyanString("Info"), info)
+	_, _ = fmt.Fprintf(os.Stderr, "%v: %v\n", stderrColor(color.FgCyan).Sprint("Info"), info)
+}
+
+func stderrColor(attribute color.Attribute) *color.Color {
+	c := color.New(attribute)
+	if os.Getenv("NO_COLOR") == "" && os.Getenv("TERM") != "dumb" && term.IsTerminal(int(os.Stderr.Fd())) {
+		c.EnableColor()
+	} else {
+		c.DisableColor()
+	}
+	return c
 }
 
 func PrintContext() error {
