@@ -21,7 +21,7 @@ func TestDescribeArchiveError(t *testing.T) {
 		{
 			name: "missing archive profile",
 			err:  config.SharedConfigProfileNotExistError{Profile: "qovery-archive-reader"},
-			want: "AWS profile 'qovery-archive-reader' not found",
+			want: "AWS profile 'qovery-archive-reader' not found in ~/.aws/config. Add it with 'role_arn' set to the archive-reader role and 'source_profile' set to your SSO profile of the qovery-prod account, or pass your own profile with --profile <name>",
 		},
 		{
 			name: "missing source profile names the source profile",
@@ -29,7 +29,7 @@ func TestDescribeArchiveError(t *testing.T) {
 				Profile: "qovery-prdo",
 				Err:     config.SharedConfigProfileNotExistError{Profile: "qovery-prdo"},
 			},
-			want: "AWS profile 'qovery-prdo' not found",
+			want: "AWS profile 'qovery-prdo' not found in ~/.aws/config. It is the 'source_profile' of 'qovery-archive-reader'",
 		},
 		{
 			name: "sso session never opened",
