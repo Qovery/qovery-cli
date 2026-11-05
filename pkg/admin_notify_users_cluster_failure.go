@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -38,8 +37,7 @@ func NotifyUsersClusterFailure(clusterId *string) error {
 func postWithBody(url string, bodyAsString string) (*http.Response, error) {
 	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
-		utils.PrintlnError(err)
-		os.Exit(0)
+		return nil, err
 	}
 
 	body := bytes.NewBuffer([]byte(bodyAsString))

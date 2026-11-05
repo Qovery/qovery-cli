@@ -12,8 +12,9 @@ import (
 var (
 	requireExtendedCredentialsProduction bool
 	adminRequireExtendedCredentialsCmd   = &cobra.Command{
-		Use:   "requireExtendedCredentials",
+		Use:   "require-extended-credentials",
 		Short: "Require extended credentials to deploy clusters",
+		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			requireExtendedCredentials()
 		},
