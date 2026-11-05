@@ -94,7 +94,7 @@ func init() {
 }
 
 func getOrganizationPlan() {
-	body := doAdminOrganizationPlanRequest(http.MethodGet, nil)
+	body := adminOrganizationPlanRequestOrExit(http.MethodGet, nil)
 
 	var response adminOrganizationPlanResponse
 	if err := json.Unmarshal(body, &response); err != nil {
@@ -115,9 +115,9 @@ func getOrganizationPlan() {
 }
 
 func updateOrganizationPlan() {
-	plan := strings.ToUpper(strings.TrimSpace(organizationPlan))
-	if !slices.Contains(adminOrganizationPlans, plan) {
-		utils.PrintlnError(fmt.Errorf("invalid plan %s, must be one of: %s", organizationPlan, strings.Join(adminOrganizationPlans, ", ")))
+	plan, err := parseAdminOrganizationPlan(organizationPlan)
+	if err != nil {
+		utils.PrintlnError(err)
 		os.Exit(1)
 	}
 
@@ -129,7 +129,7 @@ func updateOrganizationPlan() {
 		os.Exit(1)
 	}
 
-	body := doAdminOrganizationPlanRequest(http.MethodPut, requestBody)
+	body := adminOrganizationPlanRequestOrExit(http.MethodPut, requestBody)
 
 	var response adminForceOrganizationPlanResponse
 	if err := json.Unmarshal(body, &response); err != nil {
@@ -146,7 +146,16 @@ func updateOrganizationPlan() {
 	utils.PrintlnInfo(response.Warning)
 }
 
-func doAdminOrganizationPlanRequest(method string, requestBody []byte) []byte {
+func parseAdminOrganizationPlan(plan string) (string, error) {
+	normalized := strings.ToUpper(strings.TrimSpace(plan))
+	if !slices.Contains(adminOrganizationPlans, normalized) {
+		return "", fmt.Errorf("invalid plan %s, must be one of: %s", plan, strings.Join(adminOrganizationPlans, ", "))
+	}
+
+	return normalized, nil
+}
+
+func adminOrganizationPlanRequestOrExit(method string, requestBody []byte) []byte {
 	if organizationId == "" {
 		utils.PrintlnError(errors.New("organization ID is required"))
 		os.Exit(1)
@@ -155,29 +164,51 @@ func doAdminOrganizationPlanRequest(method string, requestBody []byte) []byte {
 	tokenType, token, err := utils.GetAccessToken(false)
 	checkError(err)
 
+	body, err := requestAdminOrganizationPlan(
+		method,
+		utils.GetAdminUrl(),
+		utils.GetAuthorizationHeaderValue(tokenType, token),
+		http.DefaultClient,
+		organizationId,
+		requestBody,
+	)
+	if err != nil {
+		utils.PrintlnError(err)
+		os.Exit(1)
+	}
+
+	return body
+}
+
+func requestAdminOrganizationPlan(method string, adminUrl string, authorization string, client *http.Client, organizationId string, requestBody []byte) ([]byte, error) {
 	var payload io.Reader
 	if requestBody != nil {
 		payload = bytes.NewBuffer(requestBody)
 	}
 
-	endpoint := fmt.Sprintf("%s/organization/%s/plan", utils.GetAdminUrl(), url.PathEscape(organizationId))
+	endpoint := fmt.Sprintf("%s/organization/%s/plan", strings.TrimSuffix(adminUrl, "/"), url.PathEscape(organizationId))
 	req, err := http.NewRequest(method, endpoint, payload)
-	checkError(err)
+	if err != nil {
+		return nil, err
+	}
 
-	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
+	req.Header.Set("Authorization", authorization)
 	req.Header.Set("Content-Type", "application/json")
 
-	res, err := http.DefaultClient.Do(req)
-	checkError(err)
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
 	defer func() { _ = res.Body.Close() }()
 
 	body, err := io.ReadAll(res.Body)
-	checkError(err)
-
-	if res.StatusCode >= 400 {
-		utils.PrintlnError(fmt.Errorf("request failed (status=%d): %s", res.StatusCode, string(body)))
-		os.Exit(1)
+	if err != nil {
+		return nil, err
 	}
 
-	return body
+	if res.StatusCode >= 400 {
+		return nil, fmt.Errorf("request failed (status=%d): %s", res.StatusCode, string(body))
+	}
+
+	return body, nil
 }
