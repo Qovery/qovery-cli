@@ -178,7 +178,10 @@ func getArchive(ctx context.Context, profile string, key string) ([]byte, error)
 func describeArchiveError(err error, profile string, key string) string {
 	var missingProfile config.SharedConfigProfileNotExistError
 	if errors.As(err, &missingProfile) {
-		return fmt.Sprintf("AWS profile '%s' not found in ~/.aws/config. Profile '%s' needs 'role_arn' set to the archive-reader role and 'source_profile' set to your SSO profile of the qovery-prod account", missingProfile.Profile, profile)
+		if missingProfile.Profile != profile {
+			return fmt.Sprintf("AWS profile '%s' not found in ~/.aws/config. It is the 'source_profile' of '%s' and must be your SSO profile of the qovery-prod account", missingProfile.Profile, profile)
+		}
+		return fmt.Sprintf("AWS profile '%s' not found in ~/.aws/config. Add it with 'role_arn' set to the archive-reader role and 'source_profile' set to your SSO profile of the qovery-prod account, or pass your own profile with --profile <name>", profile)
 	}
 
 	if isSSOSessionError(err) {
