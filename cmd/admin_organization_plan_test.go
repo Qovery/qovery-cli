@@ -47,7 +47,7 @@ func TestRequestAdminOrganizationPlanReadsThePlan(t *testing.T) {
 	}))
 	defer server.Close()
 
-	body, err := requestAdminOrganizationPlan(http.MethodGet, server.URL+"/", "Bearer token", server.Client(), "org-1", nil)
+	body, err := requestAdminOrganizationPlan(http.MethodGet, server.URL+"//", "Bearer token", server.Client(), "org-1", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

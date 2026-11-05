@@ -11,6 +11,7 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/qovery/qovery-cli/utils"
 	"github.com/spf13/cobra"
@@ -168,7 +169,7 @@ func adminOrganizationPlanRequestOrExit(method string, requestBody []byte) []byt
 		method,
 		utils.GetAdminUrl(),
 		utils.GetAuthorizationHeaderValue(tokenType, token),
-		http.DefaultClient,
+		&http.Client{Timeout: 60 * time.Second},
 		organizationId,
 		requestBody,
 	)
@@ -186,7 +187,7 @@ func requestAdminOrganizationPlan(method string, adminUrl string, authorization 
 		payload = bytes.NewBuffer(requestBody)
 	}
 
-	endpoint := fmt.Sprintf("%s/organization/%s/plan", strings.TrimSuffix(adminUrl, "/"), url.PathEscape(organizationId))
+	endpoint := fmt.Sprintf("%s/organization/%s/plan", strings.TrimRight(adminUrl, "/"), url.PathEscape(organizationId))
 	req, err := http.NewRequest(method, endpoint, payload)
 	if err != nil {
 		return nil, err
