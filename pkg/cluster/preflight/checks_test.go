@@ -181,19 +181,23 @@ func onPremise() Facts {
 	return f
 }
 
-func TestCLIInstallPathSkipsOperatorOnlyChecks(t *testing.T) {
+func TestCLIInstallPathWarnsOnExistingComponents(t *testing.T) {
 	results := Evaluate(onPremise(), Options{})
-	assert.False(t, Failed(results), "an on-premise cluster on the CLI installation must not fail on Operator-only checks")
+	assert.False(t, Failed(results), "an on-premise cluster on the CLI installation must not fail on existing components")
 
 	assert.Equal(t, StatusPass, resultByID(t, results, "CLOUD_PROVIDER").Status)
 	legacy := resultByID(t, results, "LEGACY_QOVERY_RELEASE")
 	assert.Equal(t, StatusPass, legacy.Status)
 	assert.Contains(t, legacy.Detail, "qovery cluster install")
-	for _, id := range []string{"INCOMPATIBLE_CERT_MANAGER", "EXISTING_EXTERNAL_DNS", "EXISTING_ENVOY_GATEWAY", "CRD_OWNERSHIP_CONFLICT"} {
+	// qovery cluster install installs these components too: foreign copies warn, with a fix
+	// pointing at the generated Helm values file.
+	for _, id := range []string{"INCOMPATIBLE_CERT_MANAGER", "EXISTING_EXTERNAL_DNS", "EXISTING_ENVOY_GATEWAY"} {
 		r := resultByID(t, results, id)
-		assert.Equal(t, StatusSkip, r.Status, id)
-		assert.Contains(t, r.Detail, "Only applies to the Qovery Operator installation", id)
+		assert.Equal(t, StatusWarn, r.Status, id)
+		assert.Contains(t, r.Fix, "Helm values file", id)
 	}
+	// The CLI installation already exists and applies the Gateway API CRDs itself.
+	assert.Equal(t, StatusPass, resultByID(t, results, "CRD_OWNERSHIP_CONFLICT").Status)
 
 	// The same cluster checked for the Operator installation fails on them.
 	forced := Evaluate(onPremise(), Options{InstallPath: InstallPathOperator})
@@ -201,6 +205,26 @@ func TestCLIInstallPathSkipsOperatorOnlyChecks(t *testing.T) {
 	assert.Equal(t, StatusWarn, resultByID(t, forced, "CLOUD_PROVIDER").Status)
 	assert.Equal(t, StatusFail, resultByID(t, forced, "LEGACY_QOVERY_RELEASE").Status)
 	assert.Equal(t, StatusFail, resultByID(t, forced, "INCOMPATIBLE_CERT_MANAGER").Status)
+}
+
+func TestCLIInstallPathCleanClusterAndOwnComponents(t *testing.T) {
+	// A fresh on-premise cluster with nothing installed passes every component check.
+	f := onPremise()
+	f.HelmReleases = HelmReleaseList{}
+	f.CRDs.Items = map[string]ObjectMeta{}
+	f.Deployments.Items = nil
+	results := Evaluate(f, Options{})
+	for _, id := range []string{"INCOMPATIBLE_CERT_MANAGER", "EXISTING_EXTERNAL_DNS", "EXISTING_ENVOY_GATEWAY", "CRD_OWNERSHIP_CONFLICT"} {
+		assert.Equal(t, StatusPass, resultByID(t, results, id).Status, id)
+	}
+
+	// Components deployed by the qovery umbrella release belong to the CLI installation.
+	f.HelmReleases = HelmReleaseList{Items: []HelmRelease{{Name: "qovery", Status: "deployed"}}}
+	f.Deployments.Items = []ObjectMeta{{
+		Namespace: "qovery", Name: "cert-manager", Labels: map[string]string{"app.kubernetes.io/name": "cert-manager"},
+		Annotations: map[string]string{helmReleaseNameAnnotation: "qovery", helmReleaseNamespaceAnnotation: "qovery"},
+	}}
+	assert.Equal(t, StatusPass, resultByID(t, Evaluate(f, Options{}), "INCOMPATIBLE_CERT_MANAGER").Status)
 }
 
 func TestNodeArchitectureAndCapacity(t *testing.T) {

@@ -37,9 +37,10 @@ type Result struct {
 //   - InstallPathCLI: the installation with the Qovery CLI (qovery cluster install), for every
 //     other cluster (AKS, k3s, RKE2, OpenShift, on-premise, ...).
 //
-// Some checks only apply to the Operator installation (it installs its own cert-manager,
-// ExternalDNS, Envoy Gateway and Gateway API CRDs, and does not take over a legacy `qovery`
-// release). They are skipped on the CLI installation.
+// Both installations install their own cert-manager, ExternalDNS, Envoy Gateway and Gateway
+// API CRDs. The Operator refuses to share them (FAIL); the CLI installation is configured
+// through its generated Helm values file (WARN). Only the Operator refuses a legacy `qovery`
+// release, which on the CLI path is Qovery itself.
 type InstallPath string
 
 const (
@@ -76,6 +77,8 @@ const byokLegacyDocURL = "https://www.qovery.com/docs/configuration/integrations
 
 const (
 	qoveryNamespace = "qovery"
+	// legacyReleaseName is the umbrella Helm release that qovery cluster install creates.
+	legacyReleaseName = "qovery"
 
 	helmReleaseNameAnnotation      = "meta.helm.sh/release-name"
 	helmReleaseNamespaceAnnotation = "meta.helm.sh/release-namespace"
@@ -143,16 +146,27 @@ func Evaluate(f Facts, opts Options) []Result {
 	}
 	provider := detectProvider(f.Nodes)
 	path := ResolveInstallPath(f, opts.InstallPath)
-	operatorOnly := func(check Result) Result {
-		if path == InstallPathOperator {
+	cliInstalled := hasRelease(f.HelmReleases, legacyReleaseName)
+	// The CLI installation (qovery cluster install) installs cert-manager, ExternalDNS, Envoy
+	// Gateway and the Gateway API CRDs too (pkg/cluster/selfmanaged: the qovery umbrella chart
+	// and the gateway-crds-helm template it prints), so these conflicts matter on both paths.
+	// The Operator refuses to share them, so they fail there; the CLI installation is
+	// configured through the Helm values file it generates, so they warn there.
+	componentCheck := func(check Result) Result {
+		if path == InstallPathOperator || check.Status == StatusPass || check.Status == StatusSkip {
 			return check
 		}
-		return Result{
-			ID:     check.ID,
-			Title:  check.Title,
-			Status: StatusSkip,
-			Detail: "Only applies to the Qovery Operator installation. qovery cluster install reuses the components already on the cluster.",
+		if check.ID == "CRD_OWNERSHIP_CONFLICT" && cliInstalled {
+			return Result{
+				ID:     check.ID,
+				Title:  check.Title,
+				Status: StatusPass,
+				Detail: "The Gateway API CRDs are present and Qovery is already installed with qovery cluster install, which applies them.",
+			}
 		}
+		check.Status = StatusWarn
+		check.Fix = "qovery cluster install also installs this component. In the Helm values file it generates, turn off the Qovery copy before you run the install, or remove the existing one if nothing else uses it. Contact Qovery support if both must stay."
+		return check
 	}
 	return []Result{
 		checkKubernetesVersion(f.Version),
@@ -162,10 +176,10 @@ func Evaluate(f Facts, opts Options) []Result {
 		checkNodeCapacity(f.Nodes),
 		checkQoveryNamespace(f.QoveryNS),
 		checkLegacyQoveryRelease(f.HelmReleases, path),
-		operatorOnly(checkCertManager(f)),
-		operatorOnly(checkExternalDNS(f.Deployments)),
-		operatorOnly(checkEnvoyGateway(f)),
-		operatorOnly(checkGatewayAPICRDs(f)),
+		componentCheck(checkCertManager(f)),
+		componentCheck(checkExternalDNS(f.Deployments)),
+		componentCheck(checkEnvoyGateway(f)),
+		componentCheck(checkGatewayAPICRDs(f)),
 		checkDefaultStorageClass(f.StorageClasses, opts),
 		checkEBSCSIDriver(f.CSIDrivers, provider, opts),
 		checkClusterDNS(f.ClusterDNS),
@@ -478,7 +492,7 @@ func checkLegacyQoveryRelease(releases HelmReleaseList, path InstallPath) Result
 		return r
 	}
 	for _, rel := range releases.Items {
-		if rel.Name != "qovery" {
+		if rel.Name != legacyReleaseName {
 			continue
 		}
 		if path == InstallPathCLI {
@@ -519,6 +533,10 @@ func ownerDescription(m ObjectMeta) string {
 // (catalog applyStrategy SERVER_SIDE_APPLY_CRDS), which can leave them without Helm metadata.
 func ownedByQovery(m ObjectMeta, releases HelmReleaseList, names ...string) bool {
 	if m.Annotations[helmReleaseNamespaceAnnotation] == qoveryNamespace {
+		// The CLI installation deploys every component from the qovery umbrella release.
+		if m.Annotations[helmReleaseNameAnnotation] == legacyReleaseName {
+			return true
+		}
 		for _, n := range names {
 			if m.Annotations[helmReleaseNameAnnotation] == n {
 				return true
@@ -880,4 +898,13 @@ func checkMetricsServer(m MetricsAPIFacts) Result {
 	}
 	r.Fix = "Install metrics-server. On EKS, add the metrics-server add-on. GKE and Kapsule include it."
 	return r
+}
+
+func hasRelease(releases HelmReleaseList, name string) bool {
+	for _, rel := range releases.Items {
+		if rel.Name == name {
+			return true
+		}
+	}
+	return false
 }

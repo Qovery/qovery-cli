@@ -35,9 +35,11 @@ Qovery runs on any Kubernetes cluster, with one of two installations:
 
 The preflight detects the provider of your nodes, tells you which installation to use and
 runs the checks of that installation. Use --install-path to force one. The checks for an
-existing cert-manager, ExternalDNS, Envoy Gateway or Gateway API CRDs, and the legacy qovery
-Helm release, only fail on the Operator installation: qovery cluster install works alongside
-them, so they are skipped (or reported) on the CLI installation.
+existing cert-manager, ExternalDNS, Envoy Gateway or Gateway API CRDs fail on the Operator
+installation, which does not share them. Both installations install these components, so on
+the CLI installation they warn: turn off the Qovery copy in the Helm values file that
+qovery cluster install generates, or remove the existing one. An existing qovery Helm release
+fails only on the Operator installation; on the CLI installation it is Qovery itself.
 
 The preflight runs against the current context of your kubeconfig, or the one given with
 --kubeconfig and --context. It only reads from the cluster: it creates, changes or deletes
