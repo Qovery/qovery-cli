@@ -1405,7 +1405,7 @@ func TestDemoLegacyReleaseCheckTargetsTheDemoContext(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.False(t, legacy)
-	assert.Equal(t, []string{"helm", "list", "--kube-context", "k3d-local-demo-user", "--namespace", "qovery", "--all", "--output", "json", "--filter", "^qovery$"}, runner.calls[0])
+	assert.Equal(t, []string{"helm", "list", "--kube-context", "k3d-local-demo-user", "--namespace", "qovery", "--deployed", "--failed", "--pending", "--superseded", "--uninstalling", "--output", "json", "--filter", "^qovery$"}, runner.calls[0])
 }
 
 func TestLoopbackHasAddressMatchesTheExactIP(t *testing.T) {

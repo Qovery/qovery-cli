@@ -906,7 +906,8 @@ func (l *demoLocalCommands) EnsureLoopback(ctx context.Context) error {
 }
 
 func (l *demoLocalCommands) LegacyQoveryReleaseExists(ctx context.Context) (bool, error) {
-	output, err := l.runner.RunQuiet(ctx, "helm", "list", "--kube-context", l.kubeContext, "--namespace", "qovery", "--all", "--output", "json", "--filter", "^qovery$")
+	// Helm 4 removed `helm list --all`; listing every status explicitly works on Helm 3 and 4.
+	output, err := l.runner.RunQuiet(ctx, "helm", "list", "--kube-context", l.kubeContext, "--namespace", "qovery", "--deployed", "--failed", "--pending", "--superseded", "--uninstalling", "--output", "json", "--filter", "^qovery$")
 	if err != nil {
 		return false, commandFailed("helm list", err)
 	}
