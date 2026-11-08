@@ -38,6 +38,14 @@ func TestDemoUpReportsTheErrorCodeOfTheFailedPhase(t *testing.T) {
 			safeMessage: "A Qovery API request failed.",
 		},
 		{
+			name:        "demo subnet already in use",
+			api:         &fakeDemoAPI{},
+			local:       &fakeDemoLocal{k3dErr: demoSubnetInUseError("k3d-local-demo-old")},
+			phase:       demoPhaseLocalCluster,
+			code:        demoErrorSubnetInUse,
+			safeMessage: "Another Docker network already uses the demo subnet 172.42.0.0/16.",
+		},
+		{
 			name:        "legacy release",
 			api:         &fakeDemoAPI{},
 			local:       &fakeDemoLocal{legacyRelease: true},
@@ -168,6 +176,45 @@ func TestDemoCheckDependenciesReportsDockerNotRunning(t *testing.T) {
 	code, safeMessage := demoFailureDetails(err)
 	assert.Equal(t, demoErrorDockerNotRunning, code)
 	assert.Equal(t, "Docker is not running.", safeMessage)
+}
+
+func TestDemoEnsureK3dClusterRefusesASubnetAlreadyInUse(t *testing.T) {
+	tests := []struct {
+		name    string
+		network string
+		message string
+	}{
+		{
+			name:    "old demo cluster",
+			network: `{"Name":"k3d-local-demo-old","IPAM":{"Config":[{"Subnet":"172.42.0.0/16"}]}}`,
+			message: "the Docker network \"k3d-local-demo-old\" already uses the demo subnet 172.42.0.0/16\n" +
+				"It belongs to the k3d cluster \"local-demo-old\". If it is an old demo cluster, delete it with `k3d cluster delete local-demo-old`, then run `qovery demo up` again.",
+		},
+		{
+			name:    "other network with a wider range",
+			network: `{"Name":"vpn","IPAM":{"Config":[{"Subnet":"172.40.0.0/13"}]}}`,
+			message: "the Docker network \"vpn\" already uses the demo subnet 172.42.0.0/16\n" +
+				"Remove this network, then run `qovery demo up` again.",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			runner := &recordingDemoRunner{outputs: [][]byte{
+				[]byte("[]"),
+				[]byte("bridge-id\nother-id\n"),
+				[]byte(`[{"Name":"bridge","IPAM":{"Config":[{"Subnet":"172.17.0.0/16"}]}},` + test.network + `]`),
+			}}
+			local := demoLocalCommands{runner: runner, goos: "darwin"}
+
+			err := local.EnsureK3dCluster(context.Background(), "local-demo-user")
+
+			require.Error(t, err)
+			assert.Equal(t, test.message, err.Error())
+			code, _ := demoFailureDetails(err)
+			assert.Equal(t, demoErrorSubnetInUse, code)
+			assert.Len(t, runner.calls, 3)
+		})
+	}
 }
 
 type missingCommandsDemoRunner struct {

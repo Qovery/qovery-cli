@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/netip"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -749,6 +750,9 @@ func (l *demoLocalCommands) EnsureK3dCluster(ctx context.Context, name string) e
 			return l.ensureDemoRegistry(ctx, name)
 		}
 	}
+	if err := l.ensureDemoSubnetIsFree(ctx); err != nil {
+		return err
+	}
 	args := []string{
 		"cluster", "create", name,
 		"--image", demoK3sImage,
@@ -763,6 +767,38 @@ func (l *demoLocalCommands) EnsureK3dCluster(ctx context.Context, name string) e
 		return commandFailed("k3d cluster create", err)
 	}
 	return l.ensureDemoRegistry(ctx, name)
+}
+
+func (l *demoLocalCommands) ensureDemoSubnetIsFree(ctx context.Context) error {
+	ids, err := l.runner.RunQuiet(ctx, "docker", "network", "ls", "--quiet")
+	if err != nil {
+		return commandFailed("docker network ls", err)
+	}
+	output, err := l.runner.RunQuiet(ctx, "docker", append([]string{"network", "inspect"}, strings.Fields(string(ids))...)...)
+	if err != nil {
+		return commandFailed("docker network inspect", err)
+	}
+	var networks []struct {
+		Name string `json:"Name"`
+		IPAM struct {
+			Config []struct {
+				Subnet string `json:"Subnet"`
+			} `json:"Config"`
+		} `json:"IPAM"`
+	}
+	if err := json.Unmarshal(output, &networks); err != nil {
+		return errors.New("docker returned invalid network details")
+	}
+	demoPrefix := netip.MustParsePrefix(demoSubnet)
+	for _, network := range networks {
+		for _, config := range network.IPAM.Config {
+			prefix, err := netip.ParsePrefix(config.Subnet)
+			if err == nil && prefix.Overlaps(demoPrefix) {
+				return demoSubnetInUseError(network.Name)
+			}
+		}
+	}
+	return nil
 }
 
 func (l *demoLocalCommands) ensureDemoRegistry(ctx context.Context, clusterName string) error {

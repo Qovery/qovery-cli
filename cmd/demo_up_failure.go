@@ -16,6 +16,7 @@ const (
 	demoErrorQoveryAPI                = "QOVERY_API_ERROR"
 	demoErrorClusterNameNotADemo      = "CLUSTER_NAME_NOT_A_DEMO"
 	demoErrorK3dCluster               = "K3D_CLUSTER_FAILED"
+	demoErrorSubnetInUse              = "DEMO_SUBNET_IN_USE"
 	demoErrorLoopback                 = "LOOPBACK_SETUP_FAILED"
 	demoErrorHelmList                 = "HELM_LIST_FAILED"
 	demoErrorLegacyRelease            = "LEGACY_RELEASE_EXISTS"
@@ -50,6 +51,21 @@ func demoFailureDetails(err error) (string, string) {
 		return failure.code, failure.safeMessage
 	}
 	return demoUnknownErrorCode, demoSafeErrorMessage
+}
+
+func demoSubnetInUseError(networkName string) error {
+	hint := "Remove this network, then run `qovery demo up` again."
+	if clusterName, isK3d := strings.CutPrefix(networkName, "k3d-"); isK3d {
+		hint = fmt.Sprintf(
+			"It belongs to the k3d cluster %q. If it is an old demo cluster, delete it with `k3d cluster delete %s`, then run `qovery demo up` again.",
+			clusterName, clusterName,
+		)
+	}
+	return newDemoFailure(
+		demoErrorSubnetInUse,
+		fmt.Sprintf("Another Docker network already uses the demo subnet %s.", demoSubnet),
+		fmt.Errorf("the Docker network %q already uses the demo subnet %s\n%s", networkName, demoSubnet, hint),
+	)
 }
 
 var demoDependencyInstallDocs = map[string]string{
