@@ -53,8 +53,6 @@ type demoAttempt struct {
 	clusterID   string
 	failedPhase string
 	canceled    bool
-	errorCode   string
-	safeMessage string
 }
 
 type demoAttemptTelemetry struct {
@@ -83,7 +81,7 @@ var demoUpCmd = &cobra.Command{
 			os.Exit(130)
 		}
 		if err != nil {
-			errorCode, safeMessage := attempt.failureProperties()
+			errorCode, safeMessage := demoFailureDetails(err)
 			attempt.capture(
 				cmd,
 				utils.EndOfExecutionErrorEventName,
@@ -94,7 +92,7 @@ var demoUpCmd = &cobra.Command{
 					SafeErrorMessage: safeMessage,
 				},
 			)
-			attempt.printFailureSummary(cmd)
+			attempt.printFailureSummary(cmd, safeMessage)
 			utils.PrintlnError(err)
 			os.Exit(1)
 		}
@@ -105,18 +103,30 @@ var demoUpCmd = &cobra.Command{
 
 func runDemoUp(ctx context.Context, cmd *cobra.Command, progress demoProgress, diagnosticID string) error {
 	if runtime.GOOS == "windows" {
-		return errors.New("qovery demo is not supported directly on Windows; use WSL")
+		return newDemoFailure(
+			demoErrorUnsupportedOS,
+			"Windows is not supported directly; use WSL.",
+			errors.New("qovery demo is not supported directly on Windows; use WSL"),
+		)
 	}
 	tokenType, token, err := utils.GetAccessToken(false)
 	if err != nil {
-		return fmt.Errorf("authentication failed; run `qovery auth` first: %w", err)
+		return newDemoFailure(
+			demoErrorAuthentication,
+			"Authentication failed.",
+			fmt.Errorf("authentication failed; run `qovery auth` first: %w", err),
+		)
 	}
 	organizationID, _, err := utils.CurrentOrganization(true)
 	if err != nil {
-		return fmt.Errorf("cannot resolve the current organization: %w", err)
+		return newDemoFailure(
+			demoErrorOrganization,
+			"The current organization could not be resolved.",
+			fmt.Errorf("cannot resolve the current organization: %w", err),
+		)
 	}
 	if err := validateDemoClusterName(demoClusterName); err != nil {
-		return err
+		return newDemoFailure(demoErrorInvalidClusterName, "The cluster name is invalid.", err)
 	}
 	debugLog, debugLogsPath, err := openDemoDebugLog()
 	if err != nil {
@@ -187,44 +197,23 @@ func (t *demoAttemptTelemetry) PhaseFinished(execution demoPhaseExecution) {
 		t.attempt.failedPhase = execution.Phase
 		t.attempt.canceled = execution.Result == demoPhaseResultCanceled
 	}
-	if execution.Result == demoPhaseResultFailed {
-		t.attempt.errorCode = execution.ErrorCode
-		t.attempt.safeMessage = execution.SafeErrorMessage
-	}
 	properties := utils.CommandExecutionProperties{
 		Phase:          execution.Phase,
 		Result:         execution.Result,
 		DurationMillis: max(execution.Duration.Milliseconds(), 1),
 	}
 	if execution.Result == demoPhaseResultFailed {
-		properties.ErrorCode, properties.SafeErrorMessage = demoFailureProperties(
-			execution.ErrorCode,
-			execution.SafeErrorMessage,
-		)
+		properties.ErrorCode = execution.ErrorCode
+		properties.SafeErrorMessage = execution.SafeErrorMessage
 	}
 	t.attempt.capture(t.command, utils.PhaseFinishedEventName, properties)
 }
 
-func (a *demoAttempt) failureProperties() (string, string) {
-	return demoFailureProperties(a.errorCode, a.safeMessage)
-}
-
-func demoFailureProperties(errorCode string, safeMessage string) (string, string) {
-	if errorCode == "" {
-		errorCode = demoUnknownErrorCode
-	}
-	if safeMessage == "" {
-		safeMessage = demoSafeErrorMessage
-	}
-	return errorCode, safeMessage
-}
-
-func (a *demoAttempt) printFailureSummary(cmd *cobra.Command) {
+func (a *demoAttempt) printFailureSummary(cmd *cobra.Command, safeMessage string) {
 	phase := strings.ReplaceAll(a.failedPhase, "_", " ")
 	if phase == "" {
 		phase = "an unknown phase"
 	}
-	_, safeMessage := a.failureProperties()
 	_, _ = fmt.Fprintf(
 		cmd.ErrOrStderr(),
 		"\nDemo installation failed during %s.\n%s\nDiagnostic ID: %s\n",
@@ -726,13 +715,17 @@ func demoKubeContext(clusterName string) string {
 }
 
 func (l *demoLocalCommands) CheckDependencies(ctx context.Context) error {
+	var missing []string
 	for _, dependency := range []string{"docker", "k3d", "helm", "kubectl"} {
 		if err := l.runner.LookPath(dependency); err != nil {
-			return fmt.Errorf("required command %q is not installed", dependency)
+			missing = append(missing, dependency)
 		}
 	}
+	if len(missing) > 0 {
+		return missingDemoDependenciesError(l.goos, missing)
+	}
 	if _, err := l.runner.RunQuiet(ctx, "docker", "info"); err != nil {
-		return errors.New("docker is not running")
+		return newDemoFailure(demoErrorDockerNotRunning, "Docker is not running.", errors.New("docker is not running"))
 	}
 	return nil
 }
