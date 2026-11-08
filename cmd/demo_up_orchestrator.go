@@ -128,20 +128,24 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 	if err := o.runPhase(ctx, demoPhaseCredentialsAndCluster, "Resolving Qovery On-Premise credentials and cluster", func() error {
 		credential, err := o.api.EnsureOnPremiseCredentials(ctx, cfg.OrganizationID)
 		if err != nil {
-			return fmt.Errorf("cannot resolve On-Premise credentials: %w", err)
+			return demoQoveryAPIFailure(fmt.Errorf("cannot resolve On-Premise credentials: %w", err))
 		}
 		var found bool
 		clusterID, found, err = o.api.FindCluster(ctx, cfg.OrganizationID, cfg.ClusterName)
 		if errors.Is(err, errNotADemoCluster) {
-			return fmt.Errorf("%w; choose another name with --cluster-name", err)
+			return newDemoFailure(
+				demoErrorClusterNameNotADemo,
+				"A Qovery cluster with this name exists and is not a demo cluster.",
+				fmt.Errorf("%w; choose another name with --cluster-name", err),
+			)
 		}
 		if err != nil {
-			return fmt.Errorf("cannot look up Qovery cluster: %w", err)
+			return demoQoveryAPIFailure(fmt.Errorf("cannot look up Qovery cluster: %w", err))
 		}
 		if !found {
 			clusterID, err = o.api.CreateCluster(ctx, cfg.OrganizationID, cfg.ClusterName, credential)
 			if err != nil {
-				return fmt.Errorf("cannot create Qovery cluster: %w", err)
+				return demoQoveryAPIFailure(fmt.Errorf("cannot create Qovery cluster: %w", err))
 			}
 		}
 		o.clusterResolved(clusterID)
@@ -152,10 +156,18 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 
 	if err := o.runPhase(ctx, demoPhaseLocalCluster, "Creating or starting the local k3d cluster", func() error {
 		if err := o.local.EnsureK3dCluster(ctx, cfg.ClusterName); err != nil {
-			return fmt.Errorf("cannot prepare local k3d cluster: %w", err)
+			return newDemoFailure(
+				demoErrorK3dCluster,
+				"The local k3d cluster could not be created or started.",
+				fmt.Errorf("cannot prepare local k3d cluster: %w", err),
+			)
 		}
 		if err := o.local.EnsureLoopback(ctx); err != nil {
-			return fmt.Errorf("cannot configure local loopback: %w", err)
+			return newDemoFailure(
+				demoErrorLoopback,
+				"The local loopback address could not be configured.",
+				fmt.Errorf("cannot configure local loopback: %w", err),
+			)
 		}
 		return nil
 	}); err != nil {
@@ -165,10 +177,18 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 	if err := o.runPhase(ctx, demoPhaseLegacyReleaseCheck, "Checking for an unsupported legacy Qovery release", func() error {
 		legacy, err := o.local.LegacyQoveryReleaseExists(ctx)
 		if err != nil {
-			return fmt.Errorf("cannot inspect Helm releases: %w", err)
+			return newDemoFailure(
+				demoErrorHelmList,
+				"Listing the local Helm releases failed.",
+				fmt.Errorf("cannot inspect Helm releases: %w", err),
+			)
 		}
 		if legacy {
-			return errors.New("legacy Helm release \"qovery\" exists in namespace \"qovery\"; adopting an old demo is not supported: destroy and recreate the local cluster before running `qovery demo up`")
+			return newDemoFailure(
+				demoErrorLegacyRelease,
+				"A legacy Qovery demo release exists on the local cluster.",
+				errors.New("legacy Helm release \"qovery\" exists in namespace \"qovery\"; adopting an old demo is not supported: destroy and recreate the local cluster before running `qovery demo up`"),
+			)
 		}
 		return nil
 	}); err != nil {
@@ -178,18 +198,22 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 	var bootstrap demoBootstrap
 	if err := o.runPhase(ctx, demoPhaseOperatorBootstrap, "Bootstrapping and attaching the Qovery Operator", func() error {
 		if err := o.api.ConfigureOperator(ctx, cfg.OrganizationID, clusterID, cfg.CPUArchitecture); err != nil {
-			return fmt.Errorf("cannot configure the Qovery Operator for the local demo: %w", err)
+			return demoQoveryAPIFailure(fmt.Errorf("cannot configure the Qovery Operator for the local demo: %w", err))
 		}
 		var err error
 		bootstrap, err = o.api.GetOperatorBootstrap(ctx, cfg.OrganizationID, clusterID)
 		if err != nil {
-			return errors.New("cannot retrieve the Qovery Operator bootstrap")
+			return demoQoveryAPIFailure(errors.New("cannot retrieve the Qovery Operator bootstrap"))
 		}
 		if err := o.api.AttachOperator(ctx, cfg.OrganizationID, clusterID); err != nil {
-			return fmt.Errorf("cannot attach the cluster to the Qovery Operator path: %w", err)
+			return demoQoveryAPIFailure(fmt.Errorf("cannot attach the cluster to the Qovery Operator path: %w", err))
 		}
 		if err := o.local.InstallOperator(ctx, bootstrap); err != nil {
-			return errors.New("operator Helm installation failed; sensitive bootstrap values were redacted")
+			return newDemoFailure(
+				demoErrorOperatorInstall,
+				"The Qovery Operator Helm installation failed.",
+				errors.New("operator Helm installation failed; sensitive bootstrap values were redacted"),
+			)
 		}
 		return nil
 	}); err != nil {
@@ -206,7 +230,7 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 	if err := o.runPhase(ctx, demoPhasePlatformCatalogDeployment, "Deploying the current self-managed platform catalog", func() error {
 		currentStatus, err := o.api.GetClusterStatus(ctx, cfg.OrganizationID, clusterID)
 		if err != nil {
-			return fmt.Errorf("cannot read cluster deployment status: %w", err)
+			return demoQoveryAPIFailure(fmt.Errorf("cannot read cluster deployment status: %w", err))
 		}
 		deadline := o.clock.Now().Add(cfg.DeploymentTimeout)
 		if isDemoDeploymentInProgress(currentStatus) {
@@ -217,7 +241,7 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 		}
 		initialStatus, err := o.api.DeployCluster(ctx, cfg.OrganizationID, clusterID)
 		if err != nil {
-			return fmt.Errorf("cannot trigger cluster deployment: %w", err)
+			return demoQoveryAPIFailure(fmt.Errorf("cannot trigger cluster deployment: %w", err))
 		}
 		status, err = o.waitForDeployment(ctx, cfg, clusterID, initialStatus, deadline)
 		return err
@@ -226,7 +250,10 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 	}
 
 	if err := o.runPhase(ctx, demoPhaseWorkloadVerification, "Verifying Operator and Engine workloads", func() error {
-		return o.local.ValidateWorkloads(ctx, bootstrap.Namespace)
+		if err := o.local.ValidateWorkloads(ctx, bootstrap.Namespace); err != nil {
+			return newDemoFailure(demoErrorWorkloadVerification, "The Operator and Engine workloads are not healthy.", err)
+		}
+		return nil
 	}); err != nil {
 		return err
 	}
@@ -258,8 +285,7 @@ func (o *demoOrchestrator) runPhase(ctx context.Context, phase string, message s
 		result = demoPhaseResultCanceled
 	case err != nil:
 		result = demoPhaseResultFailed
-		errorCode = demoUnknownErrorCode
-		safeErrorMessage = demoSafeErrorMessage
+		errorCode, safeErrorMessage = demoFailureDetails(err)
 	}
 	if o.progress != nil {
 		o.progress.PhaseFinished(demoPhaseExecution{
@@ -284,13 +310,17 @@ func (o *demoOrchestrator) waitForOperator(ctx context.Context, cfg demoConfig, 
 	for {
 		status, err := o.api.GetOperatorStatus(ctx, cfg.OrganizationID, clusterID)
 		if err != nil {
-			return fmt.Errorf("cannot read Qovery Operator status: %w", err)
+			return demoQoveryAPIFailure(fmt.Errorf("cannot read Qovery Operator status: %w", err))
 		}
 		if operatorStatusReady(status, o.clock.Now()) {
 			return nil
 		}
 		if !o.clock.Now().Before(deadline) {
-			return fmt.Errorf("timed out after %s waiting for a connected Qovery Operator with a fresh heartbeat", cfg.OperatorTimeout)
+			return newDemoFailure(
+				demoErrorOperatorHeartbeatTimeout,
+				"The Qovery Operator did not report a fresh heartbeat in time.",
+				fmt.Errorf("timed out after %s waiting for a connected Qovery Operator with a fresh heartbeat", cfg.OperatorTimeout),
+			)
 		}
 		if err := o.clock.Sleep(ctx, cfg.PollInterval); err != nil {
 			return err
@@ -312,10 +342,18 @@ func (o *demoOrchestrator) waitForDeployment(ctx context.Context, cfg demoConfig
 			return status, nil
 		}
 		if isDemoDeploymentError(status) {
-			return "", fmt.Errorf("cluster deployment finished with terminal status %s", status)
+			return "", newDemoFailure(
+				demoErrorClusterDeployment,
+				fmt.Sprintf("The cluster deployment finished with status %s.", status),
+				fmt.Errorf("cluster deployment finished with terminal status %s", status),
+			)
 		}
 		if !o.clock.Now().Before(deadline) {
-			return "", fmt.Errorf("timed out after %s waiting for cluster deployment; last status was %s", cfg.DeploymentTimeout, status)
+			return "", newDemoFailure(
+				demoErrorClusterDeploymentTimeout,
+				"The cluster deployment did not finish in time.",
+				fmt.Errorf("timed out after %s waiting for cluster deployment; last status was %s", cfg.DeploymentTimeout, status),
+			)
 		}
 		if err := o.clock.Sleep(ctx, cfg.PollInterval); err != nil {
 			return "", err
@@ -323,7 +361,7 @@ func (o *demoOrchestrator) waitForDeployment(ctx context.Context, cfg demoConfig
 		var err error
 		status, err = o.api.GetClusterStatus(ctx, cfg.OrganizationID, clusterID)
 		if err != nil {
-			return "", fmt.Errorf("cannot read cluster deployment status: %w", err)
+			return "", demoQoveryAPIFailure(fmt.Errorf("cannot read cluster deployment status: %w", err))
 		}
 	}
 }
@@ -331,14 +369,18 @@ func (o *demoOrchestrator) waitForDeployment(ctx context.Context, cfg demoConfig
 func (o *demoOrchestrator) waitUntilNoDeploymentInProgress(ctx context.Context, cfg demoConfig, clusterID string, deadline time.Time) error {
 	for {
 		if !o.clock.Now().Before(deadline) {
-			return fmt.Errorf("timed out after %s waiting for the cluster deployment already in progress", cfg.DeploymentTimeout)
+			return newDemoFailure(
+				demoErrorClusterDeploymentTimeout,
+				"The cluster deployment did not finish in time.",
+				fmt.Errorf("timed out after %s waiting for the cluster deployment already in progress", cfg.DeploymentTimeout),
+			)
 		}
 		if err := o.clock.Sleep(ctx, cfg.PollInterval); err != nil {
 			return err
 		}
 		status, err := o.api.GetClusterStatus(ctx, cfg.OrganizationID, clusterID)
 		if err != nil {
-			return fmt.Errorf("cannot read cluster deployment status: %w", err)
+			return demoQoveryAPIFailure(fmt.Errorf("cannot read cluster deployment status: %w", err))
 		}
 		if !isDemoDeploymentInProgress(status) {
 			return nil
