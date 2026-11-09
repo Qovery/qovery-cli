@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -53,13 +55,32 @@ func TestPostDemoDebugLogRetriesOnceOnServerErrors(t *testing.T) {
 	}
 }
 
-func TestPostDemoDebugLogRetriesWhenTheServerIsUnreachable(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
-	endpoint := server.URL
-	server.Close()
+func TestPostDemoDebugLogRetriesOnceOnANetworkError(t *testing.T) {
+	transport := &failingDemoTransport{}
 
-	err := postDemoDebugLog(server.Client(), endpoint, "Token abc", []byte("{}"), 0)
+	err := postDemoDebugLog(&http.Client{Transport: transport}, "http://qovery.invalid/admin/demoDebugLog", "Token abc", []byte("{}"), 0)
 
 	require.Error(t, err)
+	assert.Equal(t, 2, transport.attempts)
 	assert.False(t, isDemoDebugLogAuthFailure(err))
+}
+
+func TestPostDemoDebugLogDoesNotRetryAnInvalidEndpoint(t *testing.T) {
+	transport := &failingDemoTransport{}
+	startedAt := time.Now()
+
+	err := postDemoDebugLog(&http.Client{Transport: transport}, "://no-scheme", "Token abc", []byte("{}"), time.Minute)
+
+	require.Error(t, err)
+	assert.Zero(t, transport.attempts)
+	assert.Less(t, time.Since(startedAt), time.Minute)
+}
+
+type failingDemoTransport struct {
+	attempts int
+}
+
+func (f *failingDemoTransport) RoundTrip(*http.Request) (*http.Response, error) {
+	f.attempts++
+	return nil, errors.New("connection refused")
 }

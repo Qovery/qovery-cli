@@ -1118,37 +1118,33 @@ func (e *demoDebugLogUploadError) Error() string {
 }
 
 func postDemoDebugLog(httpClient *http.Client, endpoint string, authorization string, payload []byte, retryDelay time.Duration) error {
-	var err error
-	for attempt := 1; attempt <= 2; attempt++ {
-		if attempt > 1 {
-			time.Sleep(retryDelay)
-		}
-		err = postDemoDebugLogOnce(httpClient, endpoint, authorization, payload)
-		var uploadErr *demoDebugLogUploadError
-		if err == nil || (errors.As(err, &uploadErr) && uploadErr.statusCode < http.StatusInternalServerError) {
-			return err
-		}
+	retryable, err := postDemoDebugLogOnce(httpClient, endpoint, authorization, payload)
+	if err == nil || !retryable {
+		return err
 	}
+	time.Sleep(retryDelay)
+	_, err = postDemoDebugLogOnce(httpClient, endpoint, authorization, payload)
 	return err
 }
 
-func postDemoDebugLogOnce(httpClient *http.Client, endpoint string, authorization string, payload []byte) error {
+func postDemoDebugLogOnce(httpClient *http.Client, endpoint string, authorization string, payload []byte) (bool, error) {
 	request, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(payload))
 	if err != nil {
-		return err
+		return false, err
 	}
 	request.Header.Set("Authorization", authorization)
 	request.Header.Set("Content-Type", "application/json")
 	response, err := httpClient.Do(request)
 	if err != nil {
-		return err
+		return true, err
 	}
 	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode == http.StatusOK {
-		return nil
+		return false, nil
 	}
 	body, _ := io.ReadAll(response.Body)
-	return &demoDebugLogUploadError{status: response.Status, statusCode: response.StatusCode, body: body}
+	uploadErr := &demoDebugLogUploadError{status: response.Status, statusCode: response.StatusCode, body: body}
+	return response.StatusCode >= http.StatusInternalServerError, uploadErr
 }
 
 func isDemoDebugLogAuthFailure(err error) bool {
