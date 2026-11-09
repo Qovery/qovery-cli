@@ -54,11 +54,11 @@ func demoFailureDetails(err error) (string, string) {
 }
 
 func demoSubnetInUseError(networkName string) error {
-	hint := "Remove this network, then run `qovery demo up` again."
+	hint := fmt.Sprintf("Remove this network with `docker network rm %s`, then run `qovery demo up` again.", networkName)
 	if clusterName, isK3d := strings.CutPrefix(networkName, "k3d-"); isK3d {
 		hint = fmt.Sprintf(
-			"It belongs to the k3d cluster %q. If it is an old demo cluster, delete it with `k3d cluster delete %s`, then run `qovery demo up` again.",
-			clusterName, clusterName,
+			"k3d created it for the cluster %q. If it is an old demo cluster, delete it with `k3d cluster delete %s`. If that cluster no longer exists, remove the network with `docker network rm %s`. Then run `qovery demo up` again.",
+			clusterName, clusterName, networkName,
 		)
 	}
 	return newDemoFailure(

@@ -784,8 +784,10 @@ func TestDemoEnsureK3dClusterUsesPinnedSubstrate(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Len(t, runner.calls, 6)
-	assert.Equal(t, [][]string{{"k3d", "cluster", "list", "--output", "json"}}, runner.unlogged)
-	assert.Equal(t, []string{"docker", "network", "inspect", "bridge-id"}, runner.calls[2])
+	assert.Equal(t, [][]string{
+		{"k3d", "cluster", "list", "--output", "json"},
+		{"docker", "network", "inspect", "bridge-id"},
+	}, runner.unlogged)
 	assert.Equal(t, "k3d", runner.calls[3][0])
 	joined := strings.Join(runner.calls[3][1:], " ")
 	assert.Contains(t, joined, demoK3sImage)
