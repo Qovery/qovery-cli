@@ -125,13 +125,15 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 	}
 
 	var clusterID string
+	var credential demoCredential
+	var clusterFound bool
 	if err := o.runPhase(ctx, demoPhaseCredentialsAndCluster, "Resolving Qovery On-Premise credentials and cluster", func() error {
-		credential, err := o.api.EnsureOnPremiseCredentials(ctx, cfg.OrganizationID)
+		var err error
+		credential, err = o.api.EnsureOnPremiseCredentials(ctx, cfg.OrganizationID)
 		if err != nil {
 			return demoQoveryAPIFailure(fmt.Errorf("cannot resolve On-Premise credentials: %w", err))
 		}
-		var found bool
-		clusterID, found, err = o.api.FindCluster(ctx, cfg.OrganizationID, cfg.ClusterName)
+		clusterID, clusterFound, err = o.api.FindCluster(ctx, cfg.OrganizationID, cfg.ClusterName)
 		if errors.Is(err, errNotADemoCluster) {
 			return newDemoFailure(
 				demoErrorClusterNameNotADemo,
@@ -142,13 +144,9 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 		if err != nil {
 			return demoQoveryAPIFailure(fmt.Errorf("cannot look up Qovery cluster: %w", err))
 		}
-		if !found {
-			clusterID, err = o.api.CreateCluster(ctx, cfg.OrganizationID, cfg.ClusterName, credential)
-			if err != nil {
-				return demoQoveryAPIFailure(fmt.Errorf("cannot create Qovery cluster: %w", err))
-			}
+		if clusterFound {
+			o.clusterResolved(clusterID)
 		}
-		o.clusterResolved(clusterID)
 		return nil
 	}); err != nil {
 		return err
@@ -201,6 +199,14 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 
 	var bootstrap demoBootstrap
 	if err := o.runPhase(ctx, demoPhaseOperatorBootstrap, "Bootstrapping and attaching the Qovery Operator", func() error {
+		if !clusterFound {
+			var err error
+			clusterID, err = o.api.CreateCluster(ctx, cfg.OrganizationID, cfg.ClusterName, credential)
+			if err != nil {
+				return demoQoveryAPIFailure(fmt.Errorf("cannot create Qovery cluster: %w", err))
+			}
+			o.clusterResolved(clusterID)
+		}
 		if err := o.api.ConfigureOperator(ctx, cfg.OrganizationID, clusterID, cfg.CPUArchitecture); err != nil {
 			return demoQoveryAPIFailure(fmt.Errorf("cannot configure the Qovery Operator for the local demo: %w", err))
 		}

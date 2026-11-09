@@ -38,8 +38,8 @@ func TestDemoUpFreshCreationOrder(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, []string{
-		"dependencies", "credentials", "find-cluster", "create-cluster", "k3d", "loopback",
-		"legacy-release", "operator-config", "bootstrap", "attach", "install-operator", "operator-status",
+		"dependencies", "credentials", "find-cluster", "k3d", "loopback",
+		"legacy-release", "create-cluster", "operator-config", "bootstrap", "attach", "install-operator", "operator-status",
 		"cluster-status", "deploy", "cluster-status", "validate-workloads",
 	}, events)
 	assert.Equal(t, "ARM64", api.operatorCPUArchitecture)
@@ -107,9 +107,63 @@ func TestDemoUpReportsEveryPhaseWithClusterCorrelation(t *testing.T) {
 	for _, phase := range progress.phases {
 		assert.Equal(t, demoPhaseResultSucceeded, phase.Result)
 	}
+	for _, phase := range progress.phases[:4] {
+		assert.Empty(t, phase.ClusterID, phase.Phase)
+	}
+	for _, phase := range progress.phases[4:] {
+		assert.Equal(t, "cluster-id", phase.ClusterID, phase.Phase)
+	}
+}
+
+func TestDemoUpReportsTheExistingClusterFromTheLookupPhase(t *testing.T) {
+	now := time.Date(2026, 8, 19, 10, 0, 0, 0, time.UTC)
+	progress := &recordingDemoProgress{}
+	orchestrator := demoOrchestrator{
+		api: &fakeDemoAPI{
+			clusterFound:     true,
+			operatorStatuses: []demoOperatorStatus{readyDemoOperatorStatus(now)},
+			clusterStatuses:  []string{"DEPLOYED"},
+		},
+		local:    &fakeDemoLocal{},
+		clock:    &fakeDemoClock{now: now},
+		out:      &bytes.Buffer{},
+		progress: progress,
+	}
+
+	err := orchestrator.Up(context.Background(), testDemoConfig())
+
+	require.NoError(t, err)
 	assert.Empty(t, progress.phases[0].ClusterID)
 	for _, phase := range progress.phases[1:] {
-		assert.Equal(t, "cluster-id", phase.ClusterID)
+		assert.Equal(t, "cluster-id", phase.ClusterID, phase.Phase)
+	}
+}
+
+func TestDemoUpDoesNotCreateTheQoveryClusterWhenTheLocalSetupFails(t *testing.T) {
+	tests := []struct {
+		name  string
+		local *fakeDemoLocal
+	}{
+		{name: "k3d cluster", local: &fakeDemoLocal{k3dErr: demoSubnetInUseError("k3d-local-demo-old")}},
+		{name: "legacy release", local: &fakeDemoLocal{legacyRelease: true}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			events := []string{}
+			test.local.events = &events
+			orchestrator := demoOrchestrator{
+				api:   &fakeDemoAPI{events: &events},
+				local: test.local,
+				clock: &fakeDemoClock{now: time.Date(2026, 8, 19, 10, 0, 0, 0, time.UTC)},
+				out:   &bytes.Buffer{},
+			}
+
+			err := orchestrator.Up(context.Background(), testDemoConfig())
+
+			require.Error(t, err)
+			assert.Contains(t, events, "find-cluster")
+			assert.NotContains(t, events, "create-cluster")
+		})
 	}
 }
 
@@ -130,7 +184,7 @@ func TestDemoUpReportsTheFailedPhaseAndStopsTheTimeline(t *testing.T) {
 	require.Len(t, progress.phases, 4)
 	assert.Equal(t, demoPhaseLegacyReleaseCheck, progress.phases[3].Phase)
 	assert.Equal(t, demoPhaseResultFailed, progress.phases[3].Result)
-	assert.Equal(t, "cluster-id", progress.phases[3].ClusterID)
+	assert.Empty(t, progress.phases[3].ClusterID)
 }
 
 func TestDemoClusterRequestSerializesIsDemo(t *testing.T) {
