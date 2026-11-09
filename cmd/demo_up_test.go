@@ -772,6 +772,8 @@ func TestDemoUpRedactsValuesFromErrors(t *testing.T) {
 func TestDemoEnsureK3dClusterUsesPinnedSubstrate(t *testing.T) {
 	runner := &recordingDemoRunner{outputs: [][]byte{
 		[]byte("[]"),
+		[]byte("bridge-id\n"),
+		[]byte(`[{"Name":"bridge","IPAM":{"Config":[{"Subnet":"172.17.0.0/16"}]}}]`),
 		nil,
 		[]byte(`[{"name":"qovery-registry.lan"}]`),
 		[]byte(`[{"NetworkSettings":{"Networks":{"k3d-local-demo-user":{"DNSNames":["qovery-registry.lan"]}}}}]`),
@@ -781,10 +783,13 @@ func TestDemoEnsureK3dClusterUsesPinnedSubstrate(t *testing.T) {
 	err := local.EnsureK3dCluster(context.Background(), "local-demo-user")
 
 	require.NoError(t, err)
-	require.Len(t, runner.calls, 4)
-	assert.Equal(t, [][]string{{"k3d", "cluster", "list", "--output", "json"}}, runner.unlogged)
-	assert.Equal(t, "k3d", runner.calls[1][0])
-	joined := strings.Join(runner.calls[1][1:], " ")
+	require.Len(t, runner.calls, 6)
+	assert.Equal(t, [][]string{
+		{"k3d", "cluster", "list", "--output", "json"},
+		{"docker", "network", "inspect", "bridge-id"},
+	}, runner.unlogged)
+	assert.Equal(t, "k3d", runner.calls[3][0])
+	joined := strings.Join(runner.calls[3][1:], " ")
 	assert.Contains(t, joined, demoK3sImage)
 	assert.Contains(t, joined, demoSubnet)
 	assert.Contains(t, joined, "--node-ip="+demoNodeIP+"@server:0")
@@ -973,6 +978,7 @@ func (f *fakeDemoAPI) GetClusterStatus(context.Context, string, string) (string,
 
 type fakeDemoLocal struct {
 	events        *[]string
+	k3dErr        error
 	legacyRelease bool
 	installErr    error
 }
@@ -990,7 +996,7 @@ func (f *fakeDemoLocal) CheckDependencies(context.Context) error {
 
 func (f *fakeDemoLocal) EnsureK3dCluster(context.Context, string) error {
 	f.event("k3d")
-	return nil
+	return f.k3dErr
 }
 
 func (f *fakeDemoLocal) EnsureLoopback(context.Context) error {

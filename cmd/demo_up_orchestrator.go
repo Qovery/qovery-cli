@@ -156,6 +156,10 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 
 	if err := o.runPhase(ctx, demoPhaseLocalCluster, "Creating or starting the local k3d cluster", func() error {
 		if err := o.local.EnsureK3dCluster(ctx, cfg.ClusterName); err != nil {
+			var failure *demoFailure
+			if errors.As(err, &failure) {
+				return err
+			}
 			return newDemoFailure(
 				demoErrorK3dCluster,
 				"The local k3d cluster could not be created or started.",
