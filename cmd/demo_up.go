@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/netip"
+	"net/url"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -1092,26 +1093,61 @@ func uploadErrorLogs(tokenType utils.AccessTokenType, token utils.AccessToken, o
 		Timestamp:    time.Now(),
 	})
 	client := utils.GetQoveryClient(tokenType, token)
-	url := fmt.Sprintf("%s/admin/demoDebugLog", client.GetConfig().Servers[0].URL)
-	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(payload))
-	query := req.URL.Query()
-	query.Add("organization", string(organization))
-	query.Add("clusterName", clusterName)
-	req.URL.RawQuery = query.Encode()
+	query := url.Values{"organization": {string(organization)}, "clusterName": {clusterName}}
+	endpoint := fmt.Sprintf("%s/admin/demoDebugLog?%s", client.GetConfig().Servers[0].URL, query.Encode())
 
-	req.Header.Set("Authorization", utils.GetAuthorizationHeaderValue(tokenType, token))
-	req.Header.Set("Content-Type", "application/json")
-
-	response, err := (&http.Client{Timeout: 30 * time.Second}).Do(req)
+	err := postDemoDebugLog(&http.Client{Timeout: 30 * time.Second}, endpoint, utils.GetAuthorizationHeaderValue(tokenType, token), payload, demoDebugLogRetryDelay)
 	if err != nil {
-		utils.PrintlnError(fmt.Errorf("error uploading debug logs: %s", err))
-		return
+		utils.PrintlnError(fmt.Errorf("error uploading debug logs: %w", err))
+		if isDemoDebugLogAuthFailure(err) {
+			utils.PrintlnInfo("May be caused by a wrong context set, please set it again: `qovery context set`")
+		}
 	}
+}
 
-	if response.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(response.Body)
-		utils.PrintlnError(fmt.Errorf("error uploading debug logs: %s %s", response.Status, body))
-		utils.PrintlnInfo("May be caused by a wrong context set, please set it again: `qovery context set`")
-		return
+const demoDebugLogRetryDelay = 2 * time.Second
+
+type demoDebugLogUploadError struct {
+	status     string
+	statusCode int
+	body       []byte
+}
+
+func (e *demoDebugLogUploadError) Error() string {
+	return fmt.Sprintf("%s %s", e.status, e.body)
+}
+
+func postDemoDebugLog(httpClient *http.Client, endpoint string, authorization string, payload []byte, retryDelay time.Duration) error {
+	retryable, err := postDemoDebugLogOnce(httpClient, endpoint, authorization, payload)
+	if err == nil || !retryable {
+		return err
 	}
+	time.Sleep(retryDelay)
+	_, err = postDemoDebugLogOnce(httpClient, endpoint, authorization, payload)
+	return err
+}
+
+func postDemoDebugLogOnce(httpClient *http.Client, endpoint string, authorization string, payload []byte) (bool, error) {
+	request, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(payload))
+	if err != nil {
+		return false, err
+	}
+	request.Header.Set("Authorization", authorization)
+	request.Header.Set("Content-Type", "application/json")
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return true, err
+	}
+	defer func() { _ = response.Body.Close() }()
+	if response.StatusCode == http.StatusOK {
+		return false, nil
+	}
+	body, _ := io.ReadAll(response.Body)
+	uploadErr := &demoDebugLogUploadError{status: response.Status, statusCode: response.StatusCode, body: body}
+	return response.StatusCode >= http.StatusInternalServerError, uploadErr
+}
+
+func isDemoDebugLogAuthFailure(err error) bool {
+	var uploadErr *demoDebugLogUploadError
+	return errors.As(err, &uploadErr) && (uploadErr.statusCode == http.StatusUnauthorized || uploadErr.statusCode == http.StatusForbidden)
 }
