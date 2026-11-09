@@ -67,13 +67,14 @@ func TestPostDemoDebugLogRetriesOnceOnANetworkError(t *testing.T) {
 
 func TestPostDemoDebugLogDoesNotRetryAnInvalidEndpoint(t *testing.T) {
 	transport := &failingDemoTransport{}
+	retryDelay := 100 * time.Millisecond
 	startedAt := time.Now()
 
-	err := postDemoDebugLog(&http.Client{Transport: transport}, "://no-scheme", "Token abc", []byte("{}"), time.Minute)
+	err := postDemoDebugLog(&http.Client{Transport: transport}, "://no-scheme", "Token abc", []byte("{}"), retryDelay)
 
 	require.Error(t, err)
 	assert.Zero(t, transport.attempts)
-	assert.Less(t, time.Since(startedAt), time.Minute)
+	assert.Less(t, time.Since(startedAt), retryDelay)
 }
 
 type failingDemoTransport struct {
