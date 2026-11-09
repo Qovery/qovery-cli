@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -54,11 +55,11 @@ func demoFailureDetails(err error) (string, string) {
 }
 
 func demoSubnetInUseError(networkName string) error {
-	hint := fmt.Sprintf("Remove this network with `docker network rm %s`, then run `qovery demo up` again.", networkName)
+	hint := fmt.Sprintf("Remove this network with `docker network rm %s`, then run `qovery demo up` again.", demoShellQuote(networkName))
 	if clusterName, isK3d := strings.CutPrefix(networkName, "k3d-"); isK3d {
 		hint = fmt.Sprintf(
 			"k3d created it for the cluster %q. If it is an old demo cluster, delete it with `k3d cluster delete %s`. If that cluster no longer exists, remove the network with `docker network rm %s`. Then run `qovery demo up` again.",
-			clusterName, clusterName, networkName,
+			clusterName, demoShellQuote(clusterName), demoShellQuote(networkName),
 		)
 	}
 	return newDemoFailure(
@@ -66,6 +67,15 @@ func demoSubnetInUseError(networkName string) error {
 		fmt.Sprintf("Another Docker network already uses the demo subnet %s.", demoSubnet),
 		fmt.Errorf("the Docker network %q already uses the demo subnet %s\n%s", networkName, demoSubnet, hint),
 	)
+}
+
+var demoShellSafeWord = regexp.MustCompile(`^[A-Za-z0-9_.-]+$`)
+
+func demoShellQuote(word string) string {
+	if demoShellSafeWord.MatchString(word) {
+		return word
+	}
+	return "'" + strings.ReplaceAll(word, "'", `'\''`) + "'"
 }
 
 var demoDependencyInstallDocs = map[string]string{

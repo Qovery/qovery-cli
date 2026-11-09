@@ -192,6 +192,13 @@ func TestDemoEnsureK3dClusterRefusesASubnetAlreadyInUse(t *testing.T) {
 				"If that cluster no longer exists, remove the network with `docker network rm k3d-local-demo-old`. Then run `qovery demo up` again.",
 		},
 		{
+			name:    "network name with shell metacharacters",
+			network: `{"Name":"k3d-x;touch pwned","IPAM":{"Config":[{"Subnet":"172.42.0.0/24"}]}}`,
+			message: "the Docker network \"k3d-x;touch pwned\" already uses the demo subnet 172.42.0.0/16\n" +
+				"k3d created it for the cluster \"x;touch pwned\". If it is an old demo cluster, delete it with `k3d cluster delete 'x;touch pwned'`. " +
+				"If that cluster no longer exists, remove the network with `docker network rm 'k3d-x;touch pwned'`. Then run `qovery demo up` again.",
+		},
+		{
 			name:    "other network with a wider range",
 			network: `{"Name":"vpn","IPAM":{"Config":[{"Subnet":"172.40.0.0/13"}]}}`,
 			message: "the Docker network \"vpn\" already uses the demo subnet 172.42.0.0/16\n" +
@@ -268,6 +275,14 @@ func TestDemoEnsureK3dClusterCreatesTheClusterWhenTheSubnetCheckCannotDecide(t *
 			assert.Equal(t, []string{"k3d", "cluster", "create", "local-demo-user"}, runner.calls[createIndex][:4])
 		})
 	}
+}
+
+func TestDemoShellQuote(t *testing.T) {
+	assert.Equal(t, "k3d-local-demo_1.2", demoShellQuote("k3d-local-demo_1.2"))
+	assert.Equal(t, "'a b'", demoShellQuote("a b"))
+	assert.Equal(t, "'$(id)'", demoShellQuote("$(id)"))
+	assert.Equal(t, `'it'\''s'`, demoShellQuote("it's"))
+	assert.Equal(t, "''", demoShellQuote(""))
 }
 
 type missingCommandsDemoRunner struct {
