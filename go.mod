@@ -8,11 +8,11 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/Masterminds/semver/v3 v3.5.0
 	github.com/appscode/go-querystring v0.0.0-20170504095604-0126cfb3f1dc
-	github.com/aws/aws-sdk-go-v2 v1.47.5
+	github.com/aws/aws-sdk-go-v2 v1.48.0
 	github.com/aws/aws-sdk-go-v2/config v1.33.13
 	github.com/aws/aws-sdk-go-v2/credentials v1.20.13
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.114.6
-	github.com/aws/smithy-go v1.28.7
+	github.com/aws/smithy-go v1.28.9
 	github.com/containerd/console v1.0.5
 	github.com/fatih/color v1.19.0
 	github.com/go-errors/errors v1.5.1

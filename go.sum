@@ -20,8 +20,8 @@ github.com/andybalholm/brotli v1.2.7 h1:UgafRPGMam5ySHfRkhthMqOFA6IFoeF3D7mWIDLj
 github.com/andybalholm/brotli v1.2.7/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
 github.com/appscode/go-querystring v0.0.0-20170504095604-0126cfb3f1dc h1:LoL75er+LKDHDUfU5tRvFwxH0LjPpZN8OoG8Ll+liGU=
 github.com/appscode/go-querystring v0.0.0-20170504095604-0126cfb3f1dc/go.mod h1:w648aMHEgFYS6xb0KVMMtZ2uMeemhiKCuD2vj6gY52A=
-github.com/aws/aws-sdk-go-v2 v1.47.5 h1:5yA+A+BiXbDq1ZLbYwPViwhEGDMdR0MEhL8Jh2LnLS4=
-github.com/aws/aws-sdk-go-v2 v1.47.5/go.mod h1:iNIkogrRvFwm+1OQIUOP2lPBtlXZboOIUWiCa+pHEMw=
+github.com/aws/aws-sdk-go-v2 v1.48.0 h1:tFU7EJVm7MfyaXLsXdYTZ0Vd6vwt9OljCyqq0gqk0Mc=
+github.com/aws/aws-sdk-go-v2 v1.48.0/go.mod h1:oeKU5p+TQBnpeLmU42WZLWvzv+ORLn+74n4QVLnm/Z0=
 github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.25 h1:MW0Iql1SOTgQPj8mCxrU/eH/K/AIDWi08ItOsXaWRLU=
 github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.25/go.mod h1:+ucVYmHYB3JqVueY0E1RHahdXAnKQbIHqybSbvOUbOM=
 github.com/aws/aws-sdk-go-v2/config v1.33.13 h1:u52x6ISQOx172tpwM0VRxhJzEsTJYpMcEYUGM2A1wrw=
@@ -54,8 +54,8 @@ github.com/aws/aws-sdk-go-v2/service/ssooidc v1.44.1 h1:w8yui2ZqdHmGwVBDGvazoIvK
 github.com/aws/aws-sdk-go-v2/service/ssooidc v1.44.1/go.mod h1:gJSdIY6YUzDvqQLcMtPVZgBRHrFwzHryvpE8Igzbxps=
 github.com/aws/aws-sdk-go-v2/service/sts v1.51.6 h1:BVjKrtRUtSYKztBCCfE1oAB+d3ViKcW2cKZfserOqMQ=
 github.com/aws/aws-sdk-go-v2/service/sts v1.51.6/go.mod h1:eSukFLeLkPMm+1OxDR+F0joauZdyBkF47Ow7MqjZiJw=
-github.com/aws/smithy-go v1.28.7 h1:h/n1SHrwVtaDYLz8mR1/Kq4Xh4RaFbFW7bOYckg9mfE=
-github.com/aws/smithy-go v1.28.7/go.mod h1:YE2RhdIuDbA5E5bTdciG9KrW3+TiEONeUWCqxX9i1Fc=
+github.com/aws/smithy-go v1.28.9 h1:zkZ058OpNX0iGTK24b+ZUEQSMc11CBA6oO7xtKZfzkY=
+github.com/aws/smithy-go v1.28.9/go.mod h1:YE2RhdIuDbA5E5bTdciG9KrW3+TiEONeUWCqxX9i1Fc=
 github.com/bodgit/plumbing v1.3.0 h1:pf9Itz1JOQgn7vEOE7v7nlEfBykYqvUYioC61TwWCFU=
 github.com/bodgit/plumbing v1.3.0/go.mod h1:JOTb4XiRu5xfnmdnDJo6GmSbSbtSyufrsyZFByMtKEs=
 github.com/bodgit/sevenzip v1.6.2 h1:6/0mwj5KaRXpuf9iSiE+VpG7VpzFJ8D60P53VjxRv34=
