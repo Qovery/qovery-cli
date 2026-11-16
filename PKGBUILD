@@ -16,6 +16,8 @@ build() {
     export CGO_CXXFLAGS="${CXXFLAGS}"
     export GOFLAGS="-buildmode=pie -trimpath -mod=readonly -modcacherw"
     export CGO_ENABLED=0
+    # Skip mise configs in the source (.mise.toml) so a mise `go` shim does not prompt for trust
+    export MISE_IGNORED_CONFIG_PATHS="$srcdir${MISE_IGNORED_CONFIG_PATHS:+:$MISE_IGNORED_CONFIG_PATHS}"
     go build -ldflags "-X github.com/qovery/qovery-cli/utils.Version=$pkgver" -o $pkgname main.go
 }
 
