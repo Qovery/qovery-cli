@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/qovery/qovery-client-go"
 
 	"github.com/qovery/qovery-cli/utils"
@@ -568,7 +569,7 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 						err = service.deployCluster(cluster.ClusterId, service.DryRunDisabled)
 					}
 					if err != nil {
-						utils.Println(fmt.Sprintf("[Organization '%s' - Cluster '%s'] - Error on deploy: %s ", cluster.OrganizationName, cluster.ClusterName, err))
+						utils.Println(color.RedString("[Organization '%s' - Cluster '%s'] - Error on deploy: %s ", cluster.OrganizationName, cluster.ClusterName, err))
 					}
 					cluster.CurrentStatus = "DEPLOYING"
 					currentDeployingClustersByClusterId[cluster.ClusterId] = cluster
@@ -611,7 +612,7 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 			cluster.CurrentStatus = status
 			// Mark the deployment as finished only if terminal state OR status is "INTERNAL_ERROR" (specific case)
 			if utils.IsTerminalClusterState(clusterStatus.Status) || cluster.CurrentStatus == "INTERNAL_ERROR" {
-				utils.Println(fmt.Sprintf("[Organization '%s' - Cluster '%s'] - Cluster deployed with '%s' status ", cluster.OrganizationName, cluster.ClusterName, clusterStatus.Status))
+				utils.Println(clusterStatusColor(status).Sprintf("[Organization '%s' - Cluster '%s'] - Cluster deployed with '%s' status ", cluster.OrganizationName, cluster.ClusterName, status))
 
 				processedClusters = append(processedClusters, cluster)
 				clustersToRemoveFromMap = append(clustersToRemoveFromMap, clusterId)
@@ -635,6 +636,25 @@ func (service AdminClusterBatchDeployServiceImpl) Deploy(clusters []ClusterDetai
 		ProcessedClusters: processedClusters,
 		PendingClusters:   pendingClusters,
 	}, nil
+}
+
+// clusterStatusColor returns the color of the line that ends a cluster deployment, so
+// successes and failures stand out in a long batch log. fatih/color prints plain text
+// when stdout is not a terminal, NO_COLOR is set or TERM=dumb.
+func clusterStatusColor(status string) *color.Color {
+	switch {
+	case status == string(qovery.CLUSTERSTATEENUM_DEPLOYED),
+		status == string(qovery.CLUSTERSTATEENUM_READY),
+		status == string(qovery.CLUSTERSTATEENUM_RESTARTED):
+		return color.New(color.FgGreen)
+	// INTERNAL_ERROR is not in the enum but the API can return it
+	case strings.HasSuffix(status, "ERROR"),
+		status == string(qovery.CLUSTERSTATEENUM_INVALID_CREDENTIALS):
+		return color.New(color.FgRed)
+	default:
+		// stopped, canceled or deleted: the deployment did not fail, but did not deploy either
+		return color.New(color.FgYellow)
+	}
 }
 
 func (service AdminClusterBatchDeployServiceImpl) deployCluster(clusterId string, dryRunDisabled bool) error {
