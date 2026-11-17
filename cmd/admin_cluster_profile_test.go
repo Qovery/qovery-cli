@@ -141,25 +141,76 @@ func TestUpdateClusterProfilesSendsTheWholeClusterAndChecksTheResult(t *testing.
 	defer httpmock.DeactivateAndReset()
 	clusterURL := testProfileBaseURL + "/organization/" + testProfileOrganizationID + "/cluster"
 
+	stored := testProfileCluster(t, "LOW", false)
 	var sent map[string]any
 	httpmock.RegisterResponder("PUT", clusterURL+"/"+testProfileClusterID,
 		func(req *http.Request) (*http.Response, error) {
 			body, _ := io.ReadAll(req.Body)
 			require.NoError(t, json.Unmarshal(body, &sent))
 			assert.Equal(t, "application/json", req.Header.Get("Content-Type"))
+			stored = sent
 			return httpmock.NewJsonResponse(200, sent)
 		})
 	httpmock.RegisterResponder("GET", clusterURL,
 		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewJsonResponse(200, map[string]any{"results": []any{sent}})
+			return httpmock.NewJsonResponse(200, map[string]any{"results": []any{stored}})
 		})
 
 	err := updateClusterProfiles(testProfileAPI(), testProfileOrganizationID, testProfileClusterID,
-		testProfileCluster(t, "LOW", false),
 		clusterProfileChanges{observabilityResourceProfile: profilePointer(clusterResourceProfileNormal)})
 
 	require.NoError(t, err)
 	assert.Equal(t, testProfileCluster(t, "NORMAL", false), sent)
+}
+
+func TestUpdateClusterProfilesStartsFromTheCurrentCluster(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	clusterURL := testProfileBaseURL + "/organization/" + testProfileOrganizationID + "/cluster"
+
+	stored := testProfileCluster(t, "LOW", false)
+	stored["name"] = "renamed-while-the-prompt-was-open"
+	var sent map[string]any
+	httpmock.RegisterResponder("PUT", clusterURL+"/"+testProfileClusterID,
+		func(req *http.Request) (*http.Response, error) {
+			body, _ := io.ReadAll(req.Body)
+			require.NoError(t, json.Unmarshal(body, &sent))
+			stored = sent
+			return httpmock.NewJsonResponse(200, sent)
+		})
+	httpmock.RegisterResponder("GET", clusterURL,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, map[string]any{"results": []any{stored}})
+		})
+
+	err := updateClusterProfiles(testProfileAPI(), testProfileOrganizationID, testProfileClusterID,
+		clusterProfileChanges{observabilityResourceProfile: profilePointer(clusterResourceProfileNormal)})
+
+	require.NoError(t, err)
+	assert.Equal(t, "renamed-while-the-prompt-was-open", sent["name"])
+}
+
+func TestUpdateClusterProfilesIgnoresProfilesItDidNotChange(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	clusterURL := testProfileBaseURL + "/organization/" + testProfileOrganizationID + "/cluster"
+
+	stored := testProfileCluster(t, "LOW", false)
+	stored["keda"] = nil
+	httpmock.RegisterResponder("PUT", clusterURL+"/"+testProfileClusterID,
+		func(req *http.Request) (*http.Response, error) {
+			stored = testProfileCluster(t, "NORMAL", false)
+			return httpmock.NewJsonResponse(200, stored)
+		})
+	httpmock.RegisterResponder("GET", clusterURL,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, map[string]any{"results": []any{stored}})
+		})
+
+	err := updateClusterProfiles(testProfileAPI(), testProfileOrganizationID, testProfileClusterID,
+		clusterProfileChanges{observabilityResourceProfile: profilePointer(clusterResourceProfileNormal)})
+
+	assert.NoError(t, err)
 }
 
 func TestUpdateClusterProfilesFailsWhenTheAPIDoesNotSave(t *testing.T) {
@@ -174,7 +225,6 @@ func TestUpdateClusterProfilesFailsWhenTheAPIDoesNotSave(t *testing.T) {
 		})
 
 	err := updateClusterProfiles(testProfileAPI(), testProfileOrganizationID, testProfileClusterID,
-		testProfileCluster(t, "LOW", false),
 		clusterProfileChanges{observabilityResourceProfile: profilePointer(clusterResourceProfileNormal)})
 
 	assert.EqualError(t, err, "the API accepted the update but did not save the new profiles")
