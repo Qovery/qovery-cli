@@ -226,11 +226,31 @@ func (a *clusterProfileAPI) deployCluster(organizationID string, clusterID strin
 	return err
 }
 
-func updateClusterProfiles(api *clusterProfileAPI, organizationID string, clusterID string, cluster map[string]any, changes clusterProfileChanges) error {
+func (c clusterProfileChanges) savedIn(profiles clusterProfiles) bool {
+	if c.observabilityResourceProfile != nil && string(*c.observabilityResourceProfile) != profiles.observabilityResourceProfile {
+		return false
+	}
+	if c.observabilityHighAvailability != nil &&
+		(profiles.observabilityHighAvailability == nil || *c.observabilityHighAvailability != *profiles.observabilityHighAvailability) {
+		return false
+	}
+	if c.kedaResourceProfile != nil && string(*c.kedaResourceProfile) != profiles.kedaResourceProfile {
+		return false
+	}
+	if c.kedaAvailabilityProfile != nil && string(*c.kedaAvailabilityProfile) != profiles.kedaAvailabilityProfile {
+		return false
+	}
+	return true
+}
+
+func updateClusterProfiles(api *clusterProfileAPI, organizationID string, clusterID string, changes clusterProfileChanges) error {
+	cluster, err := api.cluster(organizationID, clusterID)
+	if err != nil {
+		return err
+	}
 	if err := applyClusterProfileChanges(cluster, changes); err != nil {
 		return err
 	}
-	expected := readClusterProfiles(cluster)
 	if err := api.editCluster(organizationID, clusterID, cluster); err != nil {
 		return err
 	}
@@ -238,7 +258,7 @@ func updateClusterProfiles(api *clusterProfileAPI, organizationID string, cluste
 	if err != nil {
 		return err
 	}
-	if !slices.EqualFunc(readClusterProfiles(saved).rows(), expected.rows(), slices.Equal[[]string]) {
+	if !changes.savedIn(readClusterProfiles(saved)) {
 		return errors.New("the API accepted the update but did not save the new profiles")
 	}
 	return nil
@@ -321,14 +341,10 @@ qovery admin cluster profile set --organization-id <org-id> --cluster-id <cluste
 		exitOnClusterProfileError(err)
 
 		before := readClusterProfiles(cluster)
-		preview := map[string]any{
-			"metrics_parameters": cloneJSONObject(jsonObject(cluster, "metrics_parameters")),
-			"keda":               cloneJSONObject(jsonObject(cluster, "keda")),
-		}
-		exitOnClusterProfileError(applyClusterProfileChanges(preview, changes))
+		exitOnClusterProfileError(applyClusterProfileChanges(cluster, changes))
 		exitOnClusterProfileError(utils.PrintTable(
 			[]string{"Setting", "Current", "New"},
-			clusterProfileChangeRows(before, readClusterProfiles(preview)),
+			clusterProfileChangeRows(before, readClusterProfiles(cluster)),
 		))
 
 		if !adminClusterProfileNoConfirm && !utils.Validate("profile update") {
@@ -336,7 +352,7 @@ qovery admin cluster profile set --organization-id <org-id> --cluster-id <cluste
 			return
 		}
 
-		exitOnClusterProfileError(updateClusterProfiles(api, adminClusterProfileOrganizationID, adminClusterProfileClusterID, cluster, changes))
+		exitOnClusterProfileError(updateClusterProfiles(api, adminClusterProfileOrganizationID, adminClusterProfileClusterID, changes))
 		utils.PrintlnInfo("profiles updated")
 
 		if !adminClusterProfileDeploy {
@@ -379,21 +395,6 @@ func clusterProfileChangesFromFlags(cmd *cobra.Command) (clusterProfileChanges, 
 		return changes, errors.New("nothing to change: set at least one profile flag")
 	}
 	return changes, nil
-}
-
-func cloneJSONObject(object map[string]any) map[string]any {
-	if object == nil {
-		return nil
-	}
-	clone := make(map[string]any, len(object))
-	for key, value := range object {
-		if nested, ok := value.(map[string]any); ok {
-			clone[key] = cloneJSONObject(nested)
-		} else {
-			clone[key] = value
-		}
-	}
-	return clone
 }
 
 func exitOnClusterProfileError(err error) {
