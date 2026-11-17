@@ -157,6 +157,7 @@ func TestUpdateClusterProfilesSendsTheWholeClusterAndChecksTheResult(t *testing.
 		})
 
 	err := updateClusterProfiles(testProfileAPI(), testProfileOrganizationID, testProfileClusterID,
+		readClusterProfiles(stored),
 		clusterProfileChanges{observabilityResourceProfile: profilePointer(clusterResourceProfileNormal)})
 
 	require.NoError(t, err)
@@ -184,6 +185,7 @@ func TestUpdateClusterProfilesStartsFromTheCurrentCluster(t *testing.T) {
 		})
 
 	err := updateClusterProfiles(testProfileAPI(), testProfileOrganizationID, testProfileClusterID,
+		readClusterProfiles(stored),
 		clusterProfileChanges{observabilityResourceProfile: profilePointer(clusterResourceProfileNormal)})
 
 	require.NoError(t, err)
@@ -197,8 +199,11 @@ func TestUpdateClusterProfilesIgnoresProfilesItDidNotChange(t *testing.T) {
 
 	stored := testProfileCluster(t, "LOW", false)
 	stored["keda"] = nil
+	var sent map[string]any
 	httpmock.RegisterResponder("PUT", clusterURL+"/"+testProfileClusterID,
 		func(req *http.Request) (*http.Response, error) {
+			body, _ := io.ReadAll(req.Body)
+			require.NoError(t, json.Unmarshal(body, &sent))
 			stored = testProfileCluster(t, "NORMAL", false)
 			return httpmock.NewJsonResponse(200, stored)
 		})
@@ -208,9 +213,31 @@ func TestUpdateClusterProfilesIgnoresProfilesItDidNotChange(t *testing.T) {
 		})
 
 	err := updateClusterProfiles(testProfileAPI(), testProfileOrganizationID, testProfileClusterID,
+		readClusterProfiles(stored),
 		clusterProfileChanges{observabilityResourceProfile: profilePointer(clusterResourceProfileNormal)})
 
 	assert.NoError(t, err)
+	assert.Contains(t, sent, "keda")
+	assert.Nil(t, sent["keda"])
+}
+
+func TestUpdateClusterProfilesRefusesProfilesChangedSinceTheConfirmation(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	clusterURL := testProfileBaseURL + "/organization/" + testProfileOrganizationID + "/cluster"
+
+	httpmock.RegisterResponder("PUT", clusterURL+"/"+testProfileClusterID, httpmock.NewStringResponder(200, `{}`))
+	httpmock.RegisterResponder("GET", clusterURL,
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, map[string]any{"results": []any{testProfileCluster(t, "HIGH", false)}})
+		})
+
+	err := updateClusterProfiles(testProfileAPI(), testProfileOrganizationID, testProfileClusterID,
+		readClusterProfiles(testProfileCluster(t, "LOW", false)),
+		clusterProfileChanges{observabilityResourceProfile: profilePointer(clusterResourceProfileNormal)})
+
+	assert.ErrorContains(t, err, "changed since the confirmation")
+	assert.Zero(t, httpmock.GetCallCountInfo()["PUT "+clusterURL+"/"+testProfileClusterID])
 }
 
 func TestUpdateClusterProfilesFailsWhenTheAPIDoesNotSave(t *testing.T) {
@@ -225,6 +252,7 @@ func TestUpdateClusterProfilesFailsWhenTheAPIDoesNotSave(t *testing.T) {
 		})
 
 	err := updateClusterProfiles(testProfileAPI(), testProfileOrganizationID, testProfileClusterID,
+		readClusterProfiles(testProfileCluster(t, "LOW", false)),
 		clusterProfileChanges{observabilityResourceProfile: profilePointer(clusterResourceProfileNormal)})
 
 	assert.EqualError(t, err, "the API accepted the update but did not save the new profiles")

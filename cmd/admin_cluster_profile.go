@@ -243,10 +243,13 @@ func (c clusterProfileChanges) savedIn(profiles clusterProfiles) bool {
 	return true
 }
 
-func updateClusterProfiles(api *clusterProfileAPI, organizationID string, clusterID string, changes clusterProfileChanges) error {
+func updateClusterProfiles(api *clusterProfileAPI, organizationID string, clusterID string, confirmed clusterProfiles, changes clusterProfileChanges) error {
 	cluster, err := api.cluster(organizationID, clusterID)
 	if err != nil {
 		return err
+	}
+	if !slices.EqualFunc(readClusterProfiles(cluster).rows(), confirmed.rows(), slices.Equal[[]string]) {
+		return errors.New("the cluster profiles changed since the confirmation: nothing was updated, run the command again")
 	}
 	if err := applyClusterProfileChanges(cluster, changes); err != nil {
 		return err
@@ -352,7 +355,7 @@ qovery admin cluster profile set --organization-id <org-id> --cluster-id <cluste
 			return
 		}
 
-		exitOnClusterProfileError(updateClusterProfiles(api, adminClusterProfileOrganizationID, adminClusterProfileClusterID, changes))
+		exitOnClusterProfileError(updateClusterProfiles(api, adminClusterProfileOrganizationID, adminClusterProfileClusterID, before, changes))
 		utils.PrintlnInfo("profiles updated")
 
 		if !adminClusterProfileDeploy {
