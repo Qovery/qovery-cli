@@ -1,0 +1,38 @@
+name: "Actions Lock"
+
+# Supply-chain guard for .github/workflows/actions.lock.
+#
+# Workflows reference actions by readable semver tag (e.g. actions/checkout@v5.1.0);
+# the lockfile binds each tag to an immutable commit SHA plus the upstream owner
+# and repo IDs. A tag repointed under us, or a repo name reclaimed by someone
+# else after a rename or deletion, no longer matches the lockfile and this job
+# fails before the action can run with our secrets.
+#
+# When this fails on a legitimate upgrade, refresh the lockfile and commit it:
+#   gh actions-lock             # re-pin after adding a workflow or changing a uses:
+#   gh actions-lock --relock    # advance moved refs to their current upstream commit
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-lockfile:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v5.1.0
+
+      # Pinned so the guard itself isn't fetched from a mutable "latest".
+      - name: Install gh-actions-lock
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh extension install github/gh-actions-lock --pin v0.4.1
+
+      - name: Verify lockfile
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh actions-lock --verify --no-interactive
