@@ -1591,7 +1591,7 @@ func DeployContainers(client *qovery.APIClient, envId string, containerList []*q
 		Jobs:         nil,
 	}
 
-	return deployAllServices(client, envId, req)
+	return withAPIErrorDetail(deployAllServices(client, envId, req))
 }
 
 // DeployContainersAtCommit deploys each Git container at commitId. It checks every container
@@ -1607,7 +1607,7 @@ func DeployContainersAtCommit(client *qovery.APIClient, containerList []*qovery.
 		req := qovery.ContainerDeployRequest{GitCommitId: *qovery.NewNullableString(&commitId)}
 		_, _, err := client.ContainerActionsAPI.DeployContainer(context.Background(), container.Id).ContainerDeployRequest(req).Execute()
 		if err != nil {
-			return fmt.Errorf("cannot deploy container %s at commit %s: %w", container.Name, commitId, err)
+			return fmt.Errorf("cannot deploy container %s at commit %s: %w", container.Name, commitId, withAPIErrorDetail(err))
 		}
 	}
 

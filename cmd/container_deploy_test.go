@@ -26,11 +26,20 @@ type recordedRequest struct {
 
 func newRecordingQoveryClient(t *testing.T) (*qovery.APIClient, *[]recordedRequest) {
 	t.Helper()
+	return newRecordingQoveryClientRespondingWith(t, http.StatusAccepted, "")
+}
+
+func newRecordingQoveryClientRespondingWith(t *testing.T, status int, responseBody string) (*qovery.APIClient, *[]recordedRequest) {
+	t.Helper()
 	var requests []recordedRequest
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		body, _ := io.ReadAll(request.Body)
 		requests = append(requests, recordedRequest{method: request.Method, path: request.URL.Path, body: string(body)})
-		writer.WriteHeader(http.StatusAccepted)
+		if responseBody != "" {
+			writer.Header().Set("Content-Type", "application/json")
+		}
+		writer.WriteHeader(status)
+		_, _ = io.WriteString(writer, responseBody)
 	}))
 	t.Cleanup(server.Close)
 
@@ -165,5 +174,31 @@ func TestContainerDeployWithoutVersionSendsNoTagForGitContainer(t *testing.T) {
 	}
 	if body.Containers[2].ImageTag != nil {
 		t.Errorf("expected no image tag for the Git container, got %s", *body.Containers[2].ImageTag)
+	}
+}
+
+func TestContainerDeployErrorKeepsTheApiMessage(t *testing.T) {
+	gitContainer := containerWithSource(t, "container-git", "api", gitContainerSourceJson)
+	imageContainer := containerWithSource(t, "container-image", "web", imageContainerSourceJson)
+	cases := []struct {
+		name       string
+		containers []*qovery.ContainerResponse
+		tag        string
+		commitId   string
+	}{
+		{name: "commit on a Git container", containers: []*qovery.ContainerResponse{gitContainer}, commitId: "9b8a7c6"},
+		{name: "tag on an image container", containers: []*qovery.ContainerResponse{imageContainer}, tag: "v2"},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			client, _ := newRecordingQoveryClientRespondingWith(t, http.StatusBadRequest,
+				`{"status":400,"detail":"the requested version does not exist"}`)
+
+			err := deployContainers(client, "env-1", c.containers, c.tag, c.commitId)
+			if err == nil || !strings.Contains(err.Error(), "the requested version does not exist") {
+				t.Fatalf("expected the API message in the error, got %v", err)
+			}
+		})
 	}
 }
