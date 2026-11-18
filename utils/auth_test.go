@@ -21,10 +21,14 @@ const (
 )
 
 // accessTokenIssuedBy builds an access token shaped like the ones Auth0 issues: a JWT whose azp claim is the client
-// the user signed in with
+// the user signed in with. An empty client leaves the azp claim out.
 func accessTokenIssuedBy(t *testing.T, client string) AccessToken {
 	t.Helper()
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": "user-1", "azp": client}).SignedString([]byte("test"))
+	claims := jwt.MapClaims{"sub": "user-1"}
+	if client != "" {
+		claims["azp"] = client
+	}
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte("test"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +91,8 @@ func TestGetAccessToken_RefreshesWithTheClientThatIssuedTheStoredToken(t *testin
 	}{
 		{"session opened with 'qovery auth --headless'", func(t *testing.T) AccessToken { return accessTokenIssuedBy(t, testHeadlessClient) }, testHeadlessClient},
 		{"session opened with 'qovery auth'", func(t *testing.T) AccessToken { return accessTokenIssuedBy(t, testBrowserClient) }, testBrowserClient},
-		{"stored token without a readable client", func(t *testing.T) AccessToken { return "opaque-access-token" }, testBrowserClient},
+		{"stored token without the azp claim", func(t *testing.T) AccessToken { return accessTokenIssuedBy(t, "") }, testBrowserClient},
+		{"stored token that is not a JWT", func(t *testing.T) AccessToken { return "opaque-access-token" }, testBrowserClient},
 	}
 
 	for _, tt := range tests {
@@ -142,6 +147,34 @@ func TestGetAccessToken_FailedRefreshKeepsTheStoredSession(t *testing.T) {
 			`{"error":"invalid_grant","error_description":"Unknown or invalid refresh token."}`,
 			true,
 			"Unknown or invalid refresh token.",
+		},
+		{
+			"refresh request refused with 400 -> sign-in required",
+			http.StatusBadRequest,
+			`{"error":"invalid_request","error_description":"Missing required parameter: refresh_token"}`,
+			true,
+			"Missing required parameter: refresh_token",
+		},
+		{
+			"refresh request refused with 401 -> sign-in required",
+			http.StatusUnauthorized,
+			`{"error":"access_denied","error_description":"Unauthorized"}`,
+			true,
+			"Unauthorized",
+		},
+		{
+			"rejection without a description -> sign-in required, error code reported",
+			http.StatusForbidden,
+			`{"error":"invalid_grant"}`,
+			true,
+			"invalid_grant",
+		},
+		{
+			"rejection without a readable body -> sign-in required, status reported",
+			http.StatusForbidden,
+			`not json`,
+			true,
+			"403 Forbidden",
 		},
 		{
 			"authentication server unavailable -> transient error, not sign-in",

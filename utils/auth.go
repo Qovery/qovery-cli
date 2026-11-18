@@ -69,6 +69,9 @@ func RefreshAccessToken(token RefreshToken, clientId string) (AccessToken, error
 		reason := tokenErrorResponse{}
 		_ = json.NewDecoder(res.Body).Decode(&reason)
 		if reason.ErrorDescription == "" {
+			reason.ErrorDescription = reason.Error
+		}
+		if reason.ErrorDescription == "" {
 			reason.ErrorDescription = res.Status
 		}
 		return "", fmt.Errorf("could not reauthenticate automatically: %s Please, %w. ", reason.ErrorDescription, ErrSignInRequired)
