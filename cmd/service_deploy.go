@@ -28,7 +28,10 @@ This command works with applications, containers, databases, jobs (cronjobs and 
 
 The --version parameter accepts:
   - Git commit IDs (for applications, git-based jobs, git-based helms)
-  - Container image tags (for containers, image-based jobs)
+  - Container image tags (for image containers, image-based jobs)
+
+A Git container takes no --version: it deploys its current commit. To deploy another
+commit, use: qovery container deploy -n my-container --commit-id abc123
   - Helm chart versions (for helm repository charts)
 
 For helm charts, you can also specify:
@@ -77,6 +80,11 @@ Examples:
 			case utils.HelmType:
 				helms = append(helms, svc.Helm)
 			}
+		}
+
+		// checked before any deploy so a rejected container leaves the other services untouched
+		for _, container := range containers {
+			checkError(utils.CheckContainerImageTag(container, serviceDeployVersion))
 		}
 
 		watch := utils.NewServicesWatch(client, envId, utils.Map(servicesToDeploy, serviceDeployId), serviceDeployWatchFlag)
