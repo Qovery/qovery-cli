@@ -362,7 +362,7 @@ func GetAccessToken(skipOrgaCheck bool) (AccessTokenType, AccessToken, error) {
 	}
 
 	// Means the token is expired or invalid. Try to refresh it
-	if token, err = RefreshAccessToken(context.RefreshToken); err != nil {
+	if token, err = RefreshAccessToken(context.RefreshToken, oAuthClientOf(context.AccessToken)); err != nil {
 		return "", "", err
 	}
 
