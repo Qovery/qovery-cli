@@ -28,6 +28,7 @@ Source: https://github.com/Qovery/qovery-skills`,
 
 var skillsInstallCmd = &cobra.Command{
 	Use:   "install",
+	Args:  cobra.NoArgs,
 	Short: "Install or update the Qovery skills",
 	Long: `Install the Qovery skills, globally by default or in the current project with --project.
 Run it again to update them to the latest version.`,
@@ -42,6 +43,7 @@ Run it again to update them to the latest version.`,
 
 var skillsStatusCmd = &cobra.Command{
 	Use:   "status",
+	Args:  cobra.NoArgs,
 	Short: "Show where the Qovery skills are installed",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
@@ -58,6 +60,7 @@ var skillsStatusCmd = &cobra.Command{
 
 var skillsUninstallCmd = &cobra.Command{
 	Use:   "uninstall",
+	Args:  cobra.NoArgs,
 	Short: "Remove the Qovery skills from every location",
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)

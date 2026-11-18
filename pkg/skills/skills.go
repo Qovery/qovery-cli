@@ -22,6 +22,8 @@ const (
 	// routerSkill is installed with every other Qovery skill: finding it is enough to know the skills are there
 	routerSkill = "qovery"
 	versionFile = "_version.txt"
+
+	maxInstallerSize = 1 << 20
 )
 
 // Installation is one directory where the Qovery skills are installed
@@ -163,10 +165,14 @@ func downloadInstaller() (string, error) {
 		return "", fmt.Errorf("cannot download the skills installer: %s returned %s", InstallScriptURL, res.Status)
 	}
 
-	// The installer is a few kilobytes: cap the read so a broken response cannot fill the disk
-	content, err := io.ReadAll(io.LimitReader(res.Body, 1<<20))
+	// The installer is a few kilobytes: cap the read so a broken response cannot fill the disk,
+	// and reject an oversized one rather than running a truncated script
+	content, err := io.ReadAll(io.LimitReader(res.Body, maxInstallerSize+1))
 	if err != nil {
 		return "", fmt.Errorf("cannot download the skills installer: %w", err)
+	}
+	if len(content) > maxInstallerSize {
+		return "", fmt.Errorf("cannot download the skills installer: the response is larger than %d bytes", maxInstallerSize)
 	}
 	if !strings.HasPrefix(string(content), "#!") {
 		return "", errors.New("cannot download the skills installer: the response is not a shell script")

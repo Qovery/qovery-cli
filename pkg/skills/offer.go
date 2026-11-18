@@ -62,6 +62,7 @@ type offer struct {
 	cwd         string
 	statePath   string
 	interactive bool
+	headless    bool
 	getenv      func(string) string
 	now         func() time.Time
 	install     func(stdout io.Writer, stderr io.Writer) error
@@ -69,8 +70,8 @@ type offer struct {
 }
 
 // OfferAfterAuth suggests installing the Qovery skills right after a successful 'qovery auth'.
-// It never blocks a script or an agent: without a terminal it only prints a one-line tip on stderr.
-func OfferAfterAuth(cmd *cobra.Command) {
+// It never blocks a script or an agent: in headless mode or without a terminal it only prints a one-line tip on stderr.
+func OfferAfterAuth(cmd *cobra.Command, headless bool) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return
@@ -92,6 +93,7 @@ func OfferAfterAuth(cmd *cobra.Command) {
 		cwd:         cwd,
 		statePath:   filepath.Join(qoveryDir, stateFileName),
 		interactive: term.IsTerminal(int(os.Stdin.Fd())) && term.IsTerminal(int(os.Stdout.Fd())),
+		headless:    headless,
 		getenv:      os.Getenv,
 		now:         time.Now,
 		install: func(stdout io.Writer, stderr io.Writer) error {
@@ -114,8 +116,9 @@ func (o offer) run() {
 	agentTools := detectAgentTools(o.home)
 	properties := posthog.Properties{"agent_tools": strings.Join(agentTools, ",")}
 
-	// An agent or a script ran 'qovery auth': a question would hang it, a tip on stderr will not
-	if !o.interactive {
+	// An agent or a script ran 'qovery auth': a question would hang it, a tip on stderr will not.
+	// Headless auth gets the tip too, as agents running it may be attached to a pseudo-terminal
+	if o.headless || !o.interactive {
 		_, _ = fmt.Fprintln(o.errOut, "Tip: install the Qovery skills so AI coding agents can deploy, troubleshoot and optimize apps on Qovery: qovery skills install")
 		o.track(actionHint, properties)
 		return
@@ -146,13 +149,16 @@ func (o offer) run() {
 		o.track(actionAccepted, properties)
 	case actionNever:
 		state.Never = true
-		o.saveState(state)
-		_, _ = fmt.Fprintln(o.out, "Got it, you won't be asked again. Install them anytime with 'qovery skills install'.")
+		if err := o.saveState(state); err != nil {
+			_, _ = fmt.Fprintf(o.out, "Could not save your choice (%s). Set %s=1 to turn this offer off.\n", err, DisablePromptEnv)
+		} else {
+			_, _ = fmt.Fprintln(o.out, "Got it, you won't be asked again. Install them anytime with 'qovery skills install'.")
+		}
 		o.track(actionNever, properties)
 	default:
 		state.Declines++
 		state.LastDeclinedAt = now
-		o.saveState(state)
+		_ = o.saveState(state)
 		_, _ = fmt.Fprintln(o.out, "No problem. Install them anytime with 'qovery skills install'.")
 		o.track(actionDeclined, properties)
 	}
@@ -198,13 +204,13 @@ func (o offer) loadState() promptState {
 	return state
 }
 
-func (o offer) saveState(state promptState) {
+func (o offer) saveState(state promptState) error {
 	content, err := json.Marshal(state)
 	if err != nil {
-		return
+		return err
 	}
 	if err := os.MkdirAll(filepath.Dir(o.statePath), 0700); err != nil {
-		return
+		return err
 	}
-	_ = os.WriteFile(o.statePath, content, 0600)
+	return os.WriteFile(o.statePath, content, 0600)
 }

@@ -85,7 +85,7 @@ func TestOfferDeclineIsCountedAndAskedAgain(t *testing.T) {
 func TestOfferGoesQuietAfterThreeDeclinesThenAsksAgain(t *testing.T) {
 	f := newOfferFixture(t, "")
 	now := f.offer.now()
-	f.offer.saveState(promptState{Declines: 3, LastDeclinedAt: now.Add(-snoozeDuration + time.Hour)})
+	assert.NoError(t, f.offer.saveState(promptState{Declines: 3, LastDeclinedAt: now.Add(-snoozeDuration + time.Hour)}))
 
 	f.offer.in = strings.NewReader("n\n")
 	f.offer.run()
@@ -134,6 +134,27 @@ func TestOfferNonInteractivePrintsTipOnly(t *testing.T) {
 	assert.Empty(t, f.out.String())
 	assert.Contains(t, f.errOut.String(), "qovery skills install")
 	assert.Equal(t, []string{actionHint}, f.tracked)
+}
+
+func TestOfferHeadlessPrintsTipEvenInTerminal(t *testing.T) {
+	f := newOfferFixture(t, "y\n")
+	f.offer.headless = true
+	f.offer.run()
+
+	assert.Equal(t, 0, f.installs)
+	assert.Empty(t, f.out.String())
+	assert.Contains(t, f.errOut.String(), "qovery skills install")
+	assert.Equal(t, []string{actionHint}, f.tracked)
+}
+
+func TestOfferNeverReportsUnsavedChoice(t *testing.T) {
+	f := newOfferFixture(t, "never\n")
+	// A file where the state directory should be makes the save fail
+	assert.NoError(t, os.WriteFile(filepath.Dir(f.offer.statePath), nil, 0600))
+	f.offer.run()
+
+	assert.Contains(t, f.out.String(), DisablePromptEnv)
+	assert.NotContains(t, f.out.String(), "won't be asked again")
 }
 
 func TestOfferSkipped(t *testing.T) {
