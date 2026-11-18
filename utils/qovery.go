@@ -1640,24 +1640,24 @@ func DeployJobs(client *qovery.APIClient, envId string, jobList []*qovery.JobRes
 }
 
 func GetJobDocker(job *qovery.JobResponse) *qovery.JobSourceDockerResponse {
-	if job.CronJobResponse != nil && job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
-		return &job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
+	if job.CronJobResponse != nil && job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
+		return &job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Docker
 	}
 
-	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
-		return &job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
+	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
+		return &job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Docker
 	}
 
 	return nil
 }
 
 func GetJobImage(job *qovery.JobResponse) *qovery.ContainerSource {
-	if job.CronJobResponse != nil && job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
-		return &job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
+	if job.CronJobResponse != nil && job.CronJobResponse.Source.ContainerSourceResponseOneOf != nil {
+		return &job.CronJobResponse.Source.ContainerSourceResponseOneOf.Image
 	}
 
-	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
-		return &job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
+	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.ContainerSourceResponseOneOf != nil {
+		return &job.LifecycleJobResponse.Source.ContainerSourceResponseOneOf.Image
 	}
 
 	return nil

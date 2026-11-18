@@ -106,9 +106,9 @@ func rdeSyncContainers(client *qovery.APIClient, blueprintEnvId string, childEnv
 			Ports:               ports,
 			Name:                child.Name,
 			Description:         child.Description,
-			RegistryId:          bp.Registry.Id, // always sync source
-			ImageName:           bp.ImageName,   // always sync source
-			Tag:                 bp.Tag,         // always sync source
+			RegistryId:          &bp.Registry.Id, // always sync source
+			ImageName:           &bp.ImageName,   // always sync source
+			Tag:                 &bp.Tag,         // always sync source
 			Arguments:           child.Arguments,
 			Entrypoint:          child.Entrypoint,
 			Cpu:                 cpu,
@@ -328,9 +328,9 @@ func rdeJobResponseToRequestSource(job *qovery.JobResponse) *qovery.JobRequestAl
 
 	result := &qovery.JobRequestAllOfSource{}
 
-	if source.BaseJobResponseAllOfSourceOneOf != nil {
+	if source.ContainerSourceResponseOneOf != nil {
 		// Image source
-		img := source.BaseJobResponseAllOfSourceOneOf.Image
+		img := source.ContainerSourceResponseOneOf.Image
 		reqImg := qovery.NewNullableJobRequestAllOfSourceImage(
 			&qovery.JobRequestAllOfSourceImage{
 				ImageName:  &img.ImageName,
@@ -339,9 +339,9 @@ func rdeJobResponseToRequestSource(job *qovery.JobResponse) *qovery.JobRequestAl
 			},
 		)
 		result.Image = *reqImg
-	} else if source.BaseJobResponseAllOfSourceOneOf1 != nil {
+	} else if source.BaseJobResponseAllOfSourceOneOf != nil {
 		// Docker/git source
-		docker := source.BaseJobResponseAllOfSourceOneOf1.Docker
+		docker := source.BaseJobResponseAllOfSourceOneOf.Docker
 		var gitRepo *qovery.ApplicationGitRepositoryRequest
 		if docker.GitRepository != nil {
 			gitRepo = &qovery.ApplicationGitRepositoryRequest{
