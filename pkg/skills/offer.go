@@ -25,7 +25,7 @@ const (
 	stateFileName  = "skills-prompt.json"
 
 	// After this many refusals the offer goes quiet for snoozeDuration, then is made once more
-	maxDeclinesBeforeSnooze = 5
+	maxDeclinesBeforeSnooze = 3
 	snoozeDuration          = 90 * 24 * time.Hour
 )
 

@@ -82,10 +82,10 @@ func TestOfferDeclineIsCountedAndAskedAgain(t *testing.T) {
 	assert.Equal(t, 2, f.offer.loadState().Declines)
 }
 
-func TestOfferGoesQuietAfterFiveDeclinesThenAsksAgain(t *testing.T) {
+func TestOfferGoesQuietAfterThreeDeclinesThenAsksAgain(t *testing.T) {
 	f := newOfferFixture(t, "")
 	now := f.offer.now()
-	f.offer.saveState(promptState{Declines: 5, LastDeclinedAt: now.Add(-snoozeDuration + time.Hour)})
+	f.offer.saveState(promptState{Declines: 3, LastDeclinedAt: now.Add(-snoozeDuration + time.Hour)})
 
 	f.offer.in = strings.NewReader("n\n")
 	f.offer.run()
@@ -95,7 +95,7 @@ func TestOfferGoesQuietAfterFiveDeclinesThenAsksAgain(t *testing.T) {
 	f.offer.now = func() time.Time { return now.Add(time.Hour) }
 	f.offer.run()
 	assert.Contains(t, f.out.String(), "[Y/n/never]")
-	assert.Equal(t, 6, f.offer.loadState().Declines)
+	assert.Equal(t, 4, f.offer.loadState().Declines)
 }
 
 func TestOfferNeverStopsAsking(t *testing.T) {
