@@ -1,0 +1,354 @@
+{
+ "cases": [
+  {
+   "name": "console no browser",
+   "args": [
+    "console"
+   ],
+   "env": {
+    "PATH": "/nonexistent"
+   }
+  },
+  {
+   "name": "console container service",
+   "args": [
+    "console"
+   ],
+   "env": {
+    "PATH": "/nonexistent"
+   },
+   "context": {
+    "service_id": "cont-1",
+    "service_name": "my-container",
+    "service_type": "container"
+   }
+  },
+  {
+   "name": "console extra args",
+   "args": [
+    "console",
+    "foo"
+   ],
+   "env": {
+    "PATH": "/nonexistent"
+   }
+  },
+  {
+   "name": "console unknown flag",
+   "args": [
+    "console",
+    "--nope"
+   ]
+  },
+  {
+   "name": "console no service in context (single choices)",
+   "args": [
+    "console"
+   ],
+   "env": {
+    "PATH": "/nonexistent"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "org-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "name": "my-org",
+        "plan": "TEAM",
+        "description": "Main organization"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "app-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "name": "my-app",
+        "healthchecks": {
+         "checks": []
+        },
+        "icon_uri": "app://qovery-console/application",
+        "service_type": "APPLICATION",
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/app.git",
+         "name": "me/app",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "abc123",
+         "has_access": true
+        },
+        "build_mode": "DOCKER",
+        "dockerfile_path": "Dockerfile",
+        "cpu": 500,
+        "memory": 512,
+        "gpu": 0,
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "auto_preview": false,
+        "auto_deploy": true,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ],
+   "context": {
+    "service_id": "",
+    "service_name": ""
+   }
+  },
+  {
+   "name": "console no context at all (single choices)",
+   "args": [
+    "console"
+   ],
+   "env": {
+    "PATH": "/nonexistent"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "org-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "name": "my-org",
+        "plan": "TEAM",
+        "description": "Main organization"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "app-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "name": "my-app",
+        "healthchecks": {
+         "checks": []
+        },
+        "icon_uri": "app://qovery-console/application",
+        "service_type": "APPLICATION",
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/app.git",
+         "name": "me/app",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "abc123",
+         "has_access": true
+        },
+        "build_mode": "DOCKER",
+        "dockerfile_path": "Dockerfile",
+        "cpu": 500,
+        "memory": 512,
+        "gpu": 0,
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "auto_preview": false,
+        "auto_deploy": true,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ],
+   "no_context_file": true
+  },
+  {
+   "name": "console no org, api error",
+   "args": [
+    "console"
+   ],
+   "env": {
+    "PATH": "/nonexistent"
+   },
+   "context": {
+    "organization_id": ""
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 500,
+     "body": {}
+    }
+   ]
+  },
+  {
+   "name": "console no org name",
+   "args": [
+    "console"
+   ],
+   "env": {
+    "PATH": "/nonexistent"
+   },
+   "context": {
+    "organization_name": ""
+   }
+  },
+  {
+   "name": "console no project, no projects",
+   "args": [
+    "console"
+   ],
+   "env": {
+    "PATH": "/nonexistent"
+   },
+   "context": {
+    "project_id": ""
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "org-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "name": "my-org",
+        "plan": "TEAM",
+        "description": "Main organization"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/project",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  }
+ ]
+}

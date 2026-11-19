@@ -67,3 +67,90 @@ jobs:
         uses: golangci/golangci-lint-action@v8.0.0
         with:
           version: latest
+
+  # Rust rewrite (rust/): formatting, lints and unit tests
+  rust-check:
+    runs-on: ubuntu-24.04
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v5.1.0
+
+      # the toolchain comes from rust/rust-toolchain.toml
+      - name: Install Rust
+        working-directory: rust
+        run: rustup toolchain install
+
+      - name: Cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            rust/target
+          key: rust-check-${{ hashFiles('rust/Cargo.lock', 'rust/rust-toolchain.toml') }}
+          restore-keys: rust-check-
+
+      - name: Format
+        working-directory: rust
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        working-directory: rust
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Test
+        working-directory: rust
+        run: cargo test --workspace --locked
+
+  # Rust rewrite: runs the Go and the Rust CLI side by side against a mock of the API and fails on any difference
+  # of interface (commands, flags, help) or behaviour (stdout, stderr, exit code, API requests, context file).
+  # See rust/README.md, "Parity harness".
+  rust-parity:
+    runs-on: ubuntu-24.04
+    env:
+      CARGO_TERM_COLOR: always
+      QOVERY_GO_BIN: ${{ github.workspace }}/rust/target/qovery-go
+      QOVERY_RUST_BIN: ${{ github.workspace }}/rust/target/debug/qovery
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v5.1.0
+
+      - name: Set up Go
+        uses: actions/setup-go@v6.5.0
+        with:
+          go-version: '1.27'
+          cache: true
+
+      - name: Install Rust
+        working-directory: rust
+        run: rustup toolchain install
+
+      - name: Cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            rust/target
+          key: rust-parity-${{ hashFiles('rust/Cargo.lock', 'rust/rust-toolchain.toml') }}
+          restore-keys: rust-parity-
+
+      # the reference binary needs the QOVERY_DUMP_SPEC patch (dump of the command tree, used by help_diff.py)
+      - name: Build the Go CLI
+        run: |
+          cp rust/parity/go_dump_spec.go.txt cmd/zz_dump.go
+          mkdir -p "$(dirname "$QOVERY_GO_BIN")"
+          go build -o "$QOVERY_GO_BIN" .
+          rm cmd/zz_dump.go
+
+      - name: Build the Rust CLI
+        working-directory: rust
+        run: cargo build -p qovery-cli --locked
+
+      - name: Compare
+        working-directory: rust
+        run: bash parity/run_all.sh

@@ -1,0 +1,95 @@
+[package]
+name = "qovery-cli"
+description = "Qovery command-line interface"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "qovery"
+path = "src/main.rs"
+
+[features]
+# every command is enabled by default; build a subset with
+# `cargo build -p qovery-cli --no-default-features --features "cmd-application cmd-container"`
+default = ["cmd-admin", "cmd-admin-cluster", "cmd-api", "cmd-application", "cmd-audit-log", "cmd-auth", "cmd-blueprint", "cmd-cluster", "cmd-completion", "cmd-console", "cmd-container", "cmd-context", "cmd-cronjob", "cmd-database", "cmd-demo", "cmd-enterprise-connection", "cmd-env", "cmd-environment", "cmd-helm", "cmd-lifecycle", "cmd-list-commands", "cmd-list-pods", "cmd-log", "cmd-organization", "cmd-port-forward", "cmd-project", "cmd-rde", "cmd-service", "cmd-shell", "cmd-skills", "cmd-status", "cmd-terraform", "cmd-token", "cmd-upgrade", "cmd-version", "cmd-webhook"]
+cmd-admin = ["dep:qovery-cmd-admin"]
+cmd-admin-cluster = ["dep:qovery-cmd-admin-cluster"]
+cmd-api = ["dep:qovery-cmd-api"]
+cmd-application = ["dep:qovery-cmd-application"]
+cmd-audit-log = ["dep:qovery-cmd-audit-log"]
+cmd-auth = ["dep:qovery-cmd-auth"]
+cmd-blueprint = ["dep:qovery-cmd-blueprint"]
+cmd-cluster = ["dep:qovery-cmd-cluster"]
+cmd-completion = ["dep:qovery-cmd-completion"]
+cmd-console = ["dep:qovery-cmd-console"]
+cmd-container = ["dep:qovery-cmd-container"]
+cmd-context = ["dep:qovery-cmd-context"]
+cmd-cronjob = ["dep:qovery-cmd-cronjob"]
+cmd-database = ["dep:qovery-cmd-database"]
+cmd-demo = ["dep:qovery-cmd-demo"]
+cmd-enterprise-connection = ["dep:qovery-cmd-enterprise-connection"]
+cmd-env = ["dep:qovery-cmd-env"]
+cmd-environment = ["dep:qovery-cmd-environment"]
+cmd-helm = ["dep:qovery-cmd-helm"]
+cmd-lifecycle = ["dep:qovery-cmd-lifecycle"]
+cmd-list-commands = ["dep:qovery-cmd-list-commands"]
+cmd-list-pods = ["dep:qovery-cmd-list-pods"]
+cmd-log = ["dep:qovery-cmd-log"]
+cmd-organization = ["dep:qovery-cmd-organization"]
+cmd-port-forward = ["dep:qovery-cmd-port-forward"]
+cmd-project = ["dep:qovery-cmd-project"]
+cmd-rde = ["dep:qovery-cmd-rde"]
+cmd-service = ["dep:qovery-cmd-service"]
+cmd-shell = ["dep:qovery-cmd-shell"]
+cmd-skills = ["dep:qovery-cmd-skills", "qovery-cmd-auth?/skills"]
+cmd-status = ["dep:qovery-cmd-status"]
+cmd-terraform = ["dep:qovery-cmd-terraform"]
+cmd-token = ["dep:qovery-cmd-token"]
+cmd-upgrade = ["dep:qovery-cmd-upgrade"]
+cmd-version = ["dep:qovery-cmd-version"]
+cmd-webhook = ["dep:qovery-cmd-webhook"]
+
+[dependencies]
+qovery-cobra.workspace = true
+qovery-core.workspace = true
+qovery-log.workspace = true
+libc.workspace = true
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+qovery-cmd-admin = { path = "../commands/admin", optional = true }
+qovery-cmd-admin-cluster = { path = "../commands/admin-cluster", optional = true }
+qovery-cmd-api = { path = "../commands/api", optional = true }
+qovery-cmd-application = { path = "../commands/application", optional = true }
+qovery-cmd-audit-log = { path = "../commands/audit-log", optional = true }
+qovery-cmd-auth = { path = "../commands/auth", optional = true }
+qovery-cmd-blueprint = { path = "../commands/blueprint", optional = true }
+qovery-cmd-cluster = { path = "../commands/cluster", optional = true }
+qovery-cmd-completion = { path = "../commands/completion", optional = true }
+qovery-cmd-console = { path = "../commands/console", optional = true }
+qovery-cmd-container = { path = "../commands/container", optional = true }
+qovery-cmd-context = { path = "../commands/context", optional = true }
+qovery-cmd-cronjob = { path = "../commands/cronjob", optional = true }
+qovery-cmd-database = { path = "../commands/database", optional = true }
+qovery-cmd-demo = { path = "../commands/demo", optional = true }
+qovery-cmd-enterprise-connection = { path = "../commands/enterprise-connection", optional = true }
+qovery-cmd-env = { path = "../commands/env", optional = true }
+qovery-cmd-environment = { path = "../commands/environment", optional = true }
+qovery-cmd-helm = { path = "../commands/helm", optional = true }
+qovery-cmd-lifecycle = { path = "../commands/lifecycle", optional = true }
+qovery-cmd-list-commands = { path = "../commands/list-commands", optional = true }
+qovery-cmd-list-pods = { path = "../commands/list-pods", optional = true }
+qovery-cmd-log = { path = "../commands/log", optional = true }
+qovery-cmd-organization = { path = "../commands/organization", optional = true }
+qovery-cmd-port-forward = { path = "../commands/port-forward", optional = true }
+qovery-cmd-project = { path = "../commands/project", optional = true }
+qovery-cmd-rde = { path = "../commands/rde", optional = true }
+qovery-cmd-service = { path = "../commands/service", optional = true }
+qovery-cmd-shell = { path = "../commands/shell", optional = true }
+qovery-cmd-skills = { path = "../commands/skills", optional = true }
+qovery-cmd-status = { path = "../commands/status", optional = true }
+qovery-cmd-terraform = { path = "../commands/terraform", optional = true }
+qovery-cmd-token = { path = "../commands/token", optional = true }
+qovery-cmd-upgrade = { path = "../commands/upgrade", optional = true }
+qovery-cmd-version = { path = "../commands/version", optional = true }
+qovery-cmd-webhook = { path = "../commands/webhook", optional = true }

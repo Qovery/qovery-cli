@@ -1,0 +1,67 @@
+{
+  "fixtures": [
+    {"method": "GET", "path": "/organization/org-1/availableRole", "body": {"results": [
+      {"id": "role-admin", "name": "Admin"}, {"id": "role-viewer", "name": "Viewer"}, {"id": "role-devops", "name": "DevOps"}]}},
+    {"method": "GET", "path": "/organization/org-1/customRole", "body": {"results": [
+      {"id": "0b5b8a3e-6c1f-4b5e-9a3e-1f2b3c4d5e6f", "name": "Release Managers"},
+      {"id": "not-a-uuid-role", "name": "Weird"}]}},
+    {"method": "GET", "path": "/organization/org-2/availableRole", "body": {"results": []}},
+    {"method": "GET", "path": "/organization/org-2/customRole", "body": {"results": []}},
+    {"method": "GET", "path": "/organization/org-1/enterpriseconnection", "body": {"results": [
+      {"connection_name": "okta", "default_role": "viewer", "enforce_group_sync": true,
+       "group_mappings": {"admin": ["Admins", "SRE"], "0b5b8a3e-6c1f-4b5e-9a3e-1f2b3c4d5e6f": ["Release"], "devops": []}},
+      {"connection_name": "google", "default_role": "0b5b8a3e-6c1f-4b5e-9a3e-1f2b3c4d5e6f", "enforce_group_sync": false, "group_mappings": {}}
+    ]}},
+    {"method": "GET", "path": "/organization/org-2/enterpriseconnection", "body": {"results": []}},
+    {"method": "GET", "path": "/organization/org-1/enterpriseconnection/okta", "body":
+      {"connection_name": "okta", "default_role": "viewer", "enforce_group_sync": true,
+       "group_mappings": {"admin": ["Admins", "SRE"], "0b5b8a3e-6c1f-4b5e-9a3e-1f2b3c4d5e6f": ["Release"], "not-a-uuid-role": ["W"]}}},
+    {"method": "GET", "path": "/organization/org-1/enterpriseconnection/google", "body":
+      {"connection_name": "google", "default_role": "not-a-uuid-role", "enforce_group_sync": false, "group_mappings": {}}},
+    {"method": "GET", "path": "/organization/org-1/enterpriseconnection/my conn", "body":
+      {"connection_name": "my conn", "default_role": "admin", "enforce_group_sync": false, "group_mappings": {"viewer": ["All"]}}},
+    {"method": "PUT", "path": "/organization/org-1/enterpriseconnection/okta", "body":
+      {"connection_name": "okta", "default_role": "admin", "enforce_group_sync": false,
+       "group_mappings": {"admin": ["Admins"], "0b5b8a3e-6c1f-4b5e-9a3e-1f2b3c4d5e6f": ["Release", "Ops"]}}},
+    {"method": "PUT", "path": "/organization/org-1/enterpriseconnection/google", "body":
+      {"connection_name": "google", "default_role": "viewer", "enforce_group_sync": true, "group_mappings": {}}},
+    {"method": "PUT", "path": "/organization/org-1/enterpriseconnection/my conn", "status": 400, "body": {"message": "bad"}}
+  ],
+  "cases": [
+    {"name": "enterprise-connection (group)", "args": ["enterprise-connection"]},
+    {"name": "enterprise-connection group-mappings (group)", "args": ["enterprise-connection", "group-mappings"]},
+    {"name": "enterprise-connection get all", "args": ["enterprise-connection", "get"]},
+    {"name": "enterprise-connection get one", "args": ["enterprise-connection", "get", "-c", "okta"]},
+    {"name": "enterprise-connection get google", "args": ["enterprise-connection", "get", "--connection", "google"]},
+    {"name": "enterprise-connection get escaped name", "args": ["enterprise-connection", "get", "--connection", "my conn"]},
+    {"name": "enterprise-connection get not found", "args": ["enterprise-connection", "get", "--connection", "nope"]},
+    {"name": "enterprise-connection get other org empty", "args": ["enterprise-connection", "get", "-o", "other-org"]},
+    {"name": "enterprise-connection get org not found", "args": ["enterprise-connection", "get", "-o", "nope"]},
+    {"name": "enterprise-connection get list api error", "args": ["enterprise-connection", "get"],
+     "fixtures": [{"method": "GET", "path": "/organization/org-1/enterpriseconnection", "status": 500, "body": {}}]},
+    {"name": "enterprise-connection get roles api error", "args": ["enterprise-connection", "get"],
+     "fixtures": [{"method": "GET", "path": "/organization/org-1/customRole", "status": 403, "body": {}}]},
+    {"name": "enterprise-connection get no token", "args": ["enterprise-connection", "get"], "env": {"QOVERY_CLI_ACCESS_TOKEN": ""}, "context": {"access_token": ""}},
+    {"name": "enterprise-connection update default role", "args": ["enterprise-connection", "update", "-c", "okta", "--default-role", "ADMIN"]},
+    {"name": "enterprise-connection update custom role + enforce", "args": ["enterprise-connection", "update", "-c", "google", "-r", "release managers", "-e"]},
+    {"name": "enterprise-connection update keep role", "args": ["enterprise-connection", "update", "-c", "google", "--enforce-group-sync"]},
+    {"name": "enterprise-connection update unknown role", "args": ["enterprise-connection", "update", "-c", "okta", "-r", "boss"]},
+    {"name": "enterprise-connection update api error", "args": ["enterprise-connection", "update", "-c", "my conn"]},
+    {"name": "enterprise-connection update not found", "args": ["enterprise-connection", "update", "-c", "nope"]},
+    {"name": "enterprise-connection update missing connection", "args": ["enterprise-connection", "update"]},
+    {"name": "enterprise-connection group-mappings get", "args": ["enterprise-connection", "group-mappings", "get", "-c", "okta"]},
+    {"name": "enterprise-connection group-mappings get empty", "args": ["enterprise-connection", "group-mappings", "get", "-c", "google"]},
+    {"name": "enterprise-connection group-mappings get missing connection", "args": ["enterprise-connection", "group-mappings", "get"]},
+    {"name": "enterprise-connection group-mappings add", "args": ["enterprise-connection", "group-mappings", "add", "-c", "okta", "-q", "devops", "-i", " A , B,, C "]},
+    {"name": "enterprise-connection group-mappings add custom role", "args": ["enterprise-connection", "group-mappings", "add", "-c", "okta", "--qovery-role", "Release Managers", "--idp-group-names", "Release,Ops"]},
+    {"name": "enterprise-connection group-mappings add empty groups", "args": ["enterprise-connection", "group-mappings", "add", "-c", "okta", "-q", "viewer"]},
+    {"name": "enterprise-connection group-mappings add blank groups", "args": ["enterprise-connection", "group-mappings", "add", "-c", "okta", "-q", "viewer", "-i", " , "]},
+    {"name": "enterprise-connection group-mappings add unknown role", "args": ["enterprise-connection", "group-mappings", "add", "-c", "okta", "-q", "boss", "-i", "x"]},
+    {"name": "enterprise-connection group-mappings add api error", "args": ["enterprise-connection", "group-mappings", "add", "-c", "my conn", "-q", "admin", "-i", "x"]},
+    {"name": "enterprise-connection group-mappings delete", "args": ["enterprise-connection", "group-mappings", "delete", "-c", "okta", "-q", "Admin"]},
+    {"name": "enterprise-connection group-mappings delete custom", "args": ["enterprise-connection", "group-mappings", "delete", "-c", "okta", "-q", "release managers"]},
+    {"name": "enterprise-connection group-mappings delete absent", "args": ["enterprise-connection", "group-mappings", "delete", "-c", "okta", "-q", "viewer"]},
+    {"name": "enterprise-connection group-mappings delete unknown role", "args": ["enterprise-connection", "group-mappings", "delete", "-c", "okta", "-q", "boss"]},
+    {"name": "enterprise-connection group-mappings delete missing connection", "args": ["enterprise-connection", "group-mappings", "delete", "-q", "admin"]}
+  ]
+}

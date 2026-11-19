@@ -1,0 +1,1058 @@
+{
+  "_panics": {
+    "data": "runtime error: invalid memory address or nil pointer dereference",
+    "interpolation": "runtime error: slice bounds out of range [5:4]"
+  },
+  "create_environment_alias": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=env-1\u0026scope=ENVIRONMENT",
+        "body": null
+      },
+      {
+        "method": "POST",
+        "path": "/variable/var-2/alias",
+        "query": "",
+        "body": {
+          "alias_parent_id": "proj-1",
+          "alias_scope": "PROJECT",
+          "key": "EA"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_environment_alias_missing": {
+    "error": "Environment variable or secret \u001b[31mNOPE\u001b[0m not found",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=env-1\u0026scope=ENVIRONMENT",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "create_environment_alias_service_scope": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=env-1\u0026scope=ENVIRONMENT",
+        "body": null
+      },
+      {
+        "method": "POST",
+        "path": "/variable/var-2/alias",
+        "query": "",
+        "body": {
+          "alias_parent_id": "",
+          "alias_scope": "APPLICATION",
+          "key": "EA"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_environment_override": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=env-1\u0026scope=ENVIRONMENT",
+        "body": null
+      },
+      {
+        "method": "POST",
+        "path": "/variable/var-1/override",
+        "query": "",
+        "body": {
+          "override_parent_id": "env-1",
+          "override_scope": "ENVIRONMENT",
+          "value": "ov"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_environment_override_list_error": {
+    "error": "500 Internal Server Error",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=err500\u0026scope=ENVIRONMENT",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "create_environment_override_missing": {
+    "error": "Environment variable or secret \u001b[31mNOPE\u001b[0m not found",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=env-1\u0026scope=ENVIRONMENT",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "create_environment_variable": {
+    "error": "",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "EK",
+          "value": "ev",
+          "variable_parent_id": "env-1",
+          "variable_scope": "ENVIRONMENT"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_environment_variable_conflict": {
+    "error": "409 Conflict: Key already exists at ENVIRONMENT scope",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "CONFLICT",
+          "value": "ev",
+          "variable_parent_id": "env-1",
+          "variable_scope": "ENVIRONMENT"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_environment_variable_secret_override": {
+    "error": "",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": true,
+          "key": "EK",
+          "override_if_exists": true,
+          "value": "ev",
+          "variable_parent_id": "env-1",
+          "variable_scope": "ENVIRONMENT"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_project_alias": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=proj-1\u0026scope=PROJECT",
+        "body": null
+      },
+      {
+        "method": "POST",
+        "path": "/variable/var-1/alias",
+        "query": "",
+        "body": {
+          "alias_parent_id": "proj-1",
+          "alias_scope": "PROJECT",
+          "key": "PA"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_project_alias_missing": {
+    "error": "Project variable or secret \u001b[31mNOPE\u001b[0m not found",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=proj-1\u0026scope=PROJECT",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "create_project_variable": {
+    "error": "",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": true,
+          "key": "PK",
+          "value": "pv",
+          "variable_parent_id": "proj-1",
+          "variable_scope": "PROJECT"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_project_variable_raw": {
+    "error": "400 Bad Request: plain text error",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "RAW",
+          "value": "pv",
+          "variable_parent_id": "proj-1",
+          "variable_scope": "PROJECT"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_alias": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=APPLICATION",
+        "body": null
+      },
+      {
+        "method": "POST",
+        "path": "/variable/var-1/alias",
+        "query": "",
+        "body": {
+          "alias_parent_id": "env-1",
+          "alias_scope": "ENVIRONMENT",
+          "key": "ALIAS1"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_alias_api_error": {
+    "error": "400 Bad Request",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=JOB",
+        "body": null
+      },
+      {
+        "method": "POST",
+        "path": "/variable/var-1/alias",
+        "query": "",
+        "body": {
+          "alias_parent_id": "svc-1",
+          "alias_scope": "JOB",
+          "key": "BADALIAS"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_alias_bad_scope": {
+    "error": "scope XX not supported",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=APPLICATION",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "create_service_alias_database": {
+    "error": "the service type database is not supported",
+    "requests": null,
+    "value": ""
+  },
+  "create_service_alias_missing": {
+    "error": "Environment variable or secret \u001b[31mNOPE\u001b[0m not found",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=APPLICATION",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "create_service_external_secret": {
+    "error": "",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "ES",
+          "secret_manager_access_id": "sma-1",
+          "value": "ref/x",
+          "variable_parent_id": "svc-1",
+          "variable_scope": "CONTAINER"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_external_secret_conflict": {
+    "error": "409 Conflict: Key already exists at ENVIRONMENT scope",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "CONFLICT",
+          "secret_manager_access_id": "sma-1",
+          "value": "ref/x",
+          "variable_parent_id": "proj-1",
+          "variable_scope": "PROJECT"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_external_secret_mount": {
+    "error": "",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "ES",
+          "mount_path": "/etc/x",
+          "secret_manager_access_id": "sma-1",
+          "value": "ref/x",
+          "variable_parent_id": "env-1",
+          "variable_scope": "ENVIRONMENT"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_override": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=JOB",
+        "body": null
+      },
+      {
+        "method": "POST",
+        "path": "/variable/var-2/override",
+        "query": "",
+        "body": {
+          "override_parent_id": "svc-1",
+          "override_scope": "APPLICATION",
+          "value": "ov"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_override_missing": {
+    "error": "Environment variable or secret \u001b[31mNOPE\u001b[0m not found",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=JOB",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "create_service_variable": {
+    "error": "",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "K1",
+          "value": "v1",
+          "variable_parent_id": "svc-1",
+          "variable_scope": "APPLICATION"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_variable_bad_scope": {
+    "error": "scope application not supported",
+    "requests": null,
+    "value": ""
+  },
+  "create_service_variable_case": {
+    "error": "400 Bad Request: case insensitive",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "CASE",
+          "value": "v",
+          "variable_parent_id": "svc-1",
+          "variable_scope": "APPLICATION"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_variable_conflict": {
+    "error": "409 Conflict: Key already exists at ENVIRONMENT scope",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "CONFLICT",
+          "value": "v",
+          "variable_parent_id": "env-1",
+          "variable_scope": "ENVIRONMENT"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_variable_emptybody": {
+    "error": "409 Conflict",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "EMPTYBODY",
+          "value": "v",
+          "variable_parent_id": "svc-1",
+          "variable_scope": "CONTAINER"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_variable_html": {
+    "error": "409 Conflict: \u003cb\u003e\u0026\u003c/b\u003e \"q\"",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "HTML",
+          "value": "v",
+          "variable_parent_id": "svc-1",
+          "variable_scope": "TERRAFORM"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_variable_nodetail": {
+    "error": "400 Bad Request: {\"message\":\"nope\"}",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "NODETAIL",
+          "value": "v",
+          "variable_parent_id": "svc-1",
+          "variable_scope": "JOB"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_variable_nulldetail": {
+    "error": "400 Bad Request: {\"detail\":null}",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "NULLDETAIL",
+          "value": "v",
+          "variable_parent_id": "svc-1",
+          "variable_scope": "APPLICATION"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_variable_numdetail": {
+    "error": "400 Bad Request: {\"detail\":12}",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "NUMDETAIL",
+          "value": "v",
+          "variable_parent_id": "svc-1",
+          "variable_scope": "APPLICATION"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_variable_project_secret_override": {
+    "error": "",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": true,
+          "key": "K1",
+          "override_if_exists": true,
+          "value": "v1",
+          "variable_parent_id": "proj-1",
+          "variable_scope": "PROJECT"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "create_service_variable_raw": {
+    "error": "400 Bad Request: plain text error",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/variable",
+        "query": "",
+        "body": {
+          "is_secret": false,
+          "key": "RAW",
+          "value": "v",
+          "variable_parent_id": "svc-1",
+          "variable_scope": "HELM"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "delete_environment_var": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=env-1\u0026scope=ENVIRONMENT",
+        "body": null
+      },
+      {
+        "method": "DELETE",
+        "path": "/variable/var-1",
+        "query": "",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "delete_environment_var_missing": {
+    "error": "environment variable \u001b[31mNOPE\u001b[0m not found",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=env-1\u0026scope=ENVIRONMENT",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "delete_project_var": {
+    "error": "403 Forbidden",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=proj-1\u0026scope=PROJECT",
+        "body": null
+      },
+      {
+        "method": "DELETE",
+        "path": "/variable/var-2",
+        "query": "",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "delete_project_var_missing": {
+    "error": "environment variable \u001b[31mNOPE\u001b[0m not found",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=proj-1\u0026scope=PROJECT",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "delete_service_variable": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=TERRAFORM",
+        "body": null
+      },
+      {
+        "method": "DELETE",
+        "path": "/variable/var-1",
+        "query": "",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "delete_service_variable_error": {
+    "error": "403 Forbidden",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=CONTAINER",
+        "body": null
+      },
+      {
+        "method": "DELETE",
+        "path": "/variable/var-2",
+        "query": "",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "delete_service_variable_missing": {
+    "error": "environment variable \u001b[31mNOPE\u001b[0m not found",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=TERRAFORM",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "sma_clusters_error": {
+    "error": "failed to list clusters: 403 Forbidden",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/environment/env-1",
+        "query": "",
+        "body": null
+      },
+      {
+        "method": "GET",
+        "path": "/organization/org-err/cluster",
+        "query": "",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "sma_env_error": {
+    "error": "failed to get environment: 404 Not Found",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/environment/env-err",
+        "query": "",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "sma_missing": {
+    "error": "secret manager access \"no\\\"pe\" not found in cluster my-cluster",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/environment/env-1",
+        "query": "",
+        "body": null
+      },
+      {
+        "method": "GET",
+        "path": "/organization/org-1/cluster",
+        "query": "",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "sma_no_cluster": {
+    "error": "cluster cluster-x not found in organization",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/environment/env-nocluster",
+        "query": "",
+        "body": null
+      },
+      {
+        "method": "GET",
+        "path": "/organization/org-1/cluster",
+        "query": "",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "sma_ok": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/environment/env-1",
+        "query": "",
+        "body": null
+      },
+      {
+        "method": "GET",
+        "path": "/organization/org-1/cluster",
+        "query": "",
+        "body": null
+      }
+    ],
+    "value": "sma-2"
+  },
+  "update_environment_external_secret": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=env-1\u0026scope=ENVIRONMENT",
+        "body": null
+      },
+      {
+        "method": "PUT",
+        "path": "/variable/var-1",
+        "query": "",
+        "body": {
+          "key": "KEY1",
+          "value": "ref/z"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "update_environment_external_secret_missing": {
+    "error": "external secret \u001b[31mNOPE\u001b[0m not found",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=env-1\u0026scope=ENVIRONMENT",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "update_environment_external_secret_put_error": {
+    "error": "500 Internal Server Error",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=env-1\u0026scope=ENVIRONMENT",
+        "body": null
+      },
+      {
+        "method": "PUT",
+        "path": "/variable/var-2",
+        "query": "",
+        "body": {
+          "key": "KEY2",
+          "secret_manager_access_id": "sma",
+          "value": "ref/z"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "update_environment_variable": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=env-1\u0026scope=ENVIRONMENT",
+        "body": null
+      },
+      {
+        "method": "PUT",
+        "path": "/variable/var-1",
+        "query": "",
+        "body": {
+          "key": "KEY1",
+          "value": "x"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "update_environment_variable_list_empty": {
+    "error": "invalid environment",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=empty\u0026scope=ENVIRONMENT",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "update_project_variable": {
+    "error": "500 Internal Server Error",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=proj-1\u0026scope=PROJECT",
+        "body": null
+      },
+      {
+        "method": "PUT",
+        "path": "/variable/var-2",
+        "query": "",
+        "body": {
+          "key": "KEY2",
+          "value": "y"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "update_project_variable_list_empty": {
+    "error": "invalid project",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=empty\u0026scope=PROJECT",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "update_project_variable_missing": {
+    "error": "project variable \u001b[31mNOPE\u001b[0m not found",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=proj-1\u0026scope=PROJECT",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "update_service_external_secret": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=CONTAINER",
+        "body": null
+      },
+      {
+        "method": "PUT",
+        "path": "/variable/var-1",
+        "query": "",
+        "body": {
+          "key": "KEY1",
+          "secret_manager_access_id": "sma-2",
+          "value": "ref/y"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "update_service_external_secret_database": {
+    "error": "the service type database is not supported",
+    "requests": null,
+    "value": ""
+  },
+  "update_service_external_secret_empty": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=JOB",
+        "body": null
+      },
+      {
+        "method": "PUT",
+        "path": "/variable/var-1",
+        "query": "",
+        "body": {
+          "key": "KEY1"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "update_service_external_secret_missing": {
+    "error": "external secret \u001b[31mNOPE\u001b[0m not found",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=APPLICATION",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "update_service_variable": {
+    "error": "",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=HELM",
+        "body": null
+      },
+      {
+        "method": "PUT",
+        "path": "/variable/var-1",
+        "query": "",
+        "body": {
+          "key": "KEY1",
+          "value": "new"
+        }
+      }
+    ],
+    "value": ""
+  },
+  "update_service_variable_list_empty": {
+    "error": "invalid service type",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=empty\u0026scope=APPLICATION",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "update_service_variable_list_error": {
+    "error": "500 Internal Server Error",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=err500\u0026scope=TERRAFORM",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "update_service_variable_list_null": {
+    "error": "invalid service type",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=null\u0026scope=APPLICATION",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "update_service_variable_missing": {
+    "error": "environment variable \u001b[31mNOPE\u001b[0m not found",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=HELM",
+        "body": null
+      }
+    ],
+    "value": ""
+  },
+  "update_service_variable_put_error": {
+    "error": "500 Internal Server Error",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/variable",
+        "query": "parent_id=svc-1\u0026scope=APPLICATION",
+        "body": null
+      },
+      {
+        "method": "PUT",
+        "path": "/variable/var-2",
+        "query": "",
+        "body": {
+          "key": "KEY2",
+          "value": ""
+        }
+      }
+    ],
+    "value": ""
+  }
+}

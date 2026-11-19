@@ -1,0 +1,7896 @@
+{
+ "fixtures": [
+  {
+   "method": "GET",
+   "path": "/environment/env-1/helm",
+   "body": {
+    "results": [
+     {
+      "id": "helm-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "my-helm",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [],
+       "set_string": [],
+       "set_json": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": []
+     },
+     {
+      "id": "helm-2",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "git-helm",
+      "auto_preview": false,
+      "auto_deploy": true,
+      "source": {
+       "git": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/charts.git",
+         "name": "me/charts",
+         "branch": "main",
+         "root_path": "/charts/app",
+         "deployed_commit_id": "abc123",
+         "has_access": true,
+         "git_token_id": null
+        }
+       }
+      },
+      "arguments": [
+       "--wait"
+      ],
+      "allow_cluster_wide_resources": true,
+      "values_override": {
+       "set": [
+        [
+         "a",
+         "b"
+        ]
+       ],
+       "set_string": [],
+       "set_json": [
+        [
+         "j",
+         "{}"
+        ]
+       ],
+       "file": {
+        "git": {
+         "git_repository": {
+          "provider": "GITLAB",
+          "owner": "me",
+          "url": "https://gitlab.com/me/values.git",
+          "name": "me/values",
+          "branch": "prod",
+          "root_path": "/",
+          "git_token_id": "tok-1",
+          "has_access": true
+         },
+         "paths": [
+          "/values.yaml",
+          "/values-prod.yaml"
+         ]
+        }
+       }
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": [
+       {
+        "id": "p1",
+        "port_type": "SERVICE_NAME",
+        "name": "http",
+        "internal_port": 80,
+        "external_port": 443,
+        "namespace": "apps",
+        "protocol": "HTTP",
+        "is_default": true,
+        "service_name": "web"
+       },
+       {
+        "id": "p2",
+        "port_type": "SERVICE_SELECTORS",
+        "internal_port": 8080,
+        "protocol": "GRPC",
+        "service_selectors": [
+         {
+          "key": "app",
+          "value": "x"
+         }
+        ]
+       },
+       {
+        "id": "p3",
+        "port_type": "SERVICE_NAME",
+        "internal_port": 9090,
+        "protocol": "GRPC",
+        "service_name": "metrics",
+        "name": null
+       }
+      ],
+      "description": "git based chart",
+      "timeout_sec": 600
+     },
+     {
+      "id": "helm-3",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "raw-helm",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set_string": [
+        [
+         "s",
+         "t"
+        ]
+       ],
+       "file": {
+        "raw": {
+         "values": [
+          {
+           "name": "override",
+           "content": "replicas: 2\n"
+          },
+          {
+           "name": "extra",
+           "content": "a: b"
+          }
+         ]
+        }
+       }
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": []
+     }
+    ]
+   }
+  }
+ ],
+ "cases": [
+  {
+   "name": "helm no args",
+   "args": [
+    "helm"
+   ]
+  },
+  {
+   "name": "helm domain no args",
+   "args": [
+    "helm",
+    "domain"
+   ]
+  },
+  {
+   "name": "helm env no args",
+   "args": [
+    "helm",
+    "env"
+   ]
+  },
+  {
+   "name": "helm env alias no args",
+   "args": [
+    "helm",
+    "env",
+    "alias"
+   ]
+  },
+  {
+   "name": "helm env override no args",
+   "args": [
+    "helm",
+    "env",
+    "override"
+   ]
+  },
+  {
+   "name": "helm external-secret no args",
+   "args": [
+    "helm",
+    "external-secret"
+   ]
+  },
+  {
+   "name": "helm unknown sub",
+   "args": [
+    "helm",
+    "foo"
+   ]
+  },
+  {
+   "name": "list table",
+   "args": [
+    "helm",
+    "list"
+   ]
+  },
+  {
+   "name": "list json",
+   "args": [
+    "helm",
+    "list",
+    "--json"
+   ]
+  },
+  {
+   "name": "list default fixture",
+   "args": [
+    "helm",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "body": {
+      "results": [
+       {
+        "id": "helm-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "name": "my-helm",
+        "auto_preview": false,
+        "auto_deploy": false,
+        "source": {
+         "repository": {
+          "repository": {
+           "id": "hr-1",
+           "name": "bitnami",
+           "url": "https://charts.bitnami.com/bitnami"
+          },
+          "chart_name": "redis",
+          "chart_version": "18.0.0"
+         }
+        },
+        "arguments": [],
+        "allow_cluster_wide_resources": false,
+        "values_override": {
+         "set": [],
+         "set_string": [],
+         "set_json": [],
+         "file": null
+        },
+        "icon_uri": "app://qovery-console/helm",
+        "service_type": "HELM",
+        "ports": []
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "list empty json",
+   "args": [
+    "helm",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "list empty table",
+   "args": [
+    "helm",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "list with names",
+   "args": [
+    "helm",
+    "list",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "list environment not found",
+   "args": [
+    "helm",
+    "list",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "list project not found",
+   "args": [
+    "helm",
+    "list",
+    "--organization",
+    "my-org",
+    "--project",
+    "nope"
+   ]
+  },
+  {
+   "name": "list api error",
+   "args": [
+    "helm",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list statuses error",
+   "args": [
+    "helm",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "detail": "invalid chart"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list no token",
+   "args": [
+    "helm",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "no_context_file": true
+  },
+  {
+   "name": "deploy one",
+   "args": [
+    "helm",
+    "deploy",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy chart version",
+   "args": [
+    "helm",
+    "deploy",
+    "-n",
+    "my-helm",
+    "--chart_version",
+    "19.0.0"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy multi",
+   "args": [
+    "helm",
+    "deploy",
+    "--helms",
+    "my-helm, git-helm,raw-helm",
+    "--chart_version",
+    "2.0.0",
+    "--chart_git_commit_id",
+    "deadbeef",
+    "--values_override_git_commit_id",
+    "cafe"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy git commit latest",
+   "args": [
+    "helm",
+    "deploy",
+    "-n",
+    "git-helm",
+    "--chart_git_commit_id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/helm/helm-2/commit",
+     "body": {
+      "results": [
+       {
+        "created_at": "2024-06-01T10:00:00Z",
+        "git_commit_id": "old111",
+        "tag": "",
+        "message": "old",
+        "author_name": "me"
+       },
+       {
+        "created_at": "2024-06-03T10:00:00Z",
+        "git_commit_id": "new222",
+        "tag": "",
+        "message": "newest\nbody",
+        "author_name": "me"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy git commit latest no commits",
+   "args": [
+    "helm",
+    "deploy",
+    "-n",
+    "git-helm",
+    "--chart_git_commit_id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/helm/helm-2/commit",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy git commit latest api error",
+   "args": [
+    "helm",
+    "deploy",
+    "-n",
+    "git-helm",
+    "--chart_git_commit_id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/helm/helm-2/commit",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy latest on repository helm",
+   "args": [
+    "helm",
+    "deploy",
+    "-n",
+    "my-helm",
+    "--chart_git_commit_id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy values override latest",
+   "args": [
+    "helm",
+    "deploy",
+    "-n",
+    "my-helm",
+    "--values_override_git_commit_id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy not found",
+   "args": [
+    "helm",
+    "deploy",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "deploy multi not found",
+   "args": [
+    "helm",
+    "deploy",
+    "--helms",
+    "my-helm, nope"
+   ]
+  },
+  {
+   "name": "deploy no helm flag",
+   "args": [
+    "helm",
+    "deploy"
+   ]
+  },
+  {
+   "name": "deploy both flags",
+   "args": [
+    "helm",
+    "deploy",
+    "-n",
+    "my-helm",
+    "--helms",
+    "git-helm"
+   ]
+  },
+  {
+   "name": "deploy api error",
+   "args": [
+    "helm",
+    "deploy",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy list error",
+   "args": [
+    "helm",
+    "deploy",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy watch",
+   "args": [
+    "helm",
+    "deploy",
+    "-n",
+    "my-helm",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "helms": [
+           {
+            "id": "helm-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "helms": [
+           {
+            "id": "helm-1",
+            "state": "DEPLOYING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "helms": [
+           {
+            "id": "helm-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "deploy watch multi failure",
+   "args": [
+    "helm",
+    "deploy",
+    "--helms",
+    "my-helm,git-helm",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "helms": [
+           {
+            "id": "helm-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "a0"
+           },
+           {
+            "id": "helm-2",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "b0"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "helms": [
+           {
+            "id": "helm-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "a1"
+           },
+           {
+            "id": "helm-2",
+            "state": "DEPLOYMENT_ERROR",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "b1"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "deploy watch statuses error",
+   "args": [
+    "helm",
+    "deploy",
+    "-n",
+    "my-helm",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "redeploy",
+   "args": [
+    "helm",
+    "redeploy",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/deploy",
+     "status": 202,
+     "body": {
+      "id": "helm-1",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "e"
+     }
+    }
+   ]
+  },
+  {
+   "name": "redeploy missing flag",
+   "args": [
+    "helm",
+    "redeploy"
+   ]
+  },
+  {
+   "name": "redeploy not found",
+   "args": [
+    "helm",
+    "redeploy",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "redeploy api error",
+   "args": [
+    "helm",
+    "redeploy",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/deploy",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "detail": "invalid chart"
+     }
+    }
+   ]
+  },
+  {
+   "name": "redeploy watch",
+   "args": [
+    "helm",
+    "redeploy",
+    "-n",
+    "my-helm",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/deploy",
+     "status": 202,
+     "body": {
+      "id": "helm-1",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "e"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "helms": [
+           {
+            "id": "helm-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x0"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "helms": [
+           {
+            "id": "helm-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "stop",
+   "args": [
+    "helm",
+    "stop",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/stop",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "STOPPING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop multi",
+   "args": [
+    "helm",
+    "stop",
+    "--helms",
+    "my-helm,raw-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/stop",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "STOPPING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop no flag",
+   "args": [
+    "helm",
+    "stop"
+   ]
+  },
+  {
+   "name": "stop both flags",
+   "args": [
+    "helm",
+    "stop",
+    "-n",
+    "a",
+    "--helms",
+    "b"
+   ]
+  },
+  {
+   "name": "stop not found",
+   "args": [
+    "helm",
+    "stop",
+    "--helms",
+    "my-helm,ghost"
+   ]
+  },
+  {
+   "name": "stop api error",
+   "args": [
+    "helm",
+    "stop",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/stop",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop watch",
+   "args": [
+    "helm",
+    "stop",
+    "-n",
+    "my-helm",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/stop",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "STOPPING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "helms": [
+           {
+            "id": "helm-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "s0"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "helms": [
+           {
+            "id": "helm-1",
+            "state": "STOPPED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "s1"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "stop watch wrong state",
+   "args": [
+    "helm",
+    "stop",
+    "-n",
+    "my-helm",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/stop",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "STOPPING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "helms": [
+           {
+            "id": "helm-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "s0"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "helms": [
+           {
+            "id": "helm-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "s1"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "delete",
+   "args": [
+    "helm",
+    "delete",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/delete",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DELETING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete multi",
+   "args": [
+    "helm",
+    "delete",
+    "--helms",
+    "my-helm,git-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/delete",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DELETING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete no flag",
+   "args": [
+    "helm",
+    "delete"
+   ]
+  },
+  {
+   "name": "delete not found",
+   "args": [
+    "helm",
+    "delete",
+    "-n",
+    "ghost"
+   ]
+  },
+  {
+   "name": "delete api error",
+   "args": [
+    "helm",
+    "delete",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/delete",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete watch",
+   "args": [
+    "helm",
+    "delete",
+    "-n",
+    "my-helm",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/delete",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DELETING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "helms": [
+           {
+            "id": "helm-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "d0"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "helms": []
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "cancel nothing to cancel",
+   "args": [
+    "helm",
+    "cancel",
+    "-n",
+    "my-helm"
+   ]
+  },
+  {
+   "name": "cancel",
+   "args": [
+    "helm",
+    "cancel",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "body": {
+      "id": "env-1",
+      "state": "CANCELING",
+      "last_deployment_state": "DEPLOYING"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "body": {
+      "environment": {
+       "id": "env-1",
+       "state": "DEPLOYING",
+       "last_deployment_state": "DEPLOYING",
+       "last_deployment_date": "2024-06-02T11:30:00Z",
+       "last_deployment_id": "dep-1",
+       "total_deployment_duration_in_seconds": 42
+      },
+      "applications": [],
+      "containers": [],
+      "jobs": [],
+      "databases": [],
+      "helms": [
+       {
+        "id": "helm-1",
+        "state": "DEPLOYING",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "execution_id": "e1"
+       }
+      ],
+      "terraforms": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "cancel watch",
+   "args": [
+    "helm",
+    "cancel",
+    "-n",
+    "my-helm",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "body": {
+      "id": "env-1",
+      "state": "CANCELING",
+      "last_deployment_state": "DEPLOYING"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYING",
+         "last_deployment_state": "DEPLOYING",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [
+         {
+          "id": "helm-1",
+          "state": "DEPLOYING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "execution_id": "e1"
+         }
+        ],
+        "terraforms": []
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "CANCELED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [
+         {
+          "id": "helm-1",
+          "state": "CANCELED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "execution_id": "e1"
+         }
+        ],
+        "terraforms": []
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "cancel waiting previous",
+   "args": [
+    "helm",
+    "cancel",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYING",
+         "last_deployment_state": "DEPLOYING",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [
+         {
+          "id": "helm-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "execution_id": "e1"
+         }
+        ],
+        "terraforms": []
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [
+         {
+          "id": "helm-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "execution_id": "e1"
+         }
+        ],
+        "terraforms": []
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "cancel api error",
+   "args": [
+    "helm",
+    "cancel",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "body": {
+      "environment": {
+       "id": "env-1",
+       "state": "DEPLOYING",
+       "last_deployment_state": "DEPLOYING",
+       "last_deployment_date": "2024-06-02T11:30:00Z",
+       "last_deployment_id": "dep-1",
+       "total_deployment_duration_in_seconds": 42
+      },
+      "applications": [],
+      "containers": [],
+      "jobs": [],
+      "databases": [],
+      "helms": [
+       {
+        "id": "helm-1",
+        "state": "DEPLOYING",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "execution_id": "e1"
+       }
+      ],
+      "terraforms": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "cancel statuses error",
+   "args": [
+    "helm",
+    "cancel",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "cancel missing flag",
+   "args": [
+    "helm",
+    "cancel"
+   ]
+  },
+  {
+   "name": "cancel not found",
+   "args": [
+    "helm",
+    "cancel",
+    "-n",
+    "ghost"
+   ]
+  },
+  {
+   "name": "clone",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/clone",
+     "status": 201,
+     "body": {
+      "id": "helm-9",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "my-helm-copy",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [],
+       "set_string": [],
+       "set_json": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone target name",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "my-helm",
+    "--target-helm-name",
+    "copy"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/clone",
+     "status": 201,
+     "body": {
+      "id": "helm-9",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "my-helm-copy",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [],
+       "set_string": [],
+       "set_json": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone target project env",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "my-helm",
+    "--target-project",
+    "my-project",
+    "--target-environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/clone",
+     "status": 201,
+     "body": {
+      "id": "helm-9",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "my-helm-copy",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [],
+       "set_string": [],
+       "set_json": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone target env not found",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "my-helm",
+    "--target-environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "clone target project not found",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "my-helm",
+    "--target-project",
+    "nope"
+   ]
+  },
+  {
+   "name": "clone not found",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "ghost"
+   ]
+  },
+  {
+   "name": "clone list error",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone api error",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/clone",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "detail": "invalid chart"
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone response syntax error",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/clone",
+     "status": 201,
+     "body_raw": "{bad",
+     "headers": {
+      "Content-Type": "application/json"
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone response not an object",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/clone",
+     "status": 201,
+     "body": "x"
+    }
+   ]
+  },
+  {
+   "name": "clone response not json",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/clone",
+     "status": 201,
+     "body_raw": "hello"
+    }
+   ]
+  },
+  {
+   "name": "clone response missing required",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/clone",
+     "status": 201,
+     "body": {
+      "id": "helm-9",
+      "name": "x"
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone response empty",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/clone",
+     "status": 201,
+     "body_raw": "",
+     "headers": {
+      "Content-Type": "application/json"
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone response null",
+   "args": [
+    "helm",
+    "clone",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/clone",
+     "status": 201,
+     "body_raw": "null",
+     "headers": {
+      "Content-Type": "application/json"
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone missing flag",
+   "args": [
+    "helm",
+    "clone"
+   ]
+  },
+  {
+   "name": "update repository helm without values file",
+   "args": [
+    "helm",
+    "update",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/helm/helm-1",
+     "body": {
+      "id": "helm-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "my-helm",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [],
+       "set_string": [],
+       "set_json": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "update git helm",
+   "args": [
+    "helm",
+    "update",
+    "-n",
+    "git-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/helm/helm-2",
+     "body": {
+      "id": "helm-2",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "git-helm",
+      "auto_preview": false,
+      "auto_deploy": true,
+      "source": {
+       "git": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/charts.git",
+         "name": "me/charts",
+         "branch": "main",
+         "root_path": "/charts/app",
+         "deployed_commit_id": "abc123",
+         "has_access": true,
+         "git_token_id": null
+        }
+       }
+      },
+      "arguments": [
+       "--wait"
+      ],
+      "allow_cluster_wide_resources": true,
+      "values_override": {
+       "set": [
+        [
+         "a",
+         "b"
+        ]
+       ],
+       "set_string": [],
+       "set_json": [
+        [
+         "j",
+         "{}"
+        ]
+       ],
+       "file": {
+        "git": {
+         "git_repository": {
+          "provider": "GITLAB",
+          "owner": "me",
+          "url": "https://gitlab.com/me/values.git",
+          "name": "me/values",
+          "branch": "prod",
+          "root_path": "/",
+          "git_token_id": "tok-1",
+          "has_access": true
+         },
+         "paths": [
+          "/values.yaml",
+          "/values-prod.yaml"
+         ]
+        }
+       }
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": [
+       {
+        "id": "p1",
+        "port_type": "SERVICE_NAME",
+        "name": "http",
+        "internal_port": 80,
+        "external_port": 443,
+        "namespace": "apps",
+        "protocol": "HTTP",
+        "is_default": true,
+        "service_name": "web"
+       },
+       {
+        "id": "p2",
+        "port_type": "SERVICE_SELECTORS",
+        "internal_port": 8080,
+        "protocol": "GRPC",
+        "service_selectors": [
+         {
+          "key": "app",
+          "value": "x"
+         }
+        ]
+       },
+       {
+        "id": "p3",
+        "port_type": "SERVICE_NAME",
+        "internal_port": 9090,
+        "protocol": "GRPC",
+        "service_name": "metrics",
+        "name": null
+       }
+      ],
+      "description": "git based chart",
+      "timeout_sec": 600
+     }
+    }
+   ]
+  },
+  {
+   "name": "update git helm branches",
+   "args": [
+    "helm",
+    "update",
+    "-n",
+    "git-helm",
+    "--chart_git_commit_branch",
+    "dev",
+    "--values_override_git_commit_branch",
+    "staging",
+    "--chart_name",
+    "ignored",
+    "--chart_version",
+    "9"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/helm/helm-2",
+     "body": {
+      "id": "helm-2",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "git-helm",
+      "auto_preview": false,
+      "auto_deploy": true,
+      "source": {
+       "git": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/charts.git",
+         "name": "me/charts",
+         "branch": "main",
+         "root_path": "/charts/app",
+         "deployed_commit_id": "abc123",
+         "has_access": true,
+         "git_token_id": null
+        }
+       }
+      },
+      "arguments": [
+       "--wait"
+      ],
+      "allow_cluster_wide_resources": true,
+      "values_override": {
+       "set": [
+        [
+         "a",
+         "b"
+        ]
+       ],
+       "set_string": [],
+       "set_json": [
+        [
+         "j",
+         "{}"
+        ]
+       ],
+       "file": {
+        "git": {
+         "git_repository": {
+          "provider": "GITLAB",
+          "owner": "me",
+          "url": "https://gitlab.com/me/values.git",
+          "name": "me/values",
+          "branch": "prod",
+          "root_path": "/",
+          "git_token_id": "tok-1",
+          "has_access": true
+         },
+         "paths": [
+          "/values.yaml",
+          "/values-prod.yaml"
+         ]
+        }
+       }
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": [
+       {
+        "id": "p1",
+        "port_type": "SERVICE_NAME",
+        "name": "http",
+        "internal_port": 80,
+        "external_port": 443,
+        "namespace": "apps",
+        "protocol": "HTTP",
+        "is_default": true,
+        "service_name": "web"
+       },
+       {
+        "id": "p2",
+        "port_type": "SERVICE_SELECTORS",
+        "internal_port": 8080,
+        "protocol": "GRPC",
+        "service_selectors": [
+         {
+          "key": "app",
+          "value": "x"
+         }
+        ]
+       },
+       {
+        "id": "p3",
+        "port_type": "SERVICE_NAME",
+        "internal_port": 9090,
+        "protocol": "GRPC",
+        "service_name": "metrics",
+        "name": null
+       }
+      ],
+      "description": "git based chart",
+      "timeout_sec": 600
+     }
+    }
+   ]
+  },
+  {
+   "name": "update raw helm",
+   "args": [
+    "helm",
+    "update",
+    "-n",
+    "raw-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/helm/helm-3",
+     "body": {
+      "id": "helm-3",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "raw-helm",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set_string": [
+        [
+         "s",
+         "t"
+        ]
+       ],
+       "file": {
+        "raw": {
+         "values": [
+          {
+           "name": "override",
+           "content": "replicas: 2\n"
+          },
+          {
+           "name": "extra",
+           "content": "a: b"
+          }
+         ]
+        }
+       }
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "update raw helm chart",
+   "args": [
+    "helm",
+    "update",
+    "-n",
+    "raw-helm",
+    "--chart_name",
+    "nginx",
+    "--chart_version",
+    "1.2.3"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/helm/helm-3",
+     "body": {
+      "id": "helm-3",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "raw-helm",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set_string": [
+        [
+         "s",
+         "t"
+        ]
+       ],
+       "file": {
+        "raw": {
+         "values": [
+          {
+           "name": "override",
+           "content": "replicas: 2\n"
+          },
+          {
+           "name": "extra",
+           "content": "a: b"
+          }
+         ]
+        }
+       }
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "update api error",
+   "args": [
+    "helm",
+    "update",
+    "-n",
+    "git-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/helm/helm-2",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "detail": "invalid chart"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update api error 500",
+   "args": [
+    "helm",
+    "update",
+    "-n",
+    "raw-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/helm/helm-3",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update not found",
+   "args": [
+    "helm",
+    "update",
+    "-n",
+    "ghost"
+   ]
+  },
+  {
+   "name": "update missing flag",
+   "args": [
+    "helm",
+    "update"
+   ]
+  },
+  {
+   "name": "list missing updated_at panics",
+   "args": [
+    "helm",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "body": {
+      "results": [
+       {
+        "id": "helm-3",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "name": "raw-helm",
+        "auto_preview": false,
+        "auto_deploy": false,
+        "source": {
+         "repository": {
+          "repository": {
+           "id": "hr-1",
+           "name": "bitnami",
+           "url": "https://charts.bitnami.com/bitnami"
+          },
+          "chart_name": "redis",
+          "chart_version": "18.0.0"
+         }
+        },
+        "arguments": [],
+        "allow_cluster_wide_resources": false,
+        "values_override": {
+         "set_string": [
+          [
+           "s",
+           "t"
+          ]
+         ],
+         "file": {
+          "raw": {
+           "values": [
+            {
+             "name": "override",
+             "content": "replicas: 2\n"
+            },
+            {
+             "name": "extra",
+             "content": "a: b"
+            }
+           ]
+          }
+         }
+        },
+        "icon_uri": "app://qovery-console/helm",
+        "service_type": "HELM",
+        "ports": []
+       }
+      ]
+     }
+    }
+   ],
+   "ignore": [
+    "stderr"
+   ]
+  },
+  {
+   "name": "list json missing updated_at panics",
+   "args": [
+    "helm",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "body": {
+      "results": [
+       {
+        "id": "helm-3",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "name": "raw-helm",
+        "auto_preview": false,
+        "auto_deploy": false,
+        "source": {
+         "repository": {
+          "repository": {
+           "id": "hr-1",
+           "name": "bitnami",
+           "url": "https://charts.bitnami.com/bitnami"
+          },
+          "chart_name": "redis",
+          "chart_version": "18.0.0"
+         }
+        },
+        "arguments": [],
+        "allow_cluster_wide_resources": false,
+        "values_override": {
+         "set_string": [
+          [
+           "s",
+           "t"
+          ]
+         ],
+         "file": {
+          "raw": {
+           "values": [
+            {
+             "name": "override",
+             "content": "replicas: 2\n"
+            },
+            {
+             "name": "extra",
+             "content": "a: b"
+            }
+           ]
+          }
+         }
+        },
+        "icon_uri": "app://qovery-console/helm",
+        "service_type": "HELM",
+        "ports": []
+       }
+      ]
+     }
+    }
+   ],
+   "ignore": [
+    "stderr"
+   ]
+  },
+  {
+   "name": "domain list missing validation domain panics",
+   "args": [
+    "helm",
+    "domain",
+    "list",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "use_cdn": true
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/link",
+     "body": {
+      "results": [
+       {
+        "service_id": "helm-1",
+        "service_type": "HELM",
+        "url": "https://p80-zabc.qovery.io",
+        "internal_port": 80,
+        "external_port": 443,
+        "is_qovery_domain": true,
+        "is_default": true
+       },
+       {
+        "service_id": "helm-1",
+        "service_type": "HELM",
+        "url": "https://app.example.com",
+        "internal_port": 80,
+        "external_port": 443,
+        "is_qovery_domain": false,
+        "is_default": true
+       }
+      ]
+     }
+    }
+   ],
+   "ignore": [
+    "stderr"
+   ]
+  },
+  {
+   "name": "domain list",
+   "args": [
+    "helm",
+    "domain",
+    "list",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "validation_domain": "z2.qovery.io",
+        "use_cdn": true
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/link",
+     "body": {
+      "results": [
+       {
+        "service_id": "helm-1",
+        "service_type": "HELM",
+        "url": "https://p80-zabc.qovery.io",
+        "internal_port": 80,
+        "external_port": 443,
+        "is_qovery_domain": true,
+        "is_default": true
+       },
+       {
+        "service_id": "helm-1",
+        "service_type": "HELM",
+        "url": "https://app.example.com",
+        "internal_port": 80,
+        "external_port": 443,
+        "is_qovery_domain": false,
+        "is_default": true
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain list json",
+   "args": [
+    "helm",
+    "domain",
+    "list",
+    "-n",
+    "my-helm",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "validation_domain": "z2.qovery.io",
+        "use_cdn": true
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/link",
+     "body": {
+      "results": [
+       {
+        "service_id": "helm-1",
+        "service_type": "HELM",
+        "url": "https://p80-zabc.qovery.io",
+        "internal_port": 80,
+        "external_port": 443,
+        "is_qovery_domain": true,
+        "is_default": true
+       },
+       {
+        "service_id": "helm-1",
+        "service_type": "HELM",
+        "url": "https://app.example.com",
+        "internal_port": 80,
+        "external_port": 443,
+        "is_qovery_domain": false,
+        "is_default": true
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain list empty json",
+   "args": [
+    "helm",
+    "domain",
+    "list",
+    "-n",
+    "my-helm",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/link",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain list empty",
+   "args": [
+    "helm",
+    "domain",
+    "list",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/link",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain list links error",
+   "args": [
+    "helm",
+    "domain",
+    "list",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "validation_domain": "z2.qovery.io",
+        "use_cdn": true
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/link",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain list domains error",
+   "args": [
+    "helm",
+    "domain",
+    "list",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain list not found",
+   "args": [
+    "helm",
+    "domain",
+    "list",
+    "-n",
+    "ghost"
+   ]
+  },
+  {
+   "name": "domain list missing flag",
+   "args": [
+    "helm",
+    "domain",
+    "list"
+   ]
+  },
+  {
+   "name": "domain create",
+   "args": [
+    "helm",
+    "domain",
+    "create",
+    "-n",
+    "my-helm",
+    "--domain",
+    "new.example.com",
+    "--do-not-generate-certificate"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "validation_domain": "z2.qovery.io",
+        "use_cdn": true
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/customDomain",
+     "status": 201,
+     "body": {
+      "id": "cd-3",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "domain": "new.example.com",
+      "generate_certificate": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain create cdn",
+   "args": [
+    "helm",
+    "domain",
+    "create",
+    "-n",
+    "my-helm",
+    "--domain",
+    "new.example.com",
+    "--is-behind-a-cdn"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "validation_domain": "z2.qovery.io",
+        "use_cdn": true
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/customDomain",
+     "status": 201,
+     "body": {
+      "id": "cd-3",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "domain": "new.example.com",
+      "generate_certificate": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain create exists",
+   "args": [
+    "helm",
+    "domain",
+    "create",
+    "-n",
+    "my-helm",
+    "--domain",
+    "app.example.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "validation_domain": "z2.qovery.io",
+        "use_cdn": true
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain create api error",
+   "args": [
+    "helm",
+    "domain",
+    "create",
+    "-n",
+    "my-helm",
+    "--domain",
+    "x.example.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "validation_domain": "z2.qovery.io",
+        "use_cdn": true
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/helm/helm-1/customDomain",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "detail": "invalid chart"
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain create missing domain",
+   "args": [
+    "helm",
+    "domain",
+    "create",
+    "-n",
+    "my-helm"
+   ]
+  },
+  {
+   "name": "domain create missing all",
+   "args": [
+    "helm",
+    "domain",
+    "create"
+   ]
+  },
+  {
+   "name": "domain edit",
+   "args": [
+    "helm",
+    "domain",
+    "edit",
+    "-n",
+    "my-helm",
+    "--domain",
+    "app.example.com",
+    "--is-behind-a-cdn"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "validation_domain": "z2.qovery.io",
+        "use_cdn": true
+       }
+      ]
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/helm/helm-1/customDomain/cd-1",
+     "body": {
+      "id": "cd-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "domain": "app.example.com",
+      "generate_certificate": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain edit missing",
+   "args": [
+    "helm",
+    "domain",
+    "edit",
+    "-n",
+    "my-helm",
+    "--domain",
+    "nope.example.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "validation_domain": "z2.qovery.io",
+        "use_cdn": true
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain edit api error",
+   "args": [
+    "helm",
+    "domain",
+    "edit",
+    "-n",
+    "my-helm",
+    "--domain",
+    "app.example.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "validation_domain": "z2.qovery.io",
+        "use_cdn": true
+       }
+      ]
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/helm/helm-1/customDomain/cd-1",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain edit helm not found",
+   "args": [
+    "helm",
+    "domain",
+    "edit",
+    "-n",
+    "ghost",
+    "--domain",
+    "app.example.com"
+   ]
+  },
+  {
+   "name": "domain delete",
+   "args": [
+    "helm",
+    "domain",
+    "delete",
+    "-n",
+    "my-helm",
+    "--domain",
+    "cdn.example.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "validation_domain": "z2.qovery.io",
+        "use_cdn": true
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/helm/helm-1/customDomain/cd-2",
+     "status": 204
+    }
+   ]
+  },
+  {
+   "name": "domain delete missing",
+   "args": [
+    "helm",
+    "domain",
+    "delete",
+    "-n",
+    "my-helm",
+    "--domain",
+    "nope.example.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "validation_domain": "z2.qovery.io",
+        "use_cdn": true
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain delete api error",
+   "args": [
+    "helm",
+    "domain",
+    "delete",
+    "-n",
+    "my-helm",
+    "--domain",
+    "cdn.example.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "app.example.com",
+        "generate_certificate": true,
+        "validation_domain": "z1.qovery.io",
+        "status": "VALIDATION_PENDING",
+        "use_cdn": false
+       },
+       {
+        "id": "cd-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "domain": "cdn.example.com",
+        "generate_certificate": false,
+        "validation_domain": "z2.qovery.io",
+        "use_cdn": true
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/helm/helm-1/customDomain/cd-2",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "domain delete missing flags",
+   "args": [
+    "helm",
+    "domain",
+    "delete",
+    "--domain",
+    "x"
+   ]
+  },
+  {
+   "name": "env list sorted",
+   "args": [
+    "helm",
+    "env",
+    "list",
+    "-n",
+    "my-helm",
+    "--sort"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list show values",
+   "args": [
+    "helm",
+    "env",
+    "list",
+    "-n",
+    "my-helm",
+    "--show-values",
+    "--sort"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list pretty",
+   "args": [
+    "helm",
+    "env",
+    "list",
+    "-n",
+    "my-helm",
+    "--pretty-print",
+    "--sort"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list unsorted single key",
+   "args": [
+    "helm",
+    "env",
+    "list",
+    "-n",
+    "my-helm",
+    "--pretty-print"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list empty",
+   "args": [
+    "helm",
+    "env",
+    "list",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list empty json",
+   "args": [
+    "helm",
+    "env",
+    "list",
+    "-n",
+    "my-helm",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list show values pretty sort",
+   "args": [
+    "helm",
+    "env",
+    "list",
+    "-n",
+    "my-helm",
+    "--show-values",
+    "--pretty-print",
+    "--sort"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list json",
+   "args": [
+    "helm",
+    "env",
+    "list",
+    "-n",
+    "my-helm",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list json sort",
+   "args": [
+    "helm",
+    "env",
+    "list",
+    "-n",
+    "my-helm",
+    "--json",
+    "--sort"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list api error",
+   "args": [
+    "helm",
+    "env",
+    "list",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list not found",
+   "args": [
+    "helm",
+    "env",
+    "list",
+    "-n",
+    "ghost"
+   ]
+  },
+  {
+   "name": "env list missing flag",
+   "args": [
+    "helm",
+    "env",
+    "list"
+   ]
+  },
+  {
+   "name": "env create",
+   "args": [
+    "helm",
+    "env",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "NEW",
+    "-v",
+    "val"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 201,
+     "body": {
+      "id": "var-9",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "NEW",
+      "value": "val",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env create secret env scope",
+   "args": [
+    "helm",
+    "env",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "NEW",
+    "-v",
+    "val",
+    "--secret",
+    "--scope",
+    "ENVIRONMENT",
+    "--override-if-exists"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 201,
+     "body": {
+      "id": "var-9",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "NEW",
+      "value": "val",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env create project scope",
+   "args": [
+    "helm",
+    "env",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "NEW",
+    "-v",
+    "val",
+    "--scope",
+    "PROJECT"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 201,
+     "body": {
+      "id": "var-9",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "NEW",
+      "value": "val",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env create bad scope",
+   "args": [
+    "helm",
+    "env",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "NEW",
+    "-v",
+    "val",
+    "--scope",
+    "helm"
+   ]
+  },
+  {
+   "name": "env create conflict",
+   "args": [
+    "helm",
+    "env",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "NEW",
+    "-v",
+    "val"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 409,
+     "body": {
+      "status": 409,
+      "error": "Conflict",
+      "detail": "key NEW already exists at ENVIRONMENT"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env create missing value",
+   "args": [
+    "helm",
+    "env",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "NEW"
+   ]
+  },
+  {
+   "name": "env create helm not found",
+   "args": [
+    "helm",
+    "env",
+    "create",
+    "-n",
+    "ghost",
+    "-k",
+    "NEW",
+    "-v",
+    "x"
+   ]
+  },
+  {
+   "name": "env update",
+   "args": [
+    "helm",
+    "env",
+    "update",
+    "-n",
+    "my-helm",
+    "-k",
+    "FOO",
+    "-v",
+    "baz"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/variable/var-1",
+     "body": {
+      "id": "var-1",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "FOO",
+      "value": "baz",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env update unknown key",
+   "args": [
+    "helm",
+    "env",
+    "update",
+    "-n",
+    "my-helm",
+    "-k",
+    "NOPE",
+    "-v",
+    "baz"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env update api error",
+   "args": [
+    "helm",
+    "env",
+    "update",
+    "-n",
+    "my-helm",
+    "-k",
+    "FOO",
+    "-v",
+    "baz"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/variable/var-1",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env update missing",
+   "args": [
+    "helm",
+    "env",
+    "update",
+    "-n",
+    "my-helm",
+    "-k",
+    "FOO"
+   ]
+  },
+  {
+   "name": "env delete",
+   "args": [
+    "helm",
+    "env",
+    "delete",
+    "-n",
+    "my-helm",
+    "-k",
+    "FOO"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/variable/var-1",
+     "status": 204
+    }
+   ]
+  },
+  {
+   "name": "env delete unknown key",
+   "args": [
+    "helm",
+    "env",
+    "delete",
+    "-n",
+    "my-helm",
+    "-k",
+    "NOPE"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env delete api error",
+   "args": [
+    "helm",
+    "env",
+    "delete",
+    "-n",
+    "my-helm",
+    "-k",
+    "FOO"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/variable/var-1",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env delete missing key",
+   "args": [
+    "helm",
+    "env",
+    "delete",
+    "-n",
+    "my-helm"
+   ]
+  },
+  {
+   "name": "env alias create",
+   "args": [
+    "helm",
+    "env",
+    "alias",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "DB_HOST",
+    "--alias",
+    "MY_ALIAS"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-3/alias",
+     "status": 201,
+     "body": {
+      "id": "var-10",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "MY_ALIAS",
+      "value": "db.local",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "ALIAS",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env alias create env scope",
+   "args": [
+    "helm",
+    "env",
+    "alias",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "DB_HOST",
+    "--alias",
+    "MY_ALIAS",
+    "--scope",
+    "ENVIRONMENT"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-3/alias",
+     "status": 201,
+     "body": {
+      "id": "var-10",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "MY_ALIAS",
+      "value": "db.local",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "ALIAS",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env alias create project scope",
+   "args": [
+    "helm",
+    "env",
+    "alias",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "DB_HOST",
+    "--alias",
+    "MY_ALIAS",
+    "--scope",
+    "PROJECT"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-3/alias",
+     "status": 201,
+     "body": {
+      "id": "var-10",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "MY_ALIAS",
+      "value": "db.local",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "ALIAS",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env alias create unknown key",
+   "args": [
+    "helm",
+    "env",
+    "alias",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "NOPE",
+    "--alias",
+    "A"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env alias create bad scope",
+   "args": [
+    "helm",
+    "env",
+    "alias",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "DB_HOST",
+    "--alias",
+    "A",
+    "--scope",
+    "X"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env alias create missing alias",
+   "args": [
+    "helm",
+    "env",
+    "alias",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "DB_HOST"
+   ]
+  },
+  {
+   "name": "env override create",
+   "args": [
+    "helm",
+    "env",
+    "override",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "DB_HOST",
+    "--value",
+    "other"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-3/override",
+     "status": 201,
+     "body": {
+      "id": "var-11",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "DB_HOST",
+      "value": "other",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "OVERRIDE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env override create env scope",
+   "args": [
+    "helm",
+    "env",
+    "override",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "DB_HOST",
+    "--value",
+    "other",
+    "--scope",
+    "ENVIRONMENT"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-3/override",
+     "status": 201,
+     "body": {
+      "id": "var-11",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "DB_HOST",
+      "value": "other",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "OVERRIDE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env override create no value",
+   "args": [
+    "helm",
+    "env",
+    "override",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "DB_HOST"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-3/override",
+     "status": 201,
+     "body": {
+      "id": "var-11",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "DB_HOST",
+      "value": "other",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "OVERRIDE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env override create unknown key",
+   "args": [
+    "helm",
+    "env",
+    "override",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "NOPE",
+    "--value",
+    "x"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env override create api error",
+   "args": [
+    "helm",
+    "env",
+    "override",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "DB_HOST",
+    "--value",
+    "x"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-3/override",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env override create missing key",
+   "args": [
+    "helm",
+    "env",
+    "override",
+    "create",
+    "-n",
+    "my-helm"
+   ]
+  },
+  {
+   "name": "external-secret create",
+   "args": [
+    "helm",
+    "external-secret",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "EXT2",
+    "-r",
+    "/sm/ref",
+    "--secret-manager-access-name",
+    "my-sm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 201,
+     "body": {
+      "id": "var-9",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "NEW",
+      "value": "val",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create mount path env scope",
+   "args": [
+    "helm",
+    "external-secret",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "EXT2",
+    "-r",
+    "/sm/ref",
+    "--secret-manager-access-name",
+    "my-sm",
+    "--mount-path",
+    "/etc/secret",
+    "--scope",
+    "ENVIRONMENT"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 201,
+     "body": {
+      "id": "var-9",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "NEW",
+      "value": "val",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create unknown sma",
+   "args": [
+    "helm",
+    "external-secret",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "EXT2",
+    "-r",
+    "/sm/ref",
+    "--secret-manager-access-name",
+    "nope"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create clusters error",
+   "args": [
+    "helm",
+    "external-secret",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "EXT2",
+    "-r",
+    "/sm/ref",
+    "--secret-manager-access-name",
+    "my-sm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create api error",
+   "args": [
+    "helm",
+    "external-secret",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "EXT2",
+    "-r",
+    "/sm/ref",
+    "--secret-manager-access-name",
+    "my-sm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "detail": "invalid chart"
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create missing flags",
+   "args": [
+    "helm",
+    "external-secret",
+    "create",
+    "-n",
+    "my-helm",
+    "-k",
+    "EXT2"
+   ]
+  },
+  {
+   "name": "external-secret create helm not found",
+   "args": [
+    "helm",
+    "external-secret",
+    "create",
+    "-n",
+    "ghost",
+    "-k",
+    "EXT2",
+    "-r",
+    "/sm/ref",
+    "--secret-manager-access-name",
+    "my-sm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret update",
+   "args": [
+    "helm",
+    "external-secret",
+    "update",
+    "-n",
+    "my-helm",
+    "-k",
+    "EXT",
+    "-r",
+    "/sm/ref",
+    "--secret-manager-access-name",
+    "my-sm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/variable/var-6",
+     "body": {
+      "id": "var-6",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "EXT",
+      "value": "/sm/ref",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "EXTERNAL_SECRET",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret update no sma",
+   "args": [
+    "helm",
+    "external-secret",
+    "update",
+    "-n",
+    "my-helm",
+    "-k",
+    "EXT",
+    "-r",
+    "/sm/ref"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/variable/var-6",
+     "body": {
+      "id": "var-6",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "EXT",
+      "value": "/sm/ref",
+      "mount_path": null,
+      "scope": "HELM",
+      "variable_type": "EXTERNAL_SECRET",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret update unknown key",
+   "args": [
+    "helm",
+    "external-secret",
+    "update",
+    "-n",
+    "my-helm",
+    "-k",
+    "NOPE",
+    "--secret-manager-access-name",
+    "my-sm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret update missing key",
+   "args": [
+    "helm",
+    "external-secret",
+    "update",
+    "-n",
+    "my-helm"
+   ]
+  },
+  {
+   "name": "external-secret delete",
+   "args": [
+    "helm",
+    "external-secret",
+    "delete",
+    "-n",
+    "my-helm",
+    "-k",
+    "EXT"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/variable/var-6",
+     "status": 204
+    }
+   ]
+  },
+  {
+   "name": "external-secret delete unknown",
+   "args": [
+    "helm",
+    "external-secret",
+    "delete",
+    "-n",
+    "my-helm",
+    "-k",
+    "NOPE"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "helm-1"
+      ],
+      "scope": [
+       "HELM"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "HELM",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "helm-1",
+        "service_name": "my-helm",
+        "service_type": "HELM"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret delete missing",
+   "args": [
+    "helm",
+    "external-secret",
+    "delete",
+    "-k",
+    "EXT"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,412 @@
+{
+ "cases": [
+  {
+   "name": "project list null name",
+   "args": [
+    "project",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/project",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "proj-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "name": null,
+        "associated_environments_count": 1,
+        "organization": {
+         "id": null
+        },
+        "description": "a project"
+       }
+      ]
+     }
+    }
+   ],
+   "note": "explicit null decodes as the Go zero value (encoding/json)"
+  },
+  {
+   "name": "container list null image",
+   "args": [
+    "container",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": null,
+        "tag": null,
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       }
+      ]
+     }
+    }
+   ],
+   "note": "explicit null decodes as the Go zero value (encoding/json)"
+  },
+  {
+   "name": "project list null results",
+   "args": [
+    "project",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/project",
+     "status": 200,
+     "body": {
+      "results": null
+     }
+    }
+   ],
+   "note": "explicit null decodes as the Go zero value (encoding/json)"
+  },
+  {
+   "name": "custom domain lookup is not trimmed (padded flag)",
+   "args": [
+    "application",
+    "domain",
+    "delete",
+    "-n",
+    "my-app",
+    "--domain",
+    " www.example.com "
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "domain": "www.example.com",
+        "generate_certificate": true,
+        "use_cdn": false,
+        "validation_domain": "zxy.qovery.io"
+       },
+       {
+        "id": "cd-3",
+        "created_at": "2024-05-01T10:00:00Z",
+        "domain": " padded.example.com ",
+        "generate_certificate": true,
+        "use_cdn": false,
+        "validation_domain": "zxy.qovery.io"
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/application/app-1/customDomain/cd-1",
+     "status": 204
+    }
+   ]
+  },
+  {
+   "name": "custom domain lookup is not trimmed (padded domain)",
+   "args": [
+    "application",
+    "domain",
+    "delete",
+    "-n",
+    "my-app",
+    "--domain",
+    "padded.example.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "domain": "www.example.com",
+        "generate_certificate": true,
+        "use_cdn": false,
+        "validation_domain": "zxy.qovery.io"
+       },
+       {
+        "id": "cd-3",
+        "created_at": "2024-05-01T10:00:00Z",
+        "domain": " padded.example.com ",
+        "generate_certificate": true,
+        "use_cdn": false,
+        "validation_domain": "zxy.qovery.io"
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/application/app-1/customDomain/cd-3",
+     "status": 204
+    }
+   ]
+  },
+  {
+   "name": "custom domain lookup exact padded",
+   "args": [
+    "application",
+    "domain",
+    "delete",
+    "-n",
+    "my-app",
+    "--domain",
+    " padded.example.com "
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "domain": "www.example.com",
+        "generate_certificate": true,
+        "use_cdn": false,
+        "validation_domain": "zxy.qovery.io"
+       },
+       {
+        "id": "cd-3",
+        "created_at": "2024-05-01T10:00:00Z",
+        "domain": " padded.example.com ",
+        "generate_certificate": true,
+        "use_cdn": false,
+        "validation_domain": "zxy.qovery.io"
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/application/app-1/customDomain/cd-3",
+     "status": 204
+    }
+   ]
+  },
+  {
+   "name": "custom domain create padded duplicate",
+   "args": [
+    "container",
+    "domain",
+    "create",
+    "-n",
+    "my-container",
+    "--domain",
+    " www.example.com "
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/container/cont-1/customDomain",
+     "body": {
+      "results": [
+       {
+        "id": "cd-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "domain": "www.example.com",
+        "generate_certificate": true,
+        "use_cdn": false,
+        "validation_domain": "zxy.qovery.io"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/container/cont-1/customDomain",
+     "status": 201,
+     "body": {
+      "id": "cd-9",
+      "created_at": "2024-05-01T10:00:00Z",
+      "domain": " www.example.com ",
+      "generate_certificate": true,
+      "use_cdn": false,
+      "validation_domain": "zxy.qovery.io"
+     }
+    }
+   ]
+  },
+  {
+   "name": "flag needs an argument application deploy --applications",
+   "args": [
+    "application",
+    "deploy",
+    "--applications"
+   ],
+   "note": "pflag names the whole flag, not one whose name is a prefix"
+  },
+  {
+   "name": "flag needs an argument log --service-id",
+   "args": [
+    "log",
+    "--service-id"
+   ],
+   "note": "pflag names the whole flag, not one whose name is a prefix"
+  },
+  {
+   "name": "flag needs an argument environment clone --environment-type",
+   "args": [
+    "environment",
+    "clone",
+    "--environment-type"
+   ],
+   "note": "pflag names the whole flag, not one whose name is a prefix"
+  },
+  {
+   "name": "flag needs an argument application deploy --application",
+   "args": [
+    "application",
+    "deploy",
+    "--application"
+   ],
+   "note": "pflag names the whole flag, not one whose name is a prefix"
+  },
+  {
+   "name": "duration flag 9999999999h",
+   "args": [
+    "admin",
+    "cluster",
+    "operator",
+    "update",
+    "-f",
+    "Status=X",
+    "-y",
+    "--timeout=9999999999h"
+   ],
+   "note": "time.ParseDuration: overflow is an error, time package quoting"
+  },
+  {
+   "name": "duration flag 3000000h",
+   "args": [
+    "admin",
+    "cluster",
+    "operator",
+    "update",
+    "-f",
+    "Status=X",
+    "-y",
+    "--timeout=3000000h"
+   ],
+   "note": "time.ParseDuration: overflow is an error, time package quoting"
+  },
+  {
+   "name": "duration flag 2562047h47m16.854775808s",
+   "args": [
+    "admin",
+    "cluster",
+    "operator",
+    "update",
+    "-f",
+    "Status=X",
+    "-y",
+    "--timeout=2562047h47m16.854775808s"
+   ],
+   "note": "time.ParseDuration: overflow is an error, time package quoting"
+  },
+  {
+   "name": "duration flag 99999999999999999999999h",
+   "args": [
+    "admin",
+    "cluster",
+    "operator",
+    "update",
+    "-f",
+    "Status=X",
+    "-y",
+    "--timeout=99999999999999999999999h"
+   ],
+   "note": "time.ParseDuration: overflow is an error, time package quoting"
+  },
+  {
+   "name": "duration flag 5é",
+   "args": [
+    "admin",
+    "cluster",
+    "operator",
+    "update",
+    "-f",
+    "Status=X",
+    "-y",
+    "--timeout=5é"
+   ],
+   "note": "time.ParseDuration: overflow is an error, time package quoting"
+  },
+  {
+   "name": "duration flag .",
+   "args": [
+    "admin",
+    "cluster",
+    "operator",
+    "update",
+    "-f",
+    "Status=X",
+    "-y",
+    "--timeout=."
+   ],
+   "note": "time.ParseDuration: overflow is an error, time package quoting"
+  },
+  {
+   "name": "duration flag 1.0000000001h",
+   "args": [
+    "admin",
+    "cluster",
+    "operator",
+    "update",
+    "-f",
+    "Status=X",
+    "-y",
+    "--timeout=1.0000000001h"
+   ],
+   "note": "time.ParseDuration: overflow is an error, time package quoting"
+  }
+ ]
+}

@@ -1,0 +1,32 @@
+{
+  "_comment": "Only error paths: a valid date range makes both CLIs download from the hard-coded https://api.qovery.com (never called here).",
+  "fixtures": [
+    {"method": "GET", "path": "/organization/org-1", "body": {"id": "org-1", "created_at": "2024-05-01T10:00:00.123456Z", "name": "my-org", "plan": "TEAM",
+      "organization_plan": {"plan": "TEAM", "audit_logs_retention_in_days": 90}}},
+    {"method": "GET", "path": "/organization/org-2", "body": {"id": "org-2", "created_at": "2024-05-01T10:00:00.123456Z", "name": "other-org", "plan": "FREE",
+      "organization_plan": {"plan": "FREE", "audit_logs_retention_in_days": 7.5}}}
+  ],
+  "cases": [
+    {"name": "audit-log (group)", "args": ["audit-log"]},
+    {"name": "audit-log export missing from-date", "args": ["audit-log", "export"]},
+    {"name": "audit-log export bad from-date (space)", "args": ["audit-log", "export", "--from-date", "2025-10-02 01:04:45Z"]},
+    {"name": "audit-log export bad from-date (word)", "args": ["audit-log", "export", "-f", "yesterday"]},
+    {"name": "audit-log export bad from-date (empty)", "args": ["audit-log", "export", "-f", ""]},
+    {"name": "audit-log export bad from-date (month)", "args": ["audit-log", "export", "-f", "2025-13-02T01:04:45Z"]},
+    {"name": "audit-log export bad from-date (day)", "args": ["audit-log", "export", "-f", "2025-02-30T01:04:45Z"]},
+    {"name": "audit-log export bad from-date (hour)", "args": ["audit-log", "export", "-f", "2025-02-03T24:04:45Z"]},
+    {"name": "audit-log export bad from-date (one digit hour + no zone)", "args": ["audit-log", "export", "-f", "2025-02-03T1:04:45"]},
+    {"name": "audit-log export bad from-date (extra)", "args": ["audit-log", "export", "-f", "2025-02-03T01:04:45Zabc"]},
+    {"name": "audit-log export bad from-date (zone)", "args": ["audit-log", "export", "-f", "2025-02-03T01:04:45+2:00"]},
+    {"name": "audit-log export bad from-date (zone range)", "args": ["audit-log", "export", "-f", "2025-02-03T01:04:45+25:00"]},
+    {"name": "audit-log export bad from-date (date only)", "args": ["audit-log", "export", "-f", "2025-02-03"]},
+    {"name": "audit-log export bad from-date (quote, unicode)", "args": ["audit-log", "export", "-f", "\"2025é"]},
+    {"name": "audit-log export bad to-date", "args": ["audit-log", "export", "-f", "2025-09-01T01:04:45.123+02:00", "-t", "2025-09-02"]},
+    {"name": "audit-log export bad to-date other org", "args": ["audit-log", "export", "-o", "other-org", "-f", "2025-09-01T01:04:45Z", "--to-date", "now"]},
+    {"name": "audit-log export org not found", "args": ["audit-log", "export", "-o", "nope", "-f", "x"]},
+    {"name": "audit-log export org api error", "args": ["audit-log", "export", "-f", "x"],
+     "fixtures": [{"method": "GET", "path": "/organization/org-1", "status": 500, "body": {}}]},
+    {"name": "audit-log export no token", "args": ["audit-log", "export", "-f", "x"], "env": {"QOVERY_CLI_ACCESS_TOKEN": ""}, "context": {"access_token": ""}},
+    {"name": "audit-log export extra args", "args": ["audit-log", "export", "foo", "-f", "x"]}
+  ]
+}

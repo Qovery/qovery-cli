@@ -1,0 +1,16 @@
+[package]
+name = "qovery-cmd-service"
+description = "qovery service command(s)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+qovery-cobra.workspace = true
+qovery-core.workspace = true
+qovery-log.workspace = true
+qovery-api.workspace = true
+qovery-services.workspace = true
+serde.workspace = true
+serde_json.workspace = true

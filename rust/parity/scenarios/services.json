@@ -1,0 +1,828 @@
+{
+ "_comment": "Decoding of 2xx responses by the shared services helpers (Go generated client decode: commits, deploy, cancel, terraform). Edited by hand.",
+ "cases": [
+  {
+   "name": "commit null fields",
+   "args": [
+    "application",
+    "deploy",
+    "-n",
+    "my-app",
+    "--commit-id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/application/app-1/commit",
+     "body": {
+      "results": [
+       {
+        "created_at": "2024-06-01T10:00:00Z",
+        "git_commit_id": "old",
+        "tag": null,
+        "message": "m",
+        "author_name": null
+       },
+       {
+        "created_at": null,
+        "git_commit_id": "zero",
+        "tag": null,
+        "message": null,
+        "author_name": null
+       },
+       {
+        "created_at": "2024-06-03T10:00:00Z",
+        "git_commit_id": "new",
+        "tag": null,
+        "message": "newest\nx",
+        "author_name": null
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "commit syntax error",
+   "args": [
+    "application",
+    "deploy",
+    "-n",
+    "my-app",
+    "--commit-id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/application/app-1/commit",
+     "body_raw": "<html>",
+     "headers": {
+      "Content-Type": "application/json"
+     }
+    }
+   ]
+  },
+  {
+   "name": "commit text/plain",
+   "args": [
+    "application",
+    "deploy",
+    "-n",
+    "my-app",
+    "--commit-id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/application/app-1/commit",
+     "body_raw": "{}"
+    }
+   ]
+  },
+  {
+   "name": "commit empty body",
+   "args": [
+    "application",
+    "deploy",
+    "-n",
+    "my-app",
+    "--commit-id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/application/app-1/commit",
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "commit null body",
+   "args": [
+    "application",
+    "deploy",
+    "-n",
+    "my-app",
+    "--commit-id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/application/app-1/commit",
+     "body": null
+    }
+   ]
+  },
+  {
+   "name": "commit results null",
+   "args": [
+    "application",
+    "deploy",
+    "-n",
+    "my-app",
+    "--commit-id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/application/app-1/commit",
+     "body": {
+      "results": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy syntax error",
+   "args": [
+    "application",
+    "deploy",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body_raw": "{bad",
+     "headers": {
+      "Content-Type": "application/json"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy text/plain",
+   "args": [
+    "application",
+    "deploy",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body_raw": "ok"
+    }
+   ]
+  },
+  {
+   "name": "deploy empty",
+   "args": [
+    "application",
+    "deploy",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202
+    }
+   ]
+  },
+  {
+   "name": "app cancel syntax error",
+   "args": [
+    "application",
+    "cancel",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "body": {
+      "environment": {
+       "id": "env-1",
+       "state": "DEPLOYING",
+       "last_deployment_state": "DEPLOYED",
+       "last_deployment_date": "2024-06-02T11:30:00Z",
+       "last_deployment_id": "dep-1",
+       "total_deployment_duration_in_seconds": 42
+      },
+      "applications": [
+       {
+        "id": "app-1",
+        "state": "DEPLOYING",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-app-1",
+        "steps": null
+       }
+      ],
+      "containers": [
+       {
+        "id": "cont-1",
+        "state": "STOPPED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-cont-1",
+        "steps": null
+       }
+      ],
+      "jobs": [
+       {
+        "id": "cron-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-cron-1",
+        "steps": null
+       },
+       {
+        "id": "life-1",
+        "state": "DEPLOYMENT_ERROR",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-life-1",
+        "steps": null
+       }
+      ],
+      "databases": [
+       {
+        "id": "db-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-db-1",
+        "steps": null
+       }
+      ],
+      "helms": [
+       {
+        "id": "helm-1",
+        "state": "DEPLOYING",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-helm-1",
+        "steps": null
+       }
+      ],
+      "terraforms": [
+       {
+        "id": "tf-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-tf-1",
+        "steps": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "status": 200,
+     "body_raw": "nope",
+     "headers": {
+      "Content-Type": "application/json"
+     }
+    }
+   ]
+  },
+  {
+   "name": "app cancel text",
+   "args": [
+    "application",
+    "cancel",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "body": {
+      "environment": {
+       "id": "env-1",
+       "state": "DEPLOYING",
+       "last_deployment_state": "DEPLOYED",
+       "last_deployment_date": "2024-06-02T11:30:00Z",
+       "last_deployment_id": "dep-1",
+       "total_deployment_duration_in_seconds": 42
+      },
+      "applications": [
+       {
+        "id": "app-1",
+        "state": "DEPLOYING",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-app-1",
+        "steps": null
+       }
+      ],
+      "containers": [
+       {
+        "id": "cont-1",
+        "state": "STOPPED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-cont-1",
+        "steps": null
+       }
+      ],
+      "jobs": [
+       {
+        "id": "cron-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-cron-1",
+        "steps": null
+       },
+       {
+        "id": "life-1",
+        "state": "DEPLOYMENT_ERROR",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-life-1",
+        "steps": null
+       }
+      ],
+      "databases": [
+       {
+        "id": "db-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-db-1",
+        "steps": null
+       }
+      ],
+      "helms": [
+       {
+        "id": "helm-1",
+        "state": "DEPLOYING",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-helm-1",
+        "steps": null
+       }
+      ],
+      "terraforms": [
+       {
+        "id": "tf-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-tf-1",
+        "steps": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "status": 200,
+     "body_raw": "x"
+    }
+   ]
+  },
+  {
+   "name": "app cancel empty",
+   "args": [
+    "application",
+    "cancel",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "body": {
+      "environment": {
+       "id": "env-1",
+       "state": "DEPLOYING",
+       "last_deployment_state": "DEPLOYED",
+       "last_deployment_date": "2024-06-02T11:30:00Z",
+       "last_deployment_id": "dep-1",
+       "total_deployment_duration_in_seconds": 42
+      },
+      "applications": [
+       {
+        "id": "app-1",
+        "state": "DEPLOYING",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-app-1",
+        "steps": null
+       }
+      ],
+      "containers": [
+       {
+        "id": "cont-1",
+        "state": "STOPPED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-cont-1",
+        "steps": null
+       }
+      ],
+      "jobs": [
+       {
+        "id": "cron-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-cron-1",
+        "steps": null
+       },
+       {
+        "id": "life-1",
+        "state": "DEPLOYMENT_ERROR",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-life-1",
+        "steps": null
+       }
+      ],
+      "databases": [
+       {
+        "id": "db-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-db-1",
+        "steps": null
+       }
+      ],
+      "helms": [
+       {
+        "id": "helm-1",
+        "state": "DEPLOYING",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-helm-1",
+        "steps": null
+       }
+      ],
+      "terraforms": [
+       {
+        "id": "tf-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-tf-1",
+        "steps": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "tf plan syntax error",
+   "args": [
+    "terraform",
+    "plan",
+    "-n",
+    "my-terraform"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/terraform/tf-1/deploy",
+     "status": 202,
+     "body_raw": "[1,",
+     "headers": {
+      "Content-Type": "application/json"
+     }
+    }
+   ]
+  },
+  {
+   "name": "tf plan syntax error apply",
+   "args": [
+    "terraform",
+    "deploy",
+    "-n",
+    "my-terraform"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body_raw": "[1,",
+     "headers": {
+      "Content-Type": "application/json"
+     }
+    }
+   ]
+  },
+  {
+   "name": "tf plan text",
+   "args": [
+    "terraform",
+    "plan",
+    "-n",
+    "my-terraform"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/terraform/tf-1/deploy",
+     "status": 202,
+     "body_raw": "x"
+    }
+   ]
+  },
+  {
+   "name": "tf plan text apply",
+   "args": [
+    "terraform",
+    "deploy",
+    "-n",
+    "my-terraform"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body_raw": "x"
+    }
+   ]
+  },
+  {
+   "name": "tf plan empty",
+   "args": [
+    "terraform",
+    "plan",
+    "-n",
+    "my-terraform"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/terraform/tf-1/deploy",
+     "status": 202
+    }
+   ]
+  },
+  {
+   "name": "tf plan empty apply",
+   "args": [
+    "terraform",
+    "deploy",
+    "-n",
+    "my-terraform"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202
+    }
+   ]
+  }
+ ]
+}

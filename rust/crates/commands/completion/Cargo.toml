@@ -1,0 +1,18 @@
+[package]
+name = "qovery-cmd-completion"
+description = "qovery completion command(s)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+qovery-cobra.workspace = true
+qovery-core.workspace = true
+qovery-log.workspace = true
+qovery-api.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+qovery-cmd-list-commands = { path = "../list-commands" }

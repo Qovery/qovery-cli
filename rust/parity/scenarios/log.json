@@ -1,0 +1,32 @@
+{
+  "_comment": "The mock API does not speak websocket: the upgrade gets a 404 (websocket: bad handshake). Streaming is compared by parity/log_ws_compare.py with parity/scenarios/log_ws.json.",
+  "cases": [
+    {"name": "log context service", "args": ["log"]},
+    {"name": "log --raw", "args": ["log", "--raw"]},
+    {"name": "log -a", "args": ["log", "-a", "my-app"]},
+    {"name": "log -n", "args": ["log", "-n", "my-container"]},
+    {"name": "log -d", "args": ["log", "-d", "my-db"]},
+    {"name": "log -j cron", "args": ["log", "-j", "my-cron"]},
+    {"name": "log -j lifecycle", "args": ["log", "--job", "my-lifecycle"]},
+    {"name": "log -s helm", "args": ["log", "-s", "my-helm"]},
+    {"name": "log -s app", "args": ["log", "--service", "my-app"]},
+    {"name": "log --service-id", "args": ["log", "--service-id", "11111111-2222-3333-4444-555555555555", "-a", "ignored"]},
+    {"name": "log explicit org/project/env", "args": ["log", "--organization", "my-org", "--project", "my-project", "--environment", "my-env", "-a", "my-app"]},
+    {"name": "log -a not found", "args": ["log", "-a", "nope"]},
+    {"name": "log -n not found", "args": ["log", "-n", "nope"]},
+    {"name": "log -d not found", "args": ["log", "-d", "nope"]},
+    {"name": "log -j not found", "args": ["log", "-j", "nope"]},
+    {"name": "log -s not found", "args": ["log", "-s", "nope"]},
+    {"name": "log env not found", "args": ["log", "--environment", "nope"]},
+    {"name": "log project not found", "args": ["log", "--project", "nope"]},
+    {"name": "log application list error", "args": ["log", "-a", "my-app"],
+     "fixtures": [{"method": "GET", "path": "/environment/env-1/application", "status": 500, "body": {}}]},
+    {"name": "log environment get error", "args": ["log"],
+     "fixtures": [{"method": "GET", "path": "/environment/env-1", "status": 404, "body": {}}]},
+    {"name": "log no token", "args": ["log"], "env": {"QOVERY_CLI_ACCESS_TOKEN": ""}, "context": {"access_token": ""}},
+    {"name": "log ws connection refused", "args": ["log"], "env": {"QOVERY_WS_URL": "ws://127.0.0.1:9"}},
+    {"name": "log ws malformed url", "args": ["log"], "env": {"QOVERY_WS_URL": "http://127.0.0.1:9"}},
+    {"name": "log unknown flag", "args": ["log", "--nope"]},
+    {"name": "log extra args", "args": ["log", "foo"]}
+  ]
+}

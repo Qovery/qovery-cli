@@ -1,0 +1,19 @@
+[package]
+name = "qovery-cmd-skills"
+description = "qovery skills command(s)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+qovery-cobra.workspace = true
+qovery-core.workspace = true
+qovery-log.workspace = true
+qovery-api.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+reqwest.workspace = true
+tempfile.workspace = true
+chrono.workspace = true
+is-terminal.workspace = true

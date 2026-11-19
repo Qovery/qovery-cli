@@ -1,0 +1,31 @@
+{
+ "cases": [
+  {
+   "name": "version",
+   "args": [
+    "version"
+   ]
+  },
+  {
+   "name": "version extra arg",
+   "args": [
+    "version",
+    "foo"
+   ]
+  },
+  {
+   "name": "version no context file",
+   "args": [
+    "version"
+   ],
+   "no_context_file": true
+  },
+  {
+   "name": "version unknown flag",
+   "args": [
+    "version",
+    "--nope"
+   ]
+  }
+ ]
+}

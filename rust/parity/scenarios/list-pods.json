@@ -1,0 +1,196 @@
+{
+ "cases": [
+  {
+   "name": "list-pods url too short",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1"
+   ]
+  },
+  {
+   "name": "list-pods url unknown org",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-x/project/proj-1/environment/env-1/application/app-1"
+   ]
+  },
+  {
+   "name": "list-pods url unknown project",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-x/environment/env-1/application/app-1"
+   ]
+  },
+  {
+   "name": "list-pods url unknown env",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-x/application/app-1"
+   ]
+  },
+  {
+   "name": "list-pods url statuses error",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "status": 502,
+     "body": {
+      "status": 502,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list-pods url service not found",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/nope"
+   ]
+  },
+  {
+   "name": "list-pods url app error",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list-pods url terraform error",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/terraform/tf-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/terraform/tf-1",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list-pods url job error",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/job/life-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/job/life-1",
+     "status": 401,
+     "body": {
+      "status": 401,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list-pods no context file",
+   "args": [
+    "list-pods"
+   ],
+   "no_context_file": true
+  },
+  {
+   "name": "list-pods full context prompt",
+   "args": [
+    "list-pods"
+   ]
+  },
+  {
+   "name": "list-pods context env error",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list-pods context terraform error",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "tf-x",
+    "service_type": "TERRAFORM"
+   }
+  },
+  {
+   "name": "list-pods context no",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "no\n"
+  },
+  {
+   "name": "list-pods partial context select",
+   "args": [
+    "list-pods"
+   ],
+   "context": {
+    "service_name": ""
+   }
+  },
+  {
+   "name": "list-pods select orgs error",
+   "args": [
+    "list-pods"
+   ],
+   "context": {
+    "service_name": ""
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list-pods unknown flag",
+   "args": [
+    "list-pods",
+    "--nope"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+[package]
+name = "qovery-cobra"
+description = "cobra/pflag compatible command layer built on top of clap: same command lookup, flag syntax, help, usage and error messages as the Go CLI"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+clap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+qovery-log.workspace = true

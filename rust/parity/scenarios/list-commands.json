@@ -1,0 +1,31 @@
+{
+ "cases": [
+  {
+   "name": "list-commands",
+   "args": [
+    "list-commands"
+   ]
+  },
+  {
+   "name": "list-commands extra args",
+   "args": [
+    "list-commands",
+    "foo"
+   ]
+  },
+  {
+   "name": "list-commands --verbose",
+   "args": [
+    "list-commands",
+    "--verbose"
+   ]
+  },
+  {
+   "name": "list-commands unknown flag",
+   "args": [
+    "list-commands",
+    "--nope"
+   ]
+  }
+ ]
+}

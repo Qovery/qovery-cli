@@ -1,0 +1,7595 @@
+{
+ "fixtures": [
+  {
+   "method": "GET",
+   "path": "/environment/env-1/job",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "cron-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "my-cron",
+      "cpu": 250,
+      "memory": 256,
+      "gpu": 0,
+      "auto_preview": false,
+      "source": {
+       "docker": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/job.git",
+         "name": "me/job",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "def456",
+         "has_access": true
+        },
+        "dockerfile_path": "Dockerfile"
+       }
+      },
+      "healthchecks": {
+       "checks": []
+      },
+      "icon_uri": "app://qovery-console/cron-job",
+      "service_type": "JOB",
+      "job_type": "CRON",
+      "schedule": {
+       "cronjob": {
+        "scheduled_at": "0 * * * *",
+        "arguments": [],
+        "timezone": "Etc/UTC"
+       }
+      },
+      "auto_deploy": true,
+      "max_nb_restart": 0,
+      "max_duration_seconds": 300,
+      "port": null
+     },
+     {
+      "id": "life-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "my-lifecycle",
+      "cpu": 250,
+      "memory": 256,
+      "gpu": 0,
+      "auto_preview": false,
+      "source": {
+       "image": {
+        "image_name": "busybox",
+        "tag": "latest",
+        "registry_id": "reg-1",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        }
+       }
+      },
+      "healthchecks": {
+       "checks": []
+      },
+      "icon_uri": "app://qovery-console/lifecycle-job",
+      "service_type": "JOB",
+      "job_type": "LIFECYCLE",
+      "schedule": {
+       "on_start": {
+        "arguments": []
+       }
+      },
+      "auto_deploy": false,
+      "max_nb_restart": 0,
+      "max_duration_seconds": 300
+     },
+     {
+      "id": "life-2",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-07-03T08:15:30.5Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "my-lifecycle-docker",
+      "cpu": 250,
+      "memory": 256,
+      "gpu": 0,
+      "auto_preview": false,
+      "source": {
+       "docker": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/life.git",
+         "name": "me/life",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "abc123",
+         "has_access": true
+        },
+        "dockerfile_path": "Dockerfile"
+       }
+      },
+      "healthchecks": {
+       "checks": []
+      },
+      "icon_uri": "app://qovery-console/lifecycle-job",
+      "service_type": "JOB",
+      "job_type": "LIFECYCLE",
+      "schedule": {
+       "on_start": {
+        "arguments": [
+         "start"
+        ],
+        "entrypoint": "/bin/sh"
+       },
+       "on_stop": {
+        "arguments": []
+       },
+       "lifecycle_type": "GENERIC"
+      },
+      "auto_deploy": true,
+      "max_nb_restart": 0,
+      "max_duration_seconds": 300,
+      "port": 8080
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/env-1/statuses",
+   "status": 200,
+   "body": {
+    "environment": {
+     "id": "env-1",
+     "state": "DEPLOYED",
+     "last_deployment_state": "DEPLOYED",
+     "last_deployment_date": "2024-06-02T11:30:00Z",
+     "last_deployment_id": "dep-1",
+     "total_deployment_duration_in_seconds": 42
+    },
+    "applications": [
+     {
+      "id": "app-1",
+      "state": "DEPLOYED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "last_deployment_date": "2024-06-02T11:30:00Z",
+      "execution_id": "exec-app-1",
+      "steps": null
+     }
+    ],
+    "containers": [
+     {
+      "id": "cont-1",
+      "state": "STOPPED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "last_deployment_date": "2024-06-02T11:30:00Z",
+      "execution_id": "exec-cont-1",
+      "steps": null
+     }
+    ],
+    "jobs": [
+     {
+      "id": "cron-1",
+      "state": "DEPLOYED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "last_deployment_date": "2024-06-02T11:30:00Z",
+      "execution_id": "exec-cron-1",
+      "steps": null
+     },
+     {
+      "id": "life-1",
+      "state": "DEPLOYMENT_ERROR",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "last_deployment_date": "2024-06-02T11:30:00Z",
+      "execution_id": "exec-life-1",
+      "steps": null
+     },
+     {
+      "id": "life-2",
+      "state": "STOPPED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": false,
+      "status_details": {
+       "action": "STOP",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "last_deployment_date": "2024-06-02T11:30:00Z",
+      "execution_id": "exec-life-2",
+      "steps": null
+     }
+    ],
+    "databases": [
+     {
+      "id": "db-1",
+      "state": "DEPLOYED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "last_deployment_date": "2024-06-02T11:30:00Z",
+      "execution_id": "exec-db-1",
+      "steps": null
+     }
+    ],
+    "helms": [
+     {
+      "id": "helm-1",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "last_deployment_date": "2024-06-02T11:30:00Z",
+      "execution_id": "exec-helm-1",
+      "steps": null
+     }
+    ],
+    "terraforms": [
+     {
+      "id": "tf-1",
+      "state": "DEPLOYED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "last_deployment_date": "2024-06-02T11:30:00Z",
+      "execution_id": "exec-tf-1",
+      "steps": null
+     }
+    ]
+   }
+  }
+ ],
+ "cases": [
+  {
+   "name": "lifecycle (group)",
+   "args": [
+    "lifecycle"
+   ]
+  },
+  {
+   "name": "lifecycle env (group)",
+   "args": [
+    "lifecycle",
+    "env"
+   ]
+  },
+  {
+   "name": "lifecycle env alias (group)",
+   "args": [
+    "lifecycle",
+    "env",
+    "alias"
+   ]
+  },
+  {
+   "name": "lifecycle env override (group)",
+   "args": [
+    "lifecycle",
+    "env",
+    "override"
+   ]
+  },
+  {
+   "name": "lifecycle external-secret (group)",
+   "args": [
+    "lifecycle",
+    "external-secret"
+   ]
+  },
+  {
+   "name": "lifecycle unknown subcommand",
+   "args": [
+    "lifecycle",
+    "nope"
+   ]
+  },
+  {
+   "name": "lifecycle list unknown flag",
+   "args": [
+    "lifecycle",
+    "list",
+    "--nope"
+   ]
+  },
+  {
+   "name": "list",
+   "args": [
+    "lifecycle",
+    "list"
+   ]
+  },
+  {
+   "name": "list --json",
+   "args": [
+    "lifecycle",
+    "list",
+    "--json"
+   ]
+  },
+  {
+   "name": "list with environment flags",
+   "args": [
+    "lifecycle",
+    "list",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "list environment not found",
+   "args": [
+    "lifecycle",
+    "list",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "list empty",
+   "args": [
+    "lifecycle",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "body": {
+      "results": [
+       {
+        "id": "cron-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-cron",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "docker": {
+          "git_repository": {
+           "provider": "GITHUB",
+           "owner": "me",
+           "url": "https://github.com/me/job.git",
+           "name": "me/job",
+           "branch": "main",
+           "root_path": "/",
+           "deployed_commit_id": "def456",
+           "has_access": true
+          },
+          "dockerfile_path": "Dockerfile"
+         }
+        },
+        "healthchecks": {
+         "checks": []
+        },
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "list empty --json",
+   "args": [
+    "lifecycle",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "body": {
+      "results": [
+       {
+        "id": "cron-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-cron",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "docker": {
+          "git_repository": {
+           "provider": "GITHUB",
+           "owner": "me",
+           "url": "https://github.com/me/job.git",
+           "name": "me/job",
+           "branch": "main",
+           "root_path": "/",
+           "deployed_commit_id": "def456",
+           "has_access": true
+          },
+          "dockerfile_path": "Dockerfile"
+         }
+        },
+        "healthchecks": {
+         "checks": []
+        },
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "list jobs api error",
+   "args": [
+    "lifecycle",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list statuses api error",
+   "args": [
+    "lifecycle",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list no token",
+   "args": [
+    "lifecycle",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "deploy image lifecycle",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --tag",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle",
+    "--tag",
+    "v2"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy docker lifecycle",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle-docker"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy docker --commit-id",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle-docker",
+    "-c",
+    "c0ffee"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy docker --commit-id latest",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle-docker",
+    "--commit-id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/job/life-2/commit",
+     "body": {
+      "results": [
+       {
+        "created_at": "2024-06-01T10:00:00Z",
+        "git_commit_id": "old111",
+        "tag": "",
+        "message": "old commit",
+        "author_name": "me"
+       },
+       {
+        "created_at": "2024-06-03T10:00:00Z",
+        "git_commit_id": "new999",
+        "tag": "",
+        "message": "newest commit\n\nbody",
+        "author_name": "me"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --commit-id latest no commit",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle-docker",
+    "--commit-id",
+    "LATEST"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/job/life-2/commit",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --commit-id latest commits api error",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle-docker",
+    "--commit-id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/job/life-2/commit",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --lifecycles",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "--lifecycles",
+    "my-lifecycle, my-lifecycle-docker",
+    "-t",
+    "v3"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --lifecycles --commit-id",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "--lifecycles",
+    "my-lifecycle,my-lifecycle-docker",
+    "-c",
+    "c0ffee"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --tag and --commit-id",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle",
+    "--tag",
+    "v2",
+    "--commit-id",
+    "abc"
+   ]
+  },
+  {
+   "name": "deploy no lifecycle flag",
+   "args": [
+    "lifecycle",
+    "deploy"
+   ]
+  },
+  {
+   "name": "deploy both lifecycle flags",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle",
+    "--lifecycles",
+    "my-lifecycle"
+   ]
+  },
+  {
+   "name": "deploy not found",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "deploy cron is not a lifecycle",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-cron"
+   ]
+  },
+  {
+   "name": "deploy --lifecycles one not found",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "--lifecycles",
+    "my-lifecycle, nope"
+   ]
+  },
+  {
+   "name": "deploy jobs api error",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy api error",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "message": "invalid payload"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy environment not found",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "deploy no token",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "deploy --watch",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "jobs": [
+           {
+            "id": "life-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "jobs": [
+           {
+            "id": "life-1",
+            "state": "DEPLOYING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "jobs": [
+           {
+            "id": "life-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "deploy --watch failure",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "--lifecycles",
+    "my-lifecycle,my-lifecycle-docker",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "jobs": [
+           {
+            "id": "life-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old"
+           },
+           {
+            "id": "life-2",
+            "state": "STOPPED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old2"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "jobs": [
+           {
+            "id": "life-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           },
+           {
+            "id": "life-2",
+            "state": "DEPLOYMENT_ERROR",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "deploy --watch statuses error",
+   "args": [
+    "lifecycle",
+    "deploy",
+    "-n",
+    "my-lifecycle",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ],
+   "timeout": 60,
+   "env": {
+    "QOVERY_CLI_WATCH_TIMEOUT": "1s"
+   }
+  },
+  {
+   "name": "redeploy",
+   "args": [
+    "lifecycle",
+    "redeploy",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/job/life-1/deploy",
+     "status": 202,
+     "body": {
+      "id": "life-1",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "exec-new"
+     }
+    }
+   ]
+  },
+  {
+   "name": "redeploy missing lifecycle flag",
+   "args": [
+    "lifecycle",
+    "redeploy"
+   ]
+  },
+  {
+   "name": "redeploy not found",
+   "args": [
+    "lifecycle",
+    "redeploy",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "redeploy api error",
+   "args": [
+    "lifecycle",
+    "redeploy",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/job/life-1/deploy",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "redeploy --watch",
+   "args": [
+    "lifecycle",
+    "redeploy",
+    "-n",
+    "my-lifecycle",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/job/life-1/deploy",
+     "status": 202,
+     "body": {
+      "id": "life-1",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "exec-new"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "jobs": [
+           {
+            "id": "life-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "jobs": [
+           {
+            "id": "life-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "stop",
+   "args": [
+    "lifecycle",
+    "stop",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/stop",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop --lifecycles",
+   "args": [
+    "lifecycle",
+    "stop",
+    "--lifecycles",
+    "my-lifecycle-docker, my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/stop",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop no lifecycle flag",
+   "args": [
+    "lifecycle",
+    "stop"
+   ]
+  },
+  {
+   "name": "stop not found",
+   "args": [
+    "lifecycle",
+    "stop",
+    "--lifecycles",
+    "my-lifecycle,my-cron"
+   ]
+  },
+  {
+   "name": "stop api error",
+   "args": [
+    "lifecycle",
+    "stop",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/stop",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop --watch",
+   "args": [
+    "lifecycle",
+    "stop",
+    "-n",
+    "my-lifecycle",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/stop",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "jobs": [
+           {
+            "id": "life-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "jobs": [
+           {
+            "id": "life-1",
+            "state": "STOPPING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "jobs": [
+           {
+            "id": "life-1",
+            "state": "STOPPED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "delete",
+   "args": [
+    "lifecycle",
+    "delete",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/delete",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete --lifecycles",
+   "args": [
+    "lifecycle",
+    "delete",
+    "--lifecycles",
+    "my-lifecycle,my-lifecycle-docker"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/delete",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete both flags",
+   "args": [
+    "lifecycle",
+    "delete",
+    "-n",
+    "a",
+    "--lifecycles",
+    "b"
+   ]
+  },
+  {
+   "name": "delete not found",
+   "args": [
+    "lifecycle",
+    "delete",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "delete api error",
+   "args": [
+    "lifecycle",
+    "delete",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/delete",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "message": "invalid payload"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete --watch",
+   "args": [
+    "lifecycle",
+    "delete",
+    "-n",
+    "my-lifecycle",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/delete",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "jobs": [
+           {
+            "id": "life-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "jobs": [
+           {
+            "id": "life-1",
+            "state": "DELETED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "cancel nothing to cancel",
+   "args": [
+    "lifecycle",
+    "cancel",
+    "-n",
+    "my-lifecycle"
+   ]
+  },
+  {
+   "name": "cancel",
+   "args": [
+    "lifecycle",
+    "cancel",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "body": {
+      "environment": {
+       "id": "env-1",
+       "state": "DEPLOYING",
+       "last_deployment_state": "DEPLOYED",
+       "last_deployment_date": "2024-06-02T11:30:00Z",
+       "last_deployment_id": "dep-1",
+       "total_deployment_duration_in_seconds": 42
+      },
+      "applications": [
+       {
+        "id": "app-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-app-1",
+        "steps": null
+       }
+      ],
+      "containers": [
+       {
+        "id": "cont-1",
+        "state": "STOPPED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-cont-1",
+        "steps": null
+       }
+      ],
+      "jobs": [
+       {
+        "id": "cron-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-cron-1",
+        "steps": null
+       },
+       {
+        "id": "life-1",
+        "state": "DEPLOYING",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-life-1",
+        "steps": null
+       },
+       {
+        "id": "life-2",
+        "state": "STOPPED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": false,
+        "status_details": {
+         "action": "STOP",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-life-2",
+        "steps": null
+       }
+      ],
+      "databases": [
+       {
+        "id": "db-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-db-1",
+        "steps": null
+       }
+      ],
+      "helms": [
+       {
+        "id": "helm-1",
+        "state": "DEPLOYING",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-helm-1",
+        "steps": null
+       }
+      ],
+      "terraforms": [
+       {
+        "id": "tf-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-tf-1",
+        "steps": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "status": 200,
+     "body": {
+      "id": "env-1",
+      "state": "CANCELING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "cancel waits then nothing to cancel",
+   "args": [
+    "lifecycle",
+    "cancel",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYING",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [
+         {
+          "id": "cont-1",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-cont-1",
+          "steps": null
+         }
+        ],
+        "jobs": [
+         {
+          "id": "cron-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-cron-1",
+          "steps": null
+         },
+         {
+          "id": "life-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-life-1",
+          "steps": null
+         },
+         {
+          "id": "life-2",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": false,
+          "status_details": {
+           "action": "STOP",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-life-2",
+          "steps": null
+         }
+        ],
+        "databases": [
+         {
+          "id": "db-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-db-1",
+          "steps": null
+         }
+        ],
+        "helms": [
+         {
+          "id": "helm-1",
+          "state": "DEPLOYING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-helm-1",
+          "steps": null
+         }
+        ],
+        "terraforms": [
+         {
+          "id": "tf-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-tf-1",
+          "steps": null
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [
+         {
+          "id": "cont-1",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-cont-1",
+          "steps": null
+         }
+        ],
+        "jobs": [
+         {
+          "id": "cron-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-cron-1",
+          "steps": null
+         },
+         {
+          "id": "life-1",
+          "state": "DEPLOYMENT_ERROR",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-life-1",
+          "steps": null
+         },
+         {
+          "id": "life-2",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": false,
+          "status_details": {
+           "action": "STOP",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-life-2",
+          "steps": null
+         }
+        ],
+        "databases": [
+         {
+          "id": "db-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-db-1",
+          "steps": null
+         }
+        ],
+        "helms": [
+         {
+          "id": "helm-1",
+          "state": "DEPLOYING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-helm-1",
+          "steps": null
+         }
+        ],
+        "terraforms": [
+         {
+          "id": "tf-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-tf-1",
+          "steps": null
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "cancel api error",
+   "args": [
+    "lifecycle",
+    "cancel",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "body": {
+      "environment": {
+       "id": "env-1",
+       "state": "DEPLOYING",
+       "last_deployment_state": "DEPLOYED",
+       "last_deployment_date": "2024-06-02T11:30:00Z",
+       "last_deployment_id": "dep-1",
+       "total_deployment_duration_in_seconds": 42
+      },
+      "applications": [
+       {
+        "id": "app-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-app-1",
+        "steps": null
+       }
+      ],
+      "containers": [
+       {
+        "id": "cont-1",
+        "state": "STOPPED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-cont-1",
+        "steps": null
+       }
+      ],
+      "jobs": [
+       {
+        "id": "cron-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-cron-1",
+        "steps": null
+       },
+       {
+        "id": "life-1",
+        "state": "DEPLOYING",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-life-1",
+        "steps": null
+       },
+       {
+        "id": "life-2",
+        "state": "STOPPED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": false,
+        "status_details": {
+         "action": "STOP",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-life-2",
+        "steps": null
+       }
+      ],
+      "databases": [
+       {
+        "id": "db-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-db-1",
+        "steps": null
+       }
+      ],
+      "helms": [
+       {
+        "id": "helm-1",
+        "state": "DEPLOYING",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-helm-1",
+        "steps": null
+       }
+      ],
+      "terraforms": [
+       {
+        "id": "tf-1",
+        "state": "DEPLOYED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00Z",
+        "execution_id": "exec-tf-1",
+        "steps": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "cancel statuses api error",
+   "args": [
+    "lifecycle",
+    "cancel",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "cancel --watch",
+   "args": [
+    "lifecycle",
+    "cancel",
+    "-n",
+    "my-lifecycle",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYING",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [
+         {
+          "id": "cont-1",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-cont-1",
+          "steps": null
+         }
+        ],
+        "jobs": [
+         {
+          "id": "cron-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-cron-1",
+          "steps": null
+         },
+         {
+          "id": "life-1",
+          "state": "DEPLOYING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-life-1",
+          "steps": null
+         },
+         {
+          "id": "life-2",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": false,
+          "status_details": {
+           "action": "STOP",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-life-2",
+          "steps": null
+         }
+        ],
+        "databases": [
+         {
+          "id": "db-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-db-1",
+          "steps": null
+         }
+        ],
+        "helms": [
+         {
+          "id": "helm-1",
+          "state": "DEPLOYING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-helm-1",
+          "steps": null
+         }
+        ],
+        "terraforms": [
+         {
+          "id": "tf-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-tf-1",
+          "steps": null
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYING",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [
+         {
+          "id": "cont-1",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-cont-1",
+          "steps": null
+         }
+        ],
+        "jobs": [
+         {
+          "id": "cron-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-cron-1",
+          "steps": null
+         },
+         {
+          "id": "life-1",
+          "state": "DEPLOYING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-life-1",
+          "steps": null
+         },
+         {
+          "id": "life-2",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": false,
+          "status_details": {
+           "action": "STOP",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-life-2",
+          "steps": null
+         }
+        ],
+        "databases": [
+         {
+          "id": "db-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-db-1",
+          "steps": null
+         }
+        ],
+        "helms": [
+         {
+          "id": "helm-1",
+          "state": "DEPLOYING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-helm-1",
+          "steps": null
+         }
+        ],
+        "terraforms": [
+         {
+          "id": "tf-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-tf-1",
+          "steps": null
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "CANCELED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [
+         {
+          "id": "cont-1",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-cont-1",
+          "steps": null
+         }
+        ],
+        "jobs": [
+         {
+          "id": "cron-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-cron-1",
+          "steps": null
+         },
+         {
+          "id": "life-1",
+          "state": "DEPLOYMENT_ERROR",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-life-1",
+          "steps": null
+         },
+         {
+          "id": "life-2",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": false,
+          "status_details": {
+           "action": "STOP",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-life-2",
+          "steps": null
+         }
+        ],
+        "databases": [
+         {
+          "id": "db-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-db-1",
+          "steps": null
+         }
+        ],
+        "helms": [
+         {
+          "id": "helm-1",
+          "state": "DEPLOYING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-helm-1",
+          "steps": null
+         }
+        ],
+        "terraforms": [
+         {
+          "id": "tf-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-tf-1",
+          "steps": null
+         }
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "status": 200,
+     "body": {
+      "id": "env-1",
+      "state": "CANCELING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "cancel missing flag",
+   "args": [
+    "lifecycle",
+    "cancel"
+   ]
+  },
+  {
+   "name": "cancel not found",
+   "args": [
+    "lifecycle",
+    "cancel",
+    "-n",
+    "my-cron"
+   ]
+  },
+  {
+   "name": "cancel jobs api error",
+   "args": [
+    "lifecycle",
+    "cancel",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone",
+   "args": [
+    "lifecycle",
+    "clone",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/job/life-1/clone",
+     "status": 201,
+     "body": {
+      "id": "life-9",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "my-lifecycle-clone",
+      "cpu": 250,
+      "memory": 256,
+      "gpu": 0,
+      "auto_preview": false,
+      "source": {
+       "image": {
+        "image_name": "busybox",
+        "tag": "latest",
+        "registry_id": "reg-1",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        }
+       }
+      },
+      "healthchecks": {
+       "checks": []
+      },
+      "icon_uri": "app://qovery-console/lifecycle-job",
+      "service_type": "JOB",
+      "job_type": "LIFECYCLE",
+      "schedule": {
+       "on_start": {
+        "arguments": []
+       }
+      },
+      "auto_deploy": false,
+      "max_nb_restart": 0,
+      "max_duration_seconds": 300
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone with targets",
+   "args": [
+    "lifecycle",
+    "clone",
+    "-n",
+    "my-lifecycle",
+    "--target-project",
+    "my-project",
+    "--target-environment",
+    "my-env",
+    "--target-lifecycle-name",
+    "my-lifecycle-clone"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/job/life-1/clone",
+     "status": 201,
+     "body": {
+      "id": "life-9",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "my-lifecycle-clone",
+      "cpu": 250,
+      "memory": 256,
+      "gpu": 0,
+      "auto_preview": false,
+      "source": {
+       "image": {
+        "image_name": "busybox",
+        "tag": "latest",
+        "registry_id": "reg-1",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        }
+       }
+      },
+      "healthchecks": {
+       "checks": []
+      },
+      "icon_uri": "app://qovery-console/lifecycle-job",
+      "service_type": "JOB",
+      "job_type": "LIFECYCLE",
+      "schedule": {
+       "on_start": {
+        "arguments": []
+       }
+      },
+      "auto_deploy": false,
+      "max_nb_restart": 0,
+      "max_duration_seconds": 300
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone target project not found",
+   "args": [
+    "lifecycle",
+    "clone",
+    "-n",
+    "my-lifecycle",
+    "--target-project",
+    "nope"
+   ]
+  },
+  {
+   "name": "clone target environment not found",
+   "args": [
+    "lifecycle",
+    "clone",
+    "-n",
+    "my-lifecycle",
+    "--target-environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "clone not found",
+   "args": [
+    "lifecycle",
+    "clone",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "clone cron",
+   "args": [
+    "lifecycle",
+    "clone",
+    "-n",
+    "my-cron"
+   ]
+  },
+  {
+   "name": "clone jobs api error",
+   "args": [
+    "lifecycle",
+    "clone",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone api error",
+   "args": [
+    "lifecycle",
+    "clone",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/job/life-1/clone",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "message": "invalid payload"
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone missing flag",
+   "args": [
+    "lifecycle",
+    "clone"
+   ]
+  },
+  {
+   "name": "update --tag",
+   "args": [
+    "lifecycle",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "--tag",
+    "v2"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/job/life-1",
+     "body": {
+      "id": "life-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "my-lifecycle",
+      "cpu": 250,
+      "memory": 256,
+      "gpu": 0,
+      "auto_preview": false,
+      "source": {
+       "image": {
+        "image_name": "busybox",
+        "tag": "latest",
+        "registry_id": "reg-1",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        }
+       }
+      },
+      "healthchecks": {
+       "checks": []
+      },
+      "icon_uri": "app://qovery-console/lifecycle-job",
+      "service_type": "JOB",
+      "job_type": "LIFECYCLE",
+      "schedule": {
+       "on_start": {
+        "arguments": []
+       }
+      },
+      "auto_deploy": false,
+      "max_nb_restart": 0,
+      "max_duration_seconds": 300
+     }
+    }
+   ]
+  },
+  {
+   "name": "update --image-name",
+   "args": [
+    "lifecycle",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "--image-name",
+    "nginx"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/job/life-1",
+     "body": {
+      "id": "life-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "my-lifecycle",
+      "cpu": 250,
+      "memory": 256,
+      "gpu": 0,
+      "auto_preview": false,
+      "source": {
+       "image": {
+        "image_name": "busybox",
+        "tag": "latest",
+        "registry_id": "reg-1",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        }
+       }
+      },
+      "healthchecks": {
+       "checks": []
+      },
+      "icon_uri": "app://qovery-console/lifecycle-job",
+      "service_type": "JOB",
+      "job_type": "LIFECYCLE",
+      "schedule": {
+       "on_start": {
+        "arguments": []
+       }
+      },
+      "auto_deploy": false,
+      "max_nb_restart": 0,
+      "max_duration_seconds": 300
+     }
+    }
+   ]
+  },
+  {
+   "name": "update --tag --image-name",
+   "args": [
+    "lifecycle",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "-t",
+    "1.0",
+    "--image-name",
+    "nginx"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/job/life-1",
+     "body": {
+      "id": "life-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "my-lifecycle",
+      "cpu": 250,
+      "memory": 256,
+      "gpu": 0,
+      "auto_preview": false,
+      "source": {
+       "image": {
+        "image_name": "busybox",
+        "tag": "latest",
+        "registry_id": "reg-1",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        }
+       }
+      },
+      "healthchecks": {
+       "checks": []
+      },
+      "icon_uri": "app://qovery-console/lifecycle-job",
+      "service_type": "JOB",
+      "job_type": "LIFECYCLE",
+      "schedule": {
+       "on_start": {
+        "arguments": []
+       }
+      },
+      "auto_deploy": false,
+      "max_nb_restart": 0,
+      "max_duration_seconds": 300
+     }
+    }
+   ]
+  },
+  {
+   "name": "update --branch",
+   "args": [
+    "lifecycle",
+    "update",
+    "-n",
+    "my-lifecycle-docker",
+    "-b",
+    "dev"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/job/life-2",
+     "body": {
+      "id": "life-2",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-07-03T08:15:30.5Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "my-lifecycle-docker",
+      "cpu": 250,
+      "memory": 256,
+      "gpu": 0,
+      "auto_preview": false,
+      "source": {
+       "docker": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/life.git",
+         "name": "me/life",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "abc123",
+         "has_access": true
+        },
+        "dockerfile_path": "Dockerfile"
+       }
+      },
+      "healthchecks": {
+       "checks": []
+      },
+      "icon_uri": "app://qovery-console/lifecycle-job",
+      "service_type": "JOB",
+      "job_type": "LIFECYCLE",
+      "schedule": {
+       "on_start": {
+        "arguments": [
+         "start"
+        ],
+        "entrypoint": "/bin/sh"
+       },
+       "on_stop": {
+        "arguments": []
+       },
+       "lifecycle_type": "GENERIC"
+      },
+      "auto_deploy": true,
+      "max_nb_restart": 0,
+      "max_duration_seconds": 300,
+      "port": 8080
+     }
+    }
+   ]
+  },
+  {
+   "name": "update --tag and --branch",
+   "args": [
+    "lifecycle",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "--tag",
+    "v2",
+    "--branch",
+    "dev"
+   ]
+  },
+  {
+   "name": "update nothing",
+   "args": [
+    "lifecycle",
+    "update",
+    "-n",
+    "my-lifecycle"
+   ]
+  },
+  {
+   "name": "update docker with --tag",
+   "args": [
+    "lifecycle",
+    "update",
+    "-n",
+    "my-lifecycle-docker",
+    "--tag",
+    "v2"
+   ]
+  },
+  {
+   "name": "update image with --branch",
+   "args": [
+    "lifecycle",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "--branch",
+    "dev"
+   ]
+  },
+  {
+   "name": "update not found",
+   "args": [
+    "lifecycle",
+    "update",
+    "-n",
+    "my-cron",
+    "--tag",
+    "v2"
+   ]
+  },
+  {
+   "name": "update api error",
+   "args": [
+    "lifecycle",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "--tag",
+    "v2"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/job/life-1",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "message": "invalid payload"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update no token",
+   "args": [
+    "lifecycle",
+    "update",
+    "-n",
+    "my-lifecycle"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "env list",
+   "args": [
+    "lifecycle",
+    "env",
+    "list",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list --show-values",
+   "args": [
+    "lifecycle",
+    "env",
+    "list",
+    "-n",
+    "my-lifecycle",
+    "--show-values"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list --sort",
+   "args": [
+    "lifecycle",
+    "env",
+    "list",
+    "-n",
+    "my-lifecycle",
+    "--sort"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list --show-values --sort",
+   "args": [
+    "lifecycle",
+    "env",
+    "list",
+    "-n",
+    "my-lifecycle",
+    "--show-values",
+    "--sort"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list --pretty-print --sort",
+   "args": [
+    "lifecycle",
+    "env",
+    "list",
+    "-n",
+    "my-lifecycle",
+    "--pretty-print",
+    "--sort"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list --json",
+   "args": [
+    "lifecycle",
+    "env",
+    "list",
+    "-n",
+    "my-lifecycle",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list --json --sort",
+   "args": [
+    "lifecycle",
+    "env",
+    "list",
+    "-n",
+    "my-lifecycle",
+    "--json",
+    "--sort"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list not found",
+   "args": [
+    "lifecycle",
+    "env",
+    "list",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "env list missing flag",
+   "args": [
+    "lifecycle",
+    "env",
+    "list"
+   ]
+  },
+  {
+   "name": "env list api error",
+   "args": [
+    "lifecycle",
+    "env",
+    "list",
+    "-n",
+    "my-lifecycle"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env create",
+   "args": [
+    "lifecycle",
+    "env",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "NEW",
+    "-v",
+    "val"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 201,
+     "body": {
+      "id": "var-9",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "NEW",
+      "value": "val",
+      "mount_path": null,
+      "scope": "JOB",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env create secret environment scope",
+   "args": [
+    "lifecycle",
+    "env",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "NEW",
+    "-v",
+    "val",
+    "--secret",
+    "--scope",
+    "ENVIRONMENT"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 201,
+     "body": {
+      "id": "var-9",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "NEW",
+      "value": "val",
+      "mount_path": null,
+      "scope": "JOB",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env create project scope override",
+   "args": [
+    "lifecycle",
+    "env",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "NEW",
+    "-v",
+    "val",
+    "--scope",
+    "PROJECT",
+    "--override-if-exists"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 201,
+     "body": {
+      "id": "var-9",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "NEW",
+      "value": "val",
+      "mount_path": null,
+      "scope": "JOB",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env create bad scope",
+   "args": [
+    "lifecycle",
+    "env",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "NEW",
+    "-v",
+    "val",
+    "--scope",
+    "NOPE"
+   ]
+  },
+  {
+   "name": "env create api error",
+   "args": [
+    "lifecycle",
+    "env",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "NEW",
+    "-v",
+    "val"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "message": "invalid payload"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env create missing flags",
+   "args": [
+    "lifecycle",
+    "env",
+    "create",
+    "-n",
+    "my-lifecycle"
+   ]
+  },
+  {
+   "name": "env create not found",
+   "args": [
+    "lifecycle",
+    "env",
+    "create",
+    "-n",
+    "nope",
+    "-k",
+    "A",
+    "-v",
+    "b"
+   ]
+  },
+  {
+   "name": "env delete",
+   "args": [
+    "lifecycle",
+    "env",
+    "delete",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "FOO"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/variable/var-1",
+     "status": 204
+    }
+   ]
+  },
+  {
+   "name": "env delete key not found",
+   "args": [
+    "lifecycle",
+    "env",
+    "delete",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "NOPE"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env delete api error",
+   "args": [
+    "lifecycle",
+    "env",
+    "delete",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "FOO"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/variable/var-1",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env delete missing flags",
+   "args": [
+    "lifecycle",
+    "env",
+    "delete"
+   ]
+  },
+  {
+   "name": "env update",
+   "args": [
+    "lifecycle",
+    "env",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "FOO",
+    "-v",
+    "baz"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/variable/var-1",
+     "body": {
+      "id": "var-1",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "FOO",
+      "value": "baz",
+      "mount_path": null,
+      "scope": "JOB",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env update key not found",
+   "args": [
+    "lifecycle",
+    "env",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "NOPE",
+    "-v",
+    "baz"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env update api error",
+   "args": [
+    "lifecycle",
+    "env",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "FOO",
+    "-v",
+    "baz"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/variable/var-1",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "message": "invalid payload"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env update missing value",
+   "args": [
+    "lifecycle",
+    "env",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "FOO"
+   ]
+  },
+  {
+   "name": "env alias create",
+   "args": [
+    "lifecycle",
+    "env",
+    "alias",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "DB_HOST",
+    "--alias",
+    "MY_ALIAS"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-3/alias",
+     "status": 201,
+     "body": {
+      "id": "var-10",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "MY_ALIAS",
+      "value": "db.local",
+      "mount_path": null,
+      "scope": "JOB",
+      "variable_type": "ALIAS",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env alias create environment scope",
+   "args": [
+    "lifecycle",
+    "env",
+    "alias",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "DB_HOST",
+    "--alias",
+    "MY_ALIAS",
+    "--scope",
+    "ENVIRONMENT"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-3/alias",
+     "status": 201,
+     "body": {
+      "id": "var-10",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "MY_ALIAS",
+      "value": "db.local",
+      "mount_path": null,
+      "scope": "JOB",
+      "variable_type": "ALIAS",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env alias create project scope",
+   "args": [
+    "lifecycle",
+    "env",
+    "alias",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "DB_HOST",
+    "--alias",
+    "MY_ALIAS",
+    "--scope",
+    "PROJECT"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-3/alias",
+     "status": 201,
+     "body": {
+      "id": "var-10",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "MY_ALIAS",
+      "value": "db.local",
+      "mount_path": null,
+      "scope": "JOB",
+      "variable_type": "ALIAS",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env alias create key not found",
+   "args": [
+    "lifecycle",
+    "env",
+    "alias",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "NOPE",
+    "--alias",
+    "MY_ALIAS"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env alias create api error",
+   "args": [
+    "lifecycle",
+    "env",
+    "alias",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "DB_HOST",
+    "--alias",
+    "MY_ALIAS"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-3/alias",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "message": "invalid payload"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env alias create missing alias",
+   "args": [
+    "lifecycle",
+    "env",
+    "alias",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "DB_HOST"
+   ]
+  },
+  {
+   "name": "env override create",
+   "args": [
+    "lifecycle",
+    "env",
+    "override",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "DB_HOST",
+    "--value",
+    "other"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-3/override",
+     "status": 201,
+     "body": {
+      "id": "var-11",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "DB_HOST",
+      "value": "other",
+      "mount_path": null,
+      "scope": "JOB",
+      "variable_type": "OVERRIDE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env override create environment scope",
+   "args": [
+    "lifecycle",
+    "env",
+    "override",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "PROJECT_VAR",
+    "--value",
+    "other",
+    "--scope",
+    "ENVIRONMENT"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-5/override",
+     "status": 201,
+     "body": {
+      "id": "var-11",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "DB_HOST",
+      "value": "other",
+      "mount_path": null,
+      "scope": "JOB",
+      "variable_type": "OVERRIDE",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "env override create key not found",
+   "args": [
+    "lifecycle",
+    "env",
+    "override",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "NOPE",
+    "--value",
+    "x"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env override create api error",
+   "args": [
+    "lifecycle",
+    "env",
+    "override",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "DB_HOST",
+    "--value",
+    "other"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable/var-3/override",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env override create missing value",
+   "args": [
+    "lifecycle",
+    "env",
+    "override",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "DB_HOST",
+    "-v",
+    "x"
+   ]
+  },
+  {
+   "name": "external-secret create",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "EXT2",
+    "-r",
+    "/sm/ref",
+    "--secret-manager-access-name",
+    "my-sm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 201,
+     "body": {
+      "id": "var-12",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "EXT2",
+      "value": "/sm/ref",
+      "mount_path": null,
+      "scope": "JOB",
+      "variable_type": "EXTERNAL_SECRET",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create mount path env scope",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "EXT2",
+    "-r",
+    "/sm/ref",
+    "--secret-manager-access-name",
+    "my-sm",
+    "--mount-path",
+    "/etc/secret",
+    "--scope",
+    "ENVIRONMENT"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 201,
+     "body": {
+      "id": "var-12",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "EXT2",
+      "value": "/sm/ref",
+      "mount_path": null,
+      "scope": "JOB",
+      "variable_type": "EXTERNAL_SECRET",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create sma not found",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "EXT2",
+    "-r",
+    "/sm/ref",
+    "--secret-manager-access-name",
+    "nope"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create clusters api error",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "EXT2",
+    "-r",
+    "/sm/ref",
+    "--secret-manager-access-name",
+    "my-sm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create api error",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "EXT2",
+    "-r",
+    "/sm/ref",
+    "--secret-manager-access-name",
+    "my-sm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "message": "invalid payload"
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create missing flags",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "create",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "EXT2"
+   ]
+  },
+  {
+   "name": "external-secret create not found",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "create",
+    "-n",
+    "nope",
+    "-k",
+    "EXT2",
+    "-r",
+    "/sm/ref",
+    "--secret-manager-access-name",
+    "my-sm"
+   ]
+  },
+  {
+   "name": "external-secret delete",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "delete",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "EXT"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/variable/var-6",
+     "status": 204
+    }
+   ]
+  },
+  {
+   "name": "external-secret delete key not found",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "delete",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "NOPE"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret delete missing flags",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "delete",
+    "-n",
+    "my-lifecycle"
+   ]
+  },
+  {
+   "name": "external-secret update",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "EXT",
+    "-r",
+    "/new/ref",
+    "--secret-manager-access-name",
+    "my-sm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/variable/var-6",
+     "body": {
+      "id": "var-12",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "EXT2",
+      "value": "/sm/ref",
+      "mount_path": null,
+      "scope": "JOB",
+      "variable_type": "EXTERNAL_SECRET",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret update without sma name",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "EXT",
+    "-r",
+    "/new/ref"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/variable/var-6",
+     "body": {
+      "id": "var-12",
+      "created_at": "2024-01-02T15:04:05.123456Z",
+      "updated_at": "2024-03-04T05:06:07Z",
+      "key": "EXT2",
+      "value": "/sm/ref",
+      "mount_path": null,
+      "scope": "JOB",
+      "variable_type": "EXTERNAL_SECRET",
+      "is_secret": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret update key not found",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "NOPE",
+    "-r",
+    "/new/ref",
+    "--secret-manager-access-name",
+    "my-sm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret update api error",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "update",
+    "-n",
+    "my-lifecycle",
+    "-k",
+    "EXT",
+    "--secret-manager-access-name",
+    "my-sm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": [
+       "life-1"
+      ],
+      "scope": [
+       "JOB"
+      ]
+     },
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "FOO",
+        "value": "bar",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-2",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "API_KEY",
+        "value": null,
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "VALUE",
+        "is_secret": true,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       },
+       {
+        "id": "var-3",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "DB_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-4",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "ALIAS_HOST",
+        "value": "db.local",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "ALIAS",
+        "is_secret": false,
+        "aliased_variable": {
+         "id": "var-3",
+         "key": "DB_HOST",
+         "value": "db.local",
+         "mount_path": "",
+         "scope": "ENVIRONMENT",
+         "variable_type": "VALUE"
+        }
+       },
+       {
+        "id": "var-5",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "PROJECT_VAR",
+        "value": "p",
+        "mount_path": null,
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       },
+       {
+        "id": "var-6",
+        "created_at": "2024-01-02T15:04:05.123456Z",
+        "updated_at": "2024-03-04T05:06:07Z",
+        "key": "EXT",
+        "value": "/path/in/sm",
+        "mount_path": null,
+        "scope": "JOB",
+        "variable_type": "EXTERNAL_SECRET",
+        "is_secret": false,
+        "service_id": "life-1",
+        "service_name": "my-lifecycle",
+        "service_type": "JOB"
+       }
+      ]
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/variable/var-6",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "Bad Request",
+      "message": "invalid payload"
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret update missing flags",
+   "args": [
+    "lifecycle",
+    "external-secret",
+    "update",
+    "-k",
+    "EXT"
+   ]
+  }
+ ]
+}

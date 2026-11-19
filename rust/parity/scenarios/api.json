@@ -1,0 +1,544 @@
+{
+ "fixtures": [
+  {
+   "method": "POST",
+   "path": "/organization",
+   "status": 201,
+   "body": {
+    "id": "org-new",
+    "name": "my-org",
+    "plan": "FREE"
+   }
+  },
+  {
+   "method": "DELETE",
+   "path": "/organization/org-2",
+   "status": 204
+  },
+  {
+   "method": "PUT",
+   "path": "/organization/org-1",
+   "status": 200,
+   "body": {
+    "id": "org-1"
+   }
+  },
+  {
+   "method": "PATCH",
+   "path": "/organization/org-1",
+   "status": 200,
+   "body": {
+    "id": "org-1"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/boom",
+   "status": 500,
+   "body": {
+    "message": "boom"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/text",
+   "status": 200,
+   "body_raw": "plain text, no newline"
+  },
+  {
+   "method": "GET",
+   "path": "/forbidden",
+   "status": 403,
+   "body_raw": "forbidden\n"
+  }
+ ],
+ "cases": [
+  {
+   "name": "api GET organization",
+   "args": [
+    "api",
+    "organization"
+   ]
+  },
+  {
+   "name": "api GET leading slash",
+   "args": [
+    "api",
+    "/organization/org-1"
+   ]
+  },
+  {
+   "name": "api GET with query",
+   "args": [
+    "api",
+    "organization/org-1/project?foo=bar&x=1"
+   ]
+  },
+  {
+   "name": "api placeholders",
+   "args": [
+    "api",
+    "organization/{organizationId}/project"
+   ]
+  },
+  {
+   "name": "api placeholders all",
+   "args": [
+    "api",
+    "organization/{organizationId}/project/{projectId}/environment/{environmentId}/service/{serviceId}"
+   ]
+  },
+  {
+   "name": "api placeholder empty ctx value",
+   "args": [
+    "api",
+    "project/{projectId}"
+   ],
+   "context": {
+    "project_id": ""
+   }
+  },
+  {
+   "name": "api placeholder no context file",
+   "args": [
+    "api",
+    "organization/{organizationId}"
+   ],
+   "no_context_file": true
+  },
+  {
+   "name": "api plain text body",
+   "args": [
+    "api",
+    "text"
+   ]
+  },
+  {
+   "name": "api 404 unmatched",
+   "args": [
+    "api",
+    "nothing/here"
+   ]
+  },
+  {
+   "name": "api 500",
+   "args": [
+    "api",
+    "boom"
+   ]
+  },
+  {
+   "name": "api 403 text",
+   "args": [
+    "api",
+    "forbidden"
+   ]
+  },
+  {
+   "name": "api include 2xx",
+   "args": [
+    "api",
+    "text",
+    "--include"
+   ]
+  },
+  {
+   "name": "api include 500",
+   "args": [
+    "api",
+    "boom",
+    "-i"
+   ]
+  },
+  {
+   "name": "api fields POST",
+   "args": [
+    "api",
+    "organization",
+    "--field",
+    "name=my-org",
+    "-f",
+    "plan=FREE"
+   ]
+  },
+  {
+   "name": "api fields coercion",
+   "args": [
+    "api",
+    "organization",
+    "-f",
+    "a=true",
+    "-f",
+    "b=false",
+    "-f",
+    "c=42",
+    "-f",
+    "d=3.14",
+    "-f",
+    "e=42.0",
+    "-f",
+    "f=hello",
+    "-f",
+    "g=123abc",
+    "-f",
+    "h=",
+    "-f",
+    "i=1e400",
+    "-f",
+    "j=1e-7",
+    "-f",
+    "k=1e21",
+    "-f",
+    "l=<&>",
+    "-f",
+    "m=a=b",
+    "-f",
+    "n=-5",
+    "-f",
+    "o=+7",
+    "-f",
+    "p=99999999999999999999"
+   ]
+  },
+  {
+   "name": "api field NaN",
+   "args": [
+    "api",
+    "organization",
+    "-f",
+    "a=NaN"
+   ]
+  },
+  {
+   "name": "api field inf",
+   "args": [
+    "api",
+    "organization",
+    "-f",
+    "a=-Inf"
+   ]
+  },
+  {
+   "name": "api fields with method PUT",
+   "args": [
+    "api",
+    "organization/org-1",
+    "-X",
+    "PUT",
+    "-f",
+    "name=x"
+   ]
+  },
+  {
+   "name": "api fields with method PATCH",
+   "args": [
+    "api",
+    "organization/org-1",
+    "--method",
+    "PATCH",
+    "-f",
+    "name=x"
+   ]
+  },
+  {
+   "name": "api DELETE",
+   "args": [
+    "api",
+    "organization/org-2",
+    "--method",
+    "DELETE"
+   ]
+  },
+  {
+   "name": "api stdin body",
+   "args": [
+    "api",
+    "organization",
+    "--input",
+    "-"
+   ],
+   "stdin": "{\"name\":\"my-org\",\"plan\":\"FREE\"}",
+   "ignore": [
+    "stderr"
+   ],
+   "comment": "Go's transport logs 'Unsolicited response' on stderr because the mock server does not understand chunked request bodies (both CLIs stream stdin chunked)"
+  },
+  {
+   "name": "api stdin body PUT",
+   "args": [
+    "api",
+    "organization/org-1",
+    "--input",
+    "-",
+    "-X",
+    "PUT"
+   ],
+   "stdin": "{\"name\":\"x\"}",
+   "ignore": [
+    "stderr"
+   ],
+   "comment": "Go's transport logs 'Unsolicited response' on stderr because the mock server does not understand chunked request bodies (both CLIs stream stdin chunked)"
+  },
+  {
+   "name": "api custom header",
+   "args": [
+    "api",
+    "organization",
+    "-H",
+    "X-Request-Id: abc123",
+    "--header",
+    "Accept:application/json"
+   ]
+  },
+  {
+   "name": "api content-type override",
+   "args": [
+    "api",
+    "organization",
+    "-f",
+    "a=b",
+    "-H",
+    "Content-Type: text/plain"
+   ]
+  },
+  {
+   "name": "api org creation no orgs",
+   "args": [
+    "api",
+    "organization",
+    "-X",
+    "POST",
+    "-f",
+    "name=x"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "api GET no orgs (context token)",
+   "args": [
+    "api",
+    "organization"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "api context token",
+   "args": [
+    "api",
+    "organization/org-1"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   }
+  },
+  {
+   "name": "api no token",
+   "args": [
+    "api",
+    "organization"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "api no context file no token",
+   "args": [
+    "api",
+    "organization"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "no_context_file": true
+  },
+  {
+   "name": "api Q_CLI token",
+   "args": [
+    "api",
+    "organization"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": "",
+    "Q_CLI_ACCESS_TOKEN": "qov_other"
+   }
+  },
+  {
+   "name": "api full url rejected",
+   "args": [
+    "api",
+    "https://api.qovery.com/organization"
+   ]
+  },
+  {
+   "name": "api input file rejected",
+   "args": [
+    "api",
+    "organization",
+    "--input",
+    "body.json"
+   ]
+  },
+  {
+   "name": "api field and input",
+   "args": [
+    "api",
+    "organization",
+    "--input",
+    "-",
+    "-f",
+    "a=b"
+   ]
+  },
+  {
+   "name": "api invalid method",
+   "args": [
+    "api",
+    "organization",
+    "-X",
+    "get"
+   ]
+  },
+  {
+   "name": "api invalid header",
+   "args": [
+    "api",
+    "organization",
+    "-H",
+    ": value"
+   ]
+  },
+  {
+   "name": "api invalid header no colon",
+   "args": [
+    "api",
+    "organization",
+    "-H",
+    "novalue"
+   ]
+  },
+  {
+   "name": "api invalid header name",
+   "args": [
+    "api",
+    "organization",
+    "-H",
+    "X A: b"
+   ]
+  },
+  {
+   "name": "api invalid field",
+   "args": [
+    "api",
+    "organization",
+    "-f",
+    "badfield"
+   ]
+  },
+  {
+   "name": "api empty field key",
+   "args": [
+    "api",
+    "organization",
+    "-f",
+    "=value"
+   ]
+  },
+  {
+   "name": "api duplicate field",
+   "args": [
+    "api",
+    "organization",
+    "-f",
+    "a=1",
+    "-f",
+    "a=2"
+   ]
+  },
+  {
+   "name": "api no args",
+   "args": [
+    "api"
+   ]
+  },
+  {
+   "name": "api too many args",
+   "args": [
+    "api",
+    "a",
+    "b"
+   ]
+  },
+  {
+   "name": "api unknown flag",
+   "args": [
+    "api",
+    "organization",
+    "--nope"
+   ]
+  },
+  {
+   "name": "api connection refused",
+   "args": [
+    "api",
+    "organization"
+   ],
+   "env": {
+    "QOVERY_API_URL": "http://127.0.0.1:1"
+   }
+  },
+  {
+   "name": "api base url trailing slash",
+   "args": [
+    "api",
+    "organization"
+   ],
+   "env": {
+    "QOVERY_API_URL": "$MOCK/"
+   }
+  },
+  {
+   "name": "api spec extra arg",
+   "args": [
+    "api",
+    "spec",
+    "foo"
+   ]
+  },
+  {
+   "name": "api spec unknown flag",
+   "args": [
+    "api",
+    "spec",
+    "--nope"
+   ]
+  }
+ ]
+}

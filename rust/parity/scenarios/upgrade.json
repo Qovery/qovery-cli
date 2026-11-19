@@ -1,0 +1,29 @@
+{
+ "cases": [
+  {
+   "name": "upgrade github unreachable",
+   "args": [
+    "upgrade"
+   ],
+   "env": {
+    "HTTPS_PROXY": "http://127.0.0.1:9",
+    "https_proxy": "http://127.0.0.1:9",
+    "ALL_PROXY": "http://127.0.0.1:9"
+   }
+  },
+  {
+   "name": "upgrade unknown flag",
+   "args": [
+    "upgrade",
+    "--nope"
+   ]
+  },
+  {
+   "name": "upgrade -h",
+   "args": [
+    "upgrade",
+    "-h"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1969 @@
+{
+ "fixtures": [
+  {
+   "method": "GET",
+   "path": "/environment/env-1/database",
+   "body": {
+    "results": [
+     {
+      "id": "db-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "name": "my-db",
+      "type": "POSTGRESQL",
+      "version": "16",
+      "mode": "CONTAINER",
+      "icon_uri": "app://qovery-console/database",
+      "environment": {
+       "id": "env-1"
+      },
+      "service_type": "DATABASE",
+      "host": "db-1.internal",
+      "port": 5432
+     },
+     {
+      "id": "db-2",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "name": "other-db",
+      "type": "MYSQL",
+      "version": "16",
+      "mode": "CONTAINER",
+      "icon_uri": "app://qovery-console/database",
+      "environment": {
+       "id": "env-1"
+      },
+      "service_type": "DATABASE"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/env-1/terraform",
+   "body": {
+    "results": [
+     {
+      "id": "tf-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-07-03T08:09:10.5+02:00",
+      "name": "my-terraform",
+      "timeout_sec": 3600,
+      "auto_deploy": false,
+      "icon_uri": "app://qovery-console/terraform",
+      "service_type": "TERRAFORM",
+      "terraform_variables_source": {
+       "tf_var_file_paths": [],
+       "tf_vars": []
+      },
+      "engine": "TERRAFORM",
+      "backend": {
+       "kubernetes": {}
+      },
+      "provider_version": {
+       "read_from_terraform_block": false,
+       "explicit_version": "1.9.0"
+      },
+      "job_resources": {
+       "cpu_milli": 500,
+       "ram_mib": 512,
+       "gpu": 0,
+       "storage_gib": 1
+      },
+      "environment": {
+       "id": "env-1"
+      },
+      "use_cluster_credentials": false,
+      "action_extra_arguments": {}
+     },
+     {
+      "id": "tf-bp-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-07-03T08:09:10.5+02:00",
+      "name": "bp-pg",
+      "timeout_sec": 3600,
+      "auto_deploy": false,
+      "icon_uri": "app://qovery-console/terraform",
+      "service_type": "TERRAFORM",
+      "terraform_variables_source": {
+       "tf_var_file_paths": [],
+       "tf_vars": []
+      },
+      "engine": "TERRAFORM",
+      "backend": {
+       "kubernetes": {}
+      },
+      "provider_version": {
+       "read_from_terraform_block": false,
+       "explicit_version": "1.9.0"
+      },
+      "job_resources": {
+       "cpu_milli": 500,
+       "ram_mib": 512,
+       "gpu": 0,
+       "storage_gib": 1
+      },
+      "environment": {
+       "id": "env-1"
+      },
+      "use_cluster_credentials": false,
+      "action_extra_arguments": {},
+      "blueprint_id": "bp-1"
+     },
+     {
+      "id": "tf-bp-2",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-07-03T08:09:10.5+02:00",
+      "name": "bp-bucket",
+      "timeout_sec": 3600,
+      "auto_deploy": false,
+      "icon_uri": "app://qovery-console/terraform",
+      "service_type": "TERRAFORM",
+      "terraform_variables_source": {
+       "tf_var_file_paths": [],
+       "tf_vars": []
+      },
+      "engine": "TERRAFORM",
+      "backend": {
+       "kubernetes": {}
+      },
+      "provider_version": {
+       "read_from_terraform_block": false,
+       "explicit_version": "1.9.0"
+      },
+      "job_resources": {
+       "cpu_milli": 500,
+       "ram_mib": 512,
+       "gpu": 0,
+       "storage_gib": 1
+      },
+      "environment": {
+       "id": "env-1"
+      },
+      "use_cluster_credentials": false,
+      "action_extra_arguments": {},
+      "blueprint_id": "bp-2"
+     },
+     {
+      "id": "tf-bp-3",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-07-03T08:09:10.5+02:00",
+      "name": "bp-redis",
+      "timeout_sec": 3600,
+      "auto_deploy": false,
+      "icon_uri": "app://qovery-console/terraform",
+      "service_type": "TERRAFORM",
+      "terraform_variables_source": {
+       "tf_var_file_paths": [],
+       "tf_vars": []
+      },
+      "engine": "TERRAFORM",
+      "backend": {
+       "kubernetes": {}
+      },
+      "provider_version": {
+       "read_from_terraform_block": false,
+       "explicit_version": "1.9.0"
+      },
+      "job_resources": {
+       "cpu_milli": 500,
+       "ram_mib": 512,
+       "gpu": 0,
+       "storage_gib": 1
+      },
+      "environment": {
+       "id": "env-1"
+      },
+      "use_cluster_credentials": false,
+      "action_extra_arguments": {},
+      "blueprint_id": "bp-3"
+     },
+     {
+      "id": "tf-bp-4",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-01-01T00:00:00Z",
+      "name": "bp-mongo",
+      "timeout_sec": 3600,
+      "auto_deploy": false,
+      "icon_uri": "app://qovery-console/terraform",
+      "service_type": "TERRAFORM",
+      "terraform_variables_source": {
+       "tf_var_file_paths": [],
+       "tf_vars": []
+      },
+      "engine": "TERRAFORM",
+      "backend": {
+       "kubernetes": {}
+      },
+      "provider_version": {
+       "read_from_terraform_block": false,
+       "explicit_version": "1.9.0"
+      },
+      "job_resources": {
+       "cpu_milli": 500,
+       "ram_mib": 512,
+       "gpu": 0,
+       "storage_gib": 1
+      },
+      "environment": {
+       "id": "env-1"
+      },
+      "use_cluster_credentials": false,
+      "action_extra_arguments": {},
+      "blueprint_id": "bp-4"
+     },
+     {
+      "id": "tf-bp-5",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-07-03T08:09:10.5+02:00",
+      "name": "bp-null",
+      "timeout_sec": 3600,
+      "auto_deploy": false,
+      "icon_uri": "app://qovery-console/terraform",
+      "service_type": "TERRAFORM",
+      "terraform_variables_source": {
+       "tf_var_file_paths": [],
+       "tf_vars": []
+      },
+      "engine": "TERRAFORM",
+      "backend": {
+       "kubernetes": {}
+      },
+      "provider_version": {
+       "read_from_terraform_block": false,
+       "explicit_version": "1.9.0"
+      },
+      "job_resources": {
+       "cpu_milli": 500,
+       "ram_mib": 512,
+       "gpu": 0,
+       "storage_gib": 1
+      },
+      "environment": {
+       "id": "env-1"
+      },
+      "use_cluster_credentials": false,
+      "action_extra_arguments": {}
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/env-1/statuses",
+   "body": {
+    "environment": {
+     "id": "env-1",
+     "state": "DEPLOYED",
+     "last_deployment_state": "DEPLOYED"
+    },
+    "applications": [],
+    "containers": [],
+    "jobs": [],
+    "helms": [],
+    "databases": [
+     {
+      "id": "db-1",
+      "state": "DEPLOYED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "e1"
+     },
+     {
+      "id": "db-2",
+      "state": "STOPPED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "e2"
+     }
+    ],
+    "terraforms": [
+     {
+      "id": "tf-1",
+      "state": "DEPLOYED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "e3"
+     },
+     {
+      "id": "tf-bp-1",
+      "state": "DEPLOYMENT_ERROR",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "e4"
+     },
+     {
+      "id": "tf-bp-3",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "e5"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-1/database",
+   "body": {
+    "kind": "POSTGRESQL",
+    "service_id": "tf-bp-1",
+    "endpoint": {
+     "host": "pg.example.com",
+     "port": 5433
+    }
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-2/database",
+   "status": 404,
+   "body": {
+    "status": 404,
+    "error": "not a database"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-3/database",
+   "body": {
+    "kind": "REDIS",
+    "service_id": "tf-bp-3",
+    "endpoint": {
+     "host": "redis.example.com",
+     "port": null
+    }
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-4/database",
+   "body": {
+    "kind": "MONGODB",
+    "service_id": null,
+    "endpoint": null
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-1/database/masterCredentials",
+   "body": {
+    "host": "pg.example.com",
+    "port": 5433,
+    "login": "admin",
+    "password": "s3cr<t>&"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-3/database/masterCredentials",
+   "status": 403,
+   "body": {
+    "status": 403
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-4/database/masterCredentials",
+   "status": 404,
+   "body": {
+    "status": 404
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/database/db-1/masterCredentials",
+   "body": {
+    "host": "db-1.internal",
+    "port": 5432,
+    "login": "postgres",
+    "password": "pw1"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/database/db-2/masterCredentials",
+   "body": {
+    "host": "db-2.internal",
+    "port": 3306,
+    "login": "",
+    "password": "pw2"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/environment/env-1/service/deploy",
+   "status": 202,
+   "body": {
+    "id": "env-1",
+    "state": "DEPLOYMENT_QUEUED",
+    "last_deployment_state": "DEPLOYED"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/environment/env-1/service/delete",
+   "status": 202
+  },
+  {
+   "method": "POST",
+   "path": "/environment/env-1/service/stop",
+   "status": 202
+  },
+  {
+   "method": "POST",
+   "path": "/environment/env-1/service/restart-service",
+   "status": 202,
+   "body": {}
+  },
+  {
+   "method": "POST",
+   "path": "/database/db-1/deploy",
+   "status": 202,
+   "body": {
+    "id": "db-1",
+    "state": "DEPLOYMENT_QUEUED",
+    "service_deployment_status": "UP_TO_DATE",
+    "is_part_last_deployment": true,
+    "status_details": {
+     "action": "DEPLOY",
+     "status": "SUCCESS",
+     "sub_action": "NONE"
+    },
+    "deployment_request_id": null,
+    "deployment_requests_count": 0,
+    "execution_id": "e1"
+   }
+  }
+ ],
+ "cases": [
+  {
+   "name": "group help",
+   "args": [
+    "database"
+   ]
+  },
+  {
+   "name": "list table",
+   "args": [
+    "database",
+    "list"
+   ]
+  },
+  {
+   "name": "list json",
+   "args": [
+    "database",
+    "list",
+    "--json"
+   ]
+  },
+  {
+   "name": "list show-credentials",
+   "args": [
+    "database",
+    "list",
+    "--show-credentials"
+   ]
+  },
+  {
+   "name": "list show-credentials json",
+   "args": [
+    "database",
+    "list",
+    "--show-credentials",
+    "--json"
+   ]
+  },
+  {
+   "name": "list explicit env",
+   "args": [
+    "database",
+    "list",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "list env not found",
+   "args": [
+    "database",
+    "list",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "list empty table",
+   "args": [
+    "database",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "list empty json",
+   "args": [
+    "database",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "list database error",
+   "args": [
+    "database",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list statuses error",
+   "args": [
+    "database",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "status": 403,
+     "body": {
+      "status": 403,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list terraform error",
+   "args": [
+    "database",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "status": 401,
+     "body": {
+      "status": 401,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list blueprint error",
+   "args": [
+    "database",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-1/database",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list blueprint creds error",
+   "args": [
+    "database",
+    "list",
+    "--show-credentials"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-1/database/masterCredentials",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list creds error",
+   "args": [
+    "database",
+    "list",
+    "--show-credentials"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/database/db-2/masterCredentials",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list creds error json",
+   "args": [
+    "database",
+    "list",
+    "--show-credentials",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/database/db-1/masterCredentials",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list no token",
+   "args": [
+    "database",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "no_context_file": true
+  },
+  {
+   "name": "list bad flag",
+   "args": [
+    "database",
+    "list",
+    "--nope"
+   ]
+  },
+  {
+   "name": "cancel",
+   "args": [
+    "database",
+    "cancel"
+   ]
+  },
+  {
+   "name": "deploy",
+   "args": [
+    "database",
+    "deploy",
+    "-n",
+    "my-db"
+   ]
+  },
+  {
+   "name": "deploy multiple",
+   "args": [
+    "database",
+    "deploy",
+    "--databases",
+    "my-db, other-db"
+   ]
+  },
+  {
+   "name": "deploy no name",
+   "args": [
+    "database",
+    "deploy"
+   ]
+  },
+  {
+   "name": "deploy both",
+   "args": [
+    "database",
+    "deploy",
+    "-n",
+    "my-db",
+    "--databases",
+    "other-db"
+   ]
+  },
+  {
+   "name": "deploy not found",
+   "args": [
+    "database",
+    "deploy",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "deploy multiple not found",
+   "args": [
+    "database",
+    "deploy",
+    "--databases",
+    "my-db, nope"
+   ]
+  },
+  {
+   "name": "deploy api error",
+   "args": [
+    "database",
+    "deploy",
+    "-n",
+    "my-db"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy list error",
+   "args": [
+    "database",
+    "deploy",
+    "-n",
+    "my-db"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy env not found",
+   "args": [
+    "database",
+    "deploy",
+    "-n",
+    "my-db",
+    "--project",
+    "nope"
+   ]
+  },
+  {
+   "name": "deploy watch",
+   "args": [
+    "database",
+    "deploy",
+    "-n",
+    "my-db",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "QUEUED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "deploy watch error",
+   "args": [
+    "database",
+    "deploy",
+    "-n",
+    "my-db",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYMENT_ERROR",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "delete",
+   "args": [
+    "database",
+    "delete",
+    "-n",
+    "my-db"
+   ]
+  },
+  {
+   "name": "delete multiple",
+   "args": [
+    "database",
+    "delete",
+    "--databases",
+    "my-db, other-db"
+   ]
+  },
+  {
+   "name": "delete no name",
+   "args": [
+    "database",
+    "delete"
+   ]
+  },
+  {
+   "name": "delete both",
+   "args": [
+    "database",
+    "delete",
+    "-n",
+    "my-db",
+    "--databases",
+    "other-db"
+   ]
+  },
+  {
+   "name": "delete not found",
+   "args": [
+    "database",
+    "delete",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "delete multiple not found",
+   "args": [
+    "database",
+    "delete",
+    "--databases",
+    "my-db, nope"
+   ]
+  },
+  {
+   "name": "delete api error",
+   "args": [
+    "database",
+    "delete",
+    "-n",
+    "my-db"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/delete",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete list error",
+   "args": [
+    "database",
+    "delete",
+    "-n",
+    "my-db"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete env not found",
+   "args": [
+    "database",
+    "delete",
+    "-n",
+    "my-db",
+    "--project",
+    "nope"
+   ]
+  },
+  {
+   "name": "delete watch",
+   "args": [
+    "database",
+    "delete",
+    "-n",
+    "my-db",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DELETE_QUEUED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": []
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "delete watch error",
+   "args": [
+    "database",
+    "delete",
+    "-n",
+    "my-db",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DELETE_ERROR",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "stop",
+   "args": [
+    "database",
+    "stop",
+    "-n",
+    "my-db"
+   ]
+  },
+  {
+   "name": "stop multiple",
+   "args": [
+    "database",
+    "stop",
+    "--databases",
+    "my-db, other-db"
+   ]
+  },
+  {
+   "name": "stop no name",
+   "args": [
+    "database",
+    "stop"
+   ]
+  },
+  {
+   "name": "stop both",
+   "args": [
+    "database",
+    "stop",
+    "-n",
+    "my-db",
+    "--databases",
+    "other-db"
+   ]
+  },
+  {
+   "name": "stop not found",
+   "args": [
+    "database",
+    "stop",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "stop multiple not found",
+   "args": [
+    "database",
+    "stop",
+    "--databases",
+    "my-db, nope"
+   ]
+  },
+  {
+   "name": "stop api error",
+   "args": [
+    "database",
+    "stop",
+    "-n",
+    "my-db"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/stop",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop list error",
+   "args": [
+    "database",
+    "stop",
+    "-n",
+    "my-db"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop env not found",
+   "args": [
+    "database",
+    "stop",
+    "-n",
+    "my-db",
+    "--project",
+    "nope"
+   ]
+  },
+  {
+   "name": "stop watch",
+   "args": [
+    "database",
+    "stop",
+    "-n",
+    "my-db",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "QUEUED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "STOPPED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "stop watch error",
+   "args": [
+    "database",
+    "stop",
+    "-n",
+    "my-db",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "STOP_ERROR",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "restart",
+   "args": [
+    "database",
+    "restart",
+    "-n",
+    "my-db"
+   ]
+  },
+  {
+   "name": "restart multiple",
+   "args": [
+    "database",
+    "restart",
+    "--databases",
+    "my-db, other-db"
+   ]
+  },
+  {
+   "name": "restart no name",
+   "args": [
+    "database",
+    "restart"
+   ]
+  },
+  {
+   "name": "restart both",
+   "args": [
+    "database",
+    "restart",
+    "-n",
+    "my-db",
+    "--databases",
+    "other-db"
+   ]
+  },
+  {
+   "name": "restart not found",
+   "args": [
+    "database",
+    "restart",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "restart multiple not found",
+   "args": [
+    "database",
+    "restart",
+    "--databases",
+    "my-db, nope"
+   ]
+  },
+  {
+   "name": "restart api error",
+   "args": [
+    "database",
+    "restart",
+    "-n",
+    "my-db"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/restart-service",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "restart list error",
+   "args": [
+    "database",
+    "restart",
+    "-n",
+    "my-db"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "restart env not found",
+   "args": [
+    "database",
+    "restart",
+    "-n",
+    "my-db",
+    "--project",
+    "nope"
+   ]
+  },
+  {
+   "name": "restart watch",
+   "args": [
+    "database",
+    "restart",
+    "-n",
+    "my-db",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "QUEUED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "RESTARTED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "restart watch error",
+   "args": [
+    "database",
+    "restart",
+    "-n",
+    "my-db",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYMENT_ERROR",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "deploy watch snapshot error",
+   "args": [
+    "database",
+    "deploy",
+    "-n",
+    "my-db",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "redeploy",
+   "args": [
+    "database",
+    "redeploy",
+    "-n",
+    "my-db"
+   ]
+  },
+  {
+   "name": "redeploy missing flag",
+   "args": [
+    "database",
+    "redeploy"
+   ]
+  },
+  {
+   "name": "redeploy not found",
+   "args": [
+    "database",
+    "redeploy",
+    "--database",
+    "nope"
+   ]
+  },
+  {
+   "name": "redeploy api error",
+   "args": [
+    "database",
+    "redeploy",
+    "-n",
+    "my-db"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/database/db-1/deploy",
+     "status": 409,
+     "body": {
+      "status": 409,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "redeploy watch",
+   "args": [
+    "database",
+    "redeploy",
+    "-n",
+    "my-db",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "databases": [
+           {
+            "id": "db-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "redeploy databases flag unknown",
+   "args": [
+    "database",
+    "redeploy",
+    "-n",
+    "my-db",
+    "--databases",
+    "x"
+   ]
+  }
+ ]
+}

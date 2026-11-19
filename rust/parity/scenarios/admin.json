@@ -1,0 +1,3200 @@
+{
+ "env": {
+  "ADMIN_URL": "$MOCK"
+ },
+ "cases": [
+  {
+   "name": "admin group",
+   "args": [
+    "admin"
+   ]
+  },
+  {
+   "name": "delete missing flag",
+   "args": [
+    "admin",
+    "delete"
+   ]
+  },
+  {
+   "name": "delete dry run yes",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a, org-b",
+    "-o",
+    "org-c"
+   ],
+   "stdin": "yes\n"
+  },
+  {
+   "name": "delete dry run allow failed",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a",
+    "-f"
+   ],
+   "stdin": "yes\n"
+  },
+  {
+   "name": "delete dry run answer no",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a"
+   ],
+   "stdin": "no\n"
+  },
+  {
+   "name": "delete dry run eof",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a"
+   ]
+  },
+  {
+   "name": "delete dry run empty then yes",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a"
+   ],
+   "stdin": "\nyes\n"
+  },
+  {
+   "name": "delete no ids",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    ","
+   ],
+   "stdin": "yes\n"
+  },
+  {
+   "name": "delete no ADMIN_URL",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a"
+   ],
+   "stdin": "yes\n",
+   "env": {
+    "ADMIN_URL": ""
+   }
+  },
+  {
+   "name": "delete disabled dry run ok",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a,org-b",
+    "-y"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/organizations",
+     "status": 200,
+     "body": {
+      "deleted": [
+       "org-a",
+       "org-b"
+      ],
+      "failed": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete disabled dry run partial",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a,org-b",
+    "-y",
+    "-f"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/organizations",
+     "status": 200,
+     "body": {
+      "deleted": [
+       "org-a"
+      ],
+      "failed": [
+       {
+        "organization_id": "org-b",
+        "reason": "cluster <failed>"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete disabled dry run nothing",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a",
+    "-y"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/organizations",
+     "status": 200,
+     "body": {
+      "deleted": null,
+      "failed": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete disabled dry run 500",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a",
+    "-y"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/organizations",
+     "status": 500,
+     "body_raw": "boom"
+    }
+   ]
+  },
+  {
+   "name": "delete disabled dry run bad json",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a",
+    "-y"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/organizations",
+     "status": 200,
+     "body_raw": "{oops"
+    }
+   ]
+  },
+  {
+   "name": "delete disabled dry run no token",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a",
+    "-y"
+   ],
+   "stdin": "yes\n",
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "delete dry run no token",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a"
+   ],
+   "stdin": "yes\n",
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "delete admin url down",
+   "args": [
+    "admin",
+    "delete",
+    "-o",
+    "org-a",
+    "-y"
+   ],
+   "stdin": "yes\n",
+   "env": {
+    "ADMIN_URL": "http://127.0.0.1:1"
+   }
+  },
+  {
+   "name": "force-delete-project missing flag",
+   "args": [
+    "admin",
+    "force-delete-project"
+   ]
+  },
+  {
+   "name": "force-delete-project dry run",
+   "args": [
+    "admin",
+    "force-delete-project",
+    "-p",
+    "proj-x"
+   ],
+   "stdin": "yes\n"
+  },
+  {
+   "name": "force-delete-project no",
+   "args": [
+    "admin",
+    "force-delete-project",
+    "-p",
+    "proj-x"
+   ],
+   "stdin": "nope\n"
+  },
+  {
+   "name": "force-delete-project deleted",
+   "args": [
+    "admin",
+    "force-delete-project",
+    "-p",
+    "proj-x",
+    "--disable-dry-run"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/project/proj-x",
+     "status": 204,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "force-delete-project 200",
+   "args": [
+    "admin",
+    "force-delete-project",
+    "-p",
+    "proj-x",
+    "-y"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/project/proj-x",
+     "status": 200,
+     "body": {
+      "ok": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "force-delete-project 400",
+   "args": [
+    "admin",
+    "force-delete-project",
+    "-p",
+    "proj-x",
+    "-y"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/project/proj-x",
+     "status": 400,
+     "body": {
+      "message": "not deletable"
+     }
+    }
+   ]
+  },
+  {
+   "name": "force-delete-project no token",
+   "args": [
+    "admin",
+    "force-delete-project",
+    "-p",
+    "proj-x",
+    "-y"
+   ],
+   "stdin": "yes\n",
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "force-delete-project no ADMIN_URL",
+   "args": [
+    "admin",
+    "force-delete-project",
+    "-p",
+    "proj-x"
+   ],
+   "stdin": "yes\n",
+   "env": {
+    "ADMIN_URL": ""
+   }
+  },
+  {
+   "name": "force-failed default",
+   "args": [
+    "admin",
+    "force-failed-deployments-to-internal-error"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/deployment/forceFailedDeploymentsToInternalErrorStatus",
+     "status": 200,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "force-failed 90m",
+   "args": [
+    "admin",
+    "force-failed-deployments-to-internal-error",
+    "-d",
+    "1h30m59s"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/deployment/forceFailedDeploymentsToInternalErrorStatus",
+     "status": 200,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "force-failed lower than 5m",
+   "args": [
+    "admin",
+    "force-failed-deployments-to-internal-error",
+    "--safeguardDuration",
+    "4m59s"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/deployment/forceFailedDeploymentsToInternalErrorStatus",
+     "status": 200,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "force-failed negative",
+   "args": [
+    "admin",
+    "force-failed-deployments-to-internal-error",
+    "-d",
+    "-10m"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/deployment/forceFailedDeploymentsToInternalErrorStatus",
+     "status": 200,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "force-failed bad duration",
+   "args": [
+    "admin",
+    "force-failed-deployments-to-internal-error",
+    "-d",
+    "abc"
+   ],
+   "stdin": "yes\n"
+  },
+  {
+   "name": "force-failed bad unit",
+   "args": [
+    "admin",
+    "force-failed-deployments-to-internal-error",
+    "-d",
+    "10x"
+   ],
+   "stdin": "yes\n"
+  },
+  {
+   "name": "force-failed double sign",
+   "args": [
+    "admin",
+    "force-failed-deployments-to-internal-error",
+    "-d",
+    "-+10m"
+   ],
+   "stdin": "yes\n"
+  },
+  {
+   "name": "force-failed double minus zero",
+   "args": [
+    "admin",
+    "force-failed-deployments-to-internal-error",
+    "--safeguardDuration=--0"
+   ],
+   "stdin": "yes\n"
+  },
+  {
+   "name": "force-failed 500",
+   "args": [
+    "admin",
+    "force-failed-deployments-to-internal-error"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/deployment/forceFailedDeploymentsToInternalErrorStatus",
+     "status": 500,
+     "body_raw": "kaboom"
+    }
+   ]
+  },
+  {
+   "name": "force-failed no",
+   "args": [
+    "admin",
+    "force-failed-deployments-to-internal-error"
+   ],
+   "stdin": "no\n"
+  },
+  {
+   "name": "force-failed no token",
+   "args": [
+    "admin",
+    "force-failed-deployments-to-internal-error"
+   ],
+   "stdin": "yes\n",
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "publish ok",
+   "args": [
+    "admin",
+    "publish-environment-deployment-rules"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environmentDeploymentRules/pushToScheduler",
+     "status": 200,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "publish 500",
+   "args": [
+    "admin",
+    "publish-environment-deployment-rules"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environmentDeploymentRules/pushToScheduler",
+     "status": 500,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "publish no ADMIN_URL",
+   "args": [
+    "admin",
+    "publish-environment-deployment-rules"
+   ],
+   "env": {
+    "ADMIN_URL": ""
+   }
+  },
+  {
+   "name": "publish no token",
+   "args": [
+    "admin",
+    "publish-environment-deployment-rules"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "require-extended-credentials",
+   "args": [
+    "admin",
+    "require-extended-credentials"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/requireWideAccessToDeploy",
+     "status": 200,
+     "body": {
+      "updated": 3
+     }
+    }
+   ]
+  },
+  {
+   "name": "require-extended-credentials production",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--production"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/requireWideAccessToDeploy",
+     "status": 204,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "require-extended-credentials 400",
+   "args": [
+    "admin",
+    "require-extended-credentials"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/requireWideAccessToDeploy",
+     "status": 400,
+     "body_raw": "bad"
+    }
+   ]
+  },
+  {
+   "name": "require-extended-credentials args",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "foo"
+   ]
+  },
+  {
+   "name": "require-extended-credentials no token",
+   "args": [
+    "admin",
+    "require-extended-credentials"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "require-extended-credentials no ADMIN_URL",
+   "args": [
+    "admin",
+    "require-extended-credentials"
+   ],
+   "env": {
+    "ADMIN_URL": ""
+   }
+  },
+  {
+   "name": "encrypt-secret no org",
+   "args": [
+    "admin",
+    "encrypt-secret",
+    "-m",
+    "msg"
+   ]
+  },
+  {
+   "name": "encrypt-secret no message",
+   "args": [
+    "admin",
+    "encrypt-secret",
+    "-o",
+    "org-1"
+   ]
+  },
+  {
+   "name": "encrypt-secret ok",
+   "args": [
+    "admin",
+    "encrypt-secret",
+    "-o",
+    "org-1",
+    "-m",
+    "my secret"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/secret",
+     "status": 200,
+     "body_raw": "ENCRYPTED"
+    }
+   ]
+  },
+  {
+   "name": "encrypt-secret 204",
+   "args": [
+    "admin",
+    "encrypt-secret",
+    "--organization-id",
+    "org-1",
+    "--message",
+    "s"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/secret",
+     "status": 204,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "encrypt-secret escaped org",
+   "args": [
+    "admin",
+    "encrypt-secret",
+    "-o",
+    "a b/../c?d",
+    "-m",
+    "s"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path_regex": "secret$",
+     "status": 200,
+     "body_raw": "X"
+    }
+   ]
+  },
+  {
+   "name": "encrypt-secret admin url with path",
+   "args": [
+    "admin",
+    "encrypt-secret",
+    "-o",
+    "org-1",
+    "-m",
+    "s"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path_regex": "secret$",
+     "status": 200,
+     "body_raw": "X"
+    }
+   ],
+   "env": {
+    "ADMIN_URL": "$MOCK/api/"
+   }
+  },
+  {
+   "name": "encrypt-secret 500",
+   "args": [
+    "admin",
+    "encrypt-secret",
+    "-o",
+    "org-1",
+    "-m",
+    "s"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/secret",
+     "status": 500,
+     "body_raw": "err"
+    }
+   ]
+  },
+  {
+   "name": "encrypt-secret no token",
+   "args": [
+    "admin",
+    "encrypt-secret",
+    "-o",
+    "org-1",
+    "-m",
+    "s"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "enable-user-connect missing flag",
+   "args": [
+    "admin",
+    "enable-user-connect"
+   ]
+  },
+  {
+   "name": "enable-user-connect empty email",
+   "args": [
+    "admin",
+    "enable-user-connect",
+    "-e",
+    ""
+   ]
+  },
+  {
+   "name": "enable-user-connect invalid provider",
+   "args": [
+    "admin",
+    "enable-user-connect",
+    "-e",
+    "u@x.com",
+    "-p",
+    "foo"
+   ],
+   "ignore": [
+    "stdout"
+   ]
+  },
+  {
+   "name": "enable-user-connect ok",
+   "args": [
+    "admin",
+    "enable-user-connect",
+    "-e",
+    "u@x.com"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/enableUserSignUp",
+     "status": 200,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "enable-user-connect provider",
+   "args": [
+    "admin",
+    "enable-user-connect",
+    "--user-email",
+    "u<@>x.com",
+    "--provider",
+    "GitHub"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/enableUserSignUp",
+     "status": 200,
+     "body": {
+      "status": "ok"
+     }
+    }
+   ]
+  },
+  {
+   "name": "enable-user-connect 404",
+   "args": [
+    "admin",
+    "enable-user-connect",
+    "-e",
+    "u@x.com",
+    "-p",
+    "google"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/enableUserSignUp",
+     "status": 404,
+     "body_raw": "unknown user"
+    }
+   ]
+  },
+  {
+   "name": "enable-user-connect no token",
+   "args": [
+    "admin",
+    "enable-user-connect",
+    "-e",
+    "u@x.com"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "deployment-restriction missing flags",
+   "args": [
+    "admin",
+    "deployment-restriction"
+   ]
+  },
+  {
+   "name": "deployment-restriction bad action",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "stop"
+   ]
+  },
+  {
+   "name": "deployment-restriction bad uuid",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "org-1",
+    "-a",
+    "block",
+    "-m",
+    "late"
+   ]
+  },
+  {
+   "name": "deployment-restriction empty org",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "",
+    "-a",
+    "unblock"
+   ]
+  },
+  {
+   "name": "deployment-restriction block no message",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "block"
+   ]
+  },
+  {
+   "name": "deployment-restriction block short message",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "block",
+    "-m",
+    " ab  "
+   ]
+  },
+  {
+   "name": "deployment-restriction block long message",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "block",
+    "-m",
+    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   ]
+  },
+  {
+   "name": "deployment-restriction unblock with message",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "unblock",
+    "-m",
+    "why"
+   ]
+  },
+  {
+   "name": "deployment-restriction cancelled",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "block",
+    "-m",
+    "Payment overdue"
+   ],
+   "stdin": "no\n"
+  },
+  {
+   "name": "deployment-restriction block ok message",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "block",
+    "-m",
+    "Payment overdue"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/12345678-1234-1234-1234-123456789abc/deploymentRestriction",
+     "status": 200,
+     "body": {
+      "message": "Deployments blocked",
+      "status": "BLOCKED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deployment-restriction unblock ok fallback",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "unblock"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/12345678-1234-1234-1234-123456789abc/deploymentRestriction",
+     "status": 200,
+     "body_raw": "done"
+    }
+   ]
+  },
+  {
+   "name": "deployment-restriction block ok empty message",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "block",
+    "-m",
+    "late"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/12345678-1234-1234-1234-123456789abc/deploymentRestriction",
+     "status": 200,
+     "body": {
+      "status": "x"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deployment-restriction 400",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "unblock"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/12345678-1234-1234-1234-123456789abc/deploymentRestriction",
+     "status": 400,
+     "body_raw": "nope"
+    }
+   ]
+  },
+  {
+   "name": "deployment-restriction 401",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "unblock"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/12345678-1234-1234-1234-123456789abc/deploymentRestriction",
+     "status": 401,
+     "body_raw": "nope"
+    }
+   ]
+  },
+  {
+   "name": "deployment-restriction 403",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "unblock"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/12345678-1234-1234-1234-123456789abc/deploymentRestriction",
+     "status": 403,
+     "body_raw": "nope"
+    }
+   ]
+  },
+  {
+   "name": "deployment-restriction 404",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "unblock"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/12345678-1234-1234-1234-123456789abc/deploymentRestriction",
+     "status": 404,
+     "body_raw": "nope"
+    }
+   ]
+  },
+  {
+   "name": "deployment-restriction 500",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "unblock"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/12345678-1234-1234-1234-123456789abc/deploymentRestriction",
+     "status": 500,
+     "body_raw": "nope"
+    }
+   ]
+  },
+  {
+   "name": "deployment-restriction no token",
+   "args": [
+    "admin",
+    "deployment-restriction",
+    "-o",
+    "12345678-1234-1234-1234-123456789abc",
+    "-a",
+    "unblock"
+   ],
+   "stdin": "yes\n",
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "get-organization-plan missing flag",
+   "args": [
+    "admin",
+    "get-organization-plan"
+   ]
+  },
+  {
+   "name": "get-organization-plan empty org",
+   "args": [
+    "admin",
+    "get-organization-plan",
+    "-o",
+    ""
+   ]
+  },
+  {
+   "name": "get-organization-plan null billing",
+   "args": [
+    "admin",
+    "get-organization-plan",
+    "-o",
+    "org-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/plan",
+     "status": 200,
+     "body": {
+      "organization_id": "org-1",
+      "name": "Acme",
+      "plan": "FREE",
+      "billing_external_id": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "get-organization-plan billing",
+   "args": [
+    "admin",
+    "get-organization-plan",
+    "--organization-id",
+    "org-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/plan",
+     "status": 200,
+     "body": {
+      "organization_id": "org-1",
+      "name": "Acme",
+      "plan": "TEAM_2025",
+      "billing_external_id": "AzyXZ8T0EI4jB4AZf"
+     }
+    }
+   ]
+  },
+  {
+   "name": "get-organization-plan escaped org",
+   "args": [
+    "admin",
+    "get-organization-plan",
+    "-o",
+    "a/b c"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path_regex": "plan$",
+     "status": 200,
+     "body": {
+      "organization_id": "x",
+      "name": "n",
+      "plan": "FREE",
+      "billing_external_id": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "get-organization-plan trailing slash admin url",
+   "args": [
+    "admin",
+    "get-organization-plan",
+    "-o",
+    "org-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/plan",
+     "status": 200,
+     "body": {
+      "organization_id": "org-1",
+      "name": "Acme",
+      "plan": "FREE"
+     }
+    }
+   ],
+   "env": {
+    "ADMIN_URL": "$MOCK//"
+   }
+  },
+  {
+   "name": "get-organization-plan 404",
+   "args": [
+    "admin",
+    "get-organization-plan",
+    "-o",
+    "org-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/plan",
+     "status": 404,
+     "body_raw": "organization not found"
+    }
+   ]
+  },
+  {
+   "name": "get-organization-plan bad json",
+   "args": [
+    "admin",
+    "get-organization-plan",
+    "-o",
+    "org-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/plan",
+     "status": 200,
+     "body_raw": "[1,]"
+    }
+   ]
+  },
+  {
+   "name": "get-organization-plan no token",
+   "args": [
+    "admin",
+    "get-organization-plan",
+    "-o",
+    "org-1"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "update-organization-plan missing flags",
+   "args": [
+    "admin",
+    "update-organization-plan",
+    "-o",
+    "org-1"
+   ]
+  },
+  {
+   "name": "update-organization-plan invalid plan",
+   "args": [
+    "admin",
+    "update-organization-plan",
+    "-o",
+    "org-1",
+    "-p",
+    "TEAM_YEARLY"
+   ]
+  },
+  {
+   "name": "update-organization-plan ok",
+   "args": [
+    "admin",
+    "update-organization-plan",
+    "-o",
+    "org-1",
+    "-p",
+    "  enterprise_2025 "
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/plan",
+     "status": 200,
+     "body": {
+      "organization_id": "org-1",
+      "plan": "ENTERPRISE_2025",
+      "previous_plan": "FREE",
+      "warning": "Chargebee not updated"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update-organization-plan no warning",
+   "args": [
+    "admin",
+    "update-organization-plan",
+    "-o",
+    "org-1",
+    "--plan",
+    "FREE"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/plan",
+     "status": 200,
+     "body": {
+      "organization_id": "org-1",
+      "plan": "FREE",
+      "previous_plan": "FREE"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update-organization-plan 400",
+   "args": [
+    "admin",
+    "update-organization-plan",
+    "-o",
+    "org-1",
+    "-p",
+    "FREE"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/plan",
+     "status": 400,
+     "body": {
+      "error": "bad"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update-organization-plan empty org",
+   "args": [
+    "admin",
+    "update-organization-plan",
+    "-o",
+    "",
+    "-p",
+    "FREE"
+   ]
+  },
+  {
+   "name": "update-billing-external-id missing flags",
+   "args": [
+    "admin",
+    "update-billing-external-id",
+    "-o",
+    "org-1"
+   ]
+  },
+  {
+   "name": "update-billing-external-id empty",
+   "args": [
+    "admin",
+    "update-billing-external-id",
+    "-o",
+    "org-1",
+    "-b",
+    ""
+   ]
+  },
+  {
+   "name": "update-billing-external-id empty org",
+   "args": [
+    "admin",
+    "update-billing-external-id",
+    "-o",
+    "",
+    "-b",
+    "x"
+   ]
+  },
+  {
+   "name": "update-billing-external-id ok",
+   "args": [
+    "admin",
+    "update-billing-external-id",
+    "-o",
+    "org-1",
+    "-b",
+    "AzyXZ8T0EI4jB4AZf"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/billingExternalId",
+     "status": 204,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "update-billing-external-id 404",
+   "args": [
+    "admin",
+    "update-billing-external-id",
+    "-o",
+    "org-1",
+    "-b",
+    "x"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/billingExternalId",
+     "status": 404,
+     "body_raw": "no orga"
+    }
+   ]
+  },
+  {
+   "name": "update-billing-external-id no token",
+   "args": [
+    "admin",
+    "update-billing-external-id",
+    "-o",
+    "org-1",
+    "-b",
+    "x"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "transfer-ownership missing flag",
+   "args": [
+    "admin",
+    "transfer-ownership"
+   ]
+  },
+  {
+   "name": "transfer-ownership no target",
+   "args": [
+    "admin",
+    "transfer-ownership",
+    "-o",
+    "org-1"
+   ]
+  },
+  {
+   "name": "transfer-ownership both",
+   "args": [
+    "admin",
+    "transfer-ownership",
+    "-o",
+    "org-1",
+    "-u",
+    "auth0|1",
+    "-e",
+    "a@x.com"
+   ]
+  },
+  {
+   "name": "transfer-ownership user id",
+   "args": [
+    "admin",
+    "transfer-ownership",
+    "-o",
+    "org-1",
+    "-u",
+    "auth0|1"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/transferOwnership",
+     "status": 200,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "transfer-ownership email",
+   "args": [
+    "admin",
+    "transfer-ownership",
+    "-o",
+    "org-1",
+    "-e",
+    "single@x.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/member",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "auth0|111",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "single@x.com"
+       },
+       {
+        "id": "github|222",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "multi@x.com"
+       },
+       {
+        "id": "google-oauth2|333",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "multi@x.com"
+       },
+       {
+        "id": "noprovider",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "plain@x.com"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/transferOwnership",
+     "status": 200,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "transfer-ownership email no provider in id",
+   "args": [
+    "admin",
+    "transfer-ownership",
+    "-o",
+    "org-1",
+    "-e",
+    "plain@x.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/member",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "auth0|111",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "single@x.com"
+       },
+       {
+        "id": "github|222",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "multi@x.com"
+       },
+       {
+        "id": "google-oauth2|333",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "multi@x.com"
+       },
+       {
+        "id": "noprovider",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "plain@x.com"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/transferOwnership",
+     "status": 200,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "transfer-ownership multiple",
+   "args": [
+    "admin",
+    "transfer-ownership",
+    "-o",
+    "org-1",
+    "-e",
+    "multi@x.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/member",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "auth0|111",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "single@x.com"
+       },
+       {
+        "id": "github|222",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "multi@x.com"
+       },
+       {
+        "id": "google-oauth2|333",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "multi@x.com"
+       },
+       {
+        "id": "noprovider",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "plain@x.com"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/transferOwnership",
+     "status": 200,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "transfer-ownership multiple provider",
+   "args": [
+    "admin",
+    "transfer-ownership",
+    "-o",
+    "org-1",
+    "-e",
+    "multi@x.com",
+    "-p",
+    "GitHub"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/member",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "auth0|111",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "single@x.com"
+       },
+       {
+        "id": "github|222",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "multi@x.com"
+       },
+       {
+        "id": "google-oauth2|333",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "multi@x.com"
+       },
+       {
+        "id": "noprovider",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "plain@x.com"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/transferOwnership",
+     "status": 200,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "transfer-ownership multiple bad provider",
+   "args": [
+    "admin",
+    "transfer-ownership",
+    "-o",
+    "org-1",
+    "-e",
+    "multi@x.com",
+    "-p",
+    "gitlab"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/member",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "auth0|111",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "single@x.com"
+       },
+       {
+        "id": "github|222",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "multi@x.com"
+       },
+       {
+        "id": "google-oauth2|333",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "multi@x.com"
+       },
+       {
+        "id": "noprovider",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "plain@x.com"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/transferOwnership",
+     "status": 200,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "transfer-ownership email not found",
+   "args": [
+    "admin",
+    "transfer-ownership",
+    "-o",
+    "org-1",
+    "-e",
+    "none@x.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/member",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "auth0|111",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "single@x.com"
+       },
+       {
+        "id": "github|222",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "multi@x.com"
+       },
+       {
+        "id": "google-oauth2|333",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "multi@x.com"
+       },
+       {
+        "id": "noprovider",
+        "created_at": "2024-01-01T00:00:00Z",
+        "email": "plain@x.com"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/transferOwnership",
+     "status": 200,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "transfer-ownership members 500",
+   "args": [
+    "admin",
+    "transfer-ownership",
+    "-o",
+    "org-1",
+    "-e",
+    "single@x.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/member",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transfer-ownership 403",
+   "args": [
+    "admin",
+    "transfer-ownership",
+    "-o",
+    "org-1",
+    "-u",
+    "auth0|1"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/transferOwnership",
+     "status": 403,
+     "body": {
+      "message": "forbidden"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transfer-ownership no token",
+   "args": [
+    "admin",
+    "transfer-ownership",
+    "-o",
+    "org-1",
+    "-u",
+    "auth0|1"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "demo group",
+   "args": [
+    "admin",
+    "demo"
+   ]
+  },
+  {
+   "name": "demo group with args",
+   "args": [
+    "admin",
+    "demo",
+    "foo"
+   ]
+  },
+  {
+   "name": "demo list-logs",
+   "args": [
+    "admin",
+    "demo",
+    "list-logs"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/demoDebugLog",
+     "status": 200,
+     "body": [
+      {
+       "filename": "a.log",
+       "last_modified": "2024-01-01"
+      },
+      {
+       "filename": "b.log",
+       "last_modified": "2024-01-02"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "demo list-logs orga",
+   "args": [
+    "admin",
+    "demo",
+    "list-logs",
+    "-o",
+    "org 1&x"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/demoDebugLog",
+     "status": 200,
+     "body": []
+    }
+   ]
+  },
+  {
+   "name": "demo list-logs not array",
+   "args": [
+    "admin",
+    "demo",
+    "list-logs"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/demoDebugLog",
+     "status": 200,
+     "body": {
+      "x": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "demo list-logs 500",
+   "args": [
+    "admin",
+    "demo",
+    "list-logs"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/demoDebugLog",
+     "status": 500,
+     "body_raw": "boom"
+    }
+   ]
+  },
+  {
+   "name": "demo list-logs no token",
+   "args": [
+    "admin",
+    "demo",
+    "list-logs"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "demo get-log no args",
+   "args": [
+    "admin",
+    "demo",
+    "get-log"
+   ]
+  },
+  {
+   "name": "demo get-log ok",
+   "args": [
+    "admin",
+    "demo",
+    "get-log",
+    "file.log"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/demoDebugLog",
+     "status": 200,
+     "body_raw": "log content"
+    }
+   ]
+  },
+  {
+   "name": "demo get-log 404",
+   "args": [
+    "admin",
+    "demo",
+    "get-log",
+    "file.log"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/demoDebugLog",
+     "status": 404,
+     "body_raw": "missing"
+    }
+   ]
+  },
+  {
+   "name": "demo get-log no ADMIN_URL",
+   "args": [
+    "admin",
+    "demo",
+    "get-log",
+    "file.log"
+   ],
+   "env": {
+    "ADMIN_URL": ""
+   }
+  },
+  {
+   "name": "enterprise-connection group",
+   "args": [
+    "admin",
+    "enterprise-connection"
+   ]
+  },
+  {
+   "name": "enterprise-connection create missing",
+   "args": [
+    "admin",
+    "enterprise-connection",
+    "create",
+    "-c",
+    "acme-sso"
+   ]
+  },
+  {
+   "name": "enterprise-connection create ok",
+   "args": [
+    "admin",
+    "enterprise-connection",
+    "create",
+    "-c",
+    "acme-sso",
+    "-o",
+    "org-1"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/enterpriseconnection",
+     "status": 201,
+     "body": {
+      "organization_id": "org-1",
+      "connection_name": "acme-sso",
+      "default_role": "viewer"
+     }
+    }
+   ]
+  },
+  {
+   "name": "enterprise-connection create 400",
+   "args": [
+    "admin",
+    "enterprise-connection",
+    "create",
+    "-c",
+    "acme-sso",
+    "-o",
+    "org-1"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/enterpriseconnection",
+     "status": 400,
+     "body_raw": "connection already exists"
+    }
+   ]
+  },
+  {
+   "name": "enterprise-connection create bad json",
+   "args": [
+    "admin",
+    "enterprise-connection",
+    "create",
+    "-c",
+    "acme-sso",
+    "-o",
+    "org-1"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/enterpriseconnection",
+     "status": 201,
+     "body_raw": "created"
+    }
+   ]
+  },
+  {
+   "name": "enterprise-connection create no token",
+   "args": [
+    "admin",
+    "enterprise-connection",
+    "create",
+    "-c",
+    "a",
+    "-o",
+    "o"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "enterprise-connection delete ok",
+   "args": [
+    "admin",
+    "enterprise-connection",
+    "delete",
+    "-c",
+    "acme-sso",
+    "-o",
+    "org-1"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/enterpriseconnection/acme-sso",
+     "status": 202,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "enterprise-connection delete escaped",
+   "args": [
+    "admin",
+    "enterprise-connection",
+    "delete",
+    "-c",
+    "a b/c;d@e",
+    "-o",
+    "o 1&x=y"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path_regex": "^/enterpriseconnection/",
+     "status": 202,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "enterprise-connection delete 404",
+   "args": [
+    "admin",
+    "enterprise-connection",
+    "delete",
+    "-c",
+    "acme-sso",
+    "-o",
+    "org-1"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/enterpriseconnection/acme-sso",
+     "status": 404,
+     "body_raw": "not found"
+    }
+   ]
+  },
+  {
+   "name": "enterprise-connection list ok",
+   "args": [
+    "admin",
+    "enterprise-connection",
+    "list",
+    "-c",
+    "acme-sso"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/enterpriseconnection/acme-sso",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "organization_id": "org-1",
+        "connection_name": "acme-sso",
+        "default_role": "viewer"
+       },
+       {
+        "organization_id": "org-2",
+        "connection_name": "acme-sso",
+        "default_role": "admin"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "enterprise-connection list empty",
+   "args": [
+    "admin",
+    "enterprise-connection",
+    "list",
+    "--connection-name",
+    "acme-sso"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/enterpriseconnection/acme-sso",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "enterprise-connection list 500",
+   "args": [
+    "admin",
+    "enterprise-connection",
+    "list",
+    "-c",
+    "acme-sso"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/enterpriseconnection/acme-sso",
+     "status": 500,
+     "body_raw": "boom"
+    }
+   ]
+  },
+  {
+   "name": "enterprise-connection list bad json",
+   "args": [
+    "admin",
+    "enterprise-connection",
+    "list",
+    "-c",
+    "acme-sso"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/enterpriseconnection/acme-sso",
+     "status": 200,
+     "body_raw": "nope"
+    }
+   ]
+  },
+  {
+   "name": "enterprise-connection list missing",
+   "args": [
+    "admin",
+    "enterprise-connection",
+    "list"
+   ]
+  },
+  {
+   "name": "jwt group",
+   "args": [
+    "admin",
+    "jwt"
+   ]
+  },
+  {
+   "name": "jwt create ok",
+   "args": [
+    "admin",
+    "jwt",
+    "create",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/clusters/cluster-1/jwts",
+     "status": 200,
+     "body": {
+      "key_id": "kid-1",
+      "cluster_id": "cluster-1",
+      "created_at": "2024-01-01T00:00:00Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "jwt create 500",
+   "args": [
+    "admin",
+    "jwt",
+    "create",
+    "--cluster",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/clusters/cluster-1/jwts",
+     "status": 500,
+     "body_raw": "boom"
+    }
+   ]
+  },
+  {
+   "name": "jwt create bad json",
+   "args": [
+    "admin",
+    "jwt",
+    "create",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/clusters/cluster-1/jwts",
+     "status": 200,
+     "body_raw": "{"
+    }
+   ]
+  },
+  {
+   "name": "jwt create no token",
+   "args": [
+    "admin",
+    "jwt",
+    "create",
+    "-c",
+    "cluster-1"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "jwt list ok",
+   "args": [
+    "admin",
+    "jwt",
+    "list",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/clusters/cluster-1/jwts",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "key_id": "kid-1",
+        "cluster_id": "cluster-1",
+        "created_at": "2024-01-01T00:00:00Z"
+       },
+       {
+        "key_id": "a-much-longer-key-id-2",
+        "cluster_id": "cluster-1",
+        "created_at": "2024-01-01T00:00:00Z"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "jwt list empty",
+   "args": [
+    "admin",
+    "jwt",
+    "list",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/clusters/cluster-1/jwts",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "jwt list 404",
+   "args": [
+    "admin",
+    "jwt",
+    "list",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/clusters/cluster-1/jwts",
+     "status": 404,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "jwt delete ok",
+   "args": [
+    "admin",
+    "jwt",
+    "delete",
+    "--kid",
+    "kid-1"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/clusters/jwts/kid-1",
+     "status": 204,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "jwt delete 404",
+   "args": [
+    "admin",
+    "jwt",
+    "delete",
+    "--kid",
+    "kid-1"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/clusters/jwts/kid-1",
+     "status": 404,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage group",
+   "args": [
+    "admin",
+    "jwt-qovery-usage"
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create ok",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create",
+    "-c",
+    "cluster-1",
+    "--organization-id",
+    "org-1",
+    "--root-dns",
+    "qovery.io",
+    "-d",
+    "my <jwt>"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/jwts",
+     "status": 200,
+     "body": {
+      "key_id": "kid-1",
+      "description": "my jwt",
+      "decrypted_jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJxb3ZlcnkiLCJvcmdhbml6YXRpb25faWQiOiJvcmctMSIsImlhdCI6MTcwMDAwMDAwMCwicmF0aW8iOjEuNSwiZXh0cmEiOnsiayI6Ijx2PiYifX0.c2ln",
+      "created_at": "2024-01-01T00:00:00Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create claims",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create",
+    "--additional-claims",
+    "{\"b\":\"2\",\"a\":\"<1>\",\"n\":null}"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/jwts",
+     "status": 200,
+     "body": {
+      "key_id": "kid-1",
+      "description": "my jwt",
+      "decrypted_jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJxb3ZlcnkiLCJvcmdhbml6YXRpb25faWQiOiJvcmctMSIsImlhdCI6MTcwMDAwMDAwMCwicmF0aW8iOjEuNSwiZXh0cmEiOnsiayI6Ijx2PiYifX0.c2ln",
+      "created_at": "2024-01-01T00:00:00Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create null claims",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create",
+    "--additional-claims",
+    "null"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/jwts",
+     "status": 200,
+     "body": {
+      "key_id": "kid-1",
+      "description": "my jwt",
+      "decrypted_jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJxb3ZlcnkiLCJvcmdhbml6YXRpb25faWQiOiJvcmctMSIsImlhdCI6MTcwMDAwMDAwMCwicmF0aW8iOjEuNSwiZXh0cmEiOnsiayI6Ijx2PiYifX0.c2ln",
+      "created_at": "2024-01-01T00:00:00Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create bad claims foo",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create",
+    "--additional-claims",
+    "foo"
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create bad claims {\"a\":1}",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create",
+    "--additional-claims",
+    "{\"a\":1}"
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create bad claims []",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create",
+    "--additional-claims",
+    "[]"
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create bad claims {\"a\":true}",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create",
+    "--additional-claims",
+    "{\"a\":true}"
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create bad claims {\"a\":true,\"b\":1}",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create",
+    "--additional-claims",
+    "{\"a\":true,\"b\":1}"
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create bad claims {\"a\":\"1\",\"a\":\"2\"}",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create",
+    "--additional-claims",
+    "{\"a\":\"1\",\"a\":\"2\"}"
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create bad claims {",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create",
+    "--additional-claims",
+    "{"
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create bad claims {\"a\" 1}",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create",
+    "--additional-claims",
+    "{\"a\" 1}"
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create bad claims \"x\"",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create",
+    "--additional-claims",
+    "\"x\""
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create 500",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/jwts",
+     "status": 500,
+     "body_raw": "boom"
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create bad jwt",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/jwts",
+     "status": 200,
+     "body": {
+      "key_id": "kid-1",
+      "description": "my jwt",
+      "decrypted_jwt": "a.b",
+      "created_at": "2024-01-01T00:00:00Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create jwt no alg",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/jwts",
+     "status": 200,
+     "body": {
+      "key_id": "kid-1",
+      "description": "my jwt",
+      "decrypted_jwt": "eyJ0eXAiOiJKV1QifQ.eyJzdWIiOiJ4In0.c2ln",
+      "created_at": "2024-01-01T00:00:00Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create jwt array claims",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/jwts",
+     "status": 200,
+     "body": {
+      "key_id": "kid-1",
+      "description": "my jwt",
+      "decrypted_jwt": "eyJhbGciOiJIUzI1NiJ9.WzEsMl0.c2ln",
+      "created_at": "2024-01-01T00:00:00Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create jwt bad base64",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/jwts",
+     "status": 200,
+     "body": {
+      "key_id": "kid-1",
+      "description": "my jwt",
+      "decrypted_jwt": "ab=c.e30.x",
+      "created_at": "2024-01-01T00:00:00Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage create no token",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "create"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "jwt-qovery-usage list ok",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/jwts",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "key_id": "kid-1",
+        "description": "my jwt",
+        "decrypted_jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJxb3ZlcnkiLCJvcmdhbml6YXRpb25faWQiOiJvcmctMSIsImlhdCI6MTcwMDAwMDAwMCwicmF0aW8iOjEuNSwiZXh0cmEiOnsiayI6Ijx2PiYifX0.c2ln",
+        "created_at": "2024-01-01T00:00:00Z"
+       },
+       {
+        "key_id": "kid-2",
+        "description": "",
+        "decrypted_jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJxb3ZlcnkiLCJvcmdhbml6YXRpb25faWQiOiJvcmctMSIsImlhdCI6MTcwMDAwMDAwMCwicmF0aW8iOjEuNSwiZXh0cmEiOnsiayI6Ijx2PiYifX0.c2ln",
+        "created_at": "2024-01-01T00:00:00Z"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage list empty",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/jwts",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage list 500",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/jwts",
+     "status": 500,
+     "body_raw": "boom"
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage list bad jwt",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/jwts",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "key_id": "kid-1",
+        "description": "my jwt",
+        "decrypted_jwt": "x",
+        "created_at": "2024-01-01T00:00:00Z"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage delete ok",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "delete",
+    "--kid",
+    "kid-1"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/jwts/kid-1",
+     "status": 204,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage delete 500",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "delete",
+    "--kid",
+    "kid-1"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/jwts/kid-1",
+     "status": 500,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "jwt-qovery-usage delete down",
+   "args": [
+    "admin",
+    "jwt-qovery-usage",
+    "delete",
+    "--kid",
+    "kid-1"
+   ],
+   "env": {
+    "ADMIN_URL": "http://127.0.0.1:1"
+   }
+  },
+  {
+   "name": "s3 missing exec id",
+   "args": [
+    "admin",
+    "download-s3-archive"
+   ]
+  },
+  {
+   "name": "s3 empty profile",
+   "args": [
+    "admin",
+    "download-s3-archive",
+    "-e",
+    "0781cf11-05c2-4844-8f4e-d72f73a37bfa",
+    "-p",
+    ""
+   ]
+  },
+  {
+   "name": "s3 directory with request only",
+   "args": [
+    "admin",
+    "download-s3-archive",
+    "-e",
+    "0781cf11-05c2-4844-8f4e-d72f73a37bfa",
+    "--request-only",
+    "-d",
+    "/tmp"
+   ]
+  },
+  {
+   "name": "s3 invalid exec id",
+   "args": [
+    "admin",
+    "download-s3-archive",
+    "-e",
+    "not-an-id"
+   ],
+   "env": {
+    "AWS_ENDPOINT_URL": "$MOCK",
+    "AWS_EC2_METADATA_DISABLED": "true",
+    "HTTPS_PROXY": "http://127.0.0.1:9"
+   }
+  },
+  {
+   "name": "s3 missing profile",
+   "args": [
+    "admin",
+    "download-s3-archive",
+    "-e",
+    "0781cf11-05c2-4844-8f4e-d72f73a37bfa"
+   ],
+   "env": {
+    "AWS_ENDPOINT_URL": "$MOCK",
+    "AWS_EC2_METADATA_DISABLED": "true",
+    "HTTPS_PROXY": "http://127.0.0.1:9"
+   }
+  },
+  {
+   "name": "s3 missing custom profile",
+   "args": [
+    "admin",
+    "download-s3-archive",
+    "-e",
+    "0781cf11-05c2-4844-8f4e-d72f73a37bfa",
+    "--profile",
+    "mine"
+   ],
+   "env": {
+    "AWS_ENDPOINT_URL": "$MOCK",
+    "AWS_EC2_METADATA_DISABLED": "true",
+    "HTTPS_PROXY": "http://127.0.0.1:9"
+   },
+   "files": {
+    ".aws/credentials": "[qovery-archive-reader]\naws_access_key_id = AKIDTEST\naws_secret_access_key = secret\n"
+   }
+  },
+  {
+   "name": "s3 missing source profile",
+   "args": [
+    "admin",
+    "download-s3-archive",
+    "-e",
+    "0781cf11-05c2-4844-8f4e-d72f73a37bfa"
+   ],
+   "env": {
+    "AWS_ENDPOINT_URL": "$MOCK",
+    "AWS_EC2_METADATA_DISABLED": "true",
+    "HTTPS_PROXY": "http://127.0.0.1:9"
+   },
+   "files": {
+    ".aws/config": "[profile qovery-archive-reader]\nrole_arn = arn:aws:iam::123456789012:role/archive-reader\nsource_profile = qovery-prdo\n"
+   }
+  },
+  {
+   "name": "s3 access denied",
+   "args": [
+    "admin",
+    "download-s3-archive",
+    "-e",
+    "0781cf11-05c2-4844-8f4e-d72f73a37bfa-1211-1791383662"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path_regex": "\\.tgz$",
+     "status": 403,
+     "headers": {
+      "Content-Type": "application/xml"
+     },
+     "body_raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Error><Code>AccessDenied</Code><Message>Access Denied</Message></Error>"
+    }
+   ],
+   "env": {
+    "AWS_ENDPOINT_URL": "$MOCK",
+    "AWS_EC2_METADATA_DISABLED": "true",
+    "HTTPS_PROXY": "http://127.0.0.1:9"
+   },
+   "files": {
+    ".aws/credentials": "[qovery-archive-reader]\naws_access_key_id = AKIDTEST\naws_secret_access_key = secret\n"
+   }
+  },
+  {
+   "name": "s3 request only not gzip",
+   "args": [
+    "admin",
+    "download-s3-archive",
+    "-e",
+    "0781cf11-05c2-4844-8f4e-d72f73a37bfa",
+    "--request-only"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/s3-qovery-user-logs/0781cf11-05c2-4844-8f4e-d72f73a37bfa.tgz",
+     "status": 200,
+     "body_raw": "not an archive",
+     "headers": {
+      "Content-Type": "application/octet-stream"
+     }
+    }
+   ],
+   "env": {
+    "AWS_ENDPOINT_URL": "$MOCK",
+    "AWS_EC2_METADATA_DISABLED": "true",
+    "HTTPS_PROXY": "http://127.0.0.1:9"
+   },
+   "files": {
+    ".aws/credentials": "[qovery-archive-reader]\naws_access_key_id = AKIDTEST\naws_secret_access_key = secret\n"
+   },
+   "ignore": [
+    "stderr"
+   ]
+  },
+  {
+   "name": "s3 download yes",
+   "args": [
+    "admin",
+    "download-s3-archive",
+    "-e",
+    "0781cf11-05c2-4844-8f4e-d72f73a37bfa"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/s3-qovery-user-logs/0781cf11-05c2-4844-8f4e-d72f73a37bfa.tgz",
+     "status": 200,
+     "body_raw": "not an archive",
+     "headers": {
+      "Content-Type": "application/octet-stream"
+     }
+    }
+   ],
+   "env": {
+    "AWS_ENDPOINT_URL": "$MOCK",
+    "AWS_EC2_METADATA_DISABLED": "true",
+    "HTTPS_PROXY": "http://127.0.0.1:9"
+   },
+   "files": {
+    ".aws/credentials": "[qovery-archive-reader]\naws_access_key_id = AKIDTEST\naws_secret_access_key = secret\n"
+   },
+   "ignore": [
+    "stderr"
+   ]
+  },
+  {
+   "name": "s3 download no",
+   "args": [
+    "admin",
+    "download-s3-archive",
+    "-e",
+    "0781cf11-05c2-4844-8f4e-d72f73a37bfa",
+    "-d",
+    "/tmp/"
+   ],
+   "stdin": "no\n",
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/s3-qovery-user-logs/0781cf11-05c2-4844-8f4e-d72f73a37bfa.tgz",
+     "status": 200,
+     "body_raw": "x",
+     "headers": {
+      "Content-Type": "application/octet-stream"
+     }
+    }
+   ],
+   "env": {
+    "AWS_ENDPOINT_URL": "$MOCK",
+    "AWS_EC2_METADATA_DISABLED": "true",
+    "HTTPS_PROXY": "http://127.0.0.1:9"
+   },
+   "files": {
+    ".aws/credentials": "[qovery-archive-reader]\naws_access_key_id = AKIDTEST\naws_secret_access_key = secret\n"
+   },
+   "ignore": [
+    "stderr"
+   ]
+  },
+  {
+   "name": "s3 download missing dir",
+   "args": [
+    "admin",
+    "download-s3-archive",
+    "-e",
+    "0781cf11-05c2-4844-8f4e-d72f73a37bfa",
+    "-d",
+    "nope/sub"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/s3-qovery-user-logs/0781cf11-05c2-4844-8f4e-d72f73a37bfa.tgz",
+     "status": 200,
+     "body_raw": "x",
+     "headers": {
+      "Content-Type": "application/octet-stream"
+     }
+    }
+   ],
+   "env": {
+    "AWS_ENDPOINT_URL": "$MOCK",
+    "AWS_EC2_METADATA_DISABLED": "true",
+    "HTTPS_PROXY": "http://127.0.0.1:9"
+   },
+   "files": {
+    ".aws/credentials": "[qovery-archive-reader]\naws_access_key_id = AKIDTEST\naws_secret_access_key = secret\n"
+   },
+   "ignore": [
+    "stderr"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,6932 @@
+{
+ "fixtures": [
+  {
+   "method": "GET",
+   "path": "/organization/org-1/project",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "proj-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "my-project",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     },
+     {
+      "id": "bp-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "my-blueprint",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     },
+     {
+      "id": "bp-2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "empty-blueprint",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     },
+     {
+      "id": "rde-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-alice",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     },
+     {
+      "id": "rde-2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-bob",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/variable",
+   "query": {
+    "parent_id": "proj-1",
+    "scope": "PROJECT"
+   },
+   "status": 200,
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/variable",
+   "query": {
+    "parent_id": "bp-1",
+    "scope": "PROJECT"
+   },
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "v-bp1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "key": "BLUEPRINT_PROJECT_ID",
+      "value": "bp-1",
+      "scope": "PROJECT",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/variable",
+   "query": {
+    "parent_id": "bp-2",
+    "scope": "PROJECT"
+   },
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "v-bp2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "key": "BLUEPRINT_PROJECT_ID",
+      "value": "bp-2",
+      "scope": "PROJECT",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/variable",
+   "query": {
+    "parent_id": "rde-1",
+    "scope": "PROJECT"
+   },
+   "status": 200,
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/variable",
+   "query": {
+    "parent_id": "rde-2",
+    "scope": "PROJECT"
+   },
+   "status": 200,
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/project/bp-1/environment",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "bpenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "blueprint-env",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "bp-1"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/project/bp-2/environment",
+   "status": 200,
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/project/rde-1/environment",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "rdeenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-1"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/project/rde-2/environment",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "rdeenv-2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-2"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/variable",
+   "query": {
+    "parent_id": "env-1",
+    "scope": "ENVIRONMENT"
+   },
+   "status": 200,
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/variable",
+   "query": {
+    "parent_id": "bpenv-1",
+    "scope": "ENVIRONMENT"
+   },
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "v-bk",
+      "created_at": "2024-05-01T10:00:00Z",
+      "key": "BLUEPRINT_KEY",
+      "value": "bp-1",
+      "scope": "ENVIRONMENT",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/variable",
+   "query": {
+    "parent_id": "rdeenv-1",
+    "scope": "ENVIRONMENT"
+   },
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "v-bk1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "key": "BLUEPRINT_KEY",
+      "value": "bp-1",
+      "scope": "ENVIRONMENT",
+      "variable_type": "VALUE",
+      "is_secret": false
+     },
+     {
+      "id": "v-own1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "key": "RDE_OWNER_EMAIL",
+      "value": "alice@example.com",
+      "scope": "ENVIRONMENT",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/variable",
+   "query": {
+    "parent_id": "rdeenv-2",
+    "scope": "ENVIRONMENT"
+   },
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "v-bk2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "key": "BLUEPRINT_KEY",
+      "value": "bp-1",
+      "scope": "ENVIRONMENT",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/bpenv-1/statuses",
+   "status": 200,
+   "body": {
+    "environment": {
+     "id": "bpenv-1",
+     "state": "DEPLOYED",
+     "last_deployment_state": "DEPLOYED"
+    },
+    "applications": [
+     {
+      "id": "bapp-1",
+      "state": "DEPLOYED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0
+     }
+    ],
+    "containers": [
+     {
+      "id": "bcont-1",
+      "state": "STOPPED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0
+     }
+    ],
+    "jobs": [
+     {
+      "id": "bcron-1",
+      "state": "DEPLOYED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0
+     },
+     {
+      "id": "unknown-job",
+      "state": "DEPLOYMENT_ERROR",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0
+     }
+    ],
+    "databases": [],
+    "helms": [
+     {
+      "id": "bhelm-1",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0
+     }
+    ],
+    "terraforms": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/rdeenv-1/statuses",
+   "status": 200,
+   "body": {
+    "environment": {
+     "id": "rdeenv-1",
+     "state": "DEPLOYED",
+     "last_deployment_state": "DEPLOYED"
+    },
+    "applications": [
+     {
+      "id": "rapp-1",
+      "state": "DEPLOYED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0
+     }
+    ],
+    "containers": [
+     {
+      "id": "rcont-1",
+      "state": "DEPLOYED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0
+     }
+    ],
+    "jobs": [],
+    "databases": [],
+    "helms": [],
+    "terraforms": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/rdeenv-2/statuses",
+   "status": 200,
+   "body": {
+    "environment": {
+     "id": "rdeenv-2",
+     "state": "STOPPED",
+     "last_deployment_state": "STOPPED"
+    },
+    "applications": [],
+    "containers": [],
+    "jobs": [],
+    "databases": [],
+    "helms": [],
+    "terraforms": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/project/bp-1",
+   "status": 200,
+   "body": {
+    "id": "bp-1",
+    "created_at": "2024-05-01T10:00:00Z",
+    "name": "my-blueprint",
+    "associated_environments_count": 1,
+    "organization": {
+     "id": "org-1"
+    }
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/project/bp-2",
+   "status": 200,
+   "body": {
+    "id": "bp-2",
+    "created_at": "2024-05-01T10:00:00Z",
+    "name": "empty-blueprint",
+    "associated_environments_count": 1,
+    "organization": {
+     "id": "org-1"
+    }
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/bpenv-1",
+   "status": 200,
+   "body": {
+    "id": "bpenv-1",
+    "created_at": "2024-05-01T10:00:00Z",
+    "name": "blueprint-env",
+    "organization": {
+     "id": "org-1"
+    },
+    "project": {
+     "id": "bp-1"
+    },
+    "cloud_provider": {
+     "provider": "AWS",
+     "cluster": "us-east-2"
+    },
+    "mode": "DEVELOPMENT",
+    "cluster_id": "cluster-1",
+    "cluster_name": "my-cluster"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/bpenv-1/application",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "bapp-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "bpenv-1"
+      },
+      "name": "workspace-app",
+      "healthchecks": {
+       "readiness_probe": null,
+       "liveness_probe": {
+        "type": {
+         "tcp": {
+          "port": 3000
+         }
+        },
+        "initial_delay_seconds": 5
+       }
+      },
+      "icon_uri": "app://qovery-console/application",
+      "service_type": "APPLICATION",
+      "git_repository": {
+       "provider": "GITHUB",
+       "owner": "me",
+       "url": "https://github.com/me/ws.git",
+       "name": "me/ws",
+       "branch": "develop",
+       "root_path": "/",
+       "has_access": true,
+       "git_token_id": null
+      },
+      "build_mode": "DOCKER",
+      "dockerfile_path": "Dockerfile",
+      "cpu": 1000,
+      "memory": 512,
+      "min_running_instances": 1,
+      "max_running_instances": 1,
+      "auto_preview": false,
+      "auto_deploy": true,
+      "ports": [
+       {
+        "id": "bp-port",
+        "name": "web",
+        "internal_port": 3000,
+        "publicly_accessible": false,
+        "protocol": "HTTP",
+        "is_default": null
+       }
+      ],
+      "arguments": [],
+      "storage": [
+       {
+        "id": "bs-1",
+        "type": "FAST_SSD",
+        "size": 20,
+        "mount_point": "/data"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/bpenv-1/container",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "bcont-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "image_name": "code-server",
+      "tag": "2.0",
+      "registry": {
+       "id": "reg-bpenv-1",
+       "name": "Docker Hub",
+       "url": "https://docker.io",
+       "kind": "DOCKER_HUB"
+      },
+      "environment": {
+       "id": "bpenv-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "ide",
+      "cpu": 1000,
+      "memory": 512,
+      "gpu": 0,
+      "min_running_instances": 1,
+      "max_running_instances": 1,
+      "healthchecks": {
+       "readiness_probe": null,
+       "liveness_probe": {
+        "type": {
+         "tcp": {
+          "port": 3000
+         }
+        },
+        "initial_delay_seconds": 5
+       }
+      },
+      "auto_preview": false,
+      "icon_uri": "app://qovery-console/container",
+      "service_type": "CONTAINER",
+      "auto_deploy": null,
+      "entrypoint": "/bin/sh",
+      "arguments": [
+       "-c",
+       "run"
+      ],
+      "description": "ide container",
+      "ports": [
+       {
+        "id": "bport",
+        "internal_port": 9000,
+        "publicly_accessible": false,
+        "protocol": "TCP"
+       }
+      ],
+      "storage": [
+       {
+        "id": "bst-1",
+        "type": "FAST_SSD",
+        "size": 50,
+        "mount_point": "/work"
+       }
+      ],
+      "autoscaling": {
+       "id": "as-1",
+       "created_at": "2024-05-01T10:00:00Z",
+       "service_id": "bcont-1",
+       "mode": "KEDA",
+       "polling_interval_seconds": 30,
+       "cooldown_period_seconds": 300,
+       "scalers": [
+        {
+         "id": "sc-1",
+         "created_at": "2024-05-01T10:00:00Z",
+         "scaler_type": "cpu",
+         "enabled": true,
+         "role": "PRIMARY",
+         "config_json": {
+          "value": "80"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/bpenv-1/job",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "bcron-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "bpenv-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "ttl-auto-shutdown",
+      "cpu": 500,
+      "memory": 256,
+      "gpu": 0,
+      "auto_preview": false,
+      "source": {
+       "image": {
+        "image_name": "curl",
+        "tag": "9",
+        "registry": {
+         "id": "reg-bp",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        }
+       }
+      },
+      "healthchecks": {
+       "readiness_probe": null,
+       "liveness_probe": {
+        "type": {
+         "tcp": {
+          "port": 3000
+         }
+        },
+        "initial_delay_seconds": 5
+       }
+      },
+      "icon_uri": "app://qovery-console/cron-job",
+      "service_type": "JOB",
+      "job_type": "CRON",
+      "schedule": {
+       "cronjob": {
+        "scheduled_at": "0 * * * *",
+        "arguments": [],
+        "timezone": "Etc/UTC"
+       }
+      },
+      "auto_deploy": true,
+      "max_nb_restart": 0,
+      "max_duration_seconds": 300,
+      "port": null
+     },
+     {
+      "id": "blife-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "bpenv-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "seed",
+      "cpu": 1000,
+      "memory": 256,
+      "gpu": 0,
+      "auto_preview": true,
+      "source": {
+       "docker": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/seed.git",
+         "name": "me/seed",
+         "branch": "v2",
+         "root_path": "/db"
+        },
+        "dockerfile_path": "Dockerfile.seed",
+        "docker_target_build_stage": null
+       }
+      },
+      "healthchecks": {},
+      "icon_uri": "app://qovery-console/lifecycle-job",
+      "service_type": "JOB",
+      "job_type": "LIFECYCLE",
+      "schedule": {
+       "on_start": {
+        "arguments": [
+         "seed"
+        ],
+        "entrypoint": "/seed.sh"
+       },
+       "on_stop": null
+      },
+      "auto_deploy": null,
+      "description": "seed db"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/bpenv-1/database",
+   "status": 200,
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/bpenv-1/helm",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "bhelm-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "bpenv-1"
+      },
+      "name": "redis",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "timeout_sec": 600,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-bp",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "19.0.0"
+       }
+      },
+      "arguments": [
+       "--wait"
+      ],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [
+        [
+         "a",
+         "b"
+        ]
+       ],
+       "set_string": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": []
+     },
+     {
+      "id": "bhelm-2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "bpenv-1"
+      },
+      "name": "charts",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "timeout_sec": 600,
+      "source": {
+       "git": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/charts.git",
+         "name": "me/charts",
+         "branch": "main",
+         "root_path": "/charts"
+        }
+       }
+      },
+      "arguments": [
+       "--wait"
+      ],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [
+        [
+         "a",
+         "b"
+        ]
+       ],
+       "set_string": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": []
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/rdeenv-1/application",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "rapp-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "rdeenv-1"
+      },
+      "name": "workspace-app",
+      "healthchecks": {
+       "readiness_probe": {
+        "type": {
+         "http": {
+          "path": "/",
+          "port": 8080,
+          "scheme": "HTTP"
+         }
+        },
+        "initial_delay_seconds": 30,
+        "period_seconds": 10,
+        "timeout_seconds": 5,
+        "success_threshold": 1,
+        "failure_threshold": 3
+       },
+       "liveness_probe": null
+      },
+      "icon_uri": "app://qovery-console/application",
+      "service_type": "APPLICATION",
+      "git_repository": {
+       "provider": "GITHUB",
+       "owner": "me",
+       "url": "https://github.com/me/ws.git",
+       "name": "me/ws",
+       "branch": "main",
+       "root_path": "/",
+       "has_access": true,
+       "git_token_id": null
+      },
+      "build_mode": "DOCKER",
+      "dockerfile_path": "Dockerfile",
+      "cpu": 500,
+      "memory": 512,
+      "min_running_instances": 1,
+      "max_running_instances": 1,
+      "auto_preview": false,
+      "auto_deploy": true,
+      "ports": [
+       {
+        "id": "p-rapp-1",
+        "name": "http",
+        "internal_port": 8080,
+        "external_port": 443,
+        "publicly_accessible": true,
+        "is_default": true,
+        "protocol": "HTTP",
+        "public_path": null
+       }
+      ],
+      "arguments": [],
+      "storage": []
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/rdeenv-1/container",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "rcont-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "image_name": "code-server",
+      "tag": "1.0",
+      "registry": {
+       "id": "reg-rdeenv-1",
+       "name": "Docker Hub",
+       "url": "https://docker.io",
+       "kind": "DOCKER_HUB"
+      },
+      "environment": {
+       "id": "rdeenv-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "ide",
+      "cpu": 250,
+      "memory": 512,
+      "gpu": 0,
+      "min_running_instances": 1,
+      "max_running_instances": 1,
+      "healthchecks": {
+       "readiness_probe": {
+        "type": {
+         "http": {
+          "path": "/",
+          "port": 8080,
+          "scheme": "HTTP"
+         }
+        },
+        "initial_delay_seconds": 30,
+        "period_seconds": 10,
+        "timeout_seconds": 5,
+        "success_threshold": 1,
+        "failure_threshold": 3
+       },
+       "liveness_probe": null
+      },
+      "auto_preview": false,
+      "icon_uri": "app://qovery-console/container",
+      "service_type": "CONTAINER",
+      "auto_deploy": null,
+      "entrypoint": "/bin/sh",
+      "arguments": [
+       "-c",
+       "run"
+      ],
+      "description": "ide container",
+      "ports": [
+       {
+        "id": "cp-rcont-1",
+        "name": "ide",
+        "internal_port": 8443,
+        "external_port": 443,
+        "publicly_accessible": true,
+        "is_default": true,
+        "protocol": "HTTP"
+       }
+      ],
+      "storage": [
+       {
+        "id": "s-rcont-1",
+        "type": "FAST_SSD",
+        "size": 10,
+        "mount_point": "/home"
+       }
+      ]
+     },
+     {
+      "id": "rcont-2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "image_name": "code-server",
+      "tag": "1.0",
+      "registry": {
+       "id": "reg-rdeenv-1",
+       "name": "Docker Hub",
+       "url": "https://docker.io",
+       "kind": "DOCKER_HUB"
+      },
+      "environment": {
+       "id": "rdeenv-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "sidecar",
+      "cpu": 250,
+      "memory": 512,
+      "gpu": 0,
+      "min_running_instances": 1,
+      "max_running_instances": 1,
+      "healthchecks": {
+       "readiness_probe": {
+        "type": {
+         "http": {
+          "path": "/",
+          "port": 8080,
+          "scheme": "HTTP"
+         }
+        },
+        "initial_delay_seconds": 30,
+        "period_seconds": 10,
+        "timeout_seconds": 5,
+        "success_threshold": 1,
+        "failure_threshold": 3
+       },
+       "liveness_probe": null
+      },
+      "auto_preview": false,
+      "icon_uri": "app://qovery-console/container",
+      "service_type": "CONTAINER",
+      "auto_deploy": null,
+      "entrypoint": "/bin/sh",
+      "arguments": [
+       "-c",
+       "run"
+      ],
+      "description": "ide container",
+      "ports": [
+       {
+        "id": "cp-rcont-2",
+        "name": "ide",
+        "internal_port": 8443,
+        "external_port": 443,
+        "publicly_accessible": true,
+        "is_default": true,
+        "protocol": "HTTP"
+       }
+      ],
+      "storage": [
+       {
+        "id": "s-rcont-2",
+        "type": "FAST_SSD",
+        "size": 10,
+        "mount_point": "/home"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/rdeenv-1/job",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "rcron-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "rdeenv-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "ttl-auto-shutdown",
+      "cpu": 250,
+      "memory": 256,
+      "gpu": 0,
+      "auto_preview": false,
+      "source": {
+       "image": {
+        "image_name": "curl",
+        "tag": "8",
+        "registry": {
+         "id": "reg-rdeenv-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        }
+       }
+      },
+      "healthchecks": {},
+      "icon_uri": "app://qovery-console/cron-job",
+      "service_type": "JOB",
+      "job_type": "CRON",
+      "schedule": {
+       "cronjob": {
+        "scheduled_at": "0 * * * *",
+        "arguments": [],
+        "timezone": "Etc/UTC"
+       }
+      },
+      "auto_deploy": true,
+      "max_nb_restart": 0,
+      "max_duration_seconds": 300,
+      "port": null
+     },
+     {
+      "id": "rlife-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "rdeenv-1"
+      },
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "name": "seed",
+      "cpu": 250,
+      "memory": 256,
+      "gpu": 0,
+      "auto_preview": true,
+      "source": {
+       "docker": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/seed.git",
+         "name": "me/seed",
+         "branch": "main",
+         "root_path": "/"
+        },
+        "dockerfile_path": "Dockerfile",
+        "dockerfile_raw": null
+       }
+      },
+      "healthchecks": {},
+      "icon_uri": "app://qovery-console/lifecycle-job",
+      "service_type": "JOB",
+      "job_type": "LIFECYCLE",
+      "schedule": {
+       "on_start": {
+        "arguments": [
+         "seed"
+        ],
+        "entrypoint": "/seed.sh"
+       },
+       "on_stop": null
+      },
+      "auto_deploy": null,
+      "description": "seed db"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/rdeenv-1/database",
+   "status": 200,
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/rdeenv-1/helm",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "rhelm-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "rdeenv-1"
+      },
+      "name": "redis",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "timeout_sec": 600,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-rdeenv-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [
+       "--wait"
+      ],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [
+        [
+         "a",
+         "b"
+        ]
+       ],
+       "set_string": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": []
+     },
+     {
+      "id": "rhelm-2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "rdeenv-1"
+      },
+      "name": "charts",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "timeout_sec": 600,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-rdeenv-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": null,
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [
+        [
+         "a",
+         "b"
+        ]
+       ],
+       "set_string": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/helm",
+      "service_type": "HELM",
+      "ports": []
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/rdeenv-2/application",
+   "status": 200,
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/rdeenv-2/container",
+   "status": 200,
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/rdeenv-2/job",
+   "status": 200,
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/rdeenv-2/helm",
+   "status": 200,
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/application/rapp-1/link",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "service_id": "rapp-1",
+      "service_type": "APPLICATION",
+      "url": "https://alice.rde.example.com",
+      "internal_port": 8080,
+      "external_port": 443,
+      "is_qovery_domain": true,
+      "is_default": true
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/rdeenv-1/deploymentHistory",
+   "status": 200,
+   "body": {
+    "page": 1,
+    "page_size": 10,
+    "results": [
+     {
+      "id": "dep-1",
+      "created_at": "2024-01-01T00:00:00Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/organization/org-1/customRole",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "role-a",
+      "name": "RDE-alice"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/organization/org-1/apiToken",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "tok-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "ttl-alice"
+     },
+     {
+      "id": "tok-2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "other"
+     }
+    ]
+   }
+  },
+  {
+   "method": "POST",
+   "path_regex": "^/environment/[^/]+/(deploy|stop)$",
+   "status": 202,
+   "body": {
+    "id": "x",
+    "state": "DEPLOYING",
+    "last_deployment_state": "DEPLOYING",
+    "service_deployment_status": "UP_TO_DATE",
+    "is_part_last_deployment": true,
+    "status_details": {
+     "action": "DEPLOY",
+     "status": "SUCCESS",
+     "sub_action": "NONE"
+    },
+    "deployment_request_id": null,
+    "deployment_requests_count": 0
+   }
+  },
+  {
+   "method": "DELETE",
+   "path_regex": "^/(environment|project|variable)/[^/]+$",
+   "status": 204
+  },
+  {
+   "method": "DELETE",
+   "path_regex": "^/organization/org-1/(customRole|apiToken)/[^/]+$",
+   "status": 204
+  },
+  {
+   "method": "PUT",
+   "path": "/container/rcont-1",
+   "body": {
+    "id": "rcont-1",
+    "created_at": "2024-05-01T10:00:00Z",
+    "image_name": "code-server",
+    "tag": "1.0",
+    "registry": {
+     "id": "reg-rdeenv-1",
+     "name": "Docker Hub",
+     "url": "https://docker.io",
+     "kind": "DOCKER_HUB"
+    },
+    "environment": {
+     "id": "rdeenv-1"
+    },
+    "maximum_cpu": 4000,
+    "maximum_memory": 8192,
+    "maximum_gpu": 0,
+    "name": "ide",
+    "cpu": 250,
+    "memory": 512,
+    "gpu": 0,
+    "min_running_instances": 1,
+    "max_running_instances": 1,
+    "healthchecks": {
+     "readiness_probe": {
+      "type": {
+       "http": {
+        "path": "/",
+        "port": 8080,
+        "scheme": "HTTP"
+       }
+      },
+      "initial_delay_seconds": 30,
+      "period_seconds": 10,
+      "timeout_seconds": 5,
+      "success_threshold": 1,
+      "failure_threshold": 3
+     },
+     "liveness_probe": null
+    },
+    "auto_preview": false,
+    "icon_uri": "app://qovery-console/container",
+    "service_type": "CONTAINER",
+    "auto_deploy": null,
+    "entrypoint": "/bin/sh",
+    "arguments": [
+     "-c",
+     "run"
+    ],
+    "description": "ide container",
+    "ports": [
+     {
+      "id": "cp-rcont-1",
+      "name": "ide",
+      "internal_port": 8443,
+      "external_port": 443,
+      "publicly_accessible": true,
+      "is_default": true,
+      "protocol": "HTTP"
+     }
+    ],
+    "storage": [
+     {
+      "id": "s-rcont-1",
+      "type": "FAST_SSD",
+      "size": 10,
+      "mount_point": "/home"
+     }
+    ]
+   }
+  },
+  {
+   "method": "PUT",
+   "path": "/application/rapp-1",
+   "body": {
+    "id": "rapp-1",
+    "created_at": "2024-05-01T10:00:00Z",
+    "environment": {
+     "id": "rdeenv-1"
+    },
+    "name": "workspace-app",
+    "healthchecks": {
+     "readiness_probe": {
+      "type": {
+       "http": {
+        "path": "/",
+        "port": 8080,
+        "scheme": "HTTP"
+       }
+      },
+      "initial_delay_seconds": 30,
+      "period_seconds": 10,
+      "timeout_seconds": 5,
+      "success_threshold": 1,
+      "failure_threshold": 3
+     },
+     "liveness_probe": null
+    },
+    "icon_uri": "app://qovery-console/application",
+    "service_type": "APPLICATION",
+    "git_repository": {
+     "provider": "GITHUB",
+     "owner": "me",
+     "url": "https://github.com/me/ws.git",
+     "name": "me/ws",
+     "branch": "main",
+     "root_path": "/",
+     "has_access": true,
+     "git_token_id": null
+    },
+    "build_mode": "DOCKER",
+    "dockerfile_path": "Dockerfile",
+    "cpu": 500,
+    "memory": 512,
+    "min_running_instances": 1,
+    "max_running_instances": 1,
+    "auto_preview": false,
+    "auto_deploy": true,
+    "ports": [
+     {
+      "id": "p-rapp-1",
+      "name": "http",
+      "internal_port": 8080,
+      "external_port": 443,
+      "publicly_accessible": true,
+      "is_default": true,
+      "protocol": "HTTP",
+      "public_path": null
+     }
+    ],
+    "arguments": [],
+    "storage": []
+   }
+  },
+  {
+   "method": "PUT",
+   "path": "/job/rcron-1",
+   "body": {
+    "id": "rcron-1",
+    "created_at": "2024-05-01T10:00:00Z",
+    "environment": {
+     "id": "rdeenv-1"
+    },
+    "maximum_cpu": 4000,
+    "maximum_memory": 8192,
+    "maximum_gpu": 0,
+    "name": "ttl-auto-shutdown",
+    "cpu": 250,
+    "memory": 256,
+    "gpu": 0,
+    "auto_preview": false,
+    "source": {
+     "image": {
+      "image_name": "curl",
+      "tag": "8",
+      "registry": {
+       "id": "reg-rdeenv-1",
+       "name": "Docker Hub",
+       "url": "https://docker.io",
+       "kind": "DOCKER_HUB"
+      }
+     }
+    },
+    "healthchecks": {},
+    "icon_uri": "app://qovery-console/cron-job",
+    "service_type": "JOB",
+    "job_type": "CRON",
+    "schedule": {
+     "cronjob": {
+      "scheduled_at": "0 * * * *",
+      "arguments": [],
+      "timezone": "Etc/UTC"
+     }
+    },
+    "auto_deploy": true,
+    "max_nb_restart": 0,
+    "max_duration_seconds": 300,
+    "port": null
+   }
+  },
+  {
+   "method": "PUT",
+   "path": "/job/rlife-1",
+   "body": {
+    "id": "rlife-1",
+    "created_at": "2024-05-01T10:00:00Z",
+    "environment": {
+     "id": "rdeenv-1"
+    },
+    "maximum_cpu": 4000,
+    "maximum_memory": 8192,
+    "maximum_gpu": 0,
+    "name": "seed",
+    "cpu": 250,
+    "memory": 256,
+    "gpu": 0,
+    "auto_preview": true,
+    "source": {
+     "docker": {
+      "git_repository": {
+       "provider": "GITHUB",
+       "owner": "me",
+       "url": "https://github.com/me/seed.git",
+       "name": "me/seed",
+       "branch": "main",
+       "root_path": "/"
+      },
+      "dockerfile_path": "Dockerfile",
+      "dockerfile_raw": null
+     }
+    },
+    "healthchecks": {},
+    "icon_uri": "app://qovery-console/lifecycle-job",
+    "service_type": "JOB",
+    "job_type": "LIFECYCLE",
+    "schedule": {
+     "on_start": {
+      "arguments": [
+       "seed"
+      ],
+      "entrypoint": "/seed.sh"
+     },
+     "on_stop": null
+    },
+    "auto_deploy": null,
+    "description": "seed db"
+   }
+  },
+  {
+   "method": "PUT",
+   "path": "/helm/rhelm-1",
+   "body": {
+    "id": "rhelm-1",
+    "created_at": "2024-05-01T10:00:00Z",
+    "environment": {
+     "id": "rdeenv-1"
+    },
+    "name": "redis",
+    "auto_preview": false,
+    "auto_deploy": false,
+    "timeout_sec": 600,
+    "source": {
+     "repository": {
+      "repository": {
+       "id": "hr-rdeenv-1",
+       "name": "bitnami",
+       "url": "https://charts.bitnami.com/bitnami"
+      },
+      "chart_name": "redis",
+      "chart_version": "18.0.0"
+     }
+    },
+    "arguments": [
+     "--wait"
+    ],
+    "allow_cluster_wide_resources": false,
+    "values_override": {
+     "set": [
+      [
+       "a",
+       "b"
+      ]
+     ],
+     "set_string": [],
+     "file": null
+    },
+    "icon_uri": "app://qovery-console/helm",
+    "service_type": "HELM",
+    "ports": []
+   }
+  },
+  {
+   "method": "PUT",
+   "path": "/helm/rhelm-2",
+   "body": {
+    "id": "rhelm-2",
+    "created_at": "2024-05-01T10:00:00Z",
+    "environment": {
+     "id": "rdeenv-1"
+    },
+    "name": "charts",
+    "auto_preview": false,
+    "auto_deploy": false,
+    "timeout_sec": 600,
+    "source": {
+     "repository": {
+      "repository": {
+       "id": "hr-rdeenv-1",
+       "name": "bitnami",
+       "url": "https://charts.bitnami.com/bitnami"
+      },
+      "chart_name": "redis",
+      "chart_version": "18.0.0"
+     }
+    },
+    "arguments": null,
+    "allow_cluster_wide_resources": false,
+    "values_override": {
+     "set": [
+      [
+       "a",
+       "b"
+      ]
+     ],
+     "set_string": [],
+     "file": null
+    },
+    "icon_uri": "app://qovery-console/helm",
+    "service_type": "HELM",
+    "ports": []
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/variable",
+   "status": 201,
+   "body": {
+    "id": "v-new",
+    "created_at": "2024-05-01T10:00:00Z",
+    "key": "K",
+    "value": "V",
+    "scope": "ENVIRONMENT",
+    "variable_type": "VALUE",
+    "is_secret": false
+   }
+  }
+ ],
+ "cases": [
+  {
+   "name": "rde (group)",
+   "args": [
+    "rde"
+   ]
+  },
+  {
+   "name": "rde blueprint (group)",
+   "args": [
+    "rde",
+    "blueprint"
+   ]
+  },
+  {
+   "name": "rde extra arg",
+   "args": [
+    "rde",
+    "foo"
+   ]
+  },
+  {
+   "name": "rde unknown flag",
+   "args": [
+    "rde",
+    "list",
+    "--nope"
+   ]
+  },
+  {
+   "name": "blueprint list",
+   "args": [
+    "rde",
+    "blueprint",
+    "list"
+   ]
+  },
+  {
+   "name": "blueprint list --json",
+   "args": [
+    "rde",
+    "blueprint",
+    "list",
+    "--json"
+   ]
+  },
+  {
+   "name": "blueprint list -o my-org",
+   "args": [
+    "rde",
+    "blueprint",
+    "list",
+    "-o",
+    "my-org"
+   ]
+  },
+  {
+   "name": "blueprint list org not found",
+   "args": [
+    "rde",
+    "blueprint",
+    "list",
+    "-o",
+    "nope"
+   ]
+  },
+  {
+   "name": "blueprint list empty",
+   "args": [
+    "rde",
+    "blueprint",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/project",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "proj-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "name": "my-project",
+        "associated_environments_count": 1,
+        "organization": {
+         "id": "org-1"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint list projects api error",
+   "args": [
+    "rde",
+    "blueprint",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/project",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint list status error",
+   "args": [
+    "rde",
+    "blueprint",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/bpenv-1/statuses",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint list json status error",
+   "args": [
+    "rde",
+    "blueprint",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/bpenv-1/statuses",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint list vars error skipped",
+   "args": [
+    "rde",
+    "blueprint",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": "bp-1",
+      "scope": "PROJECT"
+     },
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint list wrong var value",
+   "args": [
+    "rde",
+    "blueprint",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": "bp-1",
+      "scope": "PROJECT"
+     },
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "v-bp1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "key": "BLUEPRINT_PROJECT_ID",
+        "value": "other",
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint list no token",
+   "args": [
+    "rde",
+    "blueprint",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "blueprint status",
+   "args": [
+    "rde",
+    "blueprint",
+    "status",
+    "-p",
+    "my-blueprint"
+   ]
+  },
+  {
+   "name": "blueprint status case-insensitive",
+   "args": [
+    "rde",
+    "blueprint",
+    "status",
+    "--project",
+    "MY-BLUEPRINT"
+   ]
+  },
+  {
+   "name": "blueprint status no env",
+   "args": [
+    "rde",
+    "blueprint",
+    "status",
+    "-p",
+    "empty-blueprint"
+   ]
+  },
+  {
+   "name": "blueprint status not found",
+   "args": [
+    "rde",
+    "blueprint",
+    "status",
+    "-p",
+    "nope"
+   ]
+  },
+  {
+   "name": "blueprint status not a blueprint",
+   "args": [
+    "rde",
+    "blueprint",
+    "status",
+    "-p",
+    "my-project"
+   ]
+  },
+  {
+   "name": "blueprint status invalid var",
+   "args": [
+    "rde",
+    "blueprint",
+    "status",
+    "-p",
+    "my-blueprint"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": "bp-1",
+      "scope": "PROJECT"
+     },
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "v-bp1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "key": "BLUEPRINT_PROJECT_ID",
+        "value": "zzz",
+        "scope": "PROJECT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint status vars error",
+   "args": [
+    "rde",
+    "blueprint",
+    "status",
+    "-p",
+    "my-blueprint"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": "bp-1",
+      "scope": "PROJECT"
+     },
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint status env list error",
+   "args": [
+    "rde",
+    "blueprint",
+    "status",
+    "-p",
+    "my-blueprint"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/bp-1/environment",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint status statuses error",
+   "args": [
+    "rde",
+    "blueprint",
+    "status",
+    "-p",
+    "my-blueprint"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/bpenv-1/statuses",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint status no services",
+   "args": [
+    "rde",
+    "blueprint",
+    "status",
+    "-p",
+    "my-blueprint"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/bpenv-1/statuses",
+     "status": 200,
+     "body": {
+      "environment": {
+       "id": "bpenv-1",
+       "state": "STOPPED",
+       "last_deployment_state": "STOPPED"
+      },
+      "applications": [],
+      "containers": [],
+      "jobs": [],
+      "databases": [],
+      "helms": [],
+      "terraforms": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint status missing project",
+   "args": [
+    "rde",
+    "blueprint",
+    "status"
+   ]
+  },
+  {
+   "name": "blueprint deploy",
+   "args": [
+    "rde",
+    "blueprint",
+    "deploy",
+    "-p",
+    "my-blueprint"
+   ]
+  },
+  {
+   "name": "blueprint deploy no env",
+   "args": [
+    "rde",
+    "blueprint",
+    "deploy",
+    "-p",
+    "empty-blueprint"
+   ]
+  },
+  {
+   "name": "blueprint deploy not found",
+   "args": [
+    "rde",
+    "blueprint",
+    "deploy",
+    "-p",
+    "nope"
+   ]
+  },
+  {
+   "name": "blueprint deploy api error",
+   "args": [
+    "rde",
+    "blueprint",
+    "deploy",
+    "-p",
+    "my-blueprint"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/deploy",
+     "status": 400,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint deploy --watch",
+   "args": [
+    "rde",
+    "blueprint",
+    "deploy",
+    "-p",
+    "my-blueprint",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/bpenv-1/statuses",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "bpenv-1",
+         "state": "DEPLOYING",
+         "last_deployment_state": "DEPLOYING"
+        },
+        "applications": [
+         {
+          "id": "rapp-1",
+          "state": "DEPLOYING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "bpenv-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED"
+        },
+        "applications": [
+         {
+          "id": "rapp-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 40
+  },
+  {
+   "name": "blueprint deploy --watch error",
+   "args": [
+    "rde",
+    "blueprint",
+    "deploy",
+    "-p",
+    "my-blueprint",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/bpenv-1/statuses",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "bpenv-1",
+         "state": "DEPLOYMENT_ERROR",
+         "last_deployment_state": "DEPLOYMENT_ERROR"
+        },
+        "applications": [
+         {
+          "id": "rapp-1",
+          "state": "DEPLOYMENT_ERROR",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 40
+  },
+  {
+   "name": "blueprint deploy missing project",
+   "args": [
+    "rde",
+    "blueprint",
+    "deploy"
+   ]
+  },
+  {
+   "name": "blueprint stop",
+   "args": [
+    "rde",
+    "blueprint",
+    "stop",
+    "-p",
+    "my-blueprint"
+   ]
+  },
+  {
+   "name": "blueprint stop no env",
+   "args": [
+    "rde",
+    "blueprint",
+    "stop",
+    "-p",
+    "empty-blueprint"
+   ]
+  },
+  {
+   "name": "blueprint stop api error",
+   "args": [
+    "rde",
+    "blueprint",
+    "stop",
+    "-p",
+    "my-blueprint"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/stop",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint stop --watch",
+   "args": [
+    "rde",
+    "blueprint",
+    "stop",
+    "-p",
+    "my-blueprint",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/bpenv-1/statuses",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "bpenv-1",
+         "state": "STOPPING",
+         "last_deployment_state": "STOPPING"
+        },
+        "applications": [
+         {
+          "id": "rapp-1",
+          "state": "STOPPING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "bpenv-1",
+         "state": "STOPPED",
+         "last_deployment_state": "STOPPED"
+        },
+        "applications": [
+         {
+          "id": "rapp-1",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 40
+  },
+  {
+   "name": "blueprint stop missing project",
+   "args": [
+    "rde",
+    "blueprint",
+    "stop"
+   ]
+  },
+  {
+   "name": "blueprint register",
+   "args": [
+    "rde",
+    "blueprint",
+    "register",
+    "-p",
+    "my-project"
+   ]
+  },
+  {
+   "name": "blueprint register prefers development env",
+   "args": [
+    "rde",
+    "blueprint",
+    "register",
+    "-p",
+    "my-project"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/proj-1/environment",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "e-prod",
+        "created_at": "2024-05-01T10:00:00Z",
+        "name": "prod",
+        "organization": {
+         "id": "org-1"
+        },
+        "project": {
+         "id": "proj-1"
+        },
+        "cloud_provider": {
+         "provider": "AWS",
+         "cluster": "us-east-2"
+        },
+        "mode": "PRODUCTION",
+        "cluster_id": "cluster-1",
+        "cluster_name": "my-cluster"
+       },
+       {
+        "id": "e-dev",
+        "created_at": "2024-05-01T10:00:00Z",
+        "name": "dev",
+        "organization": {
+         "id": "org-1"
+        },
+        "project": {
+         "id": "proj-1"
+        },
+        "cloud_provider": {
+         "provider": "AWS",
+         "cluster": "us-east-2"
+        },
+        "mode": "DEVELOPMENT",
+        "cluster_id": "cluster-1",
+        "cluster_name": "my-cluster"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint register fallback first env",
+   "args": [
+    "rde",
+    "blueprint",
+    "register",
+    "-p",
+    "my-project"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/proj-1/environment",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "e-prod",
+        "created_at": "2024-05-01T10:00:00Z",
+        "name": "prod",
+        "organization": {
+         "id": "org-1"
+        },
+        "project": {
+         "id": "proj-1"
+        },
+        "cloud_provider": {
+         "provider": "AWS",
+         "cluster": "us-east-2"
+        },
+        "mode": "PRODUCTION",
+        "cluster_id": "cluster-1",
+        "cluster_name": "my-cluster"
+       },
+       {
+        "id": "e-stg",
+        "created_at": "2024-05-01T10:00:00Z",
+        "name": "stg",
+        "organization": {
+         "id": "org-1"
+        },
+        "project": {
+         "id": "proj-1"
+        },
+        "cloud_provider": {
+         "provider": "AWS",
+         "cluster": "us-east-2"
+        },
+        "mode": "STAGING",
+        "cluster_id": "cluster-1",
+        "cluster_name": "my-cluster"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint register already",
+   "args": [
+    "rde",
+    "blueprint",
+    "register",
+    "-p",
+    "my-blueprint"
+   ]
+  },
+  {
+   "name": "blueprint register not found",
+   "args": [
+    "rde",
+    "blueprint",
+    "register",
+    "-p",
+    "nope"
+   ]
+  },
+  {
+   "name": "blueprint register no env",
+   "args": [
+    "rde",
+    "blueprint",
+    "register",
+    "-p",
+    "my-project"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/proj-1/environment",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint register env list error",
+   "args": [
+    "rde",
+    "blueprint",
+    "register",
+    "-p",
+    "my-project"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/proj-1/environment",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint register create var error",
+   "args": [
+    "rde",
+    "blueprint",
+    "register",
+    "-p",
+    "my-project"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 409,
+     "body": {
+      "detail": "already exists"
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint register missing project",
+   "args": [
+    "rde",
+    "blueprint",
+    "register"
+   ]
+  },
+  {
+   "name": "blueprint unregister",
+   "args": [
+    "rde",
+    "blueprint",
+    "unregister",
+    "-p",
+    "my-blueprint"
+   ]
+  },
+  {
+   "name": "blueprint unregister no env",
+   "args": [
+    "rde",
+    "blueprint",
+    "unregister",
+    "-p",
+    "empty-blueprint"
+   ]
+  },
+  {
+   "name": "blueprint unregister delete errors",
+   "args": [
+    "rde",
+    "blueprint",
+    "unregister",
+    "-p",
+    "my-blueprint"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path_regex": "^/variable/",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "blueprint unregister not found",
+   "args": [
+    "rde",
+    "blueprint",
+    "unregister",
+    "-p",
+    "nope"
+   ]
+  },
+  {
+   "name": "blueprint unregister missing project",
+   "args": [
+    "rde",
+    "blueprint",
+    "unregister"
+   ]
+  },
+  {
+   "name": "list",
+   "args": [
+    "rde",
+    "list"
+   ]
+  },
+  {
+   "name": "list --json",
+   "args": [
+    "rde",
+    "list",
+    "--json"
+   ]
+  },
+  {
+   "name": "list -b my-blueprint",
+   "args": [
+    "rde",
+    "list",
+    "-b",
+    "my-blueprint"
+   ]
+  },
+  {
+   "name": "list -b empty-blueprint",
+   "args": [
+    "rde",
+    "list",
+    "-b",
+    "empty-blueprint"
+   ]
+  },
+  {
+   "name": "list -b not found",
+   "args": [
+    "rde",
+    "list",
+    "--blueprint",
+    "nope"
+   ]
+  },
+  {
+   "name": "list status error",
+   "args": [
+    "rde",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-2/statuses",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list json status error",
+   "args": [
+    "rde",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-1/statuses",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list no url no history",
+   "args": [
+    "rde",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/rapp-1/link",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-1/deploymentHistory",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/project/bp-1",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list error state",
+   "args": [
+    "rde",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-2/statuses",
+     "status": 200,
+     "body": {
+      "environment": {
+       "id": "rdeenv-2",
+       "state": "DEPLOYMENT_ERROR",
+       "last_deployment_state": "DEPLOYMENT_ERROR"
+      },
+      "applications": [],
+      "containers": [],
+      "jobs": [],
+      "databases": [],
+      "helms": [],
+      "terraforms": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "list projects error",
+   "args": [
+    "rde",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/project",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "info",
+   "args": [
+    "rde",
+    "info"
+   ]
+  },
+  {
+   "name": "info no blueprints",
+   "args": [
+    "rde",
+    "info",
+    "--organization",
+    "my-org"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/project",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "proj-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "name": "my-project",
+        "associated_environments_count": 1,
+        "organization": {
+         "id": "org-1"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "info org name fallback",
+   "args": [
+    "rde",
+    "info"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "info projects error",
+   "args": [
+    "rde",
+    "info"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/project",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "info status errors",
+   "args": [
+    "rde",
+    "info"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-2/statuses",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-1/statuses",
+     "status": 200,
+     "body": {
+      "environment": {
+       "id": "rdeenv-1",
+       "state": "DEPLOYING",
+       "last_deployment_state": "DEPLOYING"
+      },
+      "applications": [],
+      "containers": [],
+      "jobs": [],
+      "databases": [],
+      "helms": [],
+      "terraforms": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "urls",
+   "args": [
+    "rde",
+    "urls"
+   ]
+  },
+  {
+   "name": "urls -b",
+   "args": [
+    "rde",
+    "urls",
+    "-b",
+    "my-blueprint"
+   ]
+  },
+  {
+   "name": "urls none running",
+   "args": [
+    "rde",
+    "urls"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-1/statuses",
+     "status": 200,
+     "body": {
+      "environment": {
+       "id": "rdeenv-1",
+       "state": "STOPPED",
+       "last_deployment_state": "STOPPED"
+      },
+      "applications": [],
+      "containers": [],
+      "jobs": [],
+      "databases": [],
+      "helms": [],
+      "terraforms": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "urls no link",
+   "args": [
+    "rde",
+    "urls"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/rapp-1/link",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "urls no children",
+   "args": [
+    "rde",
+    "urls",
+    "-b",
+    "empty-blueprint"
+   ]
+  },
+  {
+   "name": "start",
+   "args": [
+    "rde",
+    "start",
+    "-n",
+    "alice"
+   ]
+  },
+  {
+   "name": "start not found",
+   "args": [
+    "rde",
+    "start",
+    "-n",
+    "nobody"
+   ]
+  },
+  {
+   "name": "start not a child",
+   "args": [
+    "rde",
+    "start",
+    "-n",
+    "alice"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": "rdeenv-1",
+      "scope": "ENVIRONMENT"
+     },
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "v-bk1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "key": "BLUEPRINT_KEY",
+        "value": "rde-1",
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "start env list error",
+   "args": [
+    "rde",
+    "start",
+    "-n",
+    "alice"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/rde-1/environment",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "start api error",
+   "args": [
+    "rde",
+    "start",
+    "--name",
+    "alice"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/rdeenv-1/deploy",
+     "status": 403,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "start --watch",
+   "args": [
+    "rde",
+    "start",
+    "-n",
+    "alice",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-1/statuses",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "rdeenv-1",
+         "state": "QUEUED",
+         "last_deployment_state": "QUEUED"
+        },
+        "applications": [
+         {
+          "id": "rapp-1",
+          "state": "QUEUED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "rdeenv-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED"
+        },
+        "applications": [
+         {
+          "id": "rapp-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 40
+  },
+  {
+   "name": "start missing name",
+   "args": [
+    "rde",
+    "start"
+   ]
+  },
+  {
+   "name": "stop",
+   "args": [
+    "rde",
+    "stop",
+    "-n",
+    "bob"
+   ]
+  },
+  {
+   "name": "stop api error",
+   "args": [
+    "rde",
+    "stop",
+    "-n",
+    "bob"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/rdeenv-2/stop",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop --watch",
+   "args": [
+    "rde",
+    "stop",
+    "-n",
+    "alice",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-1/statuses",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "rdeenv-1",
+         "state": "STOPPED",
+         "last_deployment_state": "STOPPED"
+        },
+        "applications": [
+         {
+          "id": "rapp-1",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 40
+  },
+  {
+   "name": "stop missing name",
+   "args": [
+    "rde",
+    "stop"
+   ]
+  },
+  {
+   "name": "status alice",
+   "args": [
+    "rde",
+    "status",
+    "-n",
+    "alice"
+   ]
+  },
+  {
+   "name": "status bob",
+   "args": [
+    "rde",
+    "status",
+    "-n",
+    "bob"
+   ]
+  },
+  {
+   "name": "status statuses error",
+   "args": [
+    "rde",
+    "status",
+    "-n",
+    "bob"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-2/statuses",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "status not found",
+   "args": [
+    "rde",
+    "status",
+    "-n",
+    "nobody"
+   ]
+  },
+  {
+   "name": "status missing name",
+   "args": [
+    "rde",
+    "status"
+   ]
+  },
+  {
+   "name": "start-all",
+   "args": [
+    "rde",
+    "start-all"
+   ]
+  },
+  {
+   "name": "start-all partial failure",
+   "args": [
+    "rde",
+    "start-all"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/rdeenv-2/deploy",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "start-all -b empty",
+   "args": [
+    "rde",
+    "start-all",
+    "-b",
+    "empty-blueprint"
+   ]
+  },
+  {
+   "name": "start-all -b not found",
+   "args": [
+    "rde",
+    "start-all",
+    "-b",
+    "nope"
+   ]
+  },
+  {
+   "name": "stop-all",
+   "args": [
+    "rde",
+    "stop-all"
+   ]
+  },
+  {
+   "name": "stop-all -b",
+   "args": [
+    "rde",
+    "stop-all",
+    "-b",
+    "my-blueprint"
+   ]
+  },
+  {
+   "name": "stop-all partial failure",
+   "args": [
+    "rde",
+    "stop-all"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/rdeenv-1/stop",
+     "status": 404,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "carol",
+    "-e",
+    "carol@example.com"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create no email",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "carol"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create skip all",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "carol",
+    "--skip-rbac",
+    "--skip-invite",
+    "--skip-deploy",
+    "-e",
+    "carol@example.com"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create --cluster",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "carol",
+    "-c",
+    "MY-CLUSTER",
+    "--skip-invite"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create --cluster not found",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "carol",
+    "-c",
+    "nope"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create --cluster other gets viewer",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "carol",
+    "-c",
+    "c2"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS"
+       },
+       {
+        "id": "cluster-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "c2",
+        "region": "eu-west-3",
+        "cloud_provider": "AWS"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create blueprint not found",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "nope",
+    "-n",
+    "carol"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create blueprint no env",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "empty-blueprint",
+    "-n",
+    "carol"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create empty blueprint flag",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "",
+    "-n",
+    "carol"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create empty name flag",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "--name="
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create missing flags",
+   "args": [
+    "rde",
+    "create"
+   ]
+  },
+  {
+   "name": "create missing name",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint"
+   ]
+  },
+  {
+   "name": "create project exists",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "alice",
+    "--skip-rbac"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 400,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create project error",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "zed"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create role exists",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "alice"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 409,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-a",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create role error",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "carol"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create role no id",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "carol"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "name": "x"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create clusters error",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "carol",
+    "-c",
+    "x"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create clone error",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "carol",
+    "--skip-rbac"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/project/rde-new/environment",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create bp env error and failures",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "carol",
+    "-e",
+    "carol@example.com"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/bpenv-1",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 400,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/newenv-1/deploy",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "create no ttl job",
+   "args": [
+    "rde",
+    "create",
+    "-b",
+    "my-blueprint",
+    "-n",
+    "carol",
+    "--skip-rbac"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/project",
+     "status": 201,
+     "body": {
+      "id": "rde-new",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "rde-carol",
+      "associated_environments_count": 1,
+      "organization": {
+       "id": "org-1"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/customRole",
+     "status": 201,
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/organization/org-1/customRole/role-1",
+     "body": {
+      "id": "role-1",
+      "name": "RDE-carol"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "ncron-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "newenv-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "ttl-auto-shutdown",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "auto_preview": false,
+        "source": {
+         "image": {
+          "image_name": "curl",
+          "tag": "8",
+          "registry": {
+           "id": "reg-newenv-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        },
+        "healthchecks": {},
+        "icon_uri": "app://qovery-console/cron-job",
+        "service_type": "JOB",
+        "job_type": "CRON",
+        "schedule": {
+         "cronjob": {
+          "scheduled_at": "0 * * * *",
+          "arguments": [],
+          "timezone": "Etc/UTC"
+         }
+        },
+        "auto_deploy": true,
+        "max_nb_restart": 0,
+        "max_duration_seconds": 300,
+        "port": null
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/inviteMember",
+     "status": 201,
+     "body": {
+      "id": "inv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "email": "carol@example.com",
+      "role": "DEVELOPER",
+      "invitation_link": "https://x",
+      "invitation_status": "PENDING",
+      "inviter": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete",
+   "args": [
+    "rde",
+    "delete",
+    "-n",
+    "alice"
+   ]
+  },
+  {
+   "name": "delete stopped",
+   "args": [
+    "rde",
+    "delete",
+    "-n",
+    "bob"
+   ]
+  },
+  {
+   "name": "delete not found",
+   "args": [
+    "rde",
+    "delete",
+    "-n",
+    "nobody"
+   ]
+  },
+  {
+   "name": "delete not found cleans role and token",
+   "args": [
+    "rde",
+    "delete",
+    "-n",
+    "nobody"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/customRole",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "role-n",
+        "name": "rde-NOBODY"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/apiToken",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "tok-n",
+        "created_at": "2024-05-01T10:00:00Z",
+        "name": "ttl-nobody"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete api errors",
+   "args": [
+    "rde",
+    "delete",
+    "-n",
+    "bob"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/environment/rdeenv-2",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/project/rde-2",
+     "status": 403,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/customRole",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/apiToken",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete missing name",
+   "args": [
+    "rde",
+    "delete"
+   ]
+  },
+  {
+   "name": "delete --watch (no-op flag)",
+   "args": [
+    "rde",
+    "delete",
+    "-n",
+    "bob",
+    "--watch"
+   ]
+  },
+  {
+   "name": "delete-all without confirm",
+   "args": [
+    "rde",
+    "delete-all"
+   ]
+  },
+  {
+   "name": "delete-all",
+   "args": [
+    "rde",
+    "delete-all",
+    "--confirm"
+   ],
+   "timeout": 40
+  },
+  {
+   "name": "delete-all -b empty",
+   "args": [
+    "rde",
+    "delete-all",
+    "--confirm",
+    "-b",
+    "empty-blueprint"
+   ]
+  },
+  {
+   "name": "delete-all -b not found",
+   "args": [
+    "rde",
+    "delete-all",
+    "--confirm",
+    "-b",
+    "nope"
+   ]
+  },
+  {
+   "name": "upgrade bad strategy",
+   "args": [
+    "rde",
+    "upgrade",
+    "-s",
+    "foo"
+   ]
+  },
+  {
+   "name": "upgrade empty strategy",
+   "args": [
+    "rde",
+    "upgrade",
+    "--strategy=",
+    "-n",
+    "bob"
+   ]
+  },
+  {
+   "name": "upgrade single image",
+   "args": [
+    "rde",
+    "upgrade",
+    "-n",
+    "alice"
+   ]
+  },
+  {
+   "name": "upgrade single image --sync-all",
+   "args": [
+    "rde",
+    "upgrade",
+    "-n",
+    "alice",
+    "--sync-all"
+   ]
+  },
+  {
+   "name": "upgrade single image sync flags",
+   "args": [
+    "rde",
+    "upgrade",
+    "-n",
+    "alice",
+    "--sync-resources",
+    "--sync-ports"
+   ]
+  },
+  {
+   "name": "upgrade single image sync hc storage",
+   "args": [
+    "rde",
+    "upgrade",
+    "-n",
+    "alice",
+    "--sync-healthchecks",
+    "--sync-storage"
+   ]
+  },
+  {
+   "name": "upgrade single image put errors",
+   "args": [
+    "rde",
+    "upgrade",
+    "-n",
+    "alice"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path_regex": "^/(container|application|job|helm)/",
+     "status": 400,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/rdeenv-1/deploy",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade single image nothing matched",
+   "args": [
+    "rde",
+    "upgrade",
+    "-n",
+    "bob"
+   ]
+  },
+  {
+   "name": "upgrade single no blueprint env",
+   "args": [
+    "rde",
+    "upgrade",
+    "-n",
+    "alice"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": "bpenv-1",
+      "scope": "ENVIRONMENT"
+     },
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade single not found",
+   "args": [
+    "rde",
+    "upgrade",
+    "-n",
+    "nobody"
+   ]
+  },
+  {
+   "name": "upgrade all image",
+   "args": [
+    "rde",
+    "upgrade"
+   ]
+  },
+  {
+   "name": "upgrade all -b empty",
+   "args": [
+    "rde",
+    "upgrade",
+    "-b",
+    "empty-blueprint"
+   ]
+  },
+  {
+   "name": "upgrade all -b not found",
+   "args": [
+    "rde",
+    "upgrade",
+    "-b",
+    "nope"
+   ]
+  },
+  {
+   "name": "upgrade single reclone",
+   "args": [
+    "rde",
+    "upgrade",
+    "-n",
+    "alice",
+    "-s",
+    "reclone"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-1/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-2/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade single reclone clone error",
+   "args": [
+    "rde",
+    "upgrade",
+    "-n",
+    "alice",
+    "-s",
+    "reclone"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-1/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-2/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade single reclone deploy error",
+   "args": [
+    "rde",
+    "upgrade",
+    "-n",
+    "bob",
+    "-s",
+    "reclone"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/newenv-1/deploy",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/bpenv-1",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-1/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-2/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade single reclone no blueprint env",
+   "args": [
+    "rde",
+    "upgrade",
+    "-n",
+    "alice",
+    "-s",
+    "reclone"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": "bpenv-1",
+      "scope": "ENVIRONMENT"
+     },
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-1/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-2/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade all reclone (one child)",
+   "args": [
+    "rde",
+    "upgrade",
+    "-s",
+    "reclone"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/rde-2/environment",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-1/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-2/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade all reclone no blueprint env",
+   "args": [
+    "rde",
+    "upgrade",
+    "-s",
+    "reclone"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/rde-2/environment",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/variable",
+     "query": {
+      "parent_id": "bpenv-1",
+      "scope": "ENVIRONMENT"
+     },
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-1/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-2/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade all reclone failures",
+   "args": [
+    "rde",
+    "upgrade",
+    "-s",
+    "reclone"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/rde-2/environment",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-1/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/rdeenv-2/statuses",
+     "status": 404,
+     "body": {
+      "message": "gone"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/bpenv-1/clone",
+     "status": 201,
+     "body": {
+      "id": "newenv-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "name": "workspace",
+      "organization": {
+       "id": "org-1"
+      },
+      "project": {
+       "id": "rde-new"
+      },
+      "cloud_provider": {
+       "provider": "AWS",
+       "cluster": "us-east-2"
+      },
+      "mode": "DEVELOPMENT",
+      "cluster_id": "cluster-1",
+      "cluster_name": "my-cluster"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/newenv-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  }
+ ]
+}

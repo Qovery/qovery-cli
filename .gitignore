@@ -103,3 +103,7 @@ result
 # Test coverage
 coverage.out
 coverage.html
+
+# Rust rewrite
+/rust/target*/
+/rust/parity/__pycache__/

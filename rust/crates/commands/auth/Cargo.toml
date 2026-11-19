@@ -1,0 +1,30 @@
+[package]
+name = "qovery-cmd-auth"
+description = "qovery auth command(s)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+# The skills offer made after signing in (`pkg/skills/offer.go`); `qovery-cli` enables it with its `cmd-skills`
+# feature (on by default, like in Go), so a build without `cmd-skills` does not offer them.
+skills = ["dep:qovery-cmd-skills"]
+
+[dependencies]
+qovery-cobra.workspace = true
+qovery-core.workspace = true
+qovery-log.workspace = true
+qovery-api.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+qovery-cmd-skills = { path = "../skills", optional = true }
+reqwest.workspace = true
+url.workspace = true
+chrono.workspace = true
+base64.workspace = true
+sha2.workspace = true
+rand.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

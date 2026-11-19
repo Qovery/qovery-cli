@@ -1,0 +1,1063 @@
+{
+  "basic": {
+    "data": [
+      [
+        "DB_HOST",
+        "Variable",
+        "N/A",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "my-app",
+        "APPLICATION"
+      ],
+      [
+        "DB_HOST",
+        "Variable",
+        "N/A",
+        "db.local",
+        "04 Mar 24 05:06 UTC",
+        "my-app",
+        "APPLICATION"
+      ],
+      [
+        "DB_PASS",
+        "Secret",
+        "N/A",
+        "********",
+        "04 Mar 24 05:06 +0200",
+        "N/A",
+        "ENVIRONMENT"
+      ],
+      [
+        "DB_PASS",
+        "Secret",
+        "N/A",
+        "********",
+        "04 Mar 24 05:06 +0200",
+        "N/A",
+        "ENVIRONMENT"
+      ],
+      [
+        "DATABASE_URL",
+        "Variable Alias",
+        "DB_HOST",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "my-app",
+        "APPLICATION"
+      ],
+      [
+        "DATABASE_URL",
+        "Variable Alias",
+        "DB_HOST",
+        "db.local",
+        "04 Mar 24 05:06 UTC",
+        "my-app",
+        "APPLICATION"
+      ],
+      [
+        "DB_HOST",
+        "Variable Override",
+        "DB_HOST",
+        "********",
+        "31 Dec 24 23:59 -0530",
+        "my-app",
+        "APPLICATION"
+      ],
+      [
+        "DB_HOST",
+        "Variable Override",
+        "DB_HOST",
+        "override",
+        "31 Dec 24 23:59 -0530",
+        "my-app",
+        "APPLICATION"
+      ],
+      [
+        "SECRET_ALIAS",
+        "Secret Alias",
+        "DB_PASS",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "APPLICATION"
+      ],
+      [
+        "SECRET_ALIAS",
+        "Secret Alias",
+        "DB_PASS",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "APPLICATION"
+      ],
+      [
+        "URL",
+        "Variable",
+        "N/A",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "PROJECT"
+      ],
+      [
+        "URL",
+        "Variable",
+        "N/A",
+        "postgres://{{DB_USER}}:{{DB_PASS}}@{{DB_HOST}}/x",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "PROJECT"
+      ],
+      [
+        "DB_USER",
+        "Variable",
+        "N/A",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "PROJECT"
+      ],
+      [
+        "DB_USER",
+        "Variable",
+        "N/A",
+        "admin",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "PROJECT"
+      ],
+      [
+        "HTML",
+        "Variable",
+        "N/A",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "\u003csvc\u003e",
+        "CONTAINER"
+      ],
+      [
+        "HTML",
+        "Variable",
+        "N/A",
+        "\u003cb\u003e\u0026amp;\u003c/b\u003e \"é\" \u2028 \\ tab\tnl\n",
+        "04 Mar 24 05:06 UTC",
+        "\u003csvc\u003e",
+        "CONTAINER"
+      ],
+      [
+        "EMPTY",
+        "Variable",
+        "N/A",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "JOB"
+      ],
+      [
+        "EMPTY",
+        "Variable",
+        "N/A",
+        "",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "JOB"
+      ],
+      [
+        "a_lower",
+        "Variable",
+        "N/A",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "BUILT_IN"
+      ],
+      [
+        "a_lower",
+        "Variable",
+        "N/A",
+        "1",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "BUILT_IN"
+      ],
+      [
+        "SECRET_OVERRIDE",
+        "Secret Override",
+        "DB_PASS",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "APPLICATION"
+      ],
+      [
+        "SECRET_OVERRIDE",
+        "Secret Override",
+        "DB_PASS",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "APPLICATION"
+      ]
+    ],
+    "header_plain": [
+      "Key",
+      "Type",
+      "Parent Key",
+      "Value",
+      "Updated at",
+      "Service",
+      "Scope"
+    ],
+    "header_pretty": [
+      "Key",
+      "Type",
+      "Value",
+      "Updated at",
+      "Service",
+      "Scope"
+    ],
+    "json_sorted": "[{\"alias_parent_key\":\"DB_HOST\",\"created_at\":\"2024-01-02T15:04:05.500Z\",\"id\":\"v-c\",\"interpolated_value\":\"db.local\",\"key\":\"DATABASE_URL\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":\"my-app\",\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"db.local\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.123Z\",\"id\":\"v-a\",\"interpolated_value\":\"db.local\",\"key\":\"DB_HOST\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":\"my-app\",\"updated_at\":\"2024-03-04T05:06:07.987Z\",\"value\":\"db.local\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-d\",\"interpolated_value\":\"override\",\"key\":\"DB_HOST\",\"override_parent_value\":\"DB_HOST\",\"scope\":\"APPLICATION\",\"service_name\":\"my-app\",\"updated_at\":\"2024-12-31T23:59:59.000Z\",\"value\":\"override\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-b\",\"interpolated_value\":null,\"key\":\"DB_PASS\",\"override_parent_value\":null,\"scope\":\"ENVIRONMENT\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":null},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-g\",\"interpolated_value\":\"admin\",\"key\":\"DB_USER\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"admin\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-i\",\"interpolated_value\":\"\",\"key\":\"EMPTY\",\"override_parent_value\":null,\"scope\":\"JOB\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-h\",\"interpolated_value\":\"\\u003cb\\u003e\\u0026amp;\\u003c/b\\u003e \\\"é\\\" \\u2028 \\\\ tab\\tnl\\n\",\"key\":\"HTML\",\"override_parent_value\":null,\"scope\":\"CONTAINER\",\"service_name\":\"\\u003csvc\\u003e\",\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"\\u003cb\\u003e\\u0026amp;\\u003c/b\\u003e \\\"é\\\" \\u2028 \\\\ tab\\tnl\\n\"},{\"alias_parent_key\":\"DB_PASS\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-e\",\"interpolated_value\":null,\"key\":\"SECRET_ALIAS\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":null},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-k\",\"interpolated_value\":null,\"key\":\"SECRET_OVERRIDE\",\"override_parent_value\":\"DB_PASS\",\"scope\":\"APPLICATION\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":null},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-f\",\"interpolated_value\":\"postgres://admin:xxx secret xxx@db.local/x\",\"key\":\"URL\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"postgres://{{DB_USER}}:{{DB_PASS}}@{{DB_HOST}}/x\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-j\",\"interpolated_value\":\"1\",\"key\":\"a_lower\",\"override_parent_value\":null,\"scope\":\"BUILT_IN\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"1\"}]",
+    "json_unsorted": "[{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.123Z\",\"id\":\"v-a\",\"interpolated_value\":\"db.local\",\"key\":\"DB_HOST\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":\"my-app\",\"updated_at\":\"2024-03-04T05:06:07.987Z\",\"value\":\"db.local\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-b\",\"interpolated_value\":null,\"key\":\"DB_PASS\",\"override_parent_value\":null,\"scope\":\"ENVIRONMENT\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":null},{\"alias_parent_key\":\"DB_HOST\",\"created_at\":\"2024-01-02T15:04:05.500Z\",\"id\":\"v-c\",\"interpolated_value\":\"db.local\",\"key\":\"DATABASE_URL\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":\"my-app\",\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"db.local\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-d\",\"interpolated_value\":\"override\",\"key\":\"DB_HOST\",\"override_parent_value\":\"DB_HOST\",\"scope\":\"APPLICATION\",\"service_name\":\"my-app\",\"updated_at\":\"2024-12-31T23:59:59.000Z\",\"value\":\"override\"},{\"alias_parent_key\":\"DB_PASS\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-e\",\"interpolated_value\":null,\"key\":\"SECRET_ALIAS\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":null},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-f\",\"interpolated_value\":\"postgres://admin:xxx secret xxx@db.local/x\",\"key\":\"URL\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"postgres://{{DB_USER}}:{{DB_PASS}}@{{DB_HOST}}/x\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-g\",\"interpolated_value\":\"admin\",\"key\":\"DB_USER\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"admin\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-h\",\"interpolated_value\":\"\\u003cb\\u003e\\u0026amp;\\u003c/b\\u003e \\\"é\\\" \\u2028 \\\\ tab\\tnl\\n\",\"key\":\"HTML\",\"override_parent_value\":null,\"scope\":\"CONTAINER\",\"service_name\":\"\\u003csvc\\u003e\",\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"\\u003cb\\u003e\\u0026amp;\\u003c/b\\u003e \\\"é\\\" \\u2028 \\\\ tab\\tnl\\n\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-i\",\"interpolated_value\":\"\",\"key\":\"EMPTY\",\"override_parent_value\":null,\"scope\":\"JOB\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-j\",\"interpolated_value\":\"1\",\"key\":\"a_lower\",\"override_parent_value\":null,\"scope\":\"BUILT_IN\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"1\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"v-k\",\"interpolated_value\":null,\"key\":\"SECRET_OVERRIDE\",\"override_parent_value\":\"DB_PASS\",\"scope\":\"APPLICATION\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":null}]",
+    "lines": {
+      "false-false-true": [
+        [
+          "DB_HOST",
+          "Variable",
+          "N/A",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "my-app",
+          "APPLICATION"
+        ],
+        [
+          "DATABASE_URL",
+          "Variable Alias",
+          "DB_HOST",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "my-app",
+          "APPLICATION"
+        ],
+        [
+          "DB_HOST",
+          "Variable Override",
+          "DB_HOST",
+          "********",
+          "31 Dec 24 23:59 -0530",
+          "my-app",
+          "APPLICATION"
+        ],
+        [
+          "DB_PASS",
+          "Secret",
+          "N/A",
+          "********",
+          "04 Mar 24 05:06 +0200",
+          "N/A",
+          "ENVIRONMENT"
+        ],
+        [
+          "SECRET_ALIAS",
+          "Secret Alias",
+          "DB_PASS",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ],
+        [
+          "SECRET_OVERRIDE",
+          "Secret Override",
+          "DB_PASS",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ],
+        [
+          "DB_USER",
+          "Variable",
+          "N/A",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "PROJECT"
+        ],
+        [
+          "EMPTY",
+          "Variable",
+          "N/A",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "JOB"
+        ],
+        [
+          "HTML",
+          "Variable",
+          "N/A",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "\u003csvc\u003e",
+          "CONTAINER"
+        ],
+        [
+          "URL",
+          "Variable",
+          "N/A",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "PROJECT"
+        ],
+        [
+          "a_lower",
+          "Variable",
+          "N/A",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "BUILT_IN"
+        ]
+      ],
+      "false-true-true": [
+        [
+          "DB_HOST",
+          "Variable",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "my-app",
+          "APPLICATION"
+        ],
+        [
+          "└── DATABASE_URL",
+          "Variable Alias",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "my-app",
+          "APPLICATION"
+        ],
+        [
+          "└── DB_HOST",
+          "Variable Override",
+          "********",
+          "31 Dec 24 23:59 -0530",
+          "my-app",
+          "APPLICATION"
+        ],
+        [
+          "DB_PASS",
+          "Secret",
+          "********",
+          "04 Mar 24 05:06 +0200",
+          "N/A",
+          "ENVIRONMENT"
+        ],
+        [
+          "└── SECRET_ALIAS",
+          "Secret Alias",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ],
+        [
+          "└── SECRET_OVERRIDE",
+          "Secret Override",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ],
+        [
+          "DB_USER",
+          "Variable",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "PROJECT"
+        ],
+        [
+          "EMPTY",
+          "Variable",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "JOB"
+        ],
+        [
+          "HTML",
+          "Variable",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "\u003csvc\u003e",
+          "CONTAINER"
+        ],
+        [
+          "URL",
+          "Variable",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "PROJECT"
+        ],
+        [
+          "a_lower",
+          "Variable",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "BUILT_IN"
+        ]
+      ],
+      "true-false-true": [
+        [
+          "DB_HOST",
+          "Variable",
+          "N/A",
+          "db.local",
+          "04 Mar 24 05:06 UTC",
+          "my-app",
+          "APPLICATION"
+        ],
+        [
+          "DATABASE_URL",
+          "Variable Alias",
+          "DB_HOST",
+          "db.local",
+          "04 Mar 24 05:06 UTC",
+          "my-app",
+          "APPLICATION"
+        ],
+        [
+          "DB_HOST",
+          "Variable Override",
+          "DB_HOST",
+          "override",
+          "31 Dec 24 23:59 -0530",
+          "my-app",
+          "APPLICATION"
+        ],
+        [
+          "DB_PASS",
+          "Secret",
+          "N/A",
+          "********",
+          "04 Mar 24 05:06 +0200",
+          "N/A",
+          "ENVIRONMENT"
+        ],
+        [
+          "SECRET_ALIAS",
+          "Secret Alias",
+          "DB_PASS",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ],
+        [
+          "SECRET_OVERRIDE",
+          "Secret Override",
+          "DB_PASS",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ],
+        [
+          "DB_USER",
+          "Variable",
+          "N/A",
+          "admin",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "PROJECT"
+        ],
+        [
+          "EMPTY",
+          "Variable",
+          "N/A",
+          "",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "JOB"
+        ],
+        [
+          "HTML",
+          "Variable",
+          "N/A",
+          "\u003cb\u003e\u0026amp;\u003c/b\u003e \"é\" \u2028 \\ tab\tnl\n",
+          "04 Mar 24 05:06 UTC",
+          "\u003csvc\u003e",
+          "CONTAINER"
+        ],
+        [
+          "URL",
+          "Variable",
+          "N/A",
+          "postgres://{{DB_USER}}:{{DB_PASS}}@{{DB_HOST}}/x",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "PROJECT"
+        ],
+        [
+          "a_lower",
+          "Variable",
+          "N/A",
+          "1",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "BUILT_IN"
+        ]
+      ],
+      "true-true-true": [
+        [
+          "DB_HOST",
+          "Variable",
+          "db.local",
+          "04 Mar 24 05:06 UTC",
+          "my-app",
+          "APPLICATION"
+        ],
+        [
+          "└── DATABASE_URL",
+          "Variable Alias",
+          "db.local",
+          "04 Mar 24 05:06 UTC",
+          "my-app",
+          "APPLICATION"
+        ],
+        [
+          "└── DB_HOST",
+          "Variable Override",
+          "override",
+          "31 Dec 24 23:59 -0530",
+          "my-app",
+          "APPLICATION"
+        ],
+        [
+          "DB_PASS",
+          "Secret",
+          "********",
+          "04 Mar 24 05:06 +0200",
+          "N/A",
+          "ENVIRONMENT"
+        ],
+        [
+          "└── SECRET_ALIAS",
+          "Secret Alias",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ],
+        [
+          "└── SECRET_OVERRIDE",
+          "Secret Override",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ],
+        [
+          "DB_USER",
+          "Variable",
+          "admin",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "PROJECT"
+        ],
+        [
+          "EMPTY",
+          "Variable",
+          "",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "JOB"
+        ],
+        [
+          "HTML",
+          "Variable",
+          "\u003cb\u003e\u0026amp;\u003c/b\u003e \"é\" \u2028 \\ tab\tnl\n",
+          "04 Mar 24 05:06 UTC",
+          "\u003csvc\u003e",
+          "CONTAINER"
+        ],
+        [
+          "URL",
+          "Variable",
+          "postgres://{{DB_USER}}:{{DB_PASS}}@{{DB_HOST}}/x",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "PROJECT"
+        ],
+        [
+          "a_lower",
+          "Variable",
+          "1",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "BUILT_IN"
+        ]
+      ]
+    }
+  },
+  "empty": {
+    "data": null,
+    "header_plain": [
+      "Key",
+      "Type",
+      "Parent Key",
+      "Value",
+      "Updated at",
+      "Service",
+      "Scope"
+    ],
+    "header_pretty": [
+      "Key",
+      "Type",
+      "Value",
+      "Updated at",
+      "Service",
+      "Scope"
+    ],
+    "json_sorted": "null",
+    "json_unsorted": "null",
+    "lines": {
+      "false-false-false": null,
+      "false-false-true": null,
+      "false-true-false": null,
+      "false-true-true": null,
+      "true-false-false": null,
+      "true-false-true": null,
+      "true-true-false": null,
+      "true-true-true": null
+    }
+  },
+  "interp": {
+    "json_sorted": "[{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-1\",\"interpolated_value\":\"1\",\"key\":\"A\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"1\"},{\"alias_parent_key\":\"A\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-6\",\"interpolated_value\":\"1\",\"key\":\"ALIAS_A\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"ignored\"},{\"alias_parent_key\":\"SECRET\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-26\",\"interpolated_value\":null,\"key\":\"ALIAS_SECRET\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"zzz\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-2\",\"interpolated_value\":\"2\",\"key\":\"B\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"2\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-19\",\"interpolated_value\":\"dup-plain\",\"key\":\"DUP\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"dup-plain\"},{\"alias_parent_key\":\"B\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-18\",\"interpolated_value\":\"2\",\"key\":\"DUP\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"dup-alias\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-22\",\"interpolated_value\":null,\"key\":\"NULLV\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":null},{\"alias_parent_key\":\"NOPE\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-17\",\"interpolated_value\":\"orphan\",\"key\":\"ORPHAN\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"orphan\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-8\",\"interpolated_value\":null,\"key\":\"SECRET\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":null},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-15\",\"interpolated_value\":\"{{SELF}}\",\"key\":\"SELF\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{SELF}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-3\",\"interpolated_value\":\"1\",\"key\":\"T1\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{A}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-14\",\"interpolated_value\":\"é1ü2ß\",\"key\":\"T10\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"é{{A}}ü{{B}}ß\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-16\",\"interpolated_value\":\"1{{SELF}}\",\"key\":\"T11\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{A}}{{SELF}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-20\",\"interpolated_value\":\"\\u003cdup-plain\\u003e\",\"key\":\"T12\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"\\u003c{{DUP}}\\u003e\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-21\",\"interpolated_value\":\"orphan\",\"key\":\"T13\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{ORPHAN}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-23\",\"interpolated_value\":\"1+x1y2z\",\"key\":\"T14\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{T1}}+{{T2}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-24\",\"interpolated_value\":\"{1}\",\"key\":\"T15\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{{A}}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-25\",\"interpolated_value\":\"1}}2\",\"key\":\"T16\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{A}}}}{{B}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-27\",\"interpolated_value\":\"xxx secret xxx\",\"key\":\"T17\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{ALIAS_SECRET}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-4\",\"interpolated_value\":\"x1y2z\",\"key\":\"T2\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"x{{A}}y{{B}}z\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-5\",\"interpolated_value\":\"{{MISSING}}\",\"key\":\"T3\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{MISSING}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-7\",\"interpolated_value\":\"1\",\"key\":\"T4\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{ALIAS_A}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-9\",\"interpolated_value\":\"s=xxx secret xxx\",\"key\":\"T5\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"s={{SECRET}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-10\",\"interpolated_value\":\"{single}\",\"key\":\"T6\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{single}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-11\",\"interpolated_value\":\"a{b1\",\"key\":\"T7\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"a{b{{A}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-12\",\"interpolated_value\":\"{{A}\",\"key\":\"T8\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{A}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-13\",\"interpolated_value\":\"{{}}\",\"key\":\"T9\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{}}\"}]",
+    "json_unsorted": "[{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-1\",\"interpolated_value\":\"1\",\"key\":\"A\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"1\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-2\",\"interpolated_value\":\"2\",\"key\":\"B\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"2\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-3\",\"interpolated_value\":\"1\",\"key\":\"T1\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{A}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-4\",\"interpolated_value\":\"x1y2z\",\"key\":\"T2\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"x{{A}}y{{B}}z\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-5\",\"interpolated_value\":\"{{MISSING}}\",\"key\":\"T3\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{MISSING}}\"},{\"alias_parent_key\":\"A\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-6\",\"interpolated_value\":\"1\",\"key\":\"ALIAS_A\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"ignored\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-7\",\"interpolated_value\":\"1\",\"key\":\"T4\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{ALIAS_A}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-8\",\"interpolated_value\":null,\"key\":\"SECRET\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":null},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-9\",\"interpolated_value\":\"s=xxx secret xxx\",\"key\":\"T5\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"s={{SECRET}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-10\",\"interpolated_value\":\"{single}\",\"key\":\"T6\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{single}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-11\",\"interpolated_value\":\"a{b1\",\"key\":\"T7\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"a{b{{A}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-12\",\"interpolated_value\":\"{{A}\",\"key\":\"T8\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{A}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-13\",\"interpolated_value\":\"{{}}\",\"key\":\"T9\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-14\",\"interpolated_value\":\"é1ü2ß\",\"key\":\"T10\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"é{{A}}ü{{B}}ß\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-15\",\"interpolated_value\":\"{{SELF}}\",\"key\":\"SELF\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{SELF}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-16\",\"interpolated_value\":\"1{{SELF}}\",\"key\":\"T11\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{A}}{{SELF}}\"},{\"alias_parent_key\":\"NOPE\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-17\",\"interpolated_value\":\"orphan\",\"key\":\"ORPHAN\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"orphan\"},{\"alias_parent_key\":\"B\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-18\",\"interpolated_value\":\"2\",\"key\":\"DUP\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"dup-alias\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-19\",\"interpolated_value\":\"dup-plain\",\"key\":\"DUP\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"dup-plain\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-20\",\"interpolated_value\":\"\\u003cdup-plain\\u003e\",\"key\":\"T12\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"\\u003c{{DUP}}\\u003e\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-21\",\"interpolated_value\":\"orphan\",\"key\":\"T13\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{ORPHAN}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-22\",\"interpolated_value\":null,\"key\":\"NULLV\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":null},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-23\",\"interpolated_value\":\"1+x1y2z\",\"key\":\"T14\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{T1}}+{{T2}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-24\",\"interpolated_value\":\"{1}\",\"key\":\"T15\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{{A}}}\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-25\",\"interpolated_value\":\"1}}2\",\"key\":\"T16\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{A}}}}{{B}}\"},{\"alias_parent_key\":\"SECRET\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-26\",\"interpolated_value\":null,\"key\":\"ALIAS_SECRET\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"zzz\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"i-27\",\"interpolated_value\":\"xxx secret xxx\",\"key\":\"T17\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":null,\"value\":\"{{ALIAS_SECRET}}\"}]"
+  },
+  "overwrite": {
+    "data": [
+      [
+        "ALIAS_P",
+        "Variable Alias",
+        "P",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "APPLICATION"
+      ],
+      [
+        "ALIAS_P",
+        "Variable Alias",
+        "P",
+        "p",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "APPLICATION"
+      ],
+      [
+        "P",
+        "Variable",
+        "N/A",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "PROJECT"
+      ],
+      [
+        "P",
+        "Variable",
+        "N/A",
+        "p",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "PROJECT"
+      ],
+      [
+        "ALIAS_Q",
+        "Variable Alias",
+        "Q",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "APPLICATION"
+      ],
+      [
+        "ALIAS_Q",
+        "Variable Alias",
+        "Q",
+        "q",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "APPLICATION"
+      ],
+      [
+        "Q2",
+        "Variable Alias",
+        "Q",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "APPLICATION"
+      ],
+      [
+        "Q2",
+        "Variable Alias",
+        "Q",
+        "q2",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "APPLICATION"
+      ]
+    ],
+    "header_plain": [
+      "Key",
+      "Type",
+      "Parent Key",
+      "Value",
+      "Updated at",
+      "Service",
+      "Scope"
+    ],
+    "header_pretty": [
+      "Key",
+      "Type",
+      "Value",
+      "Updated at",
+      "Service",
+      "Scope"
+    ],
+    "json_sorted": "[{\"alias_parent_key\":\"P\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"o-1\",\"interpolated_value\":\"p\",\"key\":\"ALIAS_P\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"p\"},{\"alias_parent_key\":\"Q\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"o-3\",\"interpolated_value\":\"q\",\"key\":\"ALIAS_Q\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"q\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"o-2\",\"interpolated_value\":\"p\",\"key\":\"P\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"p\"},{\"alias_parent_key\":\"Q\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"o-5\",\"interpolated_value\":\"q2\",\"key\":\"Q2\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"q2\"}]",
+    "json_unsorted": "[{\"alias_parent_key\":\"P\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"o-1\",\"interpolated_value\":\"p\",\"key\":\"ALIAS_P\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"p\"},{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"o-2\",\"interpolated_value\":\"p\",\"key\":\"P\",\"override_parent_value\":null,\"scope\":\"PROJECT\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"p\"},{\"alias_parent_key\":\"Q\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"o-3\",\"interpolated_value\":\"q\",\"key\":\"ALIAS_Q\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"q\"},{\"alias_parent_key\":\"Q\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"o-5\",\"interpolated_value\":\"q2\",\"key\":\"Q2\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"q2\"}]",
+    "lines": {
+      "false-false-true": [
+        [
+          "P",
+          "Variable",
+          "N/A",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "PROJECT"
+        ],
+        [
+          "ALIAS_Q",
+          "Variable Alias",
+          "Q",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ],
+        [
+          "Q2",
+          "Variable Alias",
+          "Q",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ]
+      ],
+      "false-true-true": [
+        [
+          "P",
+          "Variable",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "PROJECT"
+        ],
+        [
+          "ALIAS_Q",
+          "Variable Alias",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ],
+        [
+          "└── Q2",
+          "Variable Alias",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ]
+      ],
+      "true-false-true": [
+        [
+          "P",
+          "Variable",
+          "N/A",
+          "p",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "PROJECT"
+        ],
+        [
+          "ALIAS_Q",
+          "Variable Alias",
+          "Q",
+          "q",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ],
+        [
+          "Q2",
+          "Variable Alias",
+          "Q",
+          "q2",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ]
+      ],
+      "true-true-true": [
+        [
+          "P",
+          "Variable",
+          "p",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "PROJECT"
+        ],
+        [
+          "ALIAS_Q",
+          "Variable Alias",
+          "q",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ],
+        [
+          "└── Q2",
+          "Variable Alias",
+          "q2",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "APPLICATION"
+        ]
+      ]
+    }
+  },
+  "single": {
+    "data": [
+      [
+        "ONLY",
+        "Variable",
+        "N/A",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "ENVIRONMENT"
+      ],
+      [
+        "ONLY",
+        "Variable",
+        "N/A",
+        "x",
+        "04 Mar 24 05:06 UTC",
+        "N/A",
+        "ENVIRONMENT"
+      ],
+      [
+        "ONLY_ALIAS",
+        "Variable Alias",
+        "ONLY",
+        "********",
+        "04 Mar 24 05:06 UTC",
+        "svc",
+        "APPLICATION"
+      ],
+      [
+        "ONLY_ALIAS",
+        "Variable Alias",
+        "ONLY",
+        "x",
+        "04 Mar 24 05:06 UTC",
+        "svc",
+        "APPLICATION"
+      ]
+    ],
+    "header_plain": [
+      "Key",
+      "Type",
+      "Parent Key",
+      "Value",
+      "Updated at",
+      "Service",
+      "Scope"
+    ],
+    "header_pretty": [
+      "Key",
+      "Type",
+      "Value",
+      "Updated at",
+      "Service",
+      "Scope"
+    ],
+    "json_sorted": "[{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"s-1\",\"interpolated_value\":\"x\",\"key\":\"ONLY\",\"override_parent_value\":null,\"scope\":\"ENVIRONMENT\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.999Z\",\"value\":\"x\"},{\"alias_parent_key\":\"ONLY\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"s-2\",\"interpolated_value\":\"x\",\"key\":\"ONLY_ALIAS\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":\"svc\",\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"x\"}]",
+    "json_unsorted": "[{\"alias_parent_key\":null,\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"s-1\",\"interpolated_value\":\"x\",\"key\":\"ONLY\",\"override_parent_value\":null,\"scope\":\"ENVIRONMENT\",\"service_name\":null,\"updated_at\":\"2024-03-04T05:06:07.999Z\",\"value\":\"x\"},{\"alias_parent_key\":\"ONLY\",\"created_at\":\"2024-01-02T15:04:05.000Z\",\"id\":\"s-2\",\"interpolated_value\":\"x\",\"key\":\"ONLY_ALIAS\",\"override_parent_value\":null,\"scope\":\"APPLICATION\",\"service_name\":\"svc\",\"updated_at\":\"2024-03-04T05:06:07.000Z\",\"value\":\"x\"}]",
+    "lines": {
+      "false-false-false": [
+        [
+          "ONLY",
+          "Variable",
+          "N/A",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "ENVIRONMENT"
+        ],
+        [
+          "ONLY_ALIAS",
+          "Variable Alias",
+          "ONLY",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "svc",
+          "APPLICATION"
+        ]
+      ],
+      "false-false-true": [
+        [
+          "ONLY",
+          "Variable",
+          "N/A",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "ENVIRONMENT"
+        ],
+        [
+          "ONLY_ALIAS",
+          "Variable Alias",
+          "ONLY",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "svc",
+          "APPLICATION"
+        ]
+      ],
+      "false-true-false": [
+        [
+          "ONLY",
+          "Variable",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "ENVIRONMENT"
+        ],
+        [
+          "└── ONLY_ALIAS",
+          "Variable Alias",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "svc",
+          "APPLICATION"
+        ]
+      ],
+      "false-true-true": [
+        [
+          "ONLY",
+          "Variable",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "ENVIRONMENT"
+        ],
+        [
+          "└── ONLY_ALIAS",
+          "Variable Alias",
+          "********",
+          "04 Mar 24 05:06 UTC",
+          "svc",
+          "APPLICATION"
+        ]
+      ],
+      "true-false-false": [
+        [
+          "ONLY",
+          "Variable",
+          "N/A",
+          "x",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "ENVIRONMENT"
+        ],
+        [
+          "ONLY_ALIAS",
+          "Variable Alias",
+          "ONLY",
+          "x",
+          "04 Mar 24 05:06 UTC",
+          "svc",
+          "APPLICATION"
+        ]
+      ],
+      "true-false-true": [
+        [
+          "ONLY",
+          "Variable",
+          "N/A",
+          "x",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "ENVIRONMENT"
+        ],
+        [
+          "ONLY_ALIAS",
+          "Variable Alias",
+          "ONLY",
+          "x",
+          "04 Mar 24 05:06 UTC",
+          "svc",
+          "APPLICATION"
+        ]
+      ],
+      "true-true-false": [
+        [
+          "ONLY",
+          "Variable",
+          "x",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "ENVIRONMENT"
+        ],
+        [
+          "└── ONLY_ALIAS",
+          "Variable Alias",
+          "x",
+          "04 Mar 24 05:06 UTC",
+          "svc",
+          "APPLICATION"
+        ]
+      ],
+      "true-true-true": [
+        [
+          "ONLY",
+          "Variable",
+          "x",
+          "04 Mar 24 05:06 UTC",
+          "N/A",
+          "ENVIRONMENT"
+        ],
+        [
+          "└── ONLY_ALIAS",
+          "Variable Alias",
+          "x",
+          "04 Mar 24 05:06 UTC",
+          "svc",
+          "APPLICATION"
+        ]
+      ]
+    }
+  }
+}
