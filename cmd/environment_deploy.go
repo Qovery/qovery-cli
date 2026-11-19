@@ -162,6 +162,10 @@ func getDeploymentRequestForMultipleServices(
 				os.Exit(1)
 			}
 
+			if version != nil {
+				checkError(utils.CheckContainerImageTag(container, *version))
+			}
+
 			request.Containers = append(request.Containers, qovery.DeployAllRequestContainersInner{Id: container.Id, ImageTag: version})
 		}
 	}
@@ -349,7 +353,7 @@ func init() {
 	environmentDeployCmd.Flags().StringVarP(&environmentName, "environment", "", "", "Environment Name")
 	environmentDeployCmd.Flags().StringVarP(&servicesJson, "services", "", "", "Services to deploy (JSON Format: https://api-doc.qovery.com/#tag/Environment-Actions/operation/deployAllServices)")
 	environmentDeployCmd.Flags().StringVarP(&applicationNames, "applications", "", "", "Applications to deploy E.g. --applications app1:commit_id,app2:latest). If you omit the commit id, the same commit will be used. 'latest' deploys the newest commit of the branch")
-	environmentDeployCmd.Flags().StringVarP(&containerNames, "containers", "", "", "Containers to deploy E.g. --containers container1:image_tag,container2:image_tag). If you omit the image tag, the same image tag will be used")
+	environmentDeployCmd.Flags().StringVarP(&containerNames, "containers", "", "", "Containers to deploy E.g. --containers container1:image_tag,container2:image_tag). If you omit the image tag, the same image tag will be used. A Git container takes no image tag: it deploys its current commit")
 	environmentDeployCmd.Flags().StringVarP(&lifecycleNames, "lifecycles", "", "", "Lifecycle to deploy E.g. --lifecycles job1:image_tag|git_commit_id,job2:image_tag|git_commit_id). If you omit the git commit id or image tag, the same version will be used. 'latest' deploys the newest commit of the branch for a git-sourced job")
 	environmentDeployCmd.Flags().StringVarP(&cronjobNames, "cronjobs", "", "", "Cronjobs to deploy E.g. --cronjobs cronjob1:git_commit_id,cronjob2:latest). If you omit the git commit id, the same version will be used. 'latest' deploys the newest commit of the branch for a git-sourced cronjob")
 	environmentDeployCmd.Flags().StringVarP(&helmNames, "helms", "", "", "Helms to deploy E.g. --helms helm1:chart_version|git_commit_id,helm2:chart_version|git_commit_id). If you omit the chart version or git commit id, the same version will be used. 'latest' deploys the newest commit of the branch for a git-sourced chart")

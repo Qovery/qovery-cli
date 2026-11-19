@@ -1562,17 +1562,25 @@ func DeployContainers(client *qovery.APIClient, envId string, containerList []*q
 
 	var containersToDeploy []qovery.DeployAllRequestContainersInner
 	for _, container := range containerList {
+		if err := CheckContainerImageTag(container, tag); err != nil {
+			return err
+		}
 
-		// if tag is not set, use the deployed commit id
-		containerTag := container.Tag
-		if tag != "" {
-			// tag is set, use it
-			containerTag = tag
+		// a Git container sent without an image tag deploys its current commit
+		var imageTag *string
+		if GetContainerGitRepository(container) == nil {
+			// if tag is not set, use the deployed commit id
+			containerTag := container.Tag
+			if tag != "" {
+				// tag is set, use it
+				containerTag = tag
+			}
+			imageTag = &containerTag
 		}
 
 		containersToDeploy = append(containersToDeploy, qovery.DeployAllRequestContainersInner{
 			Id:       container.Id,
-			ImageTag: &containerTag,
+			ImageTag: imageTag,
 		})
 	}
 
@@ -1583,7 +1591,50 @@ func DeployContainers(client *qovery.APIClient, envId string, containerList []*q
 		Jobs:         nil,
 	}
 
-	return deployAllServices(client, envId, req)
+	return withAPIErrorDetail(deployAllServices(client, envId, req))
+}
+
+// DeployContainersAtCommit deploys each Git container at commitId. It checks every container
+// before sending anything, so a list with an image container deploys nothing.
+func DeployContainersAtCommit(client *qovery.APIClient, containerList []*qovery.ContainerResponse, commitId string) error {
+	for _, container := range containerList {
+		if err := CheckContainerCommitId(container); err != nil {
+			return err
+		}
+	}
+
+	for _, container := range containerList {
+		req := qovery.ContainerDeployRequest{GitCommitId: *qovery.NewNullableString(&commitId)}
+		_, _, err := client.ContainerActionsAPI.DeployContainer(context.Background(), container.Id).ContainerDeployRequest(req).Execute()
+		if err != nil {
+			return fmt.Errorf("cannot deploy container %s at commit %s: %w", container.Name, commitId, withAPIErrorDetail(err))
+		}
+	}
+
+	return nil
+}
+
+// CheckContainerImageTag rejects an image tag for a Git container: Qovery builds its image from a commit.
+func CheckContainerImageTag(container *qovery.ContainerResponse, tag string) error {
+	repository := GetContainerGitRepository(container)
+	if tag == "" || repository == nil {
+		return nil
+	}
+
+	return fmt.Errorf("container %s is a Git container built from %s: it cannot be deployed with an image tag. "+
+		"Deploy a commit with: qovery container deploy -n %s --commit-id <commit sha>",
+		container.Name, gitRepositoryLabel(repository), container.Name)
+}
+
+// CheckContainerCommitId rejects a commit for an image container: it has no Git repository to build.
+func CheckContainerCommitId(container *qovery.ContainerResponse) error {
+	if GetContainerGitRepository(container) != nil {
+		return nil
+	}
+
+	return fmt.Errorf("container %s runs the image %s from registry %s: --commit-id only applies to Git containers. "+
+		"Deploy another image with --tag",
+		container.Name, ContainerImageLabel(container), container.Registry.Name)
 }
 
 func DeployJobs(client *qovery.APIClient, envId string, jobList []*qovery.JobResponse, commitId string, tag string) error {
@@ -1640,24 +1691,24 @@ func DeployJobs(client *qovery.APIClient, envId string, jobList []*qovery.JobRes
 }
 
 func GetJobDocker(job *qovery.JobResponse) *qovery.JobSourceDockerResponse {
-	if job.CronJobResponse != nil && job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
-		return &job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
+	if job.CronJobResponse != nil && job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
+		return &job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Docker
 	}
 
-	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1 != nil {
-		return &job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf1.Docker
+	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
+		return &job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Docker
 	}
 
 	return nil
 }
 
 func GetJobImage(job *qovery.JobResponse) *qovery.ContainerSource {
-	if job.CronJobResponse != nil && job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
-		return &job.CronJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
+	if job.CronJobResponse != nil && job.CronJobResponse.Source.ContainerSourceResponseOneOf != nil {
+		return &job.CronJobResponse.Source.ContainerSourceResponseOneOf.Image
 	}
 
-	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf != nil {
-		return &job.LifecycleJobResponse.Source.BaseJobResponseAllOfSourceOneOf.Image
+	if job.LifecycleJobResponse != nil && job.LifecycleJobResponse.Source.ContainerSourceResponseOneOf != nil {
+		return &job.LifecycleJobResponse.Source.ContainerSourceResponseOneOf.Image
 	}
 
 	return nil
@@ -1784,6 +1835,36 @@ func GetHelmRepository(helm *qovery.HelmResponse) *qovery.HelmSourceRepositoryRe
 	}
 
 	return nil
+}
+
+// GetContainerGitRepository returns nil for an image container, including when an older API sends no source.
+func GetContainerGitRepository(container *qovery.ContainerResponse) *qovery.ContainerGitRepositorySourceResponse {
+	if container.Source != nil && container.Source.ContainerSourceResponseOneOf1 != nil {
+		return &container.Source.ContainerSourceResponseOneOf1.GitRepository
+	}
+
+	return nil
+}
+
+func ContainerSourceLabel(container *qovery.ContainerResponse) string {
+	if repository := GetContainerGitRepository(container); repository != nil {
+		return "Git " + gitRepositoryLabel(repository)
+	}
+
+	return "Registry " + container.Registry.Name
+}
+
+// ContainerImageLabel names the image the container runs; on a Git container it is the last image Qovery built.
+func ContainerImageLabel(container *qovery.ContainerResponse) string {
+	return container.ImageName + ":" + container.Tag
+}
+
+func gitRepositoryLabel(repository *qovery.ContainerGitRepositorySourceResponse) string {
+	if repository.GetBranch() == "" {
+		return repository.Url
+	}
+
+	return fmt.Sprintf("%s (branch %s)", repository.Url, repository.GetBranch())
 }
 
 func DeployTerraforms(client *qovery.APIClient, envId string, terraformList []*qovery.TerraformResponse, commitId string, action *string) error {

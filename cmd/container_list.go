@@ -48,14 +48,8 @@ var containerListCmd = &cobra.Command{
 			return
 		}
 
-		var data [][]string
-
-		for _, container := range containers.GetResults() {
-			data = append(data, []string{container.Id, container.Name, "Container",
-				utils.FindStatusTextWithColor(statuses.GetContainers(), container.Id), container.UpdatedAt.String()})
-		}
-
-		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Last Update"}, data)
+		err = utils.PrintTable([]string{"Id", "Name", "Type", "Status", "Last Update", "Source", "Image"},
+			getContainerTableRows(containers.GetResults(), statuses))
 
 		if err != nil {
 			utils.PrintlnError(err)
@@ -64,17 +58,41 @@ var containerListCmd = &cobra.Command{
 	},
 }
 
+func getContainerTableRows(containers []qovery.ContainerResponse, statuses *qovery.EnvironmentStatuses) [][]string {
+	var data [][]string
+
+	for _, container := range containers {
+		data = append(data, []string{container.Id, container.Name, "Container",
+			utils.FindStatusTextWithColor(statuses.GetContainers(), container.Id), container.UpdatedAt.String(),
+			utils.ContainerSourceLabel(&container), utils.ContainerImageLabel(&container)})
+	}
+
+	return data
+}
+
 func getContainerJsonOutput(containers []qovery.ContainerResponse, statuses *qovery.EnvironmentStatuses) string {
 	var results []interface{}
 
 	for _, container := range containers {
-		results = append(results, map[string]interface{}{
+		result := map[string]interface{}{
 			"id":          container.Id,
 			"name":        container.Name,
 			"type":        "Container",
 			"status":      utils.FindStatus(statuses.GetApplications(), container.Id),
 			"last_update": container.UpdatedAt.String(),
-		})
+			"source":      "image",
+			"registry":    container.Registry.Name,
+			"image_name":  container.ImageName,
+			"tag":         container.Tag,
+		}
+		if repository := utils.GetContainerGitRepository(&container); repository != nil {
+			result["source"] = "git_repository"
+			result["git_repository"] = map[string]interface{}{
+				"url":    repository.Url,
+				"branch": repository.GetBranch(),
+			}
+		}
+		results = append(results, result)
 	}
 
 	j, err := json.Marshal(results)

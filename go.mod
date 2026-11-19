@@ -29,7 +29,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/posthog/posthog-go v1.12.5
 	github.com/pterm/pterm v0.12.83
-	github.com/qovery/qovery-client-go v0.0.0-20261030144809-3aa18684b1e6
+	github.com/qovery/qovery-client-go v0.0.0-20261118141941-aa7302c96a47
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10

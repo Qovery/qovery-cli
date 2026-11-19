@@ -49,9 +49,9 @@ var containerCreateCmd = &cobra.Command{
 
 		req := qovery.ContainerRequest{
 			Name:                containerName,
-			RegistryId:          containerRegistryId,
-			ImageName:           containerImageName,
-			Tag:                 containerTag,
+			RegistryId:          &containerRegistryId,
+			ImageName:           &containerImageName,
+			Tag:                 &containerTag,
 			Ports:               ports,
 			Cpu:                 utils.Int32(containerCpu),
 			Memory:              utils.Int32(containerMemory),
