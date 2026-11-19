@@ -14,13 +14,14 @@ var containerDeployCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 
+		checkError(validateContainerDeployVersion(containerTag, containerCommitId))
 		client := utils.GetQoveryClientPanicInCaseOfError()
 		validateContainerArguments(containerName, containerNames)
-		checkError(validateContainerDeployVersion(containerTag, containerCommitId))
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		// deploy multiple services
 		containerList := buildContainerListFromContainerNames(client, envId, containerName, containerNames)
+		checkError(checkContainersMatchDeployVersion(containerList, containerTag, containerCommitId))
 		watch := utils.NewServicesWatch(client, envId, containerIds(containerList), watchFlag)
 		err := deployContainers(client, envId, containerList, containerTag, containerCommitId)
 		checkError(err)
@@ -36,6 +37,20 @@ func validateContainerDeployVersion(tag string, commitId string) error {
 
 	if utils.IsLatestCommitKeyword(commitId) {
 		return fmt.Errorf("--commit-id %s is not supported for Git containers: pass a commit SHA", utils.LatestCommitKeyword)
+	}
+
+	return nil
+}
+
+func checkContainersMatchDeployVersion(containerList []*qovery.ContainerResponse, tag string, commitId string) error {
+	for _, container := range containerList {
+		err := utils.CheckContainerImageTag(container, tag)
+		if commitId != "" {
+			err = utils.CheckContainerCommitId(container)
+		}
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

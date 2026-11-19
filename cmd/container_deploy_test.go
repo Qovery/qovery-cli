@@ -202,3 +202,36 @@ func TestContainerDeployErrorKeepsTheApiMessage(t *testing.T) {
 		})
 	}
 }
+
+func TestContainerDeployChecksSourceBeforeWatching(t *testing.T) {
+	gitContainer := containerWithSource(t, "container-git", "api", gitContainerSourceJson)
+	imageContainer := containerWithSource(t, "container-image", "web", imageContainerSourceJson)
+	cases := []struct {
+		name          string
+		containers    []*qovery.ContainerResponse
+		tag           string
+		commitId      string
+		expectedError string
+	}{
+		{name: "tag on a Git container", containers: []*qovery.ContainerResponse{imageContainer, gitContainer}, tag: "v2", expectedError: "api is a Git container"},
+		{name: "commit on an image container", containers: []*qovery.ContainerResponse{gitContainer, imageContainer}, commitId: "9b8a7c6", expectedError: "--commit-id only applies to Git containers"},
+		{name: "tag on an image container", containers: []*qovery.ContainerResponse{imageContainer}, tag: "v2"},
+		{name: "commit on a Git container", containers: []*qovery.ContainerResponse{gitContainer}, commitId: "9b8a7c6"},
+		{name: "no version", containers: []*qovery.ContainerResponse{imageContainer, gitContainer}},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			err := checkContainersMatchDeployVersion(c.containers, c.tag, c.commitId)
+			if c.expectedError == "" {
+				if err != nil {
+					t.Fatalf("expected no error, got %v", err)
+				}
+				return
+			}
+			if err == nil || !strings.Contains(err.Error(), c.expectedError) {
+				t.Fatalf("expected %q in the error, got %v", c.expectedError, err)
+			}
+		})
+	}
+}
