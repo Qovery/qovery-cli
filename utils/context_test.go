@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -164,5 +165,35 @@ func TestGetAccessToken_RefreshedTokenValidation(t *testing.T) {
 				t.Fatalf("GetAccessToken() errors.Is(err, ErrSignInRequired) = %v, want %v (err: %v)", got, tt.wantSignInRequired, err)
 			}
 		})
+	}
+}
+
+// Concurrent qovery commands (e.g. several refreshing an expired token at once)
+// must never leave a mix of two writes in context.json.
+func TestStoreContextConcurrentWritesKeepValidJSON(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	writeTestQoveryContext(t, home)
+
+	var wg sync.WaitGroup
+	for i := 0; i < 200; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			// Vary the length so a shorter write over a longer one leaves trailing bytes
+			if err := StoreContext(QoveryContext{AccessToken: AccessToken(strings.Repeat("a", i%7))}); err != nil {
+				t.Error(err)
+			}
+		}(i)
+	}
+	wg.Wait()
+
+	content, err := os.ReadFile(filepath.Join(home, ".qovery", ContextFileName+".json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !json.Valid(content) {
+		t.Fatalf("context.json is not valid JSON: %q", content)
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -151,12 +152,36 @@ func StoreContext(context QoveryContext) error {
 		return err
 	}
 
-	err = os.Chmod(path, ContextFilePermissions)
+	return writeFileAtomic(path, bytes)
+}
+
+// writeFileAtomic writes to a temp file next to path and renames it over path.
+// Several qovery processes can save the context at the same time (e.g. all refreshing
+// an expired token); with an in-place write, a shorter write over a longer one leaves
+// trailing bytes and the file is no longer valid JSON.
+func writeFileAtomic(path string, content []byte) error {
+	tmp, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".tmp-*")
 	if err != nil {
 		return err
 	}
+	tmpPath := tmp.Name()
+	defer func() { _ = os.Remove(tmpPath) }() // no-op once renamed
 
-	return os.WriteFile(path, bytes, ContextFilePermissions)
+	if _, err = tmp.Write(content); err != nil {
+		_ = tmp.Close()
+		return err
+	}
+	if err = tmp.Sync(); err != nil {
+		_ = tmp.Close()
+		return err
+	}
+	if err = tmp.Close(); err != nil {
+		return err
+	}
+	if err = os.Chmod(tmpPath, ContextFilePermissions); err != nil {
+		return err
+	}
+	return os.Rename(tmpPath, path)
 }
 
 func CurrentOrganization(promptContext bool) (Id, Name, error) {
