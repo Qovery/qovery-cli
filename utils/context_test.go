@@ -173,6 +173,7 @@ func TestGetAccessToken_RefreshedTokenValidation(t *testing.T) {
 func TestStoreContextConcurrentWritesKeepValidJSON(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
 	writeTestQoveryContext(t, home)
 
 	var wg sync.WaitGroup
@@ -181,7 +182,9 @@ func TestStoreContextConcurrentWritesKeepValidJSON(t *testing.T) {
 		go func(i int) {
 			defer wg.Done()
 			// Vary the length so a shorter write over a longer one leaves trailing bytes
-			_ = StoreContext(QoveryContext{AccessToken: AccessToken(strings.Repeat("a", i%7))})
+			if err := StoreContext(QoveryContext{AccessToken: AccessToken(strings.Repeat("a", i%7))}); err != nil {
+				t.Error(err)
+			}
 		}(i)
 	}
 	wg.Wait()
