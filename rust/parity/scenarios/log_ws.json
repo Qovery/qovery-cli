@@ -1,0 +1,569 @@
+{
+ "_comment": "Run with parity/log_ws_compare.py (starts parity/log_ws_mock.py and substitutes $WS).",
+ "env": {
+  "QOVERY_WS_URL": "$WS"
+ },
+ "cases": [
+  {
+   "name": "log ws basic",
+   "args": [
+    "log",
+    "--service-id",
+    "basic"
+   ]
+  },
+  {
+   "name": "log ws binary",
+   "args": [
+    "log",
+    "--service-id",
+    "binary"
+   ]
+  },
+  {
+   "name": "log ws ping",
+   "args": [
+    "log",
+    "--service-id",
+    "ping"
+   ]
+  },
+  {
+   "name": "log ws fragmented",
+   "args": [
+    "log",
+    "--service-id",
+    "fragmented"
+   ]
+  },
+  {
+   "name": "log ws close-policy",
+   "args": [
+    "log",
+    "--service-id",
+    "close-policy"
+   ]
+  },
+  {
+   "name": "log ws close-permission",
+   "args": [
+    "log",
+    "--service-id",
+    "close-permission"
+   ]
+  },
+  {
+   "name": "log ws close-internal",
+   "args": [
+    "log",
+    "--service-id",
+    "close-internal"
+   ]
+  },
+  {
+   "name": "log ws close-custom",
+   "args": [
+    "log",
+    "--service-id",
+    "close-custom"
+   ]
+  },
+  {
+   "name": "log ws close-nostatus",
+   "args": [
+    "log",
+    "--service-id",
+    "close-nostatus"
+   ]
+  },
+  {
+   "name": "log ws drop",
+   "args": [
+    "log",
+    "--service-id",
+    "drop"
+   ]
+  },
+  {
+   "name": "log ws bad-json",
+   "args": [
+    "log",
+    "--service-id",
+    "bad-json"
+   ]
+  },
+  {
+   "name": "log ws truncated-json",
+   "args": [
+    "log",
+    "--service-id",
+    "truncated-json"
+   ]
+  },
+  {
+   "name": "log ws bad-ts",
+   "args": [
+    "log",
+    "--service-id",
+    "bad-ts"
+   ]
+  },
+  {
+   "name": "log ws bad-ts-float",
+   "args": [
+    "log",
+    "--service-id",
+    "bad-ts-float"
+   ]
+  },
+  {
+   "name": "log ws bad-ts-bool",
+   "args": [
+    "log",
+    "--service-id",
+    "bad-ts-bool"
+   ]
+  },
+  {
+   "name": "log ws type-error",
+   "args": [
+    "log",
+    "--service-id",
+    "type-error"
+   ]
+  },
+  {
+   "name": "log ws type-error-then-ts",
+   "args": [
+    "log",
+    "--service-id",
+    "type-error-then-ts"
+   ]
+  },
+  {
+   "name": "log ws array",
+   "args": [
+    "log",
+    "--service-id",
+    "array"
+   ]
+  },
+  {
+   "name": "log ws string",
+   "args": [
+    "log",
+    "--service-id",
+    "string"
+   ]
+  },
+  {
+   "name": "log ws number",
+   "args": [
+    "log",
+    "--service-id",
+    "number"
+   ]
+  },
+  {
+   "name": "log ws syntax-errors",
+   "args": [
+    "log",
+    "--service-id",
+    "syntax-errors"
+   ]
+  },
+  {
+   "name": "log ws syntax-top-level",
+   "args": [
+    "log",
+    "--service-id",
+    "syntax-top-level"
+   ]
+  },
+  {
+   "name": "log ws syntax-escape",
+   "args": [
+    "log",
+    "--service-id",
+    "syntax-escape"
+   ]
+  },
+  {
+   "name": "log ws syntax-number",
+   "args": [
+    "log",
+    "--service-id",
+    "syntax-number"
+   ]
+  },
+  {
+   "name": "log ws syntax-quote",
+   "args": [
+    "log",
+    "--service-id",
+    "syntax-quote"
+   ]
+  },
+  {
+   "name": "log ws dup-ts-errors",
+   "args": [
+    "log",
+    "--service-id",
+    "dup-ts-errors"
+   ]
+  },
+  {
+   "name": "log ws echo",
+   "args": [
+    "log",
+    "--service-id",
+    "echo"
+   ]
+  },
+  {
+   "name": "log ws empty",
+   "args": [
+    "log",
+    "--service-id",
+    "empty"
+   ]
+  },
+  {
+   "name": "log ws basic --raw",
+   "args": [
+    "log",
+    "--service-id",
+    "basic",
+    "--raw"
+   ]
+  },
+  {
+   "name": "log ws binary --raw",
+   "args": [
+    "log",
+    "--service-id",
+    "binary",
+    "--raw"
+   ]
+  },
+  {
+   "name": "log ws bad-json --raw",
+   "args": [
+    "log",
+    "--service-id",
+    "bad-json",
+    "--raw"
+   ]
+  },
+  {
+   "name": "log ws echo --raw",
+   "args": [
+    "log",
+    "--service-id",
+    "echo",
+    "--raw"
+   ]
+  },
+  {
+   "name": "log ws close-policy --raw",
+   "args": [
+    "log",
+    "--service-id",
+    "close-policy",
+    "--raw"
+   ]
+  },
+  {
+   "name": "log ws echo app (url and authorization)",
+   "args": [
+    "log",
+    "-a",
+    "my-app",
+    "--raw"
+   ]
+  },
+  {
+   "name": "log ws echo bearer token",
+   "args": [
+    "log",
+    "--service-id",
+    "echo",
+    "--raw"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": "eyJhbGciOiJIUzI1NiJ9.e30.sig"
+   }
+  },
+  {
+   "name": "log ws upgrade rejected 403",
+   "args": [
+    "log",
+    "--service-id",
+    "reject:403"
+   ]
+  },
+  {
+   "name": "log ws upgrade rejected 500",
+   "args": [
+    "log",
+    "--service-id",
+    "reject:500"
+   ]
+  },
+  {
+   "name": "log ws basic TZ",
+   "args": [
+    "log",
+    "--service-id",
+    "basic"
+   ],
+   "env": {
+    "TZ": "Asia/Kolkata"
+   }
+  },
+  {
+   "name": "log ws text \"\\u12g4\"",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%22%5Cu12g4%22"
+   ]
+  },
+  {
+   "name": "log ws text \"a\\u00\"",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%22a%5Cu00%22"
+   ]
+  },
+  {
+   "name": "log ws text \"tab\there\"",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%22tab%09here%22"
+   ]
+  },
+  {
+   "name": "log ws text 1ex",
+   "args": [
+    "log",
+    "--service-id",
+    "text:1ex"
+   ]
+  },
+  {
+   "name": "log ws text -a",
+   "args": [
+    "log",
+    "--service-id",
+    "text:-a"
+   ]
+  },
+  {
+   "name": "log ws text [1 2]",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%5B1%202%5D"
+   ]
+  },
+  {
+   "name": "log ws text {1}",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B1%7D"
+   ]
+  },
+  {
+   "name": "log ws text {\"a\" 1}",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22a%22%201%7D"
+   ]
+  },
+  {
+   "name": "log ws text 01",
+   "args": [
+    "log",
+    "--service-id",
+    "text:01"
+   ]
+  },
+  {
+   "name": "log ws text {\"message\": \"\u00e9\", \"pod_name\": \"\u2603\"}",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22message%22%3A%20%22%C3%A9%22%2C%20%22pod_name%22%3A%20%22%E2%98%83%22%7D"
+   ]
+  },
+  {
+   "name": "log ws text {\"message\": \"x\",}",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22message%22%3A%20%22x%22%2C%7D"
+   ]
+  },
+  {
+   "name": "log ws text [1,]",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%5B1%2C%5D"
+   ]
+  },
+  {
+   "name": "log ws text tru",
+   "args": [
+    "log",
+    "--service-id",
+    "text:tru"
+   ]
+  },
+  {
+   "name": "log ws text nul",
+   "args": [
+    "log",
+    "--service-id",
+    "text:nul"
+   ]
+  },
+  {
+   "name": "log ws text {\"created_at\": 12345678901234567890}",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22created_at%22%3A%2012345678901234567890%7D"
+   ]
+  },
+  {
+   "name": "log ws text {\"created_at\": -0}",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22created_at%22%3A%20-0%7D"
+   ]
+  },
+  {
+   "name": "log ws text {\"created_at\": 1e3}",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22created_at%22%3A%201e3%7D"
+   ]
+  },
+  {
+   "name": "log ws text \u00e9",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%C3%A9"
+   ]
+  },
+  {
+   "name": "log ws text {\"message\":\"a\"}x",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22message%22%3A%22a%22%7Dx"
+   ]
+  },
+  {
+   "name": "log ws text  ",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%20"
+   ]
+  },
+  {
+   "name": "log ws text \"x\\`y\"",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%22x%5C%60y%22"
+   ]
+  },
+  {
+   "name": "log ws text {\"message\":1e400}",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22message%22%3A1e400%7D"
+   ]
+  },
+  {
+   "name": "log ws text {\"created_at\":1e400}",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22created_at%22%3A1e400%7D"
+   ]
+  },
+  {
+   "name": "log ws text {\"pod_name\":-1e400,\"created_at\":\"x\"}",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22pod_name%22%3A-1e400%2C%22created_at%22%3A%22x%22%7D"
+   ]
+  },
+  {
+   "name": "log ws text {\"created_at\":9223372036854775807,\"message\":\"max\"} TZ Europe/Paris",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22created_at%22%3A9223372036854775807%2C%22message%22%3A%22max%22%7D"
+   ],
+   "env": {
+    "TZ": "Europe/Paris"
+   }
+  },
+  {
+   "name": "log ws text {\"created_at\":-9223372036854775808,\"message\":\"min\"} TZ America/New_York",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22created_at%22%3A-9223372036854775808%2C%22message%22%3A%22min%22%7D"
+   ],
+   "env": {
+    "TZ": "America/New_York"
+   }
+  },
+  {
+   "name": "log ws text {\"created_at\":253402300800000,\"message\":\"year 10000\"}",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22created_at%22%3A253402300800000%2C%22message%22%3A%22year%2010000%22%7D"
+   ]
+  },
+  {
+   "name": "log ws text {\"created_at\":8210298412800000,\"message\":\"chrono max + 1\"} TZ Europe/Paris",
+   "args": [
+    "log",
+    "--service-id",
+    "text:%7B%22created_at%22%3A8210298412800000%2C%22message%22%3A%22chrono%20max%20%2B%201%22%7D"
+   ],
+   "env": {
+    "TZ": "Europe/Paris"
+   }
+  },
+  {
+   "name": "log wss on a plain server (TLS error)",
+   "args": [
+    "log",
+    "--service-id",
+    "basic"
+   ],
+   "env": {
+    "QOVERY_WS_URL": "$WSS"
+   }
+  }
+ ]
+}

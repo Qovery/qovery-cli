@@ -1,0 +1,29 @@
+{
+ "description": "2 DEPLOYED containers are stopped",
+ "final_state": "STOPPED",
+ "service_ids": ["svc-01", "svc-02"],
+ "before": {"svc-01": "env-8", "svc-02": "env-8"},
+ "polls": [
+  {"t": 1.74, "with_stages": {"svc-01": {"state": "STOP_QUEUED", "execution_id": "env-9"}, "svc-02": {"state": "STOP_QUEUED", "execution_id": "env-9"}}},
+  {"t": 3.98, "with_stages": {"svc-01": {"state": "STOP_QUEUED", "execution_id": "env-9"}, "svc-02": {"state": "STOP_QUEUED", "execution_id": "env-9"}}},
+  {"t": 6.11, "with_stages": {"svc-01": {"state": "STOP_QUEUED", "execution_id": "env-9"}, "svc-02": {"state": "STOP_QUEUED", "execution_id": "env-9"}}},
+  {"t": 8.2, "with_stages": {"svc-01": {"state": "STOPPING", "execution_id": "env-9"}, "svc-02": {"state": "STOPPING", "execution_id": "env-9"}}},
+  {"t": 10.3, "with_stages": {"svc-01": {"state": "STOPPING", "execution_id": "env-9"}, "svc-02": {"state": "STOPPING", "execution_id": "env-9"}}},
+  {"t": 12.39, "with_stages": {"svc-01": {"state": "STOPPING", "execution_id": "env-9"}, "svc-02": {"state": "STOPPING", "execution_id": "env-9"}}},
+  {"t": 14.48, "with_stages": {"svc-01": {"state": "STOPPING", "execution_id": "env-9"}, "svc-02": {"state": "STOPPING", "execution_id": "env-9"}}},
+  {"t": 16.57, "with_stages": {"svc-01": {"state": "STOPPING", "execution_id": "env-9"}, "svc-02": {"state": "STOPPING", "execution_id": "env-9"}}},
+  {"t": 18.67, "with_stages": {"svc-01": {"state": "STOPPING", "execution_id": "env-9"}, "svc-02": {"state": "STOPPING", "execution_id": "env-9"}}},
+  {"t": 20.75, "with_stages": {"svc-01": {"state": "STOPPING", "execution_id": "env-9"}, "svc-02": {"state": "STOPPING", "execution_id": "env-9"}}},
+  {"t": 22.84, "with_stages": {"svc-01": {"state": "STOPPING", "execution_id": "env-9"}, "svc-02": {"state": "STOPPING", "execution_id": "env-9"}}},
+  {"t": 24.95, "with_stages": {"svc-01": {"state": "STOPPING", "execution_id": "env-9"}, "svc-02": {"state": "STOPPING", "execution_id": "env-9"}}},
+  {"t": 27.05, "with_stages": {"svc-01": {"state": "STOPPING", "execution_id": "env-9"}, "svc-02": {"state": "STOPPING", "execution_id": "env-9"}}},
+  {"t": 29.13, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-9"}, "svc-02": {"state": "STOPPED", "execution_id": "env-9"}}},
+  {"t": 31.23, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-9"}, "svc-02": {"state": "STOPPED", "execution_id": "env-9"}}},
+  {"t": 33.3, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-9"}, "svc-02": {"state": "STOPPED", "execution_id": "env-9"}}},
+  {"t": 35.38, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-9"}, "svc-02": {"state": "STOPPED", "execution_id": "env-9"}}},
+  {"t": 37.48, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-9"}, "svc-02": {"state": "STOPPED", "execution_id": "env-9"}}},
+  {"t": 39.56, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-9"}, "svc-02": {"state": "STOPPED", "execution_id": "env-9"}}},
+  {"t": 41.64, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-9"}, "svc-02": {"state": "STOPPED", "execution_id": "env-9"}}},
+  {"t": 43.75, "with_stages": {"svc-01": {"state": "STOPPED", "execution_id": "env-9"}, "svc-02": {"state": "STOPPED", "execution_id": "env-9"}}}
+ ]
+}

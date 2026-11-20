@@ -1,0 +1,24 @@
+#!/bin/sh
+# Fake docker / k3d / helm / kubectl for the `qovery demo` parity scenarios (never runs the real tools).
+# The output and exit code of a call come from the environment:
+#   FAKE_<KEY>        output (printed with a trailing newline when not empty)
+#   FAKE_<KEY>_<N>    output of the N-th call with this key (falls back to FAKE_<KEY>)
+#   FAKE_<KEY>_EXIT   exit code (default 0), FAKE_<KEY>_EXIT_<N> for the N-th call
+# KEY is the upper-cased tool name, plus the sub-command (and its action for cluster/registry/network),
+# e.g. K3D_CLUSTER_LIST, DOCKER_INFO, DOCKER_NETWORK_LS, DOCKER_INSPECT, HELM_LIST, HELM_UPGRADE, KUBECTL.
+tool=${0##*/}
+case "$1" in
+  cluster|registry|network) key="${tool}_$1_$2" ;;
+  -*|"") key="$tool" ;;
+  *) key="${tool}_$1" ;;
+esac
+key=$(printf '%s' "$key" | /usr/bin/tr 'a-z-' 'A-Z_')
+counter="$HOME/.fake-tool-$key"
+n=0
+[ -f "$counter" ] && read -r n < "$counter"
+n=$((n + 1))
+printf '%s\n' "$n" > "$counter"
+eval "out=\${FAKE_${key}_${n}-\${FAKE_${key}-}}"
+eval "code=\${FAKE_${key}_EXIT_${n}-\${FAKE_${key}_EXIT-0}}"
+[ -n "$out" ] && printf '%s\n' "$out"
+exit "$code"

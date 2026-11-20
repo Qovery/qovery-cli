@@ -27,3 +27,7 @@ jobs:
           args: release --clean --skip=publish,validate
         env:
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
+
+  # Rust rewrite (rust/): cross-platform release build, nothing published
+  rust-build:
+    uses: ./.github/workflows/rust-build.yml

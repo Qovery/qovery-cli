@@ -1,0 +1,5721 @@
+{
+ "fixtures": [
+  {
+   "method": "GET",
+   "path": "/environment/env-1/deploymentHistory",
+   "status": 200,
+   "body": {
+    "page": 1,
+    "page_size": 10,
+    "results": [
+     {
+      "id": "dep-1",
+      "created_at": "2024-06-02T11:30:00Z",
+      "updated_at": "2024-06-02T11:31:05.5Z",
+      "status": "DEPLOYED"
+     },
+     {
+      "id": "dep-2",
+      "created_at": "2024-06-01T10:00:00.123Z",
+      "updated_at": "2024-06-01T10:12:00Z",
+      "status": "DEPLOYMENT_ERROR"
+     },
+     {
+      "id": "dep-3",
+      "created_at": "2024-05-30T08:00:00+02:00",
+      "updated_at": "2024-05-30T08:00:42+02:00",
+      "status": "CANCELED"
+     },
+     {
+      "id": "dep-4",
+      "created_at": "2024-05-29T08:00:00Z"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/env-1/logs",
+   "status": 200,
+   "body": [
+    {
+     "type": "info",
+     "timestamp": "2024-06-02T11:00:00.100Z",
+     "details": {
+      "organization_id": "org-1",
+      "cluster_id": "cluster-1",
+      "execution_id": "exec-1",
+      "transmitter": {
+       "type": "Environment",
+       "name": "my-env",
+       "id": "env-1"
+      },
+      "stage": {
+       "step": "PreCheck",
+       "name": null,
+       "id": null
+      }
+     },
+     "error": null,
+     "message": {
+      "safe_message": "pre-check started",
+      "full_details": null
+     }
+    },
+    {
+     "type": "info",
+     "timestamp": "2024-06-02T11:00:01Z",
+     "details": {
+      "organization_id": "org-1",
+      "cluster_id": "cluster-1",
+      "execution_id": "exec-1",
+      "transmitter": {
+       "type": "TaskManager",
+       "name": "tm",
+       "id": "tm-1"
+      },
+      "stage": {
+       "step": "Queued",
+       "name": "build-stage",
+       "id": null
+      }
+     },
+     "error": null,
+     "message": {
+      "safe_message": "queued",
+      "full_details": null
+     }
+    },
+    {
+     "type": "info",
+     "timestamp": "2024-06-02T11:00:05Z",
+     "details": {
+      "organization_id": "org-1",
+      "cluster_id": "cluster-1",
+      "execution_id": "exec-1",
+      "transmitter": {
+       "type": "Application",
+       "name": "my-app",
+       "id": "app-1"
+      },
+      "stage": {
+       "step": "Build",
+       "name": "build-stage",
+       "id": null
+      }
+     },
+     "error": null,
+     "message": {
+      "safe_message": "building image",
+      "full_details": null
+     }
+    },
+    {
+     "type": "info",
+     "timestamp": "2024-06-02T11:00:03Z",
+     "details": {
+      "organization_id": "org-1",
+      "cluster_id": "cluster-1",
+      "execution_id": "exec-1",
+      "transmitter": {
+       "type": "Environment",
+       "name": "my-env",
+       "id": "env-1"
+      },
+      "stage": {
+       "step": "Build",
+       "name": "build-stage",
+       "id": null
+      }
+     },
+     "error": null,
+     "message": {
+      "safe_message": "stage build started",
+      "full_details": null
+     }
+    },
+    {
+     "type": "info",
+     "timestamp": "2024-06-02T11:00:35.250Z",
+     "details": {
+      "organization_id": "org-1",
+      "cluster_id": "cluster-1",
+      "execution_id": "exec-1",
+      "transmitter": {
+       "type": "Application",
+       "name": "my-app",
+       "id": "app-1"
+      },
+      "stage": {
+       "step": "Build",
+       "name": "build-stage",
+       "id": null
+      }
+     },
+     "error": null,
+     "message": {
+      "safe_message": "image built\nwith 2 layers",
+      "full_details": null
+     }
+    },
+    {
+     "type": "info",
+     "timestamp": "2024-06-02T11:01:00Z",
+     "details": {
+      "organization_id": "org-1",
+      "cluster_id": "cluster-1",
+      "execution_id": "exec-1",
+      "transmitter": {
+       "type": "Application",
+       "name": "my-app",
+       "id": "app-1"
+      },
+      "stage": {
+       "step": "Deploy",
+       "name": "deploy-stage",
+       "id": null
+      }
+     },
+     "error": null,
+     "message": {
+      "safe_message": "deploying <app> & co",
+      "full_details": null
+     }
+    },
+    {
+     "type": "info",
+     "timestamp": "2024-06-02T13:02:10.5+02:00",
+     "details": {
+      "organization_id": "org-1",
+      "cluster_id": "cluster-1",
+      "execution_id": "exec-1",
+      "transmitter": {
+       "type": "Application",
+       "name": "my-app",
+       "id": "app-1"
+      },
+      "stage": {
+       "step": "Deploy",
+       "name": "deploy-stage",
+       "id": null
+      }
+     },
+     "error": {
+      "tag": "K8S_CANNOT_APPLY_CONFIG",
+      "user_log_message": "liveness probe failed",
+      "hint_message": "check the probe path",
+      "link": "https://hub.qovery.com/docs/probes"
+     },
+     "message": {
+      "safe_message": "deployment failed",
+      "full_details": null
+     }
+    },
+    {
+     "type": "info",
+     "timestamp": "2024-06-02T11:01:30Z",
+     "details": {
+      "organization_id": "org-1",
+      "cluster_id": "cluster-1",
+      "execution_id": "exec-1",
+      "transmitter": {
+       "type": "Terraform",
+       "name": "S3",
+       "id": "tf-1"
+      },
+      "stage": {
+       "step": "Deploy",
+       "name": "deploy-stage",
+       "id": null
+      }
+     },
+     "error": null,
+     "message": {
+      "safe_message": "terraform apply",
+      "full_details": null
+     }
+    },
+    {
+     "type": "info",
+     "timestamp": "2024-06-02T11:01:30Z",
+     "details": {
+      "organization_id": "org-1",
+      "cluster_id": "cluster-1",
+      "execution_id": "exec-1",
+      "transmitter": {
+       "type": "Terraform",
+       "name": "S3",
+       "id": "tf-1"
+      },
+      "stage": {
+       "step": "Deploy",
+       "name": "deploy-stage",
+       "id": null
+      }
+     },
+     "error": null,
+     "message": {
+      "safe_message": "terraform done",
+      "full_details": null
+     }
+    },
+    {
+     "type": "info",
+     "timestamp": "2024-06-02T11:03:40Z",
+     "details": {
+      "organization_id": "org-1",
+      "cluster_id": "cluster-1",
+      "execution_id": "exec-1",
+      "transmitter": {
+       "type": "Environment",
+       "name": "my-env",
+       "id": "env-1"
+      },
+      "stage": {
+       "step": "Deployed",
+       "name": "deploy-stage",
+       "id": null
+      }
+     },
+     "error": {
+      "tag": "ENV_FAILED",
+      "user_log_message": "deployment failed"
+     },
+     "message": {
+      "safe_message": "deployment error",
+      "full_details": null
+     }
+    },
+    {
+     "type": "info",
+     "timestamp": "2024-06-02T11:03:41Z",
+     "details": {},
+     "error": null,
+     "message": null
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/environment/env-1/deploymentStage",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "stage-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "first",
+      "description": "",
+      "deployment_order": 0,
+      "services": [
+       {
+        "id": "dss-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "service_id": "app-1",
+        "service_type": "APPLICATION",
+        "is_skipped": false
+       },
+       {
+        "id": "dss-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "service_id": "db-1",
+        "service_type": "DATABASE",
+        "is_skipped": true
+       }
+      ]
+     },
+     {
+      "id": "stage-2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "second",
+      "description": "my <stage>",
+      "deployment_order": 1,
+      "services": [
+       {
+        "id": "dss-3",
+        "created_at": "2024-05-01T10:00:00Z",
+        "service_id": "cont-1",
+        "service_type": "CONTAINER",
+        "is_skipped": false
+       },
+       {
+        "id": "dss-4",
+        "created_at": "2024-05-01T10:00:00Z",
+        "service_id": "cron-1",
+        "service_type": "JOB",
+        "is_skipped": false
+       }
+      ]
+     },
+     {
+      "id": "stage-3",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "empty",
+      "deployment_order": 2,
+      "services": []
+     },
+     {
+      "id": "stage-4",
+      "created_at": "2024-05-01T10:00:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "helms",
+      "deployment_order": 3,
+      "services": [
+       {
+        "id": "dss-5",
+        "created_at": "2024-05-01T10:00:00Z",
+        "service_id": "helm-1",
+        "service_type": "HELM",
+        "is_skipped": true
+       },
+       {
+        "id": "dss-6",
+        "created_at": "2024-05-01T10:00:00Z",
+        "service_id": "life-1",
+        "service_type": "JOB",
+        "is_skipped": false
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/environment/env-1/deploymentStage",
+   "status": 201,
+   "body": {
+    "id": "stage-9",
+    "created_at": "2024-05-01T10:00:00Z",
+    "environment": {
+     "id": "env-1"
+    },
+    "name": "new"
+   }
+  },
+  {
+   "method": "PUT",
+   "path_regex": "^/deploymentStage/[^/]+/service/[^/]+$",
+   "status": 200,
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "PUT",
+   "path_regex": "^/deploymentStage/[^/]+$",
+   "status": 200,
+   "body": {
+    "id": "stage-9",
+    "created_at": "2024-05-01T10:00:00Z",
+    "environment": {
+     "id": "env-1"
+    },
+    "name": "new"
+   }
+  },
+  {
+   "method": "DELETE",
+   "path_regex": "^/deploymentStage/[^/]+$",
+   "status": 204
+  },
+  {
+   "method": "POST",
+   "path": "/environment/env-1/cancelDeployment",
+   "status": 200,
+   "body": {
+    "id": "env-1",
+    "state": "DEPLOYING",
+    "last_deployment_state": "DEPLOYING"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/environment/env-1/clone",
+   "status": 201,
+   "body": {
+    "id": "env-2",
+    "created_at": "2024-05-01T10:00:00.123456Z",
+    "updated_at": "2024-06-02T11:30:00Z",
+    "name": "new-env",
+    "organization": {
+     "id": "org-1"
+    },
+    "project": {
+     "id": "proj-1"
+    },
+    "cloud_provider": {
+     "provider": "AWS",
+     "cluster": "us-east-2"
+    },
+    "mode": "DEVELOPMENT",
+    "cluster_id": "cluster-1",
+    "cluster_name": "my-cluster"
+   }
+  },
+  {
+   "method": "DELETE",
+   "path": "/environment/env-1",
+   "status": 204
+  },
+  {
+   "method": "POST",
+   "path": "/environment/env-1/deploy",
+   "status": 202,
+   "body": {
+    "id": "app-1",
+    "state": "QUEUED",
+    "service_deployment_status": "UP_TO_DATE",
+    "is_part_last_deployment": true,
+    "status_details": {
+     "action": "DEPLOY",
+     "status": "QUEUED",
+     "sub_action": "NONE"
+    },
+    "deployment_request_id": null,
+    "deployment_requests_count": 0
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/environment/env-1/service/deploy",
+   "status": 202,
+   "body": {
+    "id": "env-1",
+    "state": "DEPLOYING",
+    "last_deployment_state": "DEPLOYING"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/environment/env-1/stop",
+   "status": 202,
+   "body": {
+    "id": "env-1",
+    "state": "DEPLOYING",
+    "last_deployment_state": "DEPLOYING"
+   }
+  },
+  {
+   "method": "PUT",
+   "path": "/environment/env-1",
+   "status": 200,
+   "body": {
+    "id": "env-1",
+    "created_at": "2024-05-01T10:00:00.123456Z",
+    "updated_at": "2024-06-02T11:30:00Z",
+    "name": "my-env",
+    "organization": {
+     "id": "org-1"
+    },
+    "project": {
+     "id": "proj-1"
+    },
+    "cloud_provider": {
+     "provider": "AWS",
+     "cluster": "us-east-2"
+    },
+    "mode": "DEVELOPMENT",
+    "cluster_id": "cluster-1",
+    "cluster_name": "my-cluster"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/variable",
+   "query": {
+    "parent_id": "env-1",
+    "scope": "ENVIRONMENT"
+   },
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "id": "var-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "key": "FOO",
+      "value": "bar",
+      "scope": "ENVIRONMENT",
+      "variable_type": "VALUE",
+      "is_secret": false,
+      "owned_by": "QOVERY"
+     },
+     {
+      "id": "var-2",
+      "created_at": "2024-05-02T10:00:00Z",
+      "updated_at": "2024-05-02T10:00:00Z",
+      "key": "DB_PASSWORD",
+      "value": null,
+      "scope": "ENVIRONMENT",
+      "variable_type": "VALUE",
+      "is_secret": true
+     },
+     {
+      "id": "var-3",
+      "created_at": "2024-05-02T10:00:00Z",
+      "updated_at": "2024-05-02T10:00:00Z",
+      "key": "EXT",
+      "value": "arn:aws:secret",
+      "scope": "ENVIRONMENT",
+      "variable_type": "VALUE",
+      "is_secret": false,
+      "secret_manager_access_id": "sma-1"
+     },
+     {
+      "id": "var-4",
+      "created_at": "2024-05-03T10:00:00Z",
+      "updated_at": "2024-05-03T10:00:00Z",
+      "key": "PROJ_VAR",
+      "value": "x",
+      "scope": "PROJECT",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    ]
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/variable",
+   "status": 201,
+   "body": {
+    "id": "var-9",
+    "created_at": "2024-07-01T10:00:00Z",
+    "key": "NEW_KEY",
+    "value": "val",
+    "scope": "ENVIRONMENT",
+    "variable_type": "VALUE",
+    "is_secret": false
+   }
+  },
+  {
+   "method": "PUT",
+   "path_regex": "^/variable/var-[0-9]+$",
+   "status": 200,
+   "body": {
+    "id": "var-9",
+    "created_at": "2024-07-01T10:00:00Z",
+    "key": "NEW_KEY",
+    "value": "val",
+    "scope": "ENVIRONMENT",
+    "variable_type": "VALUE",
+    "is_secret": false
+   }
+  },
+  {
+   "method": "DELETE",
+   "path_regex": "^/variable/var-[0-9]+$",
+   "status": 204
+  },
+  {
+   "method": "POST",
+   "path_regex": "^/variable/var-[0-9]+/alias$",
+   "status": 201,
+   "body": {
+    "id": "var-9",
+    "created_at": "2024-07-01T10:00:00Z",
+    "key": "NEW_KEY",
+    "value": "val",
+    "scope": "ENVIRONMENT",
+    "variable_type": "VALUE",
+    "is_secret": false
+   }
+  },
+  {
+   "method": "POST",
+   "path_regex": "^/variable/var-[0-9]+/override$",
+   "status": 201,
+   "body": {
+    "id": "var-9",
+    "created_at": "2024-07-01T10:00:00Z",
+    "key": "NEW_KEY",
+    "value": "val",
+    "scope": "ENVIRONMENT",
+    "variable_type": "VALUE",
+    "is_secret": false
+   }
+  },
+  {
+   "method": "GET",
+   "path_regex": "^/(application|job|helm)/[^/]+/commit$",
+   "status": 200,
+   "body": {
+    "results": [
+     {
+      "created_at": "2024-06-01T10:00:00Z",
+      "git_commit_id": "old111",
+      "tag": "",
+      "message": "old",
+      "author_name": "me"
+     },
+     {
+      "created_at": "2024-06-03T10:00:00Z",
+      "git_commit_id": "new999",
+      "tag": "",
+      "message": "newest commit\nbody",
+      "author_name": "me"
+     }
+    ]
+   }
+  }
+ ],
+ "cases": [
+  {
+   "name": "environment (group)",
+   "args": [
+    "environment"
+   ]
+  },
+  {
+   "name": "environment unknown sub",
+   "args": [
+    "environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "deployment (group)",
+   "args": [
+    "environment",
+    "deployment"
+   ]
+  },
+  {
+   "name": "env (group)",
+   "args": [
+    "environment",
+    "env"
+   ]
+  },
+  {
+   "name": "env alias (group)",
+   "args": [
+    "environment",
+    "env",
+    "alias"
+   ]
+  },
+  {
+   "name": "env override (group)",
+   "args": [
+    "environment",
+    "env",
+    "override"
+   ]
+  },
+  {
+   "name": "external-secret (group)",
+   "args": [
+    "environment",
+    "external-secret"
+   ]
+  },
+  {
+   "name": "stage (group)",
+   "args": [
+    "environment",
+    "stage"
+   ]
+  },
+  {
+   "name": "list",
+   "args": [
+    "environment",
+    "list"
+   ]
+  },
+  {
+   "name": "list --json",
+   "args": [
+    "environment",
+    "list",
+    "--json"
+   ]
+  },
+  {
+   "name": "list --organization --project",
+   "args": [
+    "environment",
+    "list",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project"
+   ]
+  },
+  {
+   "name": "list unknown project",
+   "args": [
+    "environment",
+    "list",
+    "--project",
+    "nope"
+   ]
+  },
+  {
+   "name": "list unknown organization",
+   "args": [
+    "environment",
+    "list",
+    "--organization",
+    "nope",
+    "--project",
+    "my-project"
+   ]
+  },
+  {
+   "name": "list empty",
+   "args": [
+    "environment",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/proj-1/environment",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "list --json empty",
+   "args": [
+    "environment",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/proj-1/environment",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "list api error",
+   "args": [
+    "environment",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/proj-1/environment",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list status api error",
+   "args": [
+    "environment",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/proj-1/environment/status",
+     "status": 403,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list no status",
+   "args": [
+    "environment",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/proj-1/environment/status",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "list no token",
+   "args": [
+    "environment",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "list extra args",
+   "args": [
+    "environment",
+    "list",
+    "foo"
+   ]
+  },
+  {
+   "name": "list unknown flag",
+   "args": [
+    "environment",
+    "list",
+    "--nope"
+   ]
+  },
+  {
+   "name": "statuses",
+   "args": [
+    "environment",
+    "statuses"
+   ]
+  },
+  {
+   "name": "statuses --json",
+   "args": [
+    "environment",
+    "statuses",
+    "--json"
+   ]
+  },
+  {
+   "name": "statuses --environment",
+   "args": [
+    "environment",
+    "statuses",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "statuses unknown environment",
+   "args": [
+    "environment",
+    "statuses",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "statuses api error",
+   "args": [
+    "environment",
+    "statuses"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "status": 404,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "statuses --json nulls",
+   "args": [
+    "environment",
+    "statuses",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "body": {
+      "environment": {
+       "id": "env-1",
+       "state": "STOPPED",
+       "last_deployment_state": "STOPPED",
+       "last_deployment_date": null,
+       "origin": "CLI",
+       "extra_field": 1,
+       "deployment_status": null
+      },
+      "applications": [
+       {
+        "id": "app-1",
+        "state": "STOPPED",
+        "service_deployment_status": "UP_TO_DATE",
+        "is_part_last_deployment": true,
+        "status_details": {
+         "action": "DEPLOY",
+         "status": "SUCCESS",
+         "sub_action": "NONE"
+        },
+        "deployment_request_id": null,
+        "deployment_requests_count": 0,
+        "last_deployment_date": "2024-06-02T11:30:00.500+00:00",
+        "execution_id": null,
+        "steps": null
+       }
+      ],
+      "containers": null,
+      "jobs": [],
+      "databases": [],
+      "helms": [],
+      "terraforms": [],
+      "agentic_workflows": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "cancel",
+   "args": [
+    "environment",
+    "cancel"
+   ]
+  },
+  {
+   "name": "cancel --force",
+   "args": [
+    "environment",
+    "cancel",
+    "--force"
+   ]
+  },
+  {
+   "name": "cancel api error (silent)",
+   "args": [
+    "environment",
+    "cancel"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "status": 400,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "cancel empty body",
+   "args": [
+    "environment",
+    "cancel"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "cancel syntax error",
+   "args": [
+    "environment",
+    "cancel"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "status": 200,
+     "body_raw": "nope",
+     "headers": {
+      "Content-Type": "application/json"
+     }
+    }
+   ]
+  },
+  {
+   "name": "cancel text body",
+   "args": [
+    "environment",
+    "cancel"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "status": 200,
+     "body_raw": "x"
+    }
+   ]
+  },
+  {
+   "name": "cancel type mismatch",
+   "args": [
+    "environment",
+    "cancel"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "status": 200,
+     "body": {
+      "id": 1,
+      "state": "CANCELING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "cancel null body",
+   "args": [
+    "environment",
+    "cancel"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/cancelDeployment",
+     "status": 200,
+     "body": null
+    }
+   ]
+  },
+  {
+   "name": "cancel --watch",
+   "args": [
+    "environment",
+    "cancel",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "CANCELING",
+         "last_deployment_state": "CANCELING",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "CANCELING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "CANCELED",
+         "last_deployment_state": "CANCELED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "CANCELED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "cancel unknown environment",
+   "args": [
+    "environment",
+    "cancel",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "clone",
+   "args": [
+    "environment",
+    "clone",
+    "-n",
+    "new-env"
+   ]
+  },
+  {
+   "name": "clone all flags",
+   "args": [
+    "environment",
+    "clone",
+    "-o",
+    "my-org",
+    "-p",
+    "my-project",
+    "-e",
+    "my-env",
+    "-n",
+    "new-env",
+    "-c",
+    "prod-cluster",
+    "-t",
+    "staging",
+    "--apply-deployment-rule",
+    "--target-project",
+    "my-project"
+   ]
+  },
+  {
+   "name": "clone unknown cluster and type",
+   "args": [
+    "environment",
+    "clone",
+    "-n",
+    "new-env",
+    "--cluster",
+    "nope",
+    "--environment-type",
+    "weird"
+   ]
+  },
+  {
+   "name": "clone type production",
+   "args": [
+    "environment",
+    "clone",
+    "-n",
+    "new-env",
+    "-t",
+    "Production"
+   ]
+  },
+  {
+   "name": "clone type development",
+   "args": [
+    "environment",
+    "clone",
+    "-n",
+    "new-env",
+    "-t",
+    "development"
+   ]
+  },
+  {
+   "name": "clone unknown target project",
+   "args": [
+    "environment",
+    "clone",
+    "-n",
+    "new-env",
+    "--target-project",
+    "nope"
+   ]
+  },
+  {
+   "name": "clone clusters api error",
+   "args": [
+    "environment",
+    "clone",
+    "-n",
+    "new-env",
+    "--cluster",
+    "x"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone api error",
+   "args": [
+    "environment",
+    "clone",
+    "-n",
+    "new-env"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/clone",
+     "status": 400,
+     "body": {
+      "message": "name already used"
+     }
+    }
+   ]
+  },
+  {
+   "name": "clone missing --new-environment-name",
+   "args": [
+    "environment",
+    "clone"
+   ]
+  },
+  {
+   "name": "clone unknown environment",
+   "args": [
+    "environment",
+    "clone",
+    "-n",
+    "x",
+    "-e",
+    "nope"
+   ]
+  },
+  {
+   "name": "delete",
+   "args": [
+    "environment",
+    "delete"
+   ]
+  },
+  {
+   "name": "delete --environment",
+   "args": [
+    "environment",
+    "delete",
+    "--environment",
+    "my-env",
+    "--project",
+    "my-project",
+    "--organization",
+    "my-org"
+   ]
+  },
+  {
+   "name": "delete api error",
+   "args": [
+    "environment",
+    "delete"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/environment/env-1",
+     "status": 403,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete --watch",
+   "args": [
+    "environment",
+    "delete",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DELETING",
+         "last_deployment_state": "DELETING",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "DELETING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DELETED",
+         "last_deployment_state": "DELETED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "DELETED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 40
+  },
+  {
+   "name": "delete unknown environment",
+   "args": [
+    "environment",
+    "delete",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "redeploy",
+   "args": [
+    "environment",
+    "redeploy"
+   ]
+  },
+  {
+   "name": "redeploy api error",
+   "args": [
+    "environment",
+    "redeploy"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/deploy",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "redeploy --watch error",
+   "args": [
+    "environment",
+    "redeploy",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYING",
+         "last_deployment_state": "DEPLOYING",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "DEPLOYING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYMENT_ERROR",
+         "last_deployment_state": "DEPLOYMENT_ERROR",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "DEPLOYMENT_ERROR",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 40
+  },
+  {
+   "name": "stop",
+   "args": [
+    "environment",
+    "stop"
+   ]
+  },
+  {
+   "name": "stop api error",
+   "args": [
+    "environment",
+    "stop"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/stop",
+     "status": 400,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop --watch",
+   "args": [
+    "environment",
+    "stop",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "STOPPED",
+         "last_deployment_state": "STOPPED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "stop no token",
+   "args": [
+    "environment",
+    "stop"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "statuses type mismatch []",
+   "args": [
+    "environment",
+    "statuses"
+   ],
+   "ignore": [
+    "stdout"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "body": {
+      "environment": {
+       "id": "env-1",
+       "state": "DEPLOYED",
+       "last_deployment_state": "DEPLOYED",
+       "last_deployment_date": "2024-06-02T11:30:00Z",
+       "last_deployment_id": "dep-1",
+       "total_deployment_duration_in_seconds": 42
+      },
+      "applications": "x",
+      "containers": [],
+      "jobs": [],
+      "databases": [],
+      "helms": [],
+      "terraforms": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "statuses type mismatch ['--json']",
+   "args": [
+    "environment",
+    "statuses",
+    "--json"
+   ],
+   "ignore": [
+    "stdout"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "body": {
+      "environment": {
+       "id": "env-1",
+       "state": "DEPLOYED",
+       "last_deployment_state": "DEPLOYED",
+       "last_deployment_date": "2024-06-02T11:30:00Z",
+       "last_deployment_id": "dep-1",
+       "total_deployment_duration_in_seconds": 42
+      },
+      "applications": "x",
+      "containers": [],
+      "jobs": [],
+      "databases": [],
+      "helms": [],
+      "terraforms": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy",
+   "args": [
+    "environment",
+    "deploy"
+   ]
+  },
+  {
+   "name": "deploy api error",
+   "args": [
+    "environment",
+    "deploy"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/deploy",
+     "status": 409,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --watch",
+   "args": [
+    "environment",
+    "deploy",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYING",
+         "last_deployment_state": "DEPLOYING",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "DEPLOYING",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "DEPLOYED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 40
+  },
+  {
+   "name": "deploy --skip-paused-services",
+   "args": [
+    "environment",
+    "deploy",
+    "--skip-paused-services"
+   ]
+  },
+  {
+   "name": "deploy --skip-paused-services all stopped",
+   "args": [
+    "environment",
+    "deploy",
+    "--skip-paused-services"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "STOPPED",
+         "last_deployment_state": "STOPPED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "applications": [
+         {
+          "id": "app-1",
+          "state": "STOPPED",
+          "service_deployment_status": "UP_TO_DATE",
+          "is_part_last_deployment": true,
+          "status_details": {
+           "action": "DEPLOY",
+           "status": "SUCCESS",
+           "sub_action": "NONE"
+          },
+          "deployment_request_id": null,
+          "deployment_requests_count": 0,
+          "last_deployment_date": "2024-06-02T11:30:00Z",
+          "execution_id": "exec-app-1",
+          "steps": null
+         }
+        ],
+        "containers": [],
+        "jobs": [],
+        "databases": [],
+        "helms": [],
+        "terraforms": []
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "deploy --skip-paused-services statuses error",
+   "args": [
+    "environment",
+    "deploy",
+    "--skip-paused-services"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --skip-paused-services with --applications",
+   "args": [
+    "environment",
+    "deploy",
+    "--skip-paused-services",
+    "--applications",
+    "my-app"
+   ]
+  },
+  {
+   "name": "deploy --services",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"applications\":[{\"application_id\":\"app-1\",\"git_commit_id\":null}],\"databases\":[\"db-1\"],\"jobs\":null,\"extra\":{\"a\":1}}"
+   ]
+  },
+  {
+   "name": "deploy --services invalid json",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{nope"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 0",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "[]"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 1",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"applications\":\"x\"}"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 2",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"DATABASES\":\"x\"}"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 3",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"databases\":[\"a\",1]}"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 4",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"applications\":[1]}"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 5",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"applications\":[null]}"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 6",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"containers\":[{\"image_tag\":\"t\"}]}"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 7",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"applications\":[{\"git_commit_id\":5,\"application_id\":2}]}"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 8",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"jobs\":[1]}"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 9",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"terraforms\":[{\"id\":3}]}"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 10",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"databases\":\"x\",\"applications\":[{}]}"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 11",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"applications\":[{}],\"databases\":\"x\"}"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 12",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"applications\":[{\"application_id\":null}],\"databases\":[null,\"d\"],\"jobs\":[null,{\"id\":null}],\"helms\":null}"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 13",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"terraforms\":[{\"id\":null,\"action\":null,\"git_commit_id\":null}],\"Databases\":[\"a\"],\"x\":null}"
+   ]
+  },
+  {
+   "name": "deploy --services decoding 14",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"jobs\":[{\"ID\":\"j\",\"image_tag\":null}],\"applications\":[{\"application_id\":\"a\",\"GIT_COMMIT_ID\":\"b\"}]}"
+   ]
+  },
+  {
+   "name": "deploy --services api error",
+   "args": [
+    "environment",
+    "deploy",
+    "--services",
+    "{\"databases\":[\"db-1\"]}"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 400,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --applications",
+   "args": [
+    "environment",
+    "deploy",
+    "--applications",
+    "my-app"
+   ]
+  },
+  {
+   "name": "deploy --applications commit",
+   "args": [
+    "environment",
+    "deploy",
+    "--applications",
+    "my-app:abc,my-app:latest"
+   ]
+  },
+  {
+   "name": "deploy --applications unknown",
+   "args": [
+    "environment",
+    "deploy",
+    "--applications",
+    "nope"
+   ]
+  },
+  {
+   "name": "deploy --applications commit api error",
+   "args": [
+    "environment",
+    "deploy",
+    "--applications",
+    "my-app:latest"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1/commit",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --containers",
+   "args": [
+    "environment",
+    "deploy",
+    "--containers",
+    "my-container:v2,my-container"
+   ]
+  },
+  {
+   "name": "deploy --containers unknown",
+   "args": [
+    "environment",
+    "deploy",
+    "--containers",
+    "nope:v1"
+   ]
+  },
+  {
+   "name": "deploy --cronjobs",
+   "args": [
+    "environment",
+    "deploy",
+    "--cronjobs",
+    "my-cron:latest"
+   ]
+  },
+  {
+   "name": "deploy --cronjobs commit",
+   "args": [
+    "environment",
+    "deploy",
+    "--cronjobs",
+    "my-cron:abc"
+   ]
+  },
+  {
+   "name": "deploy --lifecycles",
+   "args": [
+    "environment",
+    "deploy",
+    "--lifecycles",
+    "my-lifecycle:1.2"
+   ]
+  },
+  {
+   "name": "deploy --lifecycles and --cronjobs",
+   "args": [
+    "environment",
+    "deploy",
+    "--lifecycles",
+    "my-lifecycle",
+    "--cronjobs",
+    "my-cron"
+   ]
+  },
+  {
+   "name": "deploy --lifecycles unknown",
+   "args": [
+    "environment",
+    "deploy",
+    "--lifecycles",
+    "nope"
+   ]
+  },
+  {
+   "name": "deploy --cronjobs unknown",
+   "args": [
+    "environment",
+    "deploy",
+    "--cronjobs",
+    "nope"
+   ]
+  },
+  {
+   "name": "deploy --lifecycles with a cron job (Go nil pointer panic)",
+   "args": [
+    "environment",
+    "deploy",
+    "--lifecycles",
+    "my-cron"
+   ],
+   "ignore": [
+    "stderr"
+   ]
+  },
+  {
+   "name": "deploy --helms",
+   "args": [
+    "environment",
+    "deploy",
+    "--helms",
+    "my-helm:19.0.0"
+   ]
+  },
+  {
+   "name": "deploy --helms git latest",
+   "args": [
+    "environment",
+    "deploy",
+    "--helms",
+    "my-helm:latest"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "body": {
+      "results": [
+       {
+        "id": "helm-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "name": "my-helm",
+        "auto_preview": false,
+        "auto_deploy": false,
+        "arguments": [],
+        "allow_cluster_wide_resources": false,
+        "values_override": {
+         "set": [],
+         "set_string": [],
+         "set_json": [],
+         "file": null
+        },
+        "icon_uri": "x",
+        "service_type": "HELM",
+        "source": {
+         "git": {
+          "git_repository": {
+           "provider": "GITHUB",
+           "owner": "me",
+           "url": "https://github.com/me/h.git",
+           "name": "me/h",
+           "branch": "main",
+           "root_path": "/",
+           "has_access": true
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --helms unknown",
+   "args": [
+    "environment",
+    "deploy",
+    "--helms",
+    "nope"
+   ]
+  },
+  {
+   "name": "deploy --helms api error",
+   "args": [
+    "environment",
+    "deploy",
+    "--helms",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy services api error",
+   "args": [
+    "environment",
+    "deploy",
+    "--containers",
+    "my-container"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy unknown environment",
+   "args": [
+    "environment",
+    "deploy",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "update",
+   "args": [
+    "environment",
+    "update",
+    "-e",
+    "my-env"
+   ]
+  },
+  {
+   "name": "update --name --type",
+   "args": [
+    "environment",
+    "update",
+    "--environment",
+    "my-env",
+    "--name",
+    "renamed",
+    "--type",
+    "production"
+   ]
+  },
+  {
+   "name": "update --type unknown",
+   "args": [
+    "environment",
+    "update",
+    "--environment",
+    "my-env",
+    "--type",
+    "preview"
+   ]
+  },
+  {
+   "name": "update unknown environment",
+   "args": [
+    "environment",
+    "update",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "update no --environment",
+   "args": [
+    "environment",
+    "update"
+   ]
+  },
+  {
+   "name": "update api error",
+   "args": [
+    "environment",
+    "update",
+    "-e",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/environment/env-1",
+     "status": 400,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update list api error",
+   "args": [
+    "environment",
+    "update",
+    "-e",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/project/proj-1/environment",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update unknown project",
+   "args": [
+    "environment",
+    "update",
+    "-e",
+    "my-env",
+    "-p",
+    "nope"
+   ]
+  },
+  {
+   "name": "deployment list",
+   "args": [
+    "environment",
+    "deployment",
+    "list"
+   ]
+  },
+  {
+   "name": "deployment list --json",
+   "args": [
+    "environment",
+    "deployment",
+    "list",
+    "--json"
+   ]
+  },
+  {
+   "name": "deployment list empty",
+   "args": [
+    "environment",
+    "deployment",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/deploymentHistory",
+     "body": {
+      "page": 1,
+      "page_size": 10,
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "deployment list --json empty",
+   "args": [
+    "environment",
+    "deployment",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/deploymentHistory",
+     "body": {
+      "page": 1,
+      "page_size": 10,
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "deployment list api error",
+   "args": [
+    "environment",
+    "deployment",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/deploymentHistory",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deployment list unknown environment",
+   "args": [
+    "environment",
+    "deployment",
+    "list",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "logs",
+   "args": [
+    "environment",
+    "deployment",
+    "logs"
+   ]
+  },
+  {
+   "name": "logs --json",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--json"
+   ]
+  },
+  {
+   "name": "logs --execution-id",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--execution-id",
+    "exec-9"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/logs",
+     "status": 200,
+     "body": [
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:00.100Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Environment",
+         "name": "my-env",
+         "id": "env-1"
+        },
+        "stage": {
+         "step": "PreCheck",
+         "name": null,
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "pre-check started",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:01Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "TaskManager",
+         "name": "tm",
+         "id": "tm-1"
+        },
+        "stage": {
+         "step": "Queued",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "queued",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:05Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Application",
+         "name": "my-app",
+         "id": "app-1"
+        },
+        "stage": {
+         "step": "Build",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "building image",
+        "full_details": null
+       }
+      }
+     ],
+     "query": {
+      "version": "exec-9"
+     }
+    }
+   ]
+  },
+  {
+   "name": "logs --id (KNOWN DRIFT: pflag normalize alias of --execution-id, unsupported by qovery_cobra)",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--id",
+    "exec-9"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/logs",
+     "status": 200,
+     "body": [
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:00.100Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Environment",
+         "name": "my-env",
+         "id": "env-1"
+        },
+        "stage": {
+         "step": "PreCheck",
+         "name": null,
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "pre-check started",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:01Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "TaskManager",
+         "name": "tm",
+         "id": "tm-1"
+        },
+        "stage": {
+         "step": "Queued",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "queued",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:05Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Application",
+         "name": "my-app",
+         "id": "app-1"
+        },
+        "stage": {
+         "step": "Build",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "building image",
+        "full_details": null
+       }
+      }
+     ],
+     "query": {
+      "version": "exec-9"
+     }
+    }
+   ]
+  },
+  {
+   "name": "logs --service",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--service",
+    "my-app"
+   ]
+  },
+  {
+   "name": "logs -s terraform --json",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "-s",
+    "S3",
+    "--json"
+   ]
+  },
+  {
+   "name": "logs --service-id",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--service-id",
+    "tf-1"
+   ]
+  },
+  {
+   "name": "logs --service unknown",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--service",
+    "nope"
+   ]
+  },
+  {
+   "name": "logs --service unknown env only",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--service",
+    "nope"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/logs",
+     "status": 200,
+     "body": [
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:00.100Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Environment",
+         "name": "my-env",
+         "id": "env-1"
+        },
+        "stage": {
+         "step": "PreCheck",
+         "name": null,
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "pre-check started",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:01Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "TaskManager",
+         "name": "tm",
+         "id": "tm-1"
+        },
+        "stage": {
+         "step": "Queued",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "queued",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:03Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Environment",
+         "name": "my-env",
+         "id": "env-1"
+        },
+        "stage": {
+         "step": "Build",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "stage build started",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:03:40Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Environment",
+         "name": "my-env",
+         "id": "env-1"
+        },
+        "stage": {
+         "step": "Deployed",
+         "name": "deploy-stage",
+         "id": null
+        }
+       },
+       "error": {
+        "tag": "ENV_FAILED",
+        "user_log_message": "deployment failed"
+       },
+       "message": {
+        "safe_message": "deployment error",
+        "full_details": null
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "logs --pre-check",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--pre-check"
+   ]
+  },
+  {
+   "name": "logs --errors-only",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--errors-only"
+   ]
+  },
+  {
+   "name": "logs --errors-only --json",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--errors-only",
+    "--json"
+   ]
+  },
+  {
+   "name": "logs --errors-only --service",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--errors-only",
+    "--service",
+    "my-app"
+   ]
+  },
+  {
+   "name": "logs --errors-only no errors",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--errors-only"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/logs",
+     "status": 200,
+     "body": [
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:00.100Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Environment",
+         "name": "my-env",
+         "id": "env-1"
+        },
+        "stage": {
+         "step": "PreCheck",
+         "name": null,
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "pre-check started",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:01Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "TaskManager",
+         "name": "tm",
+         "id": "tm-1"
+        },
+        "stage": {
+         "step": "Queued",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "queued",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:05Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Application",
+         "name": "my-app",
+         "id": "app-1"
+        },
+        "stage": {
+         "step": "Build",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "building image",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:03Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Environment",
+         "name": "my-env",
+         "id": "env-1"
+        },
+        "stage": {
+         "step": "Build",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "stage build started",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:35.250Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Application",
+         "name": "my-app",
+         "id": "app-1"
+        },
+        "stage": {
+         "step": "Build",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "image built\nwith 2 layers",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:01:00Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Application",
+         "name": "my-app",
+         "id": "app-1"
+        },
+        "stage": {
+         "step": "Deploy",
+         "name": "deploy-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "deploying <app> & co",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:01:30Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Terraform",
+         "name": "S3",
+         "id": "tf-1"
+        },
+        "stage": {
+         "step": "Deploy",
+         "name": "deploy-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "terraform apply",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:01:30Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Terraform",
+         "name": "S3",
+         "id": "tf-1"
+        },
+        "stage": {
+         "step": "Deploy",
+         "name": "deploy-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "terraform done",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:03:41Z",
+       "details": {},
+       "error": null,
+       "message": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "logs --errors-only --service no errors",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--errors-only",
+    "-s",
+    "S3"
+   ]
+  },
+  {
+   "name": "logs --errors-only --service unknown",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--errors-only",
+    "-s",
+    "nope"
+   ]
+  },
+  {
+   "name": "logs --pre-check --errors-only",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--pre-check",
+    "--errors-only"
+   ]
+  },
+  {
+   "name": "logs --pre-check with --service",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--pre-check",
+    "--service",
+    "my-app"
+   ]
+  },
+  {
+   "name": "logs --service and --service-id",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--service",
+    "my-app",
+    "--service-id",
+    "app-1"
+   ]
+  },
+  {
+   "name": "logs empty",
+   "args": [
+    "environment",
+    "deployment",
+    "logs"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/logs",
+     "status": 200,
+     "body": []
+    }
+   ]
+  },
+  {
+   "name": "logs empty --json",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/logs",
+     "status": 200,
+     "body": []
+    }
+   ]
+  },
+  {
+   "name": "logs null --json",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/logs",
+     "status": 200,
+     "body": null
+    }
+   ]
+  },
+  {
+   "name": "logs api error",
+   "args": [
+    "environment",
+    "deployment",
+    "logs"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/logs",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "logs unknown environment",
+   "args": [
+    "environment",
+    "deployment",
+    "logs",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "logs no token",
+   "args": [
+    "environment",
+    "deployment",
+    "logs"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "explain",
+   "args": [
+    "environment",
+    "deployment",
+    "explain"
+   ]
+  },
+  {
+   "name": "explain --id",
+   "args": [
+    "environment",
+    "deployment",
+    "explain",
+    "--id",
+    "exec-9"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/logs",
+     "status": 200,
+     "body": [
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:00.100Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Environment",
+         "name": "my-env",
+         "id": "env-1"
+        },
+        "stage": {
+         "step": "PreCheck",
+         "name": null,
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "pre-check started",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:01Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "TaskManager",
+         "name": "tm",
+         "id": "tm-1"
+        },
+        "stage": {
+         "step": "Queued",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "queued",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:05Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Application",
+         "name": "my-app",
+         "id": "app-1"
+        },
+        "stage": {
+         "step": "Build",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "building image",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:03Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Environment",
+         "name": "my-env",
+         "id": "env-1"
+        },
+        "stage": {
+         "step": "Build",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "stage build started",
+        "full_details": null
+       }
+      },
+      {
+       "type": "info",
+       "timestamp": "2024-06-02T11:00:35.250Z",
+       "details": {
+        "organization_id": "org-1",
+        "cluster_id": "cluster-1",
+        "execution_id": "exec-1",
+        "transmitter": {
+         "type": "Application",
+         "name": "my-app",
+         "id": "app-1"
+        },
+        "stage": {
+         "step": "Build",
+         "name": "build-stage",
+         "id": null
+        }
+       },
+       "error": null,
+       "message": {
+        "safe_message": "image built\nwith 2 layers",
+        "full_details": null
+       }
+      }
+     ],
+     "query": {
+      "version": "exec-9"
+     }
+    }
+   ]
+  },
+  {
+   "name": "explain --level all",
+   "args": [
+    "environment",
+    "deployment",
+    "explain",
+    "--level",
+    "all"
+   ]
+  },
+  {
+   "name": "explain --level stage",
+   "args": [
+    "environment",
+    "deployment",
+    "explain",
+    "--level",
+    "stage"
+   ]
+  },
+  {
+   "name": "explain --level service",
+   "args": [
+    "environment",
+    "deployment",
+    "explain",
+    "--level",
+    "service"
+   ]
+  },
+  {
+   "name": "explain --level step",
+   "args": [
+    "environment",
+    "deployment",
+    "explain",
+    "--level",
+    "step"
+   ]
+  },
+  {
+   "name": "explain --level message",
+   "args": [
+    "environment",
+    "deployment",
+    "explain",
+    "--level",
+    "message"
+   ]
+  },
+  {
+   "name": "explain --level (empty)",
+   "args": [
+    "environment",
+    "deployment",
+    "explain",
+    "--level",
+    ""
+   ]
+  },
+  {
+   "name": "explain invalid level",
+   "args": [
+    "environment",
+    "deployment",
+    "explain",
+    "--level",
+    "nope"
+   ]
+  },
+  {
+   "name": "explain empty logs",
+   "args": [
+    "environment",
+    "deployment",
+    "explain"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/logs",
+     "status": 200,
+     "body": []
+    }
+   ]
+  },
+  {
+   "name": "explain env api error",
+   "args": [
+    "environment",
+    "deployment",
+    "explain"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1",
+     "status": 404,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "explain logs api error",
+   "args": [
+    "environment",
+    "deployment",
+    "explain"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/logs",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "explain unknown environment",
+   "args": [
+    "environment",
+    "deployment",
+    "explain",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "stage list",
+   "args": [
+    "environment",
+    "stage",
+    "list"
+   ]
+  },
+  {
+   "name": "stage list --json",
+   "args": [
+    "environment",
+    "stage",
+    "list",
+    "--json"
+   ]
+  },
+  {
+   "name": "stage list empty",
+   "args": [
+    "environment",
+    "stage",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/deploymentStage",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "stage list --json empty",
+   "args": [
+    "environment",
+    "stage",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/deploymentStage",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "stage list name api error",
+   "args": [
+    "environment",
+    "stage",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stage list api error",
+   "args": [
+    "environment",
+    "stage",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/deploymentStage",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stage create",
+   "args": [
+    "environment",
+    "stage",
+    "create",
+    "-n",
+    "new"
+   ]
+  },
+  {
+   "name": "stage create --description",
+   "args": [
+    "environment",
+    "stage",
+    "create",
+    "--name",
+    "new",
+    "-d",
+    "a stage"
+   ]
+  },
+  {
+   "name": "stage create api error",
+   "args": [
+    "environment",
+    "stage",
+    "create",
+    "-n",
+    "new"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/deploymentStage",
+     "status": 400,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stage create missing --name",
+   "args": [
+    "environment",
+    "stage",
+    "create"
+   ]
+  },
+  {
+   "name": "stage delete",
+   "args": [
+    "environment",
+    "stage",
+    "delete",
+    "-n",
+    "second"
+   ]
+  },
+  {
+   "name": "stage delete unknown",
+   "args": [
+    "environment",
+    "stage",
+    "delete",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "stage delete api error",
+   "args": [
+    "environment",
+    "stage",
+    "delete",
+    "-n",
+    "first"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/deploymentStage/stage-1",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stage delete list api error",
+   "args": [
+    "environment",
+    "stage",
+    "delete",
+    "-n",
+    "first"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/deploymentStage",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stage edit",
+   "args": [
+    "environment",
+    "stage",
+    "edit",
+    "-n",
+    "first",
+    "--new-name",
+    "premier"
+   ]
+  },
+  {
+   "name": "stage edit --new-description",
+   "args": [
+    "environment",
+    "stage",
+    "edit",
+    "-n",
+    "first",
+    "--new-name",
+    "premier",
+    "--new-description",
+    "desc"
+   ]
+  },
+  {
+   "name": "stage edit unknown",
+   "args": [
+    "environment",
+    "stage",
+    "edit",
+    "-n",
+    "nope",
+    "--new-name",
+    "x"
+   ]
+  },
+  {
+   "name": "stage edit api error",
+   "args": [
+    "environment",
+    "stage",
+    "edit",
+    "-n",
+    "first",
+    "--new-name",
+    "x"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/deploymentStage/stage-1",
+     "status": 400,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stage edit missing --new-name",
+   "args": [
+    "environment",
+    "stage",
+    "edit",
+    "-n",
+    "first"
+   ]
+  },
+  {
+   "name": "stage move",
+   "args": [
+    "environment",
+    "stage",
+    "move",
+    "-n",
+    "my-cron",
+    "-s",
+    "first"
+   ]
+  },
+  {
+   "name": "stage move app",
+   "args": [
+    "environment",
+    "stage",
+    "move",
+    "--name",
+    "my-app",
+    "--stage",
+    "second"
+   ]
+  },
+  {
+   "name": "stage move unknown service",
+   "args": [
+    "environment",
+    "stage",
+    "move",
+    "-n",
+    "nope",
+    "-s",
+    "first"
+   ]
+  },
+  {
+   "name": "stage move helm (unsupported type)",
+   "args": [
+    "environment",
+    "stage",
+    "move",
+    "-n",
+    "my-helm",
+    "-s",
+    "first"
+   ]
+  },
+  {
+   "name": "stage move lifecycle after helm",
+   "args": [
+    "environment",
+    "stage",
+    "move",
+    "-n",
+    "my-lifecycle",
+    "-s",
+    "first"
+   ]
+  },
+  {
+   "name": "stage move unknown stage",
+   "args": [
+    "environment",
+    "stage",
+    "move",
+    "-n",
+    "my-app",
+    "-s",
+    "nope"
+   ]
+  },
+  {
+   "name": "stage move api error",
+   "args": [
+    "environment",
+    "stage",
+    "move",
+    "-n",
+    "my-app",
+    "-s",
+    "second"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/deploymentStage/stage-2/service/app-1",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stage move service api error",
+   "args": [
+    "environment",
+    "stage",
+    "move",
+    "-n",
+    "my-cron",
+    "-s",
+    "first"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stage move missing flags",
+   "args": [
+    "environment",
+    "stage",
+    "move"
+   ]
+  },
+  {
+   "name": "stage skip",
+   "args": [
+    "environment",
+    "stage",
+    "skip",
+    "-n",
+    "my-container"
+   ]
+  },
+  {
+   "name": "stage skip db",
+   "args": [
+    "environment",
+    "stage",
+    "skip",
+    "-n",
+    "my-db"
+   ]
+  },
+  {
+   "name": "stage skip unknown",
+   "args": [
+    "environment",
+    "stage",
+    "skip",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "stage skip api error",
+   "args": [
+    "environment",
+    "stage",
+    "skip",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/deploymentStage/stage-1/service/app-1",
+     "status": 403,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stage skip missing --name",
+   "args": [
+    "environment",
+    "stage",
+    "skip"
+   ]
+  },
+  {
+   "name": "stage unskip",
+   "args": [
+    "environment",
+    "stage",
+    "unskip",
+    "--name",
+    "my-db"
+   ]
+  },
+  {
+   "name": "stage unskip unknown",
+   "args": [
+    "environment",
+    "stage",
+    "unskip",
+    "--name",
+    "my-helm"
+   ]
+  },
+  {
+   "name": "env list",
+   "args": [
+    "environment",
+    "env",
+    "list",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "key": "FOO",
+        "value": "bar",
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "owned_by": "QOVERY"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list --sort",
+   "args": [
+    "environment",
+    "env",
+    "list",
+    "--sort",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env list --show-values --sort",
+   "args": [
+    "environment",
+    "env",
+    "list",
+    "--show-values",
+    "--sort",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env list --pretty-print",
+   "args": [
+    "environment",
+    "env",
+    "list",
+    "--pretty-print",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "key": "FOO",
+        "value": "bar",
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "owned_by": "QOVERY"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list --pretty-print --sort",
+   "args": [
+    "environment",
+    "env",
+    "list",
+    "--pretty-print",
+    "--sort",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env list --json",
+   "args": [
+    "environment",
+    "env",
+    "list",
+    "--json",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "body": {
+      "results": [
+       {
+        "id": "var-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "key": "FOO",
+        "value": "bar",
+        "scope": "ENVIRONMENT",
+        "variable_type": "VALUE",
+        "is_secret": false,
+        "owned_by": "QOVERY"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list --json --sort",
+   "args": [
+    "environment",
+    "env",
+    "list",
+    "--json",
+    "--sort",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env list empty",
+   "args": [
+    "environment",
+    "env",
+    "list",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list api error",
+   "args": [
+    "environment",
+    "env",
+    "list",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env list unknown environment",
+   "args": [
+    "environment",
+    "env",
+    "list",
+    "--project",
+    "my-project",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "env list unknown project",
+   "args": [
+    "environment",
+    "env",
+    "list",
+    "--project",
+    "nope",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env list blank project (Go nil pointer panic)",
+   "args": [
+    "environment",
+    "env",
+    "list",
+    "--project",
+    " ",
+    "--environment",
+    "my-env"
+   ],
+   "ignore": [
+    "stderr"
+   ]
+  },
+  {
+   "name": "env list missing flags",
+   "args": [
+    "environment",
+    "env",
+    "list"
+   ]
+  },
+  {
+   "name": "env list projects api error",
+   "args": [
+    "environment",
+    "env",
+    "list",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/project",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env create",
+   "args": [
+    "environment",
+    "env",
+    "create",
+    "-k",
+    "NEW_KEY",
+    "-v",
+    "val",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env create --secret --override-if-exists",
+   "args": [
+    "environment",
+    "env",
+    "create",
+    "-k",
+    "NEW_KEY",
+    "-v",
+    "val",
+    "--secret",
+    "--override-if-exists",
+    "--scope",
+    "PROJECT",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env create api error",
+   "args": [
+    "environment",
+    "env",
+    "create",
+    "-k",
+    "NEW_KEY",
+    "-v",
+    "val",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 409,
+     "body": {
+      "status": 409,
+      "detail": "key FOO already exists at PROJECT scope"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env create missing --value",
+   "args": [
+    "environment",
+    "env",
+    "create",
+    "-k",
+    "NEW_KEY",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env update",
+   "args": [
+    "environment",
+    "env",
+    "update",
+    "-k",
+    "FOO",
+    "-v",
+    "new",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env update unknown key",
+   "args": [
+    "environment",
+    "env",
+    "update",
+    "-k",
+    "NOPE",
+    "-v",
+    "new",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env update api error",
+   "args": [
+    "environment",
+    "env",
+    "update",
+    "-k",
+    "FOO",
+    "-v",
+    "new",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/variable/var-1",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env delete",
+   "args": [
+    "environment",
+    "env",
+    "delete",
+    "-k",
+    "FOO",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env delete unknown key",
+   "args": [
+    "environment",
+    "env",
+    "delete",
+    "-k",
+    "NOPE",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env delete api error",
+   "args": [
+    "environment",
+    "env",
+    "delete",
+    "-k",
+    "FOO",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/variable/var-1",
+     "status": 404,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env alias create",
+   "args": [
+    "environment",
+    "env",
+    "alias",
+    "create",
+    "-k",
+    "FOO",
+    "--alias",
+    "FOO2",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env alias create --scope PROJECT",
+   "args": [
+    "environment",
+    "env",
+    "alias",
+    "create",
+    "-k",
+    "FOO",
+    "--alias",
+    "FOO2",
+    "--scope",
+    "PROJECT",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env alias create bad scope",
+   "args": [
+    "environment",
+    "env",
+    "alias",
+    "create",
+    "-k",
+    "FOO",
+    "--alias",
+    "FOO2",
+    "--scope",
+    "WEIRD",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env alias create unknown key",
+   "args": [
+    "environment",
+    "env",
+    "alias",
+    "create",
+    "-k",
+    "NOPE",
+    "--alias",
+    "FOO2",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env alias create api error",
+   "args": [
+    "environment",
+    "env",
+    "alias",
+    "create",
+    "-k",
+    "FOO",
+    "--alias",
+    "X",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/variable/var-1/alias",
+     "status": 400,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env alias create missing --alias",
+   "args": [
+    "environment",
+    "env",
+    "alias",
+    "create",
+    "-k",
+    "FOO",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env override create",
+   "args": [
+    "environment",
+    "env",
+    "override",
+    "create",
+    "-k",
+    "PROJ_VAR",
+    "--value",
+    "y",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env override create unknown key",
+   "args": [
+    "environment",
+    "env",
+    "override",
+    "create",
+    "-k",
+    "NOPE",
+    "--value",
+    "y",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env override create api error",
+   "args": [
+    "environment",
+    "env",
+    "override",
+    "create",
+    "-k",
+    "FOO",
+    "--value",
+    "y",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/variable/var-1/override",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "env override create missing --value",
+   "args": [
+    "environment",
+    "env",
+    "override",
+    "create",
+    "-k",
+    "FOO",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "env create no token",
+   "args": [
+    "environment",
+    "env",
+    "create",
+    "-k",
+    "A",
+    "-v",
+    "b",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "external-secret create",
+   "args": [
+    "environment",
+    "external-secret",
+    "create",
+    "-k",
+    "EXT2",
+    "-r",
+    "arn:x",
+    "--secret-manager-access-name",
+    "my-sm",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       },
+       {
+        "id": "cluster-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "Prod-Cluster",
+        "region": "eu-west-3",
+        "cloud_provider": "AWS"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create --mount-path --scope",
+   "args": [
+    "environment",
+    "external-secret",
+    "create",
+    "-k",
+    "EXT2",
+    "-r",
+    "arn:x",
+    "--secret-manager-access-name",
+    "my-sm",
+    "--mount-path",
+    "/etc/x",
+    "--scope",
+    "PROJECT",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       },
+       {
+        "id": "cluster-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "Prod-Cluster",
+        "region": "eu-west-3",
+        "cloud_provider": "AWS"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create unknown sm",
+   "args": [
+    "environment",
+    "external-secret",
+    "create",
+    "-k",
+    "EXT2",
+    "-r",
+    "arn:x",
+    "--secret-manager-access-name",
+    "nope",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       },
+       {
+        "id": "cluster-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "Prod-Cluster",
+        "region": "eu-west-3",
+        "cloud_provider": "AWS"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create no sm in cluster",
+   "args": [
+    "environment",
+    "external-secret",
+    "create",
+    "-k",
+    "EXT2",
+    "-r",
+    "arn:x",
+    "--secret-manager-access-name",
+    "my-sm",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "external-secret create unknown project",
+   "args": [
+    "environment",
+    "external-secret",
+    "create",
+    "-k",
+    "EXT2",
+    "-r",
+    "arn:x",
+    "--secret-manager-access-name",
+    "my-sm",
+    "--project",
+    "nope",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       },
+       {
+        "id": "cluster-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "Prod-Cluster",
+        "region": "eu-west-3",
+        "cloud_provider": "AWS"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create blank project",
+   "args": [
+    "environment",
+    "external-secret",
+    "create",
+    "-k",
+    "EXT2",
+    "-r",
+    "arn:x",
+    "--secret-manager-access-name",
+    "my-sm",
+    "--project",
+    " ",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       },
+       {
+        "id": "cluster-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "Prod-Cluster",
+        "region": "eu-west-3",
+        "cloud_provider": "AWS"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create unknown environment",
+   "args": [
+    "environment",
+    "external-secret",
+    "create",
+    "-k",
+    "EXT2",
+    "-r",
+    "arn:x",
+    "--secret-manager-access-name",
+    "my-sm",
+    "--project",
+    "my-project",
+    "--environment",
+    "nope"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       },
+       {
+        "id": "cluster-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "Prod-Cluster",
+        "region": "eu-west-3",
+        "cloud_provider": "AWS"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create api error",
+   "args": [
+    "environment",
+    "external-secret",
+    "create",
+    "-k",
+    "EXT2",
+    "-r",
+    "arn:x",
+    "--secret-manager-access-name",
+    "my-sm",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       },
+       {
+        "id": "cluster-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "Prod-Cluster",
+        "region": "eu-west-3",
+        "cloud_provider": "AWS"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 400,
+     "body": {
+      "detail": "bad reference"
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret create missing flags",
+   "args": [
+    "environment",
+    "external-secret",
+    "create",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "external-secret update",
+   "args": [
+    "environment",
+    "external-secret",
+    "update",
+    "-k",
+    "EXT",
+    "-r",
+    "arn:y",
+    "--secret-manager-access-name",
+    "my-sm",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       },
+       {
+        "id": "cluster-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "Prod-Cluster",
+        "region": "eu-west-3",
+        "cloud_provider": "AWS"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret update unknown key",
+   "args": [
+    "environment",
+    "external-secret",
+    "update",
+    "-k",
+    "NOPE",
+    "-r",
+    "arn:y",
+    "--secret-manager-access-name",
+    "my-sm",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       },
+       {
+        "id": "cluster-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "Prod-Cluster",
+        "region": "eu-west-3",
+        "cloud_provider": "AWS"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret update no sm name",
+   "args": [
+    "environment",
+    "external-secret",
+    "update",
+    "-k",
+    "EXT",
+    "-r",
+    "arn:y",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       },
+       {
+        "id": "cluster-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "Prod-Cluster",
+        "region": "eu-west-3",
+        "cloud_provider": "AWS"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret update api error",
+   "args": [
+    "environment",
+    "external-secret",
+    "update",
+    "-k",
+    "EXT",
+    "--secret-manager-access-name",
+    "my-sm",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       },
+       {
+        "id": "cluster-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "Prod-Cluster",
+        "region": "eu-west-3",
+        "cloud_provider": "AWS"
+       }
+      ]
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/variable/var-3",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret update env api error",
+   "args": [
+    "environment",
+    "external-secret",
+    "update",
+    "-k",
+    "EXT",
+    "--secret-manager-access-name",
+    "my-sm",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "kubernetes": "MANAGED",
+        "status": "DEPLOYED",
+        "version": "1.30",
+        "is_default": true,
+        "production": false,
+        "instance_type": "t3a.large",
+        "min_running_nodes": 3,
+        "max_running_nodes": 10,
+        "disk_size": 50,
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "my-sm",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       },
+       {
+        "id": "cluster-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "Prod-Cluster",
+        "region": "eu-west-3",
+        "cloud_provider": "AWS"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1",
+     "status": 404,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "external-secret delete",
+   "args": [
+    "environment",
+    "external-secret",
+    "delete",
+    "-k",
+    "EXT",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "external-secret delete unknown key",
+   "args": [
+    "environment",
+    "external-secret",
+    "delete",
+    "-k",
+    "NOPE",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "external-secret delete unknown project",
+   "args": [
+    "environment",
+    "external-secret",
+    "delete",
+    "-k",
+    "EXT",
+    "--project",
+    "nope",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "external-secret delete missing --key",
+   "args": [
+    "environment",
+    "external-secret",
+    "delete",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  }
+ ]
+}

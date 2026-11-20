@@ -1,0 +1,122 @@
+{
+ "cases": [
+  {
+   "name": "skills (help)",
+   "args": [
+    "skills"
+   ]
+  },
+  {
+   "name": "skills status not installed",
+   "args": [
+    "skills",
+    "status"
+   ]
+  },
+  {
+   "name": "skills status installed global",
+   "args": [
+    "skills",
+    "status"
+   ],
+   "files": {
+    ".claude/skills/qovery/SKILL.md": "---\nname: qovery\n---\n",
+    ".claude/skills/qovery/_version.txt": "abc1234\n"
+   }
+  },
+  {
+   "name": "skills status installed several",
+   "args": [
+    "skills",
+    "status"
+   ],
+   "files": {
+    ".claude/skills/qovery/SKILL.md": "---\nname: qovery\n---\n",
+    ".agents/skills/qovery/SKILL.md": "---\nname: qovery\n---\n",
+    ".agents/skills/qovery/_version.txt": "  \n",
+    ".config/opencode/skills/qovery/SKILL.md": "---\nname: qovery\n---\n",
+    ".config/opencode/skills/qovery/_version.txt": "v2"
+   }
+  },
+  {
+   "name": "skills status version without SKILL.md",
+   "args": [
+    "skills",
+    "status"
+   ],
+   "files": {
+    ".claude/skills/qovery/_version.txt": "abc"
+   }
+  },
+  {
+   "name": "skills status extra args",
+   "args": [
+    "skills",
+    "status",
+    "foo"
+   ]
+  },
+  {
+   "name": "skills install no bash",
+   "args": [
+    "skills",
+    "install"
+   ],
+   "env": {
+    "PATH": "/nonexistent"
+   }
+  },
+  {
+   "name": "skills install --project no bash",
+   "args": [
+    "skills",
+    "install",
+    "--project"
+   ],
+   "env": {
+    "PATH": "/nonexistent"
+   }
+  },
+  {
+   "name": "skills uninstall no bash",
+   "args": [
+    "skills",
+    "uninstall"
+   ],
+   "env": {
+    "PATH": "/nonexistent"
+   }
+  },
+  {
+   "name": "skills install extra args",
+   "args": [
+    "skills",
+    "install",
+    "foo"
+   ]
+  },
+  {
+   "name": "skills uninstall extra args",
+   "args": [
+    "skills",
+    "uninstall",
+    "foo"
+   ]
+  },
+  {
+   "name": "skills unknown subcommand",
+   "args": [
+    "skills",
+    "foo"
+   ]
+  },
+  {
+   "name": "skills install unknown flag",
+   "args": [
+    "skills",
+    "install",
+    "--nope"
+   ]
+  }
+ ]
+}

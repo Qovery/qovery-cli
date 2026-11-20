@@ -1,0 +1,968 @@
+[
+ {
+  "method": "GET",
+  "path": "/organization",
+  "status": 200,
+  "body": {
+   "results": [
+    {
+     "id": "org-1",
+     "created_at": "2024-05-01T10:00:00.123456Z",
+     "updated_at": "2024-06-02T11:30:00Z",
+     "name": "my-org",
+     "plan": "TEAM",
+     "description": "Main organization"
+    },
+    {
+     "id": "org-2",
+     "created_at": "2024-05-01T10:00:00.123456Z",
+     "name": "other-org",
+     "plan": "FREE"
+    }
+   ]
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/organization/org-1",
+  "status": 200,
+  "body": {
+   "id": "org-1",
+   "created_at": "2024-05-01T10:00:00.123456Z",
+   "updated_at": "2024-06-02T11:30:00Z",
+   "name": "my-org",
+   "plan": "TEAM",
+   "description": "Main organization"
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/organization/org-2",
+  "status": 200,
+  "body": {
+   "id": "org-2",
+   "created_at": "2024-05-01T10:00:00.123456Z",
+   "name": "other-org",
+   "plan": "FREE"
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/organization/org-1/project",
+  "status": 200,
+  "body": {
+   "results": [
+    {
+     "id": "proj-1",
+     "created_at": "2024-05-01T10:00:00.123456Z",
+     "updated_at": "2024-06-02T11:30:00Z",
+     "name": "my-project",
+     "associated_environments_count": 1,
+     "organization": {
+      "id": "org-1"
+     },
+     "description": "a project"
+    }
+   ]
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/project/proj-1",
+  "status": 200,
+  "body": {
+   "id": "proj-1",
+   "created_at": "2024-05-01T10:00:00.123456Z",
+   "updated_at": "2024-06-02T11:30:00Z",
+   "name": "my-project",
+   "associated_environments_count": 1,
+   "organization": {
+    "id": "org-1"
+   },
+   "description": "a project"
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/project/proj-1/environment",
+  "status": 200,
+  "body": {
+   "results": [
+    {
+     "id": "env-1",
+     "created_at": "2024-05-01T10:00:00.123456Z",
+     "updated_at": "2024-06-02T11:30:00Z",
+     "name": "my-env",
+     "organization": {
+      "id": "org-1"
+     },
+     "project": {
+      "id": "proj-1"
+     },
+     "cloud_provider": {
+      "provider": "AWS",
+      "cluster": "us-east-2"
+     },
+     "mode": "DEVELOPMENT",
+     "cluster_id": "cluster-1",
+     "cluster_name": "my-cluster"
+    }
+   ]
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/environment/env-1",
+  "status": 200,
+  "body": {
+   "id": "env-1",
+   "created_at": "2024-05-01T10:00:00.123456Z",
+   "updated_at": "2024-06-02T11:30:00Z",
+   "name": "my-env",
+   "organization": {
+    "id": "org-1"
+   },
+   "project": {
+    "id": "proj-1"
+   },
+   "cloud_provider": {
+    "provider": "AWS",
+    "cluster": "us-east-2"
+   },
+   "mode": "DEVELOPMENT",
+   "cluster_id": "cluster-1",
+   "cluster_name": "my-cluster"
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/environment/env-1/application",
+  "status": 200,
+  "body": {
+   "results": [
+    {
+     "id": "app-1",
+     "created_at": "2024-05-01T10:00:00.123456Z",
+     "updated_at": "2024-06-02T11:30:00Z",
+     "environment": {
+      "id": "env-1"
+     },
+     "name": "my-app",
+     "healthchecks": {
+      "checks": []
+     },
+     "icon_uri": "app://qovery-console/application",
+     "service_type": "APPLICATION",
+     "git_repository": {
+      "provider": "GITHUB",
+      "owner": "me",
+      "url": "https://github.com/me/app.git",
+      "name": "me/app",
+      "branch": "main",
+      "root_path": "/",
+      "deployed_commit_id": "abc123",
+      "has_access": true
+     },
+     "build_mode": "DOCKER",
+     "dockerfile_path": "Dockerfile",
+     "cpu": 500,
+     "memory": 512,
+     "gpu": 0,
+     "maximum_cpu": 4000,
+     "maximum_memory": 8192,
+     "maximum_gpu": 0,
+     "min_running_instances": 1,
+     "max_running_instances": 1,
+     "auto_preview": false,
+     "auto_deploy": true,
+     "ports": [],
+     "arguments": [],
+     "annotations_groups": [],
+     "labels_groups": []
+    }
+   ]
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/application/app-1",
+  "status": 200,
+  "body": {
+   "id": "app-1",
+   "created_at": "2024-05-01T10:00:00.123456Z",
+   "updated_at": "2024-06-02T11:30:00Z",
+   "environment": {
+    "id": "env-1"
+   },
+   "name": "my-app",
+   "healthchecks": {
+    "checks": []
+   },
+   "icon_uri": "app://qovery-console/application",
+   "service_type": "APPLICATION",
+   "git_repository": {
+    "provider": "GITHUB",
+    "owner": "me",
+    "url": "https://github.com/me/app.git",
+    "name": "me/app",
+    "branch": "main",
+    "root_path": "/",
+    "deployed_commit_id": "abc123",
+    "has_access": true
+   },
+   "build_mode": "DOCKER",
+   "dockerfile_path": "Dockerfile",
+   "cpu": 500,
+   "memory": 512,
+   "gpu": 0,
+   "maximum_cpu": 4000,
+   "maximum_memory": 8192,
+   "maximum_gpu": 0,
+   "min_running_instances": 1,
+   "max_running_instances": 1,
+   "auto_preview": false,
+   "auto_deploy": true,
+   "ports": [],
+   "arguments": [],
+   "annotations_groups": [],
+   "labels_groups": []
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/environment/env-1/container",
+  "status": 200,
+  "body": {
+   "results": [
+    {
+     "id": "cont-1",
+     "created_at": "2024-05-01T10:00:00.123456Z",
+     "updated_at": "2024-06-02T11:30:00Z",
+     "image_name": "nginx",
+     "tag": "1.25",
+     "registry": {
+      "id": "reg-1",
+      "name": "Docker Hub",
+      "url": "https://docker.io",
+      "kind": "DOCKER_HUB"
+     },
+     "environment": {
+      "id": "env-1"
+     },
+     "maximum_cpu": 4000,
+     "maximum_memory": 8192,
+     "maximum_gpu": 0,
+     "name": "my-container",
+     "cpu": 250,
+     "memory": 256,
+     "gpu": 0,
+     "min_running_instances": 1,
+     "max_running_instances": 1,
+     "healthchecks": {
+      "checks": []
+     },
+     "auto_preview": false,
+     "icon_uri": "app://qovery-console/container",
+     "service_type": "CONTAINER",
+     "auto_deploy": false,
+     "ports": [],
+     "arguments": [],
+     "annotations_groups": [],
+     "labels_groups": []
+    }
+   ]
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/container/cont-1",
+  "status": 200,
+  "body": {
+   "id": "cont-1",
+   "created_at": "2024-05-01T10:00:00.123456Z",
+   "updated_at": "2024-06-02T11:30:00Z",
+   "image_name": "nginx",
+   "tag": "1.25",
+   "registry": {
+    "id": "reg-1",
+    "name": "Docker Hub",
+    "url": "https://docker.io",
+    "kind": "DOCKER_HUB"
+   },
+   "environment": {
+    "id": "env-1"
+   },
+   "maximum_cpu": 4000,
+   "maximum_memory": 8192,
+   "maximum_gpu": 0,
+   "name": "my-container",
+   "cpu": 250,
+   "memory": 256,
+   "gpu": 0,
+   "min_running_instances": 1,
+   "max_running_instances": 1,
+   "healthchecks": {
+    "checks": []
+   },
+   "auto_preview": false,
+   "icon_uri": "app://qovery-console/container",
+   "service_type": "CONTAINER",
+   "auto_deploy": false,
+   "ports": [],
+   "arguments": [],
+   "annotations_groups": [],
+   "labels_groups": []
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/environment/env-1/job",
+  "status": 200,
+  "body": {
+   "results": [
+    {
+     "id": "cron-1",
+     "created_at": "2024-05-01T10:00:00.123456Z",
+     "updated_at": "2024-06-02T11:30:00Z",
+     "environment": {
+      "id": "env-1"
+     },
+     "maximum_cpu": 4000,
+     "maximum_memory": 8192,
+     "maximum_gpu": 0,
+     "name": "my-cron",
+     "cpu": 250,
+     "memory": 256,
+     "gpu": 0,
+     "auto_preview": false,
+     "source": {
+      "docker": {
+       "git_repository": {
+        "provider": "GITHUB",
+        "owner": "me",
+        "url": "https://github.com/me/job.git",
+        "name": "me/job",
+        "branch": "main",
+        "root_path": "/",
+        "deployed_commit_id": "def456",
+        "has_access": true
+       },
+       "dockerfile_path": "Dockerfile"
+      }
+     },
+     "healthchecks": {
+      "checks": []
+     },
+     "icon_uri": "app://qovery-console/cron-job",
+     "service_type": "JOB",
+     "job_type": "CRON",
+     "schedule": {
+      "cronjob": {
+       "scheduled_at": "0 * * * *",
+       "arguments": [],
+       "timezone": "Etc/UTC"
+      }
+     },
+     "auto_deploy": true,
+     "max_nb_restart": 0,
+     "max_duration_seconds": 300,
+     "port": null
+    },
+    {
+     "id": "life-1",
+     "created_at": "2024-05-01T10:00:00.123456Z",
+     "updated_at": "2024-06-02T11:30:00Z",
+     "environment": {
+      "id": "env-1"
+     },
+     "maximum_cpu": 4000,
+     "maximum_memory": 8192,
+     "maximum_gpu": 0,
+     "name": "my-lifecycle",
+     "cpu": 250,
+     "memory": 256,
+     "gpu": 0,
+     "auto_preview": false,
+     "source": {
+      "image": {
+       "image_name": "busybox",
+       "tag": "latest",
+       "registry_id": "reg-1",
+       "registry": {
+        "id": "reg-1",
+        "name": "Docker Hub",
+        "url": "https://docker.io",
+        "kind": "DOCKER_HUB"
+       }
+      }
+     },
+     "healthchecks": {
+      "checks": []
+     },
+     "icon_uri": "app://qovery-console/lifecycle-job",
+     "service_type": "JOB",
+     "job_type": "LIFECYCLE",
+     "schedule": {
+      "on_start": {
+       "arguments": []
+      }
+     },
+     "auto_deploy": false,
+     "max_nb_restart": 0,
+     "max_duration_seconds": 300
+    }
+   ]
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/job/cron-1",
+  "status": 200,
+  "body": {
+   "id": "cron-1",
+   "created_at": "2024-05-01T10:00:00.123456Z",
+   "updated_at": "2024-06-02T11:30:00Z",
+   "environment": {
+    "id": "env-1"
+   },
+   "maximum_cpu": 4000,
+   "maximum_memory": 8192,
+   "maximum_gpu": 0,
+   "name": "my-cron",
+   "cpu": 250,
+   "memory": 256,
+   "gpu": 0,
+   "auto_preview": false,
+   "source": {
+    "docker": {
+     "git_repository": {
+      "provider": "GITHUB",
+      "owner": "me",
+      "url": "https://github.com/me/job.git",
+      "name": "me/job",
+      "branch": "main",
+      "root_path": "/",
+      "deployed_commit_id": "def456",
+      "has_access": true
+     },
+     "dockerfile_path": "Dockerfile"
+    }
+   },
+   "healthchecks": {
+    "checks": []
+   },
+   "icon_uri": "app://qovery-console/cron-job",
+   "service_type": "JOB",
+   "job_type": "CRON",
+   "schedule": {
+    "cronjob": {
+     "scheduled_at": "0 * * * *",
+     "arguments": [],
+     "timezone": "Etc/UTC"
+    }
+   },
+   "auto_deploy": true,
+   "max_nb_restart": 0,
+   "max_duration_seconds": 300,
+   "port": null
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/job/life-1",
+  "status": 200,
+  "body": {
+   "id": "life-1",
+   "created_at": "2024-05-01T10:00:00.123456Z",
+   "updated_at": "2024-06-02T11:30:00Z",
+   "environment": {
+    "id": "env-1"
+   },
+   "maximum_cpu": 4000,
+   "maximum_memory": 8192,
+   "maximum_gpu": 0,
+   "name": "my-lifecycle",
+   "cpu": 250,
+   "memory": 256,
+   "gpu": 0,
+   "auto_preview": false,
+   "source": {
+    "image": {
+     "image_name": "busybox",
+     "tag": "latest",
+     "registry_id": "reg-1",
+     "registry": {
+      "id": "reg-1",
+      "name": "Docker Hub",
+      "url": "https://docker.io",
+      "kind": "DOCKER_HUB"
+     }
+    }
+   },
+   "healthchecks": {
+    "checks": []
+   },
+   "icon_uri": "app://qovery-console/lifecycle-job",
+   "service_type": "JOB",
+   "job_type": "LIFECYCLE",
+   "schedule": {
+    "on_start": {
+     "arguments": []
+    }
+   },
+   "auto_deploy": false,
+   "max_nb_restart": 0,
+   "max_duration_seconds": 300
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/environment/env-1/database",
+  "status": 200,
+  "body": {
+   "results": [
+    {
+     "id": "db-1",
+     "created_at": "2024-05-01T10:00:00.123456Z",
+     "updated_at": "2024-06-02T11:30:00Z",
+     "name": "my-db",
+     "type": "POSTGRESQL",
+     "version": "16",
+     "mode": "CONTAINER",
+     "icon_uri": "app://qovery-console/database",
+     "environment": {
+      "id": "env-1"
+     },
+     "service_type": "DATABASE",
+     "accessibility": "PRIVATE",
+     "cpu": 250,
+     "memory": 256,
+     "storage": 10,
+     "instance_type": null
+    }
+   ]
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/database/db-1",
+  "status": 200,
+  "body": {
+   "id": "db-1",
+   "created_at": "2024-05-01T10:00:00.123456Z",
+   "updated_at": "2024-06-02T11:30:00Z",
+   "name": "my-db",
+   "type": "POSTGRESQL",
+   "version": "16",
+   "mode": "CONTAINER",
+   "icon_uri": "app://qovery-console/database",
+   "environment": {
+    "id": "env-1"
+   },
+   "service_type": "DATABASE",
+   "accessibility": "PRIVATE",
+   "cpu": 250,
+   "memory": 256,
+   "storage": 10,
+   "instance_type": null
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/environment/env-1/helm",
+  "status": 200,
+  "body": {
+   "results": [
+    {
+     "id": "helm-1",
+     "created_at": "2024-05-01T10:00:00.123456Z",
+     "updated_at": "2024-06-02T11:30:00Z",
+     "environment": {
+      "id": "env-1"
+     },
+     "name": "my-helm",
+     "auto_preview": false,
+     "auto_deploy": false,
+     "source": {
+      "repository": {
+       "repository": {
+        "id": "hr-1",
+        "name": "bitnami",
+        "url": "https://charts.bitnami.com/bitnami"
+       },
+       "chart_name": "redis",
+       "chart_version": "18.0.0"
+      }
+     },
+     "arguments": [],
+     "allow_cluster_wide_resources": false,
+     "values_override": {
+      "set": [],
+      "set_string": [],
+      "set_json": [],
+      "file": null
+     },
+     "icon_uri": "app://qovery-console/helm",
+     "service_type": "HELM",
+     "ports": []
+    }
+   ]
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/helm/helm-1",
+  "status": 200,
+  "body": {
+   "id": "helm-1",
+   "created_at": "2024-05-01T10:00:00.123456Z",
+   "updated_at": "2024-06-02T11:30:00Z",
+   "environment": {
+    "id": "env-1"
+   },
+   "name": "my-helm",
+   "auto_preview": false,
+   "auto_deploy": false,
+   "source": {
+    "repository": {
+     "repository": {
+      "id": "hr-1",
+      "name": "bitnami",
+      "url": "https://charts.bitnami.com/bitnami"
+     },
+     "chart_name": "redis",
+     "chart_version": "18.0.0"
+    }
+   },
+   "arguments": [],
+   "allow_cluster_wide_resources": false,
+   "values_override": {
+    "set": [],
+    "set_string": [],
+    "set_json": [],
+    "file": null
+   },
+   "icon_uri": "app://qovery-console/helm",
+   "service_type": "HELM",
+   "ports": []
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/environment/env-1/terraform",
+  "status": 200,
+  "body": {
+   "results": [
+    {
+     "id": "tf-1",
+     "created_at": "2024-05-01T10:00:00.123456Z",
+     "updated_at": "2024-06-02T11:30:00Z",
+     "name": "my-terraform",
+     "timeout_sec": 3600,
+     "auto_deploy": false,
+     "icon_uri": "app://qovery-console/terraform",
+     "service_type": "TERRAFORM",
+     "terraform_variables_source": {
+      "tf_var_file_paths": [],
+      "tf_vars": []
+     },
+     "engine": "TERRAFORM",
+     "backend": {
+      "kubernetes": {}
+     },
+     "provider_version": {
+      "read_from_terraform_block": false,
+      "explicit_version": "1.9.0"
+     },
+     "job_resources": {
+      "cpu_milli": 500,
+      "ram_mib": 512,
+      "gpu": 0,
+      "storage_gib": 1
+     },
+     "environment": {
+      "id": "env-1"
+     },
+     "use_cluster_credentials": false,
+     "action_extra_arguments": {},
+     "terraform_files_source": {
+      "git": {
+       "git_repository": {
+        "provider": "GITHUB",
+        "owner": "me",
+        "url": "https://github.com/me/tf.git",
+        "name": "me/tf",
+        "branch": "main",
+        "root_path": "/",
+        "deployed_commit_id": "ghi789",
+        "has_access": true
+       }
+      }
+     }
+    }
+   ]
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/terraform/tf-1",
+  "status": 200,
+  "body": {
+   "id": "tf-1",
+   "created_at": "2024-05-01T10:00:00.123456Z",
+   "updated_at": "2024-06-02T11:30:00Z",
+   "name": "my-terraform",
+   "timeout_sec": 3600,
+   "auto_deploy": false,
+   "icon_uri": "app://qovery-console/terraform",
+   "service_type": "TERRAFORM",
+   "terraform_variables_source": {
+    "tf_var_file_paths": [],
+    "tf_vars": []
+   },
+   "engine": "TERRAFORM",
+   "backend": {
+    "kubernetes": {}
+   },
+   "provider_version": {
+    "read_from_terraform_block": false,
+    "explicit_version": "1.9.0"
+   },
+   "job_resources": {
+    "cpu_milli": 500,
+    "ram_mib": 512,
+    "gpu": 0,
+    "storage_gib": 1
+   },
+   "environment": {
+    "id": "env-1"
+   },
+   "use_cluster_credentials": false,
+   "action_extra_arguments": {},
+   "terraform_files_source": {
+    "git": {
+     "git_repository": {
+      "provider": "GITHUB",
+      "owner": "me",
+      "url": "https://github.com/me/tf.git",
+      "name": "me/tf",
+      "branch": "main",
+      "root_path": "/",
+      "deployed_commit_id": "ghi789",
+      "has_access": true
+     }
+    }
+   }
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/organization/org-1/cluster",
+  "status": 200,
+  "body": {
+   "results": [
+    {
+     "id": "cluster-1",
+     "created_at": "2024-05-01T10:00:00.123456Z",
+     "updated_at": "2024-06-02T11:30:00Z",
+     "organization": {
+      "id": "org-1"
+     },
+     "name": "my-cluster",
+     "region": "us-east-2",
+     "cloud_provider": "AWS",
+     "kubernetes": "MANAGED",
+     "status": "DEPLOYED",
+     "version": "1.30",
+     "is_default": true,
+     "production": false,
+     "instance_type": "t3a.large",
+     "min_running_nodes": 3,
+     "max_running_nodes": 10,
+     "disk_size": 50
+    }
+   ]
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/organization/org-1/cluster/cluster-1",
+  "status": 200,
+  "body": {
+   "id": "cluster-1",
+   "created_at": "2024-05-01T10:00:00.123456Z",
+   "updated_at": "2024-06-02T11:30:00Z",
+   "organization": {
+    "id": "org-1"
+   },
+   "name": "my-cluster",
+   "region": "us-east-2",
+   "cloud_provider": "AWS",
+   "kubernetes": "MANAGED",
+   "status": "DEPLOYED",
+   "version": "1.30",
+   "is_default": true,
+   "production": false,
+   "instance_type": "t3a.large",
+   "min_running_nodes": 3,
+   "max_running_nodes": 10,
+   "disk_size": 50
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/environment/env-1/statuses",
+  "status": 200,
+  "body": {
+   "environment": {
+    "id": "env-1",
+    "state": "DEPLOYED",
+    "last_deployment_state": "DEPLOYED",
+    "last_deployment_date": "2024-06-02T11:30:00Z",
+    "last_deployment_id": "dep-1",
+    "total_deployment_duration_in_seconds": 42
+   },
+   "applications": [
+    {
+     "id": "app-1",
+     "state": "DEPLOYED",
+     "service_deployment_status": "UP_TO_DATE",
+     "is_part_last_deployment": true,
+     "status_details": {
+      "action": "DEPLOY",
+      "status": "SUCCESS",
+      "sub_action": "NONE"
+     },
+     "deployment_request_id": null,
+     "deployment_requests_count": 0,
+     "last_deployment_date": "2024-06-02T11:30:00Z",
+     "execution_id": "exec-app-1",
+     "steps": null
+    }
+   ],
+   "containers": [
+    {
+     "id": "cont-1",
+     "state": "STOPPED",
+     "service_deployment_status": "UP_TO_DATE",
+     "is_part_last_deployment": true,
+     "status_details": {
+      "action": "DEPLOY",
+      "status": "SUCCESS",
+      "sub_action": "NONE"
+     },
+     "deployment_request_id": null,
+     "deployment_requests_count": 0,
+     "last_deployment_date": "2024-06-02T11:30:00Z",
+     "execution_id": "exec-cont-1",
+     "steps": null
+    }
+   ],
+   "jobs": [
+    {
+     "id": "cron-1",
+     "state": "DEPLOYED",
+     "service_deployment_status": "UP_TO_DATE",
+     "is_part_last_deployment": true,
+     "status_details": {
+      "action": "DEPLOY",
+      "status": "SUCCESS",
+      "sub_action": "NONE"
+     },
+     "deployment_request_id": null,
+     "deployment_requests_count": 0,
+     "last_deployment_date": "2024-06-02T11:30:00Z",
+     "execution_id": "exec-cron-1",
+     "steps": null
+    },
+    {
+     "id": "life-1",
+     "state": "DEPLOYMENT_ERROR",
+     "service_deployment_status": "UP_TO_DATE",
+     "is_part_last_deployment": true,
+     "status_details": {
+      "action": "DEPLOY",
+      "status": "SUCCESS",
+      "sub_action": "NONE"
+     },
+     "deployment_request_id": null,
+     "deployment_requests_count": 0,
+     "last_deployment_date": "2024-06-02T11:30:00Z",
+     "execution_id": "exec-life-1",
+     "steps": null
+    }
+   ],
+   "databases": [
+    {
+     "id": "db-1",
+     "state": "DEPLOYED",
+     "service_deployment_status": "UP_TO_DATE",
+     "is_part_last_deployment": true,
+     "status_details": {
+      "action": "DEPLOY",
+      "status": "SUCCESS",
+      "sub_action": "NONE"
+     },
+     "deployment_request_id": null,
+     "deployment_requests_count": 0,
+     "last_deployment_date": "2024-06-02T11:30:00Z",
+     "execution_id": "exec-db-1",
+     "steps": null
+    }
+   ],
+   "helms": [
+    {
+     "id": "helm-1",
+     "state": "DEPLOYING",
+     "service_deployment_status": "UP_TO_DATE",
+     "is_part_last_deployment": true,
+     "status_details": {
+      "action": "DEPLOY",
+      "status": "SUCCESS",
+      "sub_action": "NONE"
+     },
+     "deployment_request_id": null,
+     "deployment_requests_count": 0,
+     "last_deployment_date": "2024-06-02T11:30:00Z",
+     "execution_id": "exec-helm-1",
+     "steps": null
+    }
+   ],
+   "terraforms": [
+    {
+     "id": "tf-1",
+     "state": "DEPLOYED",
+     "service_deployment_status": "UP_TO_DATE",
+     "is_part_last_deployment": true,
+     "status_details": {
+      "action": "DEPLOY",
+      "status": "SUCCESS",
+      "sub_action": "NONE"
+     },
+     "deployment_request_id": null,
+     "deployment_requests_count": 0,
+     "last_deployment_date": "2024-06-02T11:30:00Z",
+     "execution_id": "exec-tf-1",
+     "steps": null
+    }
+   ]
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/project/proj-1/environment/status",
+  "status": 200,
+  "body": {
+   "results": [
+    {
+     "id": "env-1",
+     "state": "DEPLOYED",
+     "last_deployment_state": "DEPLOYED",
+     "last_deployment_date": "2024-06-02T11:30:00Z",
+     "last_deployment_id": "dep-1",
+     "total_deployment_duration_in_seconds": 42
+    }
+   ]
+  }
+ }
+]

@@ -1,0 +1,492 @@
+{
+ "cases": [
+  {
+   "name": "completion (group)",
+   "args": [
+    "completion"
+   ]
+  },
+  {
+   "name": "completion extra arg",
+   "args": [
+    "completion",
+    "foo"
+   ]
+  },
+  {
+   "name": "completion bash",
+   "args": [
+    "completion",
+    "bash"
+   ]
+  },
+  {
+   "name": "completion bash --no-descriptions",
+   "args": [
+    "completion",
+    "bash",
+    "--no-descriptions"
+   ]
+  },
+  {
+   "name": "completion zsh",
+   "args": [
+    "completion",
+    "zsh"
+   ]
+  },
+  {
+   "name": "completion zsh --no-descriptions",
+   "args": [
+    "completion",
+    "zsh",
+    "--no-descriptions"
+   ]
+  },
+  {
+   "name": "completion fish",
+   "args": [
+    "completion",
+    "fish"
+   ]
+  },
+  {
+   "name": "completion fish --no-descriptions",
+   "args": [
+    "completion",
+    "fish",
+    "--no-descriptions"
+   ]
+  },
+  {
+   "name": "completion powershell",
+   "args": [
+    "completion",
+    "powershell"
+   ]
+  },
+  {
+   "name": "completion powershell --no-descriptions",
+   "args": [
+    "completion",
+    "powershell",
+    "--no-descriptions"
+   ]
+  },
+  {
+   "name": "completion zsh --no-descriptions=false",
+   "args": [
+    "completion",
+    "zsh",
+    "--no-descriptions=false"
+   ]
+  },
+  {
+   "name": "completion fish extra arg",
+   "args": [
+    "completion",
+    "fish",
+    "extra"
+   ]
+  },
+  {
+   "name": "completion zsh unknown flag",
+   "args": [
+    "completion",
+    "zsh",
+    "--nope"
+   ]
+  },
+  {
+   "name": "completion bash -h",
+   "args": [
+    "completion",
+    "bash",
+    "-h"
+   ]
+  },
+  {
+   "name": "__complete root",
+   "args": [
+    "__complete",
+    ""
+   ]
+  },
+  {
+   "name": "__completeNoDesc root",
+   "args": [
+    "__completeNoDesc",
+    ""
+   ]
+  },
+  {
+   "name": "__complete root env no desc",
+   "args": [
+    "__complete",
+    ""
+   ],
+   "env": {
+    "QOVERY_COMPLETION_DESCRIPTIONS": "false"
+   }
+  },
+  {
+   "name": "__complete root env cobra no desc",
+   "args": [
+    "__complete",
+    ""
+   ],
+   "env": {
+    "COBRA_COMPLETION_DESCRIPTIONS": "0"
+   }
+  },
+  {
+   "name": "__complete root prefix c",
+   "args": [
+    "__complete",
+    "c"
+   ]
+  },
+  {
+   "name": "__complete root prefix h",
+   "args": [
+    "__complete",
+    "h"
+   ]
+  },
+  {
+   "name": "__complete root flags",
+   "args": [
+    "__complete",
+    "-"
+   ]
+  },
+  {
+   "name": "__complete root flags --",
+   "args": [
+    "__complete",
+    "--"
+   ]
+  },
+  {
+   "name": "--verbose __complete",
+   "args": [
+    "--verbose",
+    "__complete",
+    "co"
+   ]
+  },
+  {
+   "name": "__complete completion",
+   "args": [
+    "__complete",
+    "completion",
+    ""
+   ]
+  },
+  {
+   "name": "__complete completion b",
+   "args": [
+    "__complete",
+    "completion",
+    "b"
+   ]
+  },
+  {
+   "name": "__complete completion bash",
+   "args": [
+    "__complete",
+    "completion",
+    "bash",
+    ""
+   ]
+  },
+  {
+   "name": "__complete completion bash -",
+   "args": [
+    "__complete",
+    "completion",
+    "bash",
+    "-"
+   ]
+  },
+  {
+   "name": "__complete completion bash --no-descriptions",
+   "args": [
+    "__complete",
+    "completion",
+    "bash",
+    "--no-descriptions",
+    "-"
+   ]
+  },
+  {
+   "name": "__complete completion bash --no-descriptions=",
+   "args": [
+    "__complete",
+    "completion",
+    "bash",
+    "--no-descriptions="
+   ]
+  },
+  {
+   "name": "__complete completion zsh --help",
+   "args": [
+    "__complete",
+    "completion",
+    "zsh",
+    "--help",
+    ""
+   ]
+  },
+  {
+   "name": "__complete completion zsh -- -",
+   "args": [
+    "__complete",
+    "completion",
+    "zsh",
+    "--",
+    "-"
+   ]
+  },
+  {
+   "name": "__complete unknown command",
+   "args": [
+    "__complete",
+    "foo",
+    "bar",
+    ""
+   ]
+  },
+  {
+   "name": "__complete unknown flag",
+   "args": [
+    "__complete",
+    "completion",
+    "bash",
+    "--nope",
+    ""
+   ]
+  },
+  {
+   "name": "__complete unknown flag with =",
+   "args": [
+    "__complete",
+    "completion",
+    "bash",
+    "--nope="
+   ]
+  },
+  {
+   "name": "__complete unknown shorthand with =",
+   "args": [
+    "__complete",
+    "completion",
+    "bash",
+    "-x=a"
+   ]
+  },
+  {
+   "name": "__complete invalid bool value",
+   "args": [
+    "__complete",
+    "completion",
+    "bash",
+    "--no-descriptions=maybe",
+    ""
+   ]
+  },
+  {
+   "name": "__complete help",
+   "args": [
+    "__complete",
+    "help",
+    ""
+   ]
+  },
+  {
+   "name": "__complete help args",
+   "args": [
+    "__complete",
+    "help",
+    "comp"
+   ]
+  },
+  {
+   "name": "__complete list-commands",
+   "args": [
+    "__complete",
+    "list-commands",
+    "-"
+   ]
+  },
+  {
+   "name": "__complete version",
+   "args": [
+    "__complete",
+    "version",
+    ""
+   ]
+  },
+  {
+   "name": "__complete verbose value",
+   "args": [
+    "__complete",
+    "--verbose=",
+    ""
+   ]
+  },
+  {
+   "name": "__complete no args",
+   "args": [
+    "__complete"
+   ]
+  },
+  {
+   "name": "__complete debug file",
+   "args": [
+    "__complete",
+    "nope",
+    ""
+   ],
+   "env": {
+    "BASH_COMP_DEBUG_FILE": "/dev/null"
+   }
+  },
+  {
+   "name": "__complete application l",
+   "args": [
+    "__complete",
+    "application",
+    "l"
+   ]
+  },
+  {
+   "name": "__complete application list --",
+   "args": [
+    "__complete",
+    "application",
+    "list",
+    "--"
+   ]
+  },
+  {
+   "name": "__complete application list -",
+   "args": [
+    "__complete",
+    "application",
+    "list",
+    "-"
+   ]
+  },
+  {
+   "name": "__complete application list --json",
+   "args": [
+    "__complete",
+    "application",
+    "list",
+    "--json",
+    ""
+   ]
+  },
+  {
+   "name": "__complete application list flag value",
+   "args": [
+    "__complete",
+    "application",
+    "list",
+    "--organization",
+    ""
+   ]
+  },
+  {
+   "name": "__complete application list flag value =",
+   "args": [
+    "__complete",
+    "application",
+    "list",
+    "--organization=my"
+   ]
+  },
+  {
+   "name": "__complete application deploy required",
+   "args": [
+    "__complete",
+    "application",
+    "deploy",
+    ""
+   ]
+  },
+  {
+   "name": "__complete application deploy -",
+   "args": [
+    "__complete",
+    "application",
+    "deploy",
+    "-"
+   ]
+  },
+  {
+   "name": "__complete application deploy -n",
+   "args": [
+    "__complete",
+    "application",
+    "deploy",
+    "-n",
+    ""
+   ]
+  },
+  {
+   "name": "__complete application deploy -n set",
+   "args": [
+    "__complete",
+    "application",
+    "deploy",
+    "-n",
+    "app",
+    "-"
+   ]
+  },
+  {
+   "name": "__complete application list after --",
+   "args": [
+    "__complete",
+    "application",
+    "list",
+    "--",
+    "-"
+   ]
+  },
+  {
+   "name": "__complete env",
+   "args": [
+    "__complete",
+    "env",
+    ""
+   ]
+  },
+  {
+   "name": "__complete cluster",
+   "args": [
+    "__complete",
+    "cluster",
+    ""
+   ]
+  },
+  {
+   "name": "__completeNoDesc admin",
+   "args": [
+    "__completeNoDesc",
+    "admin",
+    ""
+   ]
+  },
+  {
+   "name": "__complete api",
+   "args": [
+    "__complete",
+    "api",
+    "-"
+   ]
+  }
+ ]
+}

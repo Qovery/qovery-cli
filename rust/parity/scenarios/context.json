@@ -1,0 +1,2162 @@
+{
+ "cases": [
+  {
+   "name": "context",
+   "args": [
+    "context"
+   ]
+  },
+  {
+   "name": "context no context file",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true
+  },
+  {
+   "name": "context missing service",
+   "args": [
+    "context"
+   ],
+   "context": {
+    "service_id": ""
+   }
+  },
+  {
+   "name": "context missing org name",
+   "args": [
+    "context"
+   ],
+   "context": {
+    "organization_name": ""
+   }
+  },
+  {
+   "name": "context extra args",
+   "args": [
+    "context",
+    "foo"
+   ]
+  },
+  {
+   "name": "context unknown flag",
+   "args": [
+    "context",
+    "--nope"
+   ]
+  },
+  {
+   "name": "context set single choices",
+   "args": [
+    "context",
+    "set"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "org-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "name": "my-org",
+        "plan": "TEAM",
+        "description": "Main organization"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "app-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "name": "my-app",
+        "healthchecks": {
+         "checks": []
+        },
+        "icon_uri": "app://qovery-console/application",
+        "service_type": "APPLICATION",
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/app.git",
+         "name": "me/app",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "abc123",
+         "has_access": true
+        },
+        "build_mode": "DOCKER",
+        "dockerfile_path": "Dockerfile",
+        "cpu": 500,
+        "memory": 512,
+        "gpu": 0,
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "auto_preview": false,
+        "auto_deploy": true,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "context set single choices empty context",
+   "args": [
+    "context",
+    "set"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "org-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "name": "my-org",
+        "plan": "TEAM",
+        "description": "Main organization"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "app-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "name": "my-app",
+        "healthchecks": {
+         "checks": []
+        },
+        "icon_uri": "app://qovery-console/application",
+        "service_type": "APPLICATION",
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/app.git",
+         "name": "me/app",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "abc123",
+         "has_access": true
+        },
+        "build_mode": "DOCKER",
+        "dockerfile_path": "Dockerfile",
+        "cpu": 500,
+        "memory": 512,
+        "gpu": 0,
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "auto_preview": false,
+        "auto_deploy": true,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ],
+   "context": {
+    "organization_id": "",
+    "organization_name": "",
+    "project_id": "",
+    "project_name": "",
+    "environment_id": "",
+    "environment_name": "",
+    "service_id": "",
+    "service_name": "",
+    "service_type": ""
+   }
+  },
+  {
+   "name": "context set no context file",
+   "args": [
+    "context",
+    "set"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "org-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "name": "my-org",
+        "plan": "TEAM",
+        "description": "Main organization"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "app-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "name": "my-app",
+        "healthchecks": {
+         "checks": []
+        },
+        "icon_uri": "app://qovery-console/application",
+        "service_type": "APPLICATION",
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/app.git",
+         "name": "me/app",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "abc123",
+         "has_access": true
+        },
+        "build_mode": "DOCKER",
+        "dockerfile_path": "Dockerfile",
+        "cpu": 500,
+        "memory": 512,
+        "gpu": 0,
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "auto_preview": false,
+        "auto_deploy": true,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ],
+   "no_context_file": true
+  },
+  {
+   "name": "context set org api error",
+   "args": [
+    "context",
+    "set"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 500,
+     "body": {}
+    }
+   ]
+  },
+  {
+   "name": "context set no organizations",
+   "args": [
+    "context",
+    "set"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "context set no services",
+   "args": [
+    "context",
+    "set"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "org-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "name": "my-org",
+        "plan": "TEAM",
+        "description": "Main organization"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "context set no token",
+   "args": [
+    "context",
+    "set"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "context set multiple orgs (prompt, no tty)",
+   "args": [
+    "context",
+    "set"
+   ]
+  },
+  {
+   "name": "context HOME unset",
+   "args": [
+    "context"
+   ],
+   "env": {
+    "HOME": ""
+   },
+   "note": "os.UserHomeDir() reads only $HOME (no passwd fallback)"
+  },
+  {
+   "name": "context set HOME unset",
+   "args": [
+    "context",
+    "set"
+   ],
+   "env": {
+    "HOME": ""
+   }
+  },
+  {
+   "name": "organization list HOME unset",
+   "args": [
+    "organization",
+    "list"
+   ],
+   "env": {
+    "HOME": ""
+   }
+  },
+  {
+   "name": "expiration malformed auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "bad"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration malformed context",
+   "args": [
+    "context"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "bad"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration malformed project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "bad"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration malformed context set",
+   "args": [
+    "context",
+    "set"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "bad"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration malformed project list (env token)",
+   "args": [
+    "project",
+    "list"
+   ],
+   "context": {
+    "access_token_expiration": "bad"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration month out of range auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "2024-13-01T00:00:00Z"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration month out of range context",
+   "args": [
+    "context"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "2024-13-01T00:00:00Z"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration month out of range project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "2024-13-01T00:00:00Z"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration month out of range context set",
+   "args": [
+    "context",
+    "set"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "2024-13-01T00:00:00Z"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration month out of range project list (env token)",
+   "args": [
+    "project",
+    "list"
+   ],
+   "context": {
+    "access_token_expiration": "2024-13-01T00:00:00Z"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration empty auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": ""
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration empty context",
+   "args": [
+    "context"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": ""
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration empty project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": ""
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration empty context set",
+   "args": [
+    "context",
+    "set"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": ""
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration empty project list (env token)",
+   "args": [
+    "project",
+    "list"
+   ],
+   "context": {
+    "access_token_expiration": ""
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration one-digit hour context",
+   "args": [
+    "context"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "2024-01-01T5:04:05Z"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration one-digit hour project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "2024-01-01T5:04:05Z"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration one-digit hour context set",
+   "args": [
+    "context",
+    "set"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "2024-01-01T5:04:05Z"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration one-digit hour project list (env token)",
+   "args": [
+    "project",
+    "list"
+   ],
+   "context": {
+    "access_token_expiration": "2024-01-01T5:04:05Z"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration comma fraction context",
+   "args": [
+    "context"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "2024-01-01T05:04:05,5+02:00"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration comma fraction project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "2024-01-01T05:04:05,5+02:00"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration comma fraction context set",
+   "args": [
+    "context",
+    "set"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": "2024-01-01T05:04:05,5+02:00"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration comma fraction project list (env token)",
+   "args": [
+    "project",
+    "list"
+   ],
+   "context": {
+    "access_token_expiration": "2024-01-01T05:04:05,5+02:00"
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration null auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": null
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration null context",
+   "args": [
+    "context"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": null
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration null project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": null
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration null context set",
+   "args": [
+    "context",
+    "set"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token_expiration": null
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "expiration null project list (env token)",
+   "args": [
+    "project",
+    "list"
+   ],
+   "context": {
+    "access_token_expiration": null
+   },
+   "note": "json.Unmarshal of the time.Time access_token_expiration (time.Parse RFC3339 rules, null is the zero time)"
+  },
+  {
+   "name": "context.json decode: exp number | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": 12, \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp number | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": 12, \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp number | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": 12, \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp bool | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": true, \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp bool | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": true, \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp bool | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": true, \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp array | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": [1], \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp array | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": [1], \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp array | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": [1], \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp object | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": {\"a\": 1}, \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp object | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": {\"a\": 1}, \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp object | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": {\"a\": 1}, \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: user number | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: user number | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: user number | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: org id bool | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": false, \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: org id bool | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": false, \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: org id bool | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": false, \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: token array | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": [\"x\"], \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: token array | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": [\"x\"], \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: token array | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": [\"x\"], \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: service_type object | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": {}, \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: service_type object | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": {}, \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: service_type object | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": {}, \"user\": \"user-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: two type errors | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": true, \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: two type errors | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": true, \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: two type errors | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": true, \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: bad time then type error | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token_expiration\": \"bad\", \"user\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: bad time then type error | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token_expiration\": \"bad\", \"user\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: bad time then type error | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token_expiration\": \"bad\", \"user\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: null user | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": null}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: null user | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": null}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: null user | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": null}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: uppercase key | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\", \"ORGANIZATION_ID\": \"org-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: uppercase key | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\", \"ORGANIZATION_ID\": \"org-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: uppercase key | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\", \"ORGANIZATION_ID\": \"org-1\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: duplicate key | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"organization_id\":\"org-1\",\"organization_name\":\"my-org\",\"organization_name\":null,\"project_id\":\"proj-1\",\"project_name\":\"my-project\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: duplicate key | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"organization_id\":\"org-1\",\"organization_name\":\"my-org\",\"organization_name\":null,\"project_id\":\"proj-1\",\"project_name\":\"my-project\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: duplicate key | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"organization_id\":\"org-1\",\"organization_name\":\"my-org\",\"organization_name\":null,\"project_id\":\"proj-1\",\"project_name\":\"my-project\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: duplicate key2 | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"organization_id\":\"org-1\",\"organization_name\":\"x\",\"organization_name\":\"my-org\",\"project_id\":\"proj-1\",\"project_name\":\"my-project\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: duplicate key2 | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"organization_id\":\"org-1\",\"organization_name\":\"x\",\"organization_name\":\"my-org\",\"project_id\":\"proj-1\",\"project_name\":\"my-project\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: duplicate key2 | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"organization_id\":\"org-1\",\"organization_name\":\"x\",\"organization_name\":\"my-org\",\"project_id\":\"proj-1\",\"project_name\":\"my-project\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top array | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "[]"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top array | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "[]"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top array | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "[]"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top null | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "null"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top null | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "null"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top null | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "null"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top string | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "\"x\""
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top string | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "\"x\""
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top string | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "\"x\""
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top number | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "1"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top number | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "1"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top number | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "1"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: syntax | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"user\": }"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: syntax | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"user\": }"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: syntax | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"user\": }"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: empty file | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": ""
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: empty file | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": ""
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: empty file | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": ""
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: unknown key number | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\", \"extra\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: unknown key number | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\", \"extra\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: unknown key number | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"refresh-token\", \"organization_id\": \"org-1\", \"organization_name\": \"my-org\", \"project_id\": \"proj-1\", \"project_name\": \"my-project\", \"environment_id\": \"env-1\", \"environment_name\": \"my-env\", \"service_id\": \"app-1\", \"service_name\": \"my-app\", \"service_type\": \"application\", \"user\": \"user-1\", \"extra\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: uppercase key type error | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"USER\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: uppercase key type error | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"USER\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: uppercase key type error | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"USER\": 5}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: kelvin key | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_toKen\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"r\", \"organization_id\":\"org-1\",\"organization_name\":\"my-org\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: kelvin key | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_toKen\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"r\", \"organization_id\":\"org-1\",\"organization_name\":\"my-org\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: kelvin key | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_toKen\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLTEiLCJhenAiOiJjbGllbnQtMSJ9.c2ln\", \"access_token_expiration\": \"2099-01-01T00:00:00Z\", \"refresh_token\": \"r\", \"organization_id\":\"org-1\",\"organization_name\":\"my-org\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exact and folded | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"Organization_Name\":\"folded\",\"organization_name\":\"my-org\",\"organization_id\":\"org-1\",\"ORGANIZATION_NAME\":\"last\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exact and folded | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"Organization_Name\":\"folded\",\"organization_name\":\"my-org\",\"organization_id\":\"org-1\",\"ORGANIZATION_NAME\":\"last\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exact and folded | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"Organization_Name\":\"folded\",\"organization_name\":\"my-org\",\"organization_id\":\"org-1\",\"ORGANIZATION_NAME\":\"last\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: dup null keeps | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"organization_id\":\"org-1\",\"organization_name\":\"my-org\",\"organization_name\":null}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: dup null keeps | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"organization_id\":\"org-1\",\"organization_name\":\"my-org\",\"organization_name\":null}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: dup null keeps | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"organization_id\":\"org-1\",\"organization_name\":\"my-org\",\"organization_name\":null}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top bool | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "true"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top bool | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "true"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: top bool | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "true"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: trailing | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{} x"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: trailing | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{} x"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: trailing | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{} x"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp null then bad | project list",
+   "args": [
+    "project",
+    "list"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token_expiration\": null, \"access_token_expiration\": \"bad\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp null then bad | context",
+   "args": [
+    "context"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token_expiration\": null, \"access_token_expiration\": \"bad\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  },
+  {
+   "name": "context.json decode: exp null then bad | auth status",
+   "args": [
+    "auth",
+    "status"
+   ],
+   "no_context_file": true,
+   "files": {
+    ".qovery/context.json": "{\"access_token_expiration\": null, \"access_token_expiration\": \"bad\"}"
+   },
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "note": "json.Unmarshal into utils.QoveryContext: Go syntax/type errors, case-insensitive keys, null is the zero value"
+  }
+ ]
+}

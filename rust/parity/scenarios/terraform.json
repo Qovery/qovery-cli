@@ -1,0 +1,2628 @@
+{
+ "fixtures": [
+  {
+   "method": "GET",
+   "path": "/environment/env-1/terraform",
+   "body": {
+    "results": [
+     {
+      "id": "tf-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "name": "my-terraform",
+      "timeout_sec": 3600,
+      "auto_deploy": false,
+      "icon_uri": "app://qovery-console/terraform",
+      "service_type": "TERRAFORM",
+      "terraform_variables_source": {
+       "tf_var_file_paths": [],
+       "tf_vars": []
+      },
+      "engine": "TERRAFORM",
+      "backend": {
+       "kubernetes": {}
+      },
+      "provider_version": {
+       "read_from_terraform_block": false,
+       "explicit_version": "1.9.0"
+      },
+      "job_resources": {
+       "cpu_milli": 500,
+       "ram_mib": 512,
+       "gpu": 0,
+       "storage_gib": 1
+      },
+      "environment": {
+       "id": "env-1"
+      },
+      "use_cluster_credentials": false,
+      "action_extra_arguments": {}
+     },
+     {
+      "id": "tf-2",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-07-03T08:09:10.5+02:00",
+      "name": "infra <net>",
+      "timeout_sec": 3600,
+      "auto_deploy": false,
+      "icon_uri": "app://qovery-console/terraform",
+      "service_type": "TERRAFORM",
+      "terraform_variables_source": {
+       "tf_var_file_paths": [],
+       "tf_vars": []
+      },
+      "engine": "OPEN_TOFU",
+      "backend": {
+       "kubernetes": {}
+      },
+      "provider_version": {
+       "read_from_terraform_block": false,
+       "explicit_version": "1.9.0"
+      },
+      "job_resources": {
+       "cpu_milli": 500,
+       "ram_mib": 512,
+       "gpu": 0,
+       "storage_gib": 1
+      },
+      "environment": {
+       "id": "env-1"
+      },
+      "use_cluster_credentials": false,
+      "action_extra_arguments": {}
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/env-1/statuses",
+   "body": {
+    "environment": {
+     "id": "env-1",
+     "state": "DEPLOYED",
+     "last_deployment_state": "DEPLOYED"
+    },
+    "applications": [],
+    "containers": [],
+    "jobs": [],
+    "helms": [],
+    "databases": [],
+    "terraforms": [
+     {
+      "id": "tf-1",
+      "state": "DEPLOYED",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "e3"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/organization/org-1/cluster",
+   "body": {
+    "results": [
+     {
+      "id": "cluster-0",
+      "created_at": "2024-05-01T10:00:00Z",
+      "organization": {
+       "id": "org-1"
+      },
+      "name": "other",
+      "region": "eu-west-3",
+      "cloud_provider": "AWS"
+     },
+     {
+      "id": "cluster-1",
+      "created_at": "2024-05-01T10:00:00Z",
+      "organization": {
+       "id": "org-1"
+      },
+      "name": "my-cluster",
+      "region": "us-east-2",
+      "cloud_provider": "AWS",
+      "secret_manager_accesses": [
+       {
+        "id": "sma-1",
+        "name": "my-sma",
+        "created_at": "2024-05-01T10:00:00Z",
+        "updated_at": "2024-05-01T10:00:00Z",
+        "endpoint": {
+         "mode": "AWS_SECRET_MANAGER",
+         "region": "us-east-2"
+        },
+        "authentication": {
+         "mode": "AUTOMATICALLY_CONFIGURED"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/variable",
+   "query": {
+    "parent_id": "tf-1",
+    "scope": "TERRAFORM"
+   },
+   "body": {
+    "results": [
+     {
+      "id": "var-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "key": "MY_SECRET",
+      "value": "aws:ref",
+      "scope": "TERRAFORM",
+      "variable_type": "VALUE",
+      "is_secret": false
+     },
+     {
+      "id": "var-2",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "key": "OTHER",
+      "value": "x",
+      "scope": "TERRAFORM",
+      "variable_type": "VALUE",
+      "is_secret": false
+     }
+    ]
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/variable",
+   "status": 201,
+   "body": {
+    "id": "var-9",
+    "created_at": "2024-05-01T10:00:00.123456Z",
+    "updated_at": "2024-06-02T11:30:00Z",
+    "key": "NEW_SECRET",
+    "value": "aws:new",
+    "scope": "TERRAFORM",
+    "variable_type": "VALUE",
+    "is_secret": false
+   }
+  },
+  {
+   "method": "PUT",
+   "path": "/variable/var-1",
+   "status": 200,
+   "body": {
+    "id": "var-1",
+    "created_at": "2024-05-01T10:00:00.123456Z",
+    "updated_at": "2024-06-02T11:30:00Z",
+    "key": "MY_SECRET",
+    "value": "aws:new",
+    "scope": "TERRAFORM",
+    "variable_type": "VALUE",
+    "is_secret": false
+   }
+  },
+  {
+   "method": "DELETE",
+   "path": "/variable/var-1",
+   "status": 204
+  },
+  {
+   "method": "POST",
+   "path": "/environment/env-1/service/deploy",
+   "status": 202,
+   "body": {
+    "id": "env-1",
+    "state": "DEPLOYMENT_QUEUED",
+    "last_deployment_state": "DEPLOYED"
+   }
+  },
+  {
+   "method": "POST",
+   "path_regex": "^/terraform/[^/]+/deploy$",
+   "status": 202,
+   "body": {
+    "id": "tf-1",
+    "state": "DEPLOYMENT_QUEUED",
+    "service_deployment_status": "UP_TO_DATE",
+    "is_part_last_deployment": true,
+    "status_details": {
+     "action": "DEPLOY",
+     "status": "SUCCESS",
+     "sub_action": "NONE"
+    },
+    "deployment_request_id": null,
+    "deployment_requests_count": 0,
+    "execution_id": "e3"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/terraform/tf-1/commit",
+   "body": {
+    "results": [
+     {
+      "created_at": "2024-05-01T10:00:00Z",
+      "git_commit_id": "old111",
+      "tag": "",
+      "message": "old",
+      "author_name": "me"
+     },
+     {
+      "created_at": "2024-06-01T10:00:00Z",
+      "git_commit_id": "new222",
+      "tag": "v1",
+      "message": "newest commit\nbody",
+      "author_name": "me"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/terraform/tf-2/commit",
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "DELETE",
+   "path_regex": "^/terraform/[^/]+$",
+   "status": 204
+  },
+  {
+   "method": "GET",
+   "path": "/terraform/tf-2",
+   "body": {
+    "id": "tf-2",
+    "created_at": "2024-05-01T10:00:00.123456Z",
+    "updated_at": "2024-07-03T08:09:10.5+02:00",
+    "name": "infra <net>",
+    "timeout_sec": 3600,
+    "auto_deploy": false,
+    "icon_uri": "app://qovery-console/terraform",
+    "service_type": "TERRAFORM",
+    "terraform_variables_source": {
+     "tf_var_file_paths": [],
+     "tf_vars": []
+    },
+    "engine": "OPEN_TOFU",
+    "backend": {
+     "kubernetes": {}
+    },
+    "provider_version": {
+     "read_from_terraform_block": false,
+     "explicit_version": "1.9.0"
+    },
+    "job_resources": {
+     "cpu_milli": 500,
+     "ram_mib": 512,
+     "gpu": 0,
+     "storage_gib": 1
+    },
+    "environment": {
+     "id": "env-1"
+    },
+    "use_cluster_credentials": false,
+    "action_extra_arguments": {}
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/organization/00000000-0000-0000-000000000000/cluster/cluster-1/kubeconfig",
+   "body_raw": "apiVersion: v1\nkind: Config\nclusters:\n- cluster:\n    server: https://127.0.0.1:1\n    insecure-skip-tls-verify: true\n  name: c\ncontexts:\n- context:\n    cluster: c\n    user: u\n  name: ctx\ncurrent-context: ctx\nusers:\n- name: u\n  user:\n    token: abc\n",
+   "headers": {
+    "Content-Type": "text/plain"
+   }
+  }
+ ],
+ "cases": [
+  {
+   "name": "group help",
+   "args": [
+    "terraform"
+   ]
+  },
+  {
+   "name": "external-secret group help",
+   "args": [
+    "terraform",
+    "external-secret"
+   ]
+  },
+  {
+   "name": "list table",
+   "args": [
+    "terraform",
+    "list"
+   ]
+  },
+  {
+   "name": "list json",
+   "args": [
+    "terraform",
+    "list",
+    "--json"
+   ]
+  },
+  {
+   "name": "list explicit env",
+   "args": [
+    "terraform",
+    "list",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env",
+    "--json"
+   ]
+  },
+  {
+   "name": "list env not found",
+   "args": [
+    "terraform",
+    "list",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "list empty table",
+   "args": [
+    "terraform",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "list empty json",
+   "args": [
+    "terraform",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "list error",
+   "args": [
+    "terraform",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list statuses error",
+   "args": [
+    "terraform",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list no token",
+   "args": [
+    "terraform",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "no_context_file": true
+  },
+  {
+   "name": "plan-and-apply",
+   "args": [
+    "terraform",
+    "plan-and-apply",
+    "-n",
+    "my-terraform"
+   ]
+  },
+  {
+   "name": "plan-and-apply multiple",
+   "args": [
+    "terraform",
+    "plan-and-apply",
+    "--terraforms",
+    "my-terraform, infra <net>"
+   ]
+  },
+  {
+   "name": "plan-and-apply commit",
+   "args": [
+    "terraform",
+    "plan-and-apply",
+    "-n",
+    "my-terraform",
+    "-c",
+    "abc123"
+   ]
+  },
+  {
+   "name": "plan-and-apply commit latest",
+   "args": [
+    "terraform",
+    "plan-and-apply",
+    "-n",
+    "my-terraform",
+    "--commit-id",
+    " LATEST "
+   ]
+  },
+  {
+   "name": "plan-and-apply commit latest none",
+   "args": [
+    "terraform",
+    "plan-and-apply",
+    "--terraforms",
+    "my-terraform,infra <net>",
+    "--commit-id",
+    "latest"
+   ]
+  },
+  {
+   "name": "plan-and-apply commit latest error",
+   "args": [
+    "terraform",
+    "plan-and-apply",
+    "-n",
+    "my-terraform",
+    "--commit-id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/terraform/tf-1/commit",
+     "status": 403,
+     "body": {
+      "status": 403,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "plan-and-apply no name",
+   "args": [
+    "terraform",
+    "plan-and-apply"
+   ]
+  },
+  {
+   "name": "plan-and-apply both",
+   "args": [
+    "terraform",
+    "plan-and-apply",
+    "-n",
+    "my-terraform",
+    "--terraforms",
+    "x"
+   ]
+  },
+  {
+   "name": "plan-and-apply not found",
+   "args": [
+    "terraform",
+    "plan-and-apply",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "plan-and-apply multiple not found",
+   "args": [
+    "terraform",
+    "plan-and-apply",
+    "--terraforms",
+    "my-terraform, nope"
+   ]
+  },
+  {
+   "name": "plan-and-apply api error",
+   "args": [
+    "terraform",
+    "plan-and-apply",
+    "-n",
+    "my-terraform"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "plan-and-apply env not found",
+   "args": [
+    "terraform",
+    "plan-and-apply",
+    "-n",
+    "my-terraform",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "plan-and-apply watch",
+   "args": [
+    "terraform",
+    "plan-and-apply",
+    "-n",
+    "my-terraform",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "plan-and-apply watch error",
+   "args": [
+    "terraform",
+    "plan-and-apply",
+    "-n",
+    "my-terraform",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYMENT_ERROR",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "plan",
+   "args": [
+    "terraform",
+    "plan",
+    "-n",
+    "my-terraform"
+   ]
+  },
+  {
+   "name": "plan multiple",
+   "args": [
+    "terraform",
+    "plan",
+    "--terraforms",
+    "my-terraform, infra <net>"
+   ]
+  },
+  {
+   "name": "plan commit",
+   "args": [
+    "terraform",
+    "plan",
+    "-n",
+    "my-terraform",
+    "-c",
+    "abc123"
+   ]
+  },
+  {
+   "name": "plan commit latest",
+   "args": [
+    "terraform",
+    "plan",
+    "-n",
+    "my-terraform",
+    "--commit-id",
+    " LATEST "
+   ]
+  },
+  {
+   "name": "plan commit latest none",
+   "args": [
+    "terraform",
+    "plan",
+    "--terraforms",
+    "my-terraform,infra <net>",
+    "--commit-id",
+    "latest"
+   ]
+  },
+  {
+   "name": "plan commit latest error",
+   "args": [
+    "terraform",
+    "plan",
+    "-n",
+    "my-terraform",
+    "--commit-id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/terraform/tf-1/commit",
+     "status": 403,
+     "body": {
+      "status": 403,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "plan no name",
+   "args": [
+    "terraform",
+    "plan"
+   ]
+  },
+  {
+   "name": "plan both",
+   "args": [
+    "terraform",
+    "plan",
+    "-n",
+    "my-terraform",
+    "--terraforms",
+    "x"
+   ]
+  },
+  {
+   "name": "plan not found",
+   "args": [
+    "terraform",
+    "plan",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "plan multiple not found",
+   "args": [
+    "terraform",
+    "plan",
+    "--terraforms",
+    "my-terraform, nope"
+   ]
+  },
+  {
+   "name": "plan api error",
+   "args": [
+    "terraform",
+    "plan",
+    "-n",
+    "my-terraform"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/terraform/tf-1/deploy",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "plan env not found",
+   "args": [
+    "terraform",
+    "plan",
+    "-n",
+    "my-terraform",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "plan watch",
+   "args": [
+    "terraform",
+    "plan",
+    "-n",
+    "my-terraform",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "plan watch error",
+   "args": [
+    "terraform",
+    "plan",
+    "-n",
+    "my-terraform",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYMENT_ERROR",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "force-unlock",
+   "args": [
+    "terraform",
+    "force-unlock",
+    "-n",
+    "my-terraform"
+   ]
+  },
+  {
+   "name": "force-unlock multiple",
+   "args": [
+    "terraform",
+    "force-unlock",
+    "--terraforms",
+    "my-terraform, infra <net>"
+   ]
+  },
+  {
+   "name": "force-unlock commit",
+   "args": [
+    "terraform",
+    "force-unlock",
+    "-n",
+    "my-terraform",
+    "-c",
+    "abc123"
+   ]
+  },
+  {
+   "name": "force-unlock commit latest",
+   "args": [
+    "terraform",
+    "force-unlock",
+    "-n",
+    "my-terraform",
+    "--commit-id",
+    " LATEST "
+   ]
+  },
+  {
+   "name": "force-unlock commit latest none",
+   "args": [
+    "terraform",
+    "force-unlock",
+    "--terraforms",
+    "my-terraform,infra <net>",
+    "--commit-id",
+    "latest"
+   ]
+  },
+  {
+   "name": "force-unlock commit latest error",
+   "args": [
+    "terraform",
+    "force-unlock",
+    "-n",
+    "my-terraform",
+    "--commit-id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/terraform/tf-1/commit",
+     "status": 403,
+     "body": {
+      "status": 403,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "force-unlock no name",
+   "args": [
+    "terraform",
+    "force-unlock"
+   ]
+  },
+  {
+   "name": "force-unlock both",
+   "args": [
+    "terraform",
+    "force-unlock",
+    "-n",
+    "my-terraform",
+    "--terraforms",
+    "x"
+   ]
+  },
+  {
+   "name": "force-unlock not found",
+   "args": [
+    "terraform",
+    "force-unlock",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "force-unlock multiple not found",
+   "args": [
+    "terraform",
+    "force-unlock",
+    "--terraforms",
+    "my-terraform, nope"
+   ]
+  },
+  {
+   "name": "force-unlock api error",
+   "args": [
+    "terraform",
+    "force-unlock",
+    "-n",
+    "my-terraform"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/terraform/tf-1/deploy",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "force-unlock env not found",
+   "args": [
+    "terraform",
+    "force-unlock",
+    "-n",
+    "my-terraform",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "force-unlock watch",
+   "args": [
+    "terraform",
+    "force-unlock",
+    "-n",
+    "my-terraform",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "force-unlock watch error",
+   "args": [
+    "terraform",
+    "force-unlock",
+    "-n",
+    "my-terraform",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYMENT_ERROR",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "migrate-state",
+   "args": [
+    "terraform",
+    "migrate-state",
+    "-n",
+    "my-terraform"
+   ]
+  },
+  {
+   "name": "migrate-state multiple",
+   "args": [
+    "terraform",
+    "migrate-state",
+    "--terraforms",
+    "my-terraform, infra <net>"
+   ]
+  },
+  {
+   "name": "migrate-state commit",
+   "args": [
+    "terraform",
+    "migrate-state",
+    "-n",
+    "my-terraform",
+    "-c",
+    "abc123"
+   ]
+  },
+  {
+   "name": "migrate-state commit latest",
+   "args": [
+    "terraform",
+    "migrate-state",
+    "-n",
+    "my-terraform",
+    "--commit-id",
+    " LATEST "
+   ]
+  },
+  {
+   "name": "migrate-state commit latest none",
+   "args": [
+    "terraform",
+    "migrate-state",
+    "--terraforms",
+    "my-terraform,infra <net>",
+    "--commit-id",
+    "latest"
+   ]
+  },
+  {
+   "name": "migrate-state commit latest error",
+   "args": [
+    "terraform",
+    "migrate-state",
+    "-n",
+    "my-terraform",
+    "--commit-id",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/terraform/tf-1/commit",
+     "status": 403,
+     "body": {
+      "status": 403,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "migrate-state no name",
+   "args": [
+    "terraform",
+    "migrate-state"
+   ]
+  },
+  {
+   "name": "migrate-state both",
+   "args": [
+    "terraform",
+    "migrate-state",
+    "-n",
+    "my-terraform",
+    "--terraforms",
+    "x"
+   ]
+  },
+  {
+   "name": "migrate-state not found",
+   "args": [
+    "terraform",
+    "migrate-state",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "migrate-state multiple not found",
+   "args": [
+    "terraform",
+    "migrate-state",
+    "--terraforms",
+    "my-terraform, nope"
+   ]
+  },
+  {
+   "name": "migrate-state api error",
+   "args": [
+    "terraform",
+    "migrate-state",
+    "-n",
+    "my-terraform"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/terraform/tf-1/deploy",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "migrate-state env not found",
+   "args": [
+    "terraform",
+    "migrate-state",
+    "-n",
+    "my-terraform",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "migrate-state watch",
+   "args": [
+    "terraform",
+    "migrate-state",
+    "-n",
+    "my-terraform",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "migrate-state watch error",
+   "args": [
+    "terraform",
+    "migrate-state",
+    "-n",
+    "my-terraform",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYMENT_ERROR",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "delete",
+   "args": [
+    "terraform",
+    "delete",
+    "-n",
+    "my-terraform"
+   ]
+  },
+  {
+   "name": "delete multiple",
+   "args": [
+    "terraform",
+    "delete",
+    "--terraforms",
+    "my-terraform,infra <net>"
+   ]
+  },
+  {
+   "name": "delete skip-destroy",
+   "args": [
+    "terraform",
+    "delete",
+    "-n",
+    "my-terraform",
+    "--skip-destroy"
+   ]
+  },
+  {
+   "name": "delete resources-only",
+   "args": [
+    "terraform",
+    "delete",
+    "-n",
+    "my-terraform",
+    "--resources-only"
+   ]
+  },
+  {
+   "name": "delete both flags",
+   "args": [
+    "terraform",
+    "delete",
+    "-n",
+    "my-terraform",
+    "--resources-only",
+    "--skip-destroy"
+   ]
+  },
+  {
+   "name": "delete no name",
+   "args": [
+    "terraform",
+    "delete"
+   ]
+  },
+  {
+   "name": "delete both names",
+   "args": [
+    "terraform",
+    "delete",
+    "-n",
+    "a",
+    "--terraforms",
+    "b"
+   ]
+  },
+  {
+   "name": "delete not found",
+   "args": [
+    "terraform",
+    "delete",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "delete api error",
+   "args": [
+    "terraform",
+    "delete",
+    "-n",
+    "my-terraform"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/terraform/tf-1",
+     "status": 409,
+     "body": {
+      "status": 409,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete watch",
+   "args": [
+    "terraform",
+    "delete",
+    "-n",
+    "my-terraform",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DELETING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": []
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "delete resources-only watch",
+   "args": [
+    "terraform",
+    "delete",
+    "-n",
+    "my-terraform",
+    "-w",
+    "--resources-only"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DELETED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "delete watch error",
+   "args": [
+    "terraform",
+    "delete",
+    "-n",
+    "my-terraform",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x1"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-1",
+            "state": "DELETE_ERROR",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "x2"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "es create",
+   "args": [
+    "terraform",
+    "external-secret",
+    "create",
+    "-n",
+    "my-terraform",
+    "-k",
+    "NEW_SECRET",
+    "-r",
+    "aws:new",
+    "--secret-manager-access-name",
+    "my-sma"
+   ]
+  },
+  {
+   "name": "es create mount-path scope env",
+   "args": [
+    "terraform",
+    "external-secret",
+    "create",
+    "-n",
+    "my-terraform",
+    "-k",
+    "NEW_SECRET",
+    "-r",
+    "aws:new",
+    "--secret-manager-access-name",
+    "my-sma",
+    "--scope",
+    "ENVIRONMENT",
+    "--mount-path",
+    "/etc/s"
+   ]
+  },
+  {
+   "name": "es create scope project",
+   "args": [
+    "terraform",
+    "external-secret",
+    "create",
+    "-n",
+    "my-terraform",
+    "-k",
+    "NEW_SECRET",
+    "-r",
+    "aws:new",
+    "--secret-manager-access-name",
+    "my-sma",
+    "--scope",
+    "PROJECT"
+   ]
+  },
+  {
+   "name": "es create bad scope",
+   "args": [
+    "terraform",
+    "external-secret",
+    "create",
+    "-n",
+    "my-terraform",
+    "-k",
+    "NEW_SECRET",
+    "-r",
+    "aws:new",
+    "--secret-manager-access-name",
+    "my-sma",
+    "--scope",
+    "NOPE"
+   ]
+  },
+  {
+   "name": "es create missing flags",
+   "args": [
+    "terraform",
+    "external-secret",
+    "create"
+   ]
+  },
+  {
+   "name": "es create missing key",
+   "args": [
+    "terraform",
+    "external-secret",
+    "create",
+    "-n",
+    "my-terraform",
+    "-r",
+    "x",
+    "--secret-manager-access-name",
+    "my-sma"
+   ]
+  },
+  {
+   "name": "es create tf not found",
+   "args": [
+    "terraform",
+    "external-secret",
+    "create",
+    "-n",
+    "nope",
+    "-k",
+    "K",
+    "-r",
+    "x",
+    "--secret-manager-access-name",
+    "my-sma"
+   ]
+  },
+  {
+   "name": "es create sma not found",
+   "args": [
+    "terraform",
+    "external-secret",
+    "create",
+    "-n",
+    "my-terraform",
+    "-k",
+    "K",
+    "-r",
+    "x",
+    "--secret-manager-access-name",
+    "nope"
+   ]
+  },
+  {
+   "name": "es create cluster not found",
+   "args": [
+    "terraform",
+    "external-secret",
+    "create",
+    "-n",
+    "my-terraform",
+    "-k",
+    "K",
+    "-r",
+    "x",
+    "--secret-manager-access-name",
+    "my-sma"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "es create clusters error",
+   "args": [
+    "terraform",
+    "external-secret",
+    "create",
+    "-n",
+    "my-terraform",
+    "-k",
+    "K",
+    "-r",
+    "x",
+    "--secret-manager-access-name",
+    "my-sma"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "es create conflict",
+   "args": [
+    "terraform",
+    "external-secret",
+    "create",
+    "-n",
+    "my-terraform",
+    "-k",
+    "K",
+    "-r",
+    "x",
+    "--secret-manager-access-name",
+    "my-sma"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/variable",
+     "status": 409,
+     "body": {
+      "status": 409,
+      "detail": "variable K already exists in scope ENVIRONMENT"
+     }
+    }
+   ]
+  },
+  {
+   "name": "es create list error",
+   "args": [
+    "terraform",
+    "external-secret",
+    "create",
+    "-n",
+    "my-terraform",
+    "-k",
+    "K",
+    "-r",
+    "x",
+    "--secret-manager-access-name",
+    "my-sma"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "es create env not found",
+   "args": [
+    "terraform",
+    "external-secret",
+    "create",
+    "-n",
+    "my-terraform",
+    "-k",
+    "K",
+    "-r",
+    "x",
+    "--secret-manager-access-name",
+    "my-sma",
+    "--project",
+    "nope"
+   ]
+  },
+  {
+   "name": "es update",
+   "args": [
+    "terraform",
+    "external-secret",
+    "update",
+    "-n",
+    "my-terraform",
+    "-k",
+    "MY_SECRET",
+    "-r",
+    "aws:new",
+    "--secret-manager-access-name",
+    "my-sma"
+   ]
+  },
+  {
+   "name": "es update reference only",
+   "args": [
+    "terraform",
+    "external-secret",
+    "update",
+    "-n",
+    "my-terraform",
+    "-k",
+    "MY_SECRET",
+    "-r",
+    "aws:new"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "us-east-2",
+        "cloud_provider": "AWS",
+        "secret_manager_accesses": [
+         {
+          "id": "sma-1",
+          "name": "",
+          "created_at": "2024-05-01T10:00:00Z",
+          "updated_at": "2024-05-01T10:00:00Z",
+          "endpoint": {
+           "mode": "AWS_SECRET_MANAGER",
+           "region": "us-east-2"
+          },
+          "authentication": {
+           "mode": "AUTOMATICALLY_CONFIGURED"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "es update sma empty not found",
+   "args": [
+    "terraform",
+    "external-secret",
+    "update",
+    "-n",
+    "my-terraform",
+    "-k",
+    "MY_SECRET",
+    "-r",
+    "aws:new"
+   ]
+  },
+  {
+   "name": "es update key not found",
+   "args": [
+    "terraform",
+    "external-secret",
+    "update",
+    "-n",
+    "my-terraform",
+    "-k",
+    "NOPE",
+    "-r",
+    "x",
+    "--secret-manager-access-name",
+    "my-sma"
+   ]
+  },
+  {
+   "name": "es update missing flags",
+   "args": [
+    "terraform",
+    "external-secret",
+    "update",
+    "-k",
+    "X"
+   ]
+  },
+  {
+   "name": "es update tf not found",
+   "args": [
+    "terraform",
+    "external-secret",
+    "update",
+    "-n",
+    "nope",
+    "-k",
+    "X"
+   ]
+  },
+  {
+   "name": "es update api error",
+   "args": [
+    "terraform",
+    "external-secret",
+    "update",
+    "-n",
+    "my-terraform",
+    "-k",
+    "MY_SECRET",
+    "-r",
+    "x",
+    "--secret-manager-access-name",
+    "my-sma"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/variable/var-1",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "es update list vars error",
+   "args": [
+    "terraform",
+    "external-secret",
+    "update",
+    "-n",
+    "my-terraform",
+    "-k",
+    "MY_SECRET",
+    "-r",
+    "x",
+    "--secret-manager-access-name",
+    "my-sma"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/variable",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "es delete",
+   "args": [
+    "terraform",
+    "external-secret",
+    "delete",
+    "-n",
+    "my-terraform",
+    "-k",
+    "MY_SECRET"
+   ]
+  },
+  {
+   "name": "es delete key not found",
+   "args": [
+    "terraform",
+    "external-secret",
+    "delete",
+    "-n",
+    "my-terraform",
+    "-k",
+    "NOPE"
+   ]
+  },
+  {
+   "name": "es delete missing flags",
+   "args": [
+    "terraform",
+    "external-secret",
+    "delete"
+   ]
+  },
+  {
+   "name": "es delete tf not found",
+   "args": [
+    "terraform",
+    "external-secret",
+    "delete",
+    "--terraform",
+    "nope",
+    "--key",
+    "MY_SECRET"
+   ]
+  },
+  {
+   "name": "es delete api error",
+   "args": [
+    "terraform",
+    "external-secret",
+    "delete",
+    "-n",
+    "my-terraform",
+    "-k",
+    "MY_SECRET"
+   ],
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/variable/var-1",
+     "status": 403,
+     "body": {
+      "status": 403,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "setup-backend connection refused",
+   "args": [
+    "terraform",
+    "setup-backend",
+    "-t",
+    "tf-1"
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "setup-backend no flag",
+   "args": [
+    "terraform",
+    "setup-backend"
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "setup-backend tf not found",
+   "args": [
+    "terraform",
+    "setup-backend",
+    "--terraform",
+    "nope"
+   ]
+  },
+  {
+   "name": "setup-backend env error",
+   "args": [
+    "terraform",
+    "setup-backend",
+    "-t",
+    "tf-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "setup-backend kubeconfig 404",
+   "args": [
+    "terraform",
+    "setup-backend",
+    "-t",
+    "tf-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/00000000-0000-0000-000000000000/cluster/cluster-1/kubeconfig",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "setup-backend kubeconfig 204",
+   "args": [
+    "terraform",
+    "setup-backend",
+    "-t",
+    "tf-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/00000000-0000-0000-000000000000/cluster/cluster-1/kubeconfig",
+     "status": 204
+    }
+   ]
+  },
+  {
+   "name": "setup-backend no token",
+   "args": [
+    "terraform",
+    "setup-backend",
+    "-t",
+    "tf-1"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "no_context_file": true
+  },
+  {
+   "name": "setup-backend kubeconfig empty",
+   "args": [
+    "terraform",
+    "setup-backend",
+    "-t",
+    "tf-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/00000000-0000-0000-000000000000/cluster/cluster-1/kubeconfig",
+     "body_raw": "",
+     "headers": {
+      "Content-Type": "text/plain"
+     }
+    }
+   ]
+  },
+  {
+   "name": "setup-backend kubeconfig no context",
+   "args": [
+    "terraform",
+    "setup-backend",
+    "-t",
+    "tf-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/00000000-0000-0000-000000000000/cluster/cluster-1/kubeconfig",
+     "body_raw": "apiVersion: v1\nkind: Config\nclusters: []\n",
+     "headers": {
+      "Content-Type": "text/plain"
+     }
+    }
+   ]
+  },
+  {
+   "name": "setup-backend http connection refused",
+   "args": [
+    "terraform",
+    "setup-backend",
+    "-t",
+    "tf-2"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/00000000-0000-0000-000000000000/cluster/cluster-1/kubeconfig",
+     "body_raw": "apiVersion: v1\nkind: Config\nclusters:\n- cluster:\n    server: http://127.0.0.1:9\n  name: c\ncontexts:\n- context:\n    cluster: c\n    user: u\n  name: ctx\ncurrent-context: ctx\nusers:\n- name: u\n  user:\n    token: abc\n",
+     "headers": {
+      "Content-Type": "text/plain"
+     }
+    }
+   ]
+  }
+ ]
+}

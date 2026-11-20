@@ -1,0 +1,1614 @@
+{
+ "cases": [
+  {
+   "name": "service group",
+   "args": [
+    "service"
+   ]
+  },
+  {
+   "name": "service list",
+   "args": [
+    "service",
+    "list"
+   ]
+  },
+  {
+   "name": "service list json",
+   "args": [
+    "service",
+    "list",
+    "--json"
+   ]
+  },
+  {
+   "name": "service list markdown",
+   "args": [
+    "service",
+    "list",
+    "--markdown"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1/link",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "service_id": "app-1",
+        "service_type": "APPLICATION",
+        "url": "https://app.example.com",
+        "internal_port": 80,
+        "external_port": 443,
+        "is_qovery_domain": true,
+        "is_default": true
+       },
+       {
+        "service_id": "app-1",
+        "service_type": "APPLICATION",
+        "url": "https://app.example.com/second",
+        "internal_port": 80,
+        "external_port": 443,
+        "is_qovery_domain": true,
+        "is_default": false
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/container/cont-1/link",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list jira",
+   "args": [
+    "service",
+    "list",
+    "--jira"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1/link",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "service_id": "app-1",
+        "service_type": "APPLICATION",
+        "url": "https://app.example.com",
+        "internal_port": 80,
+        "external_port": 443,
+        "is_qovery_domain": true,
+        "is_default": true
+       },
+       {
+        "service_id": "app-1",
+        "service_type": "APPLICATION",
+        "url": "https://app.example.com/second",
+        "internal_port": 80,
+        "external_port": 443,
+        "is_qovery_domain": true,
+        "is_default": false
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/container/cont-1/link",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list markdown no links",
+   "args": [
+    "service",
+    "list",
+    "--markdown"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1/link",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/container/cont-1/link",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list markdown links error",
+   "args": [
+    "service",
+    "list",
+    "--markdown"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1/link",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list jira container links error",
+   "args": [
+    "service",
+    "list",
+    "--jira"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1/link",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/container/cont-1/link",
+     "status": 403,
+     "body": {
+      "status": 403,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list markdown env error",
+   "args": [
+    "service",
+    "list",
+    "--markdown"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list jira env error",
+   "args": [
+    "service",
+    "list",
+    "--jira"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list markdown and json",
+   "args": [
+    "service",
+    "list",
+    "--markdown",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1/link",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "service_id": "app-1",
+        "service_type": "APPLICATION",
+        "url": "https://app.example.com",
+        "internal_port": 80,
+        "external_port": 443,
+        "is_qovery_domain": true,
+        "is_default": true
+       },
+       {
+        "service_id": "app-1",
+        "service_type": "APPLICATION",
+        "url": "https://app.example.com/second",
+        "internal_port": 80,
+        "external_port": 443,
+        "is_qovery_domain": true,
+        "is_default": false
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/container/cont-1/link",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list by names",
+   "args": [
+    "service",
+    "list",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "service list by names json",
+   "args": [
+    "service",
+    "list",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env",
+    "--json"
+   ]
+  },
+  {
+   "name": "service list unknown org",
+   "args": [
+    "service",
+    "list",
+    "--organization",
+    "nope",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "service list unknown project",
+   "args": [
+    "service",
+    "list",
+    "--organization",
+    "my-org",
+    "--project",
+    "nope",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "service list unknown env",
+   "args": [
+    "service",
+    "list",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "service list empty json",
+   "args": [
+    "service",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list empty table",
+   "args": [
+    "service",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list empty markdown",
+   "args": [
+    "service",
+    "list",
+    "--markdown"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list application error",
+   "args": [
+    "service",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list database error",
+   "args": [
+    "service",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list container error",
+   "args": [
+    "service",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list job error",
+   "args": [
+    "service",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list helm error",
+   "args": [
+    "service",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list statuses error",
+   "args": [
+    "service",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "status": 401,
+     "body": {
+      "status": 401,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "service list no token",
+   "args": [
+    "service",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "no_context_file": true
+  },
+  {
+   "name": "service list bad arg flag",
+   "args": [
+    "service",
+    "list",
+    "--nope"
+   ]
+  },
+  {
+   "name": "deploy no flag",
+   "args": [
+    "service",
+    "deploy"
+   ]
+  },
+  {
+   "name": "deploy both flags",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app",
+    "--services",
+    "my-db"
+   ]
+  },
+  {
+   "name": "deploy app",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy app version",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app",
+    "--version",
+    "c0ffee"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy container",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-container"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy container version",
+   "args": [
+    "service",
+    "deploy",
+    "--service",
+    "my-container",
+    "-v",
+    "2.0"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy database",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-db",
+    "-v",
+    "ignored"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy cron",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-cron"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy cron version",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-cron",
+    "-v",
+    "abcdef"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy lifecycle version",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-lifecycle",
+    "-v",
+    "1.2"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy helm",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-helm"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy helm versions",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-helm",
+    "-v",
+    "19.0.0",
+    "--values-override-version",
+    "abc"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy helm values override latest",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-helm",
+    "--values-override-version",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy app latest no commits",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app",
+    "-v",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy services",
+   "args": [
+    "service",
+    "deploy",
+    "--services",
+    "my-helm, my-app,my-container ,my-db,my-cron,my-lifecycle",
+    "-v",
+    "v9"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy services by names",
+   "args": [
+    "service",
+    "deploy",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env",
+    "--services",
+    "my-app,my-db"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy trimmed name",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "  my-app "
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy unknown",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "nope"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy services one unknown",
+   "args": [
+    "service",
+    "deploy",
+    "--services",
+    "my-app,nope"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy services comma",
+   "args": [
+    "service",
+    "deploy",
+    "--services",
+    ","
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy terraform not supported",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-terraform"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy unknown env",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app",
+    "--environment",
+    "nope"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy unknown org",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app",
+    "--organization",
+    "nope",
+    "--project",
+    "x",
+    "--environment",
+    "y"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy error",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy services error",
+   "args": [
+    "service",
+    "deploy",
+    "--services",
+    "my-app,my-db"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy application list error",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy container list error",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy database list error",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/database",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy job list error",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/job",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy helm list error",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/helm",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy same name app and db",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-db"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "app-x",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "name": "my-db",
+        "healthchecks": {
+         "checks": []
+        },
+        "icon_uri": "app://qovery-console/application",
+        "service_type": "APPLICATION",
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/app.git",
+         "name": "me/app",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "abc123",
+         "has_access": true
+        },
+        "build_mode": "DOCKER",
+        "dockerfile_path": "Dockerfile",
+        "cpu": 500,
+        "memory": 512,
+        "gpu": 0,
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "auto_preview": false,
+        "auto_deploy": true,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy watch",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "applications": [
+           {
+            "id": "app-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "applications": [
+           {
+            "id": "app-1",
+            "state": "DEPLOYING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "applications": [
+           {
+            "id": "app-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "deploy watch failure",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "applications": [
+           {
+            "id": "app-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "applications": [
+           {
+            "id": "app-1",
+            "state": "DEPLOYMENT_ERROR",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "deploy no token",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "no_context_file": true
+  },
+  {
+   "name": "deploy extra arg",
+   "args": [
+    "service",
+    "deploy",
+    "extra",
+    "-n",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  }
+ ]
+}

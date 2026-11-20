@@ -1,0 +1,20 @@
+[package]
+name = "qovery-cmd-list-pods"
+description = "qovery list-pods command(s)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+qovery-cobra.workspace = true
+qovery-core.workspace = true
+qovery-log.workspace = true
+qovery-api.workspace = true
+qovery-cmd-shell = { path = "../shell" }
+qovery-cmd-port-forward = { path = "../port-forward" }
+qovery-cmd-log = { path = "../log" }
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+futures-util.workspace = true

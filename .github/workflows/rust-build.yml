@@ -1,0 +1,175 @@
+name: Rust Build
+
+# Release binaries of the Rust rewrite of the CLI (rust/), built for the same platforms as the Go release
+# (.goreleaser.yml) and published next to it: same archive layout, `qovery-cli-rust_` prefix instead of
+# `qovery-cli_`, checksums in `checksums-rust.txt`.
+#
+# Called by release.yml (tags: assets attached to the GitHub release) and release_latest.yml (main: build only).
+# Result: the `qovery-cli-rust-dist` artifact with every archive and the checksums.
+
+on:
+  workflow_call:
+    outputs:
+      version:
+        description: "Version embedded in the binaries (tag without the leading v, like GoReleaser's .Version)"
+        value: ${{ jobs.version.outputs.version }}
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.vars.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5.1.0
+        with:
+          fetch-depth: 0
+
+      - name: Fetch tags
+        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
+      # GoReleaser's .Version: the tag being released, or the latest tag on branch builds
+      - name: Set version
+        id: vars
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            tag="$GITHUB_REF_NAME"
+          else
+            tag="$(git describe --tags --abbrev=0)"
+          fi
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: build (${{ matrix.goos }}/${{ matrix.goarch }})
+    needs: version
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # static binaries, like the Go ones (CGO_ENABLED=0)
+          - { goos: linux, goarch: amd64, runner: ubuntu-24.04, target: x86_64-unknown-linux-musl, run: true }
+          - { goos: linux, goarch: arm64, runner: ubuntu-24.04-arm, target: aarch64-unknown-linux-musl, run: true }
+          - { goos: darwin, goarch: amd64, runner: macos-15, target: x86_64-apple-darwin, run: false }
+          - { goos: darwin, goarch: arm64, runner: macos-15, target: aarch64-apple-darwin, run: true }
+          - { goos: windows, goarch: amd64, runner: windows-2025, target: x86_64-pc-windows-msvc, run: true }
+          - { goos: windows, goarch: arm64, runner: windows-11-arm, target: aarch64-pc-windows-msvc, run: true }
+    defaults:
+      run:
+        shell: bash
+    env:
+      CARGO_TERM_COLOR: always
+      # read at compile time, like `-ldflags -X github.com/qovery/qovery-cli/utils.Version=...`
+      QOVERY_CLI_VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5.1.0
+
+      - name: Install rustup
+        if: runner.os == 'Windows'
+        run: |
+          if command -v rustup >/dev/null 2>&1; then exit 0; fi
+          host="$([ "$RUNNER_ARCH" = ARM64 ] && echo aarch64 || echo x86_64)-pc-windows-msvc"
+          curl -sSfLo "$RUNNER_TEMP/rustup-init.exe" "https://static.rust-lang.org/rustup/dist/$host/rustup-init.exe"
+          "$RUNNER_TEMP/rustup-init.exe" -y --profile minimal --default-toolchain none
+          cygpath -w "$USERPROFILE/.cargo/bin" >> "$GITHUB_PATH"
+
+      # the toolchain comes from rust/rust-toolchain.toml
+      - name: Install Rust
+        working-directory: rust
+        run: |
+          rustup toolchain install
+          rustup target add ${{ matrix.target }}
+
+      # ring and aws-lc compile their C/assembly with clang on Windows ARM64
+      - name: Install LLVM
+        if: matrix.target == 'aarch64-pc-windows-msvc'
+        run: |
+          if command -v clang >/dev/null 2>&1; then exit 0; fi
+          if [ ! -x "/c/Program Files/LLVM/bin/clang.exe" ]; then
+            winget install --id LLVM.LLVM --exact --silent --accept-source-agreements --accept-package-agreements
+          fi
+          echo 'C:\Program Files\LLVM\bin' >> "$GITHUB_PATH"
+
+      - name: Install musl
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends musl-tools
+          # C dependencies (ring, aws-lc) must be compiled against musl, not glibc
+          echo "CC_$(echo '${{ matrix.target }}' | tr - _)=musl-gcc" >> "$GITHUB_ENV"
+
+      - name: Cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            rust/target
+          key: rust-release-${{ matrix.target }}-${{ hashFiles('rust/Cargo.lock', 'rust/rust-toolchain.toml') }}
+          restore-keys: rust-release-${{ matrix.target }}-
+
+      - name: Build
+        working-directory: rust
+        run: cargo build -p qovery-cli --release --locked --target ${{ matrix.target }}
+
+      - name: Smoke test
+        if: matrix.run
+        working-directory: rust
+        run: |
+          bin=target/${{ matrix.target }}/release/qovery
+          "$bin" --help > /dev/null
+          "$bin" version 2>&1 | grep -F "$QOVERY_CLI_VERSION"
+
+      # same layout as the GoReleaser archives: the binary, README and LICENSE at the root
+      - name: Package
+        run: |
+          name="qovery-cli-rust_${QOVERY_CLI_VERSION}_${{ matrix.goos }}_${{ matrix.goarch }}"
+          staging="$RUNNER_TEMP/$name"
+          mkdir -p "$staging" dist
+          exe=qovery
+          [ "${{ matrix.goos }}" = windows ] && exe=qovery.exe
+          cp "rust/target/${{ matrix.target }}/release/$exe" README.md LICENSE.md "$staging/"
+          if [ "${{ matrix.goos }}" = windows ]; then
+            pwsh -NoProfile -Command "Compress-Archive -Path '$(cygpath -w "$staging")\\*' -DestinationPath 'dist\\$name.zip'"
+          else
+            tar -czf "dist/$name.tar.gz" -C "$staging" "$exe" README.md LICENSE.md
+          fi
+          ls -la dist
+
+      - name: Upload
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: qovery-cli-rust-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
+
+  dist:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download
+        uses: actions/download-artifact@v8.0.2
+        with:
+          pattern: qovery-cli-rust-*-*
+          path: dist-rust
+          merge-multiple: true
+
+      # same format as GoReleaser's checksums.txt
+      - name: Checksums
+        working-directory: dist-rust
+        run: |
+          sha256sum qovery-cli-rust_* > checksums-rust.txt
+          cat checksums-rust.txt
+
+      - name: Upload
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: qovery-cli-rust-dist
+          path: dist-rust/*
+          if-no-files-found: error

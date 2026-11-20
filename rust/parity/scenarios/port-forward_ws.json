@@ -1,0 +1,510 @@
+{
+ "_comment": "Run with parity/port-forward_ws_compare.py (TCP sessions against the local port, websocket mock parity/shell_ws_mock.py).",
+ "cases": [
+  {
+   "name": "port-forward ws echo context",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-echo"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a",
+     "until": "auth="
+    },
+    {
+     "send": "a",
+     "data": "hello"
+    },
+    {
+     "recv": "a",
+     "until": "echo:hello"
+    },
+    {
+     "close": "a"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws echo url",
+   "args": [
+    "port-forward",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1",
+    "-p",
+    "0:8080",
+    "--pod",
+    "pf-echo"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a",
+     "until": "auth="
+    },
+    {
+     "send": "a",
+     "data": "hello"
+    },
+    {
+     "recv": "a",
+     "until": "echo:hello"
+    },
+    {
+     "close": "a"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws echo url terraform",
+   "args": [
+    "port-forward",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/terraform/tf-1",
+    "--port",
+    "0:5432",
+    "--pod",
+    "pf-echo"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a",
+     "until": "auth="
+    },
+    {
+     "send": "a",
+     "data": "hello"
+    },
+    {
+     "recv": "a",
+     "until": "echo:hello"
+    },
+    {
+     "close": "a"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws echo same port",
+   "args": [
+    "port-forward",
+    "-p",
+    "0",
+    "--pod",
+    "pf-echo"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a",
+     "until": "auth="
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws echo two connections",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-echo"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a",
+     "until": "auth="
+    },
+    {
+     "send": "a",
+     "data": "hello"
+    },
+    {
+     "recv": "a",
+     "until": "echo:hello"
+    },
+    {
+     "close": "a"
+    },
+    {
+     "connect": "b"
+    },
+    {
+     "recv": "b",
+     "until": "auth="
+    },
+    {
+     "send": "b",
+     "data": "second"
+    },
+    {
+     "recv": "b",
+     "until": "echo:second"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws banner",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-banner"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a",
+     "until": "banner"
+    },
+    {
+     "send": "a",
+     "data": "x"
+    },
+    {
+     "recv": "a",
+     "until": "echo:x"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws half close",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-echo"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a",
+     "until": "auth="
+    },
+    {
+     "send": "a",
+     "data": "bye"
+    },
+    {
+     "shutdown_write": "a"
+    },
+    {
+     "recv": "a",
+     "until": "echo:bye"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws text ignored",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-text"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a",
+     "until": "bin"
+    },
+    {
+     "send": "a",
+     "data": "q"
+    },
+    {
+     "recv": "a",
+     "until": "echo:q"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws pf-normal",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-normal"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws pf-policy",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-policy"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws pf-permission",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-permission"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws pf-timeout",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-timeout"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws pf-internal",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-internal"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws pf-custom",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-custom"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws pf-drop",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-drop"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws pf-reject",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-reject"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws pf-big",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-big"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a"
+    }
+   ]
+  },
+  {
+   "name": "port-forward ws connection refused",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-echo"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a"
+    }
+   ],
+   "env": {
+    "QOVERY_WS_URL": "ws://127.0.0.1:1"
+   }
+  },
+  {
+   "name": "port-forward ws no token at connection",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "--pod",
+    "pf-echo"
+   ],
+   "stdin": "yes\n",
+   "session": [
+    {
+     "connect": "a"
+    },
+    {
+     "recv": "a"
+    }
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "port-forward ws address in use",
+   "args": [
+    "port-forward",
+    "-p",
+    "$BUSY:80",
+    "--pod",
+    "pf-echo"
+   ],
+   "stdin": "yes\n",
+   "session": [],
+   "busy_port": true
+  },
+  {
+   "name": "port-forward ws two listeners",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80",
+    "-p",
+    "0:81",
+    "--pod",
+    "pf-echo"
+   ],
+   "stdin": "yes\n",
+   "session": [],
+   "listeners": 2,
+   "sort_stdout": true
+  },
+  {
+   "name": "port-forward ws no connection",
+   "args": [
+    "port-forward",
+    "-p",
+    "0:80"
+   ],
+   "stdin": "yes\n",
+   "session": []
+  }
+ ]
+}

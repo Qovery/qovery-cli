@@ -1,0 +1,13 @@
+{
+  "cases": [
+    {"name": "organization list", "args": ["organization", "list"]},
+    {"name": "organization list --json", "args": ["organization", "list", "--json"]},
+    {"name": "organization list api error", "args": ["organization", "list"],
+     "fixtures": [{"method": "GET", "path": "/organization", "status": 500, "body": {"message": "boom"}}]},
+    {"name": "organization list no token", "args": ["organization", "list"], "env": {"QOVERY_CLI_ACCESS_TOKEN": ""},
+     "context": {"access_token": ""}},
+    {"name": "organization (group)", "args": ["organization"]},
+    {"name": "organization unknown flag", "args": ["organization", "list", "--nope"]},
+    {"name": "organization list extra args", "args": ["organization", "list", "foo", "--json=false"]}
+  ]
+}

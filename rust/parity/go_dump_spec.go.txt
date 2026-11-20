@@ -1,0 +1,54 @@
+package cmd
+
+import (
+	"encoding/json"
+	"os"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+)
+
+type flagSpec struct {
+	Name, Shorthand, Type, Default, Usage string
+	Hidden, Persistent, Required        bool
+	Deprecated                          string
+}
+type cmdSpec struct {
+	Path, Use, Short, Long, Example string
+	Aliases                         []string
+	Hidden                          bool
+	Deprecated                      string
+	Runnable                        bool
+	Flags                           []flagSpec
+	Children                        []*cmdSpec
+}
+
+func dumpCmd(c *cobra.Command, path string) *cmdSpec {
+	s := &cmdSpec{Path: path, Use: c.Use, Short: c.Short, Long: c.Long, Example: c.Example, Aliases: c.Aliases, Hidden: c.Hidden, Deprecated: c.Deprecated, Runnable: c.Runnable()}
+	visit := func(persistent bool) func(f *pflag.Flag) {
+		return func(f *pflag.Flag) {
+			req := false
+			if a, ok := f.Annotations[cobra.BashCompOneRequiredFlag]; ok && len(a) > 0 && a[0] == "true" {
+				req = true
+			}
+			s.Flags = append(s.Flags, flagSpec{Name: f.Name, Shorthand: f.Shorthand, Type: f.Value.Type(), Default: f.DefValue, Usage: f.Usage, Hidden: f.Hidden, Persistent: persistent, Required: req, Deprecated: f.Deprecated})
+		}
+	}
+	c.LocalNonPersistentFlags().VisitAll(visit(false))
+	c.PersistentFlags().VisitAll(visit(true))
+	for _, ch := range c.Commands() {
+		s.Children = append(s.Children, dumpCmd(ch, path+" "+ch.Name()))
+	}
+	return s
+}
+
+func init() {
+	if os.Getenv("QOVERY_DUMP_SPEC") != "" {
+		rootCmd.InitDefaultHelpCmd()
+		rootCmd.InitDefaultCompletionCmd()
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", " ")
+		_ = enc.Encode(dumpCmd(rootCmd, "qovery"))
+		os.Exit(0)
+	}
+}

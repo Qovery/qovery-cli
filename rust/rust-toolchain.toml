@@ -1,0 +1,5 @@
+# Toolchain used locally and by the GitHub workflows (build.yml, rust-build.yml).
+[toolchain]
+channel = "1.99.1"
+profile = "minimal"
+components = ["rustfmt", "clippy"]

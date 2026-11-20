@@ -1,0 +1,17 @@
+{
+  "fixtures": [
+    {"method": "GET", "path": "/application/app-1/status", "body": {"id": "app-1", "state": "DEPLOYED", "service_deployment_status": "UP_TO_DATE", "is_part_last_deployment": true, "status_details": {"action": "DEPLOY", "status": "SUCCESS", "sub_action": "NONE"}, "deployment_request_id": null, "deployment_requests_count": 0}},
+    {"method": "GET", "path": "/container/cont-1/status", "body": {"id": "cont-1", "state": "BUILDING", "service_deployment_status": "UP_TO_DATE", "is_part_last_deployment": true, "status_details": {"action": "DEPLOY", "status": "SUCCESS", "sub_action": "NONE"}, "deployment_request_id": null, "deployment_requests_count": 0}}
+  ],
+  "cases": [
+    {"name": "status application", "args": ["status"]},
+    {"name": "status container", "args": ["status"], "context": {"service_id": "cont-1", "service_name": "my-container", "service_type": "container"}},
+    {"name": "status database (nothing printed)", "args": ["status"], "context": {"service_id": "db-1", "service_name": "my-db", "service_type": "database"}},
+    {"name": "status api error", "args": ["status"],
+     "fixtures": [{"method": "GET", "path": "/application/app-1/status", "status": 500, "body": {"message": "boom"}}]},
+    {"name": "status container 404", "args": ["status"], "context": {"service_id": "cont-2", "service_name": "other", "service_type": "container"}},
+    {"name": "status no token", "args": ["status"], "env": {"QOVERY_CLI_ACCESS_TOKEN": ""}, "context": {"access_token": ""}},
+    {"name": "status extra args", "args": ["status", "foo"]},
+    {"name": "status unknown flag", "args": ["status", "--nope"]}
+  ]
+}

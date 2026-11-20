@@ -1,0 +1,529 @@
+{
+ "cases": [
+  {
+   "name": "shell org only",
+   "args": [
+    "shell",
+    "--organization",
+    "my-org"
+   ]
+  },
+  {
+   "name": "shell project only",
+   "args": [
+    "shell",
+    "--project",
+    "my-project"
+   ]
+  },
+  {
+   "name": "shell blank org",
+   "args": [
+    "shell",
+    "--organization",
+    "  ",
+    "--project",
+    "p",
+    "--environment",
+    "e",
+    "--service",
+    "s"
+   ]
+  },
+  {
+   "name": "shell no env",
+   "args": [
+    "shell",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--service",
+    "my-app"
+   ]
+  },
+  {
+   "name": "shell no service",
+   "args": [
+    "shell",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "shell unknown org",
+   "args": [
+    "shell",
+    "--organization",
+    "nope",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env",
+    "--service",
+    "my-app"
+   ]
+  },
+  {
+   "name": "shell unknown project",
+   "args": [
+    "shell",
+    "--organization",
+    "my-org",
+    "--project",
+    "nope",
+    "--environment",
+    "my-env",
+    "--service",
+    "my-app"
+   ]
+  },
+  {
+   "name": "shell unknown env",
+   "args": [
+    "shell",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "nope",
+    "--service",
+    "my-app"
+   ]
+  },
+  {
+   "name": "shell unknown service",
+   "args": [
+    "shell",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env",
+    "--service",
+    "nope"
+   ]
+  },
+  {
+   "name": "shell env get error",
+   "args": [
+    "shell",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env",
+    "--service",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "shell orgs error",
+   "args": [
+    "shell",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env",
+    "--service",
+    "my-app"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "shell flags no token",
+   "args": [
+    "shell",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env",
+    "--service",
+    "my-app"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "no_context_file": true
+  },
+  {
+   "name": "shell url too short",
+   "args": [
+    "shell",
+    "https://console.qovery.com/organization/org-1/project/proj-1"
+   ]
+  },
+  {
+   "name": "shell url new console too short",
+   "args": [
+    "shell",
+    "https://new.console.qovery.com/organization/org-1"
+   ]
+  },
+  {
+   "name": "shell url unknown org",
+   "args": [
+    "shell",
+    "https://console.qovery.com/organization/org-x/project/proj-1/environment/env-1/application/app-1"
+   ]
+  },
+  {
+   "name": "shell url unknown project",
+   "args": [
+    "shell",
+    "https://console.qovery.com/organization/org-1/project/proj-x/environment/env-1/application/app-1"
+   ]
+  },
+  {
+   "name": "shell url unknown env",
+   "args": [
+    "shell",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-x/application/app-1"
+   ]
+  },
+  {
+   "name": "shell url statuses error",
+   "args": [
+    "shell",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "status": 503,
+     "body": {
+      "status": 503,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "shell url terraform",
+   "args": [
+    "shell",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/terraform/tf-1"
+   ]
+  },
+  {
+   "name": "shell url app get error",
+   "args": [
+    "shell",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "shell url job get error",
+   "args": [
+    "shell",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/job/cron-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/job/cron-1",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "shell url db get error",
+   "args": [
+    "shell",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/database/db-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/database/db-1",
+     "status": 403,
+     "body": {
+      "status": 403,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "shell url helm get error",
+   "args": [
+    "shell",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/helm/helm-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/helm/helm-1",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "shell url container get error",
+   "args": [
+    "shell",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/container/cont-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/container/cont-1",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "shell no context file",
+   "args": [
+    "shell"
+   ],
+   "no_context_file": true
+  },
+  {
+   "name": "shell full context prompt",
+   "args": [
+    "shell"
+   ]
+  },
+  {
+   "name": "shell full context prompt yes",
+   "args": [
+    "shell"
+   ],
+   "stdin": "yes\n"
+  },
+  {
+   "name": "shell partial context select",
+   "args": [
+    "shell"
+   ],
+   "context": {
+    "service_id": "",
+    "service_name": ""
+   }
+  },
+  {
+   "name": "shell empty context select",
+   "args": [
+    "shell"
+   ],
+   "context": {
+    "organization_id": "",
+    "organization_name": "",
+    "project_id": "",
+    "project_name": "",
+    "environment_id": "",
+    "environment_name": "",
+    "service_id": "",
+    "service_name": "",
+    "service_type": ""
+   }
+  },
+  {
+   "name": "shell select orgs error",
+   "args": [
+    "shell"
+   ],
+   "context": {
+    "service_id": ""
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "shell select no orgs",
+   "args": [
+    "shell"
+   ],
+   "context": {
+    "service_id": ""
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "shell select project prompt",
+   "args": [
+    "shell"
+   ],
+   "context": {
+    "service_id": ""
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "org-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "name": "my-org",
+        "plan": "TEAM",
+        "description": "Main organization"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/project",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "proj-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "name": "my-project",
+        "associated_environments_count": 1,
+        "organization": {
+         "id": "org-1"
+        },
+        "description": "a project"
+       },
+       {
+        "id": "proj-2",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "name": "other",
+        "associated_environments_count": 1,
+        "organization": {
+         "id": "org-1"
+        },
+        "description": "a project"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "shell select service prompt",
+   "args": [
+    "shell"
+   ],
+   "context": {
+    "service_id": ""
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "org-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "name": "my-org",
+        "plan": "TEAM",
+        "description": "Main organization"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "shell ephemeral bad mode",
+   "args": [
+    "shell",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env",
+    "--service",
+    "my-app",
+    "--ephemeral",
+    "--mode",
+    "nope"
+   ]
+  },
+  {
+   "name": "shell unknown flag",
+   "args": [
+    "shell",
+    "--nope"
+   ]
+  }
+ ]
+}

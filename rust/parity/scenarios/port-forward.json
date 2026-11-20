@@ -1,0 +1,314 @@
+{
+ "cases": [
+  {
+   "name": "port-forward url too short",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80",
+    "https://console.qovery.com/organization/org-1"
+   ]
+  },
+  {
+   "name": "port-forward url unknown org",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80",
+    "https://console.qovery.com/organization/org-x/project/proj-1/environment/env-1/application/app-1"
+   ]
+  },
+  {
+   "name": "port-forward url unknown project",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80",
+    "https://console.qovery.com/organization/org-1/project/proj-x/environment/env-1/application/app-1"
+   ]
+  },
+  {
+   "name": "port-forward url unknown env",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-x/application/app-1"
+   ]
+  },
+  {
+   "name": "port-forward url statuses error",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statuses",
+     "status": 502,
+     "body": {
+      "status": 502,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "port-forward url service not found",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/nope"
+   ]
+  },
+  {
+   "name": "port-forward url app error",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/application/app-1",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "port-forward url terraform error",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/terraform/tf-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/terraform/tf-1",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "port-forward url job error",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/job/life-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/job/life-1",
+     "status": 401,
+     "body": {
+      "status": 401,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "port-forward no context file",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80"
+   ],
+   "no_context_file": true
+  },
+  {
+   "name": "port-forward full context prompt",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80"
+   ]
+  },
+  {
+   "name": "port-forward context env error",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1",
+     "status": 404,
+     "body": {
+      "status": 404,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "port-forward context terraform error",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "tf-x",
+    "service_type": "TERRAFORM"
+   }
+  },
+  {
+   "name": "port-forward context no",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80"
+   ],
+   "stdin": "no\n"
+  },
+  {
+   "name": "port-forward partial context select",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80"
+   ],
+   "context": {
+    "service_name": ""
+   }
+  },
+  {
+   "name": "port-forward select orgs error",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80"
+   ],
+   "context": {
+    "service_name": ""
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization",
+     "status": 500,
+     "body": {
+      "status": 500,
+      "error": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "port-forward unknown flag",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:80",
+    "--nope"
+   ]
+  },
+  {
+   "name": "port-forward missing port",
+   "args": [
+    "port-forward"
+   ]
+  },
+  {
+   "name": "port-forward missing port with url",
+   "args": [
+    "port-forward",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ]
+  },
+  {
+   "name": "port-forward empty port",
+   "args": [
+    "port-forward",
+    "-p",
+    ""
+   ]
+  },
+  {
+   "name": "port-forward empty port list",
+   "args": [
+    "port-forward",
+    "--port="
+   ]
+  },
+  {
+   "name": "port-forward invalid local port",
+   "args": [
+    "port-forward",
+    "-p",
+    "80a80:80",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ]
+  },
+  {
+   "name": "port-forward invalid remote port",
+   "args": [
+    "port-forward",
+    "-p",
+    "8080:http",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ]
+  },
+  {
+   "name": "port-forward out of range port",
+   "args": [
+    "port-forward",
+    "-p",
+    "70000",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ]
+  },
+  {
+   "name": "port-forward empty local port",
+   "args": [
+    "port-forward",
+    "-p",
+    ":80",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ]
+  },
+  {
+   "name": "port-forward invalid port before resolution error",
+   "args": [
+    "port-forward",
+    "-p",
+    "x",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/nope"
+   ]
+  },
+  {
+   "name": "port-forward pod flag unknown service",
+   "args": [
+    "port-forward",
+    "-p",
+    "1",
+    "--pod",
+    "p",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/nope"
+   ]
+  }
+ ]
+}

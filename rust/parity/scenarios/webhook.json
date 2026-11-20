@@ -1,0 +1,316 @@
+{
+ "fixtures": [
+  {
+   "method": "GET",
+   "path": "/organization/org-1/webhook",
+   "body": {
+    "results": [
+     {
+      "id": "wh-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "kind": "STANDARD",
+      "target_url": "https://example.com/hook",
+      "target_secret_set": true,
+      "description": "My <hook> & co",
+      "enabled": true,
+      "events": [
+       "DEPLOYMENT_STARTED",
+       "DEPLOYMENT_SUCCESSFUL"
+      ],
+      "project_names_filter": [
+       "front*",
+       "back"
+      ],
+      "environment_types_filter": [
+       "PRODUCTION",
+       "STAGING"
+      ]
+     },
+     {
+      "id": "wh-2",
+      "created_at": "2024-05-03T08:00:00Z",
+      "kind": "SLACK",
+      "target_url": "https://hooks.slack.com/x",
+      "enabled": false,
+      "events": [],
+      "project_names_filter": [],
+      "environment_types_filter": []
+     },
+     {
+      "id": "wh-3",
+      "created_at": "2024-05-04T08:00:00+02:00",
+      "description": null
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/organization/org-2/webhook",
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/organization/org-1/webhook/wh-1/event",
+   "body": {
+    "results": [
+     {
+      "id": "ev-1",
+      "created_at": "2024-06-02T11:30:00.5Z",
+      "kind": "STANDARD",
+      "matched_event": "DEPLOYMENT_STARTED",
+      "target_url_used": "https://example.com/hook",
+      "request": {
+       "b": 1,
+       "a": {
+        "z": [
+         1,
+         2.5,
+         "x<y>"
+        ],
+        "y": null
+       },
+       "html": "<a&b>"
+      },
+      "target_response_status_code": 200,
+      "target_response_body": "OK"
+     },
+     {
+      "id": "ev-2",
+      "created_at": "2024-06-03T00:00:00Z",
+      "kind": "SLACK",
+      "matched_event": "DEPLOYMENT_FAILURE",
+      "target_url_used": "https://hooks.slack.com/x",
+      "request": {},
+      "target_response_status_code": 500,
+      "target_response_body": ""
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/organization/org-1/webhook/wh-2/event",
+   "body": {
+    "results": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/organization/org-1/webhook/wh-3/event",
+   "body": {
+    "results": [
+     {
+      "id": "ev-3",
+      "created_at": "2024-06-02T11:30:00Z",
+      "kind": "STANDARD",
+      "matched_event": "DEPLOYMENT_STARTED",
+      "target_url_used": "https://example.com/hook",
+      "request": {
+       "k": "v"
+      },
+      "target_response_status_code": 0,
+      "target_response_body": null
+     }
+    ]
+   }
+  }
+ ],
+ "cases": [
+  {
+   "name": "webhook (group)",
+   "args": [
+    "webhook"
+   ]
+  },
+  {
+   "name": "webhook unknown sub",
+   "args": [
+    "webhook",
+    "nope"
+   ]
+  },
+  {
+   "name": "webhook list",
+   "args": [
+    "webhook",
+    "list"
+   ]
+  },
+  {
+   "name": "webhook list --json",
+   "args": [
+    "webhook",
+    "list",
+    "--json"
+   ]
+  },
+  {
+   "name": "webhook list --organization",
+   "args": [
+    "webhook",
+    "list",
+    "--organization",
+    "other-org"
+   ]
+  },
+  {
+   "name": "webhook list --organization --json empty",
+   "args": [
+    "webhook",
+    "list",
+    "--organization",
+    "other-org",
+    "--json"
+   ]
+  },
+  {
+   "name": "webhook list org not found",
+   "args": [
+    "webhook",
+    "list",
+    "--organization",
+    "nope"
+   ]
+  },
+  {
+   "name": "webhook list api error",
+   "args": [
+    "webhook",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/webhook",
+     "status": 403,
+     "body": {
+      "message": "forbidden"
+     }
+    }
+   ]
+  },
+  {
+   "name": "webhook list no token",
+   "args": [
+    "webhook",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "webhook list-event",
+   "args": [
+    "webhook",
+    "list-event",
+    "--webhook-id",
+    "wh-1"
+   ]
+  },
+  {
+   "name": "webhook list-event --json",
+   "args": [
+    "webhook",
+    "list-event",
+    "--webhook-id",
+    "wh-1",
+    "--json"
+   ]
+  },
+  {
+   "name": "webhook list-event empty",
+   "args": [
+    "webhook",
+    "list-event",
+    "--webhook-id",
+    "wh-2"
+   ]
+  },
+  {
+   "name": "webhook list-event empty --json",
+   "args": [
+    "webhook",
+    "list-event",
+    "--webhook-id",
+    "wh-2",
+    "--json"
+   ]
+  },
+  {
+   "name": "webhook list-event null body --json",
+   "args": [
+    "webhook",
+    "list-event",
+    "--webhook-id",
+    "wh-3",
+    "--json"
+   ]
+  },
+  {
+   "name": "webhook list-event unknown webhook",
+   "args": [
+    "webhook",
+    "list-event",
+    "--webhook-id",
+    "wh-9"
+   ]
+  },
+  {
+   "name": "webhook list-event webhook-id escaped in the path",
+   "args": [
+    "webhook",
+    "list-event",
+    "--webhook-id",
+    "a/b?c#d e%",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/webhook/a%2Fb%3Fc%23d%20e%25/event",
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "webhook list-event missing webhook-id",
+   "args": [
+    "webhook",
+    "list-event"
+   ]
+  },
+  {
+   "name": "webhook list-event org not found",
+   "args": [
+    "webhook",
+    "list-event",
+    "--webhook-id",
+    "wh-1",
+    "--organization",
+    "nope"
+   ]
+  },
+  {
+   "name": "webhook list-event null body table (Go nil pointer panic)",
+   "args": [
+    "webhook",
+    "list-event",
+    "--webhook-id",
+    "wh-3"
+   ],
+   "ignore": [
+    "stderr"
+   ]
+  }
+ ]
+}

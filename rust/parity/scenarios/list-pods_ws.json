@@ -1,0 +1,487 @@
+{
+ "_comment": "Run with parity/shell_ws_compare.py parity/scenarios/list-pods_ws.json (starts parity/shell_ws_mock.py and substitutes $WS).",
+ "env": {
+  "QOVERY_WS_URL": "$WS"
+ },
+ "cases": [
+  {
+   "name": "list-pods ws url app",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ],
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws url new console container",
+   "args": [
+    "list-pods",
+    "https://new.console.qovery.com/organization/org-1/project/proj-1/environment/env-1/container/cont-1"
+   ],
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws url db",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/database/db-1"
+   ],
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws url job",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/job/cron-1"
+   ],
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws url helm",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/helm/helm-1"
+   ],
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws url terraform blueprint",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/terraform/tf-1"
+   ],
+   "timeout": 20,
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/terraform/tf-1",
+     "status": 200,
+     "body": {
+      "id": "tf-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "name": "my-terraform",
+      "timeout_sec": 3600,
+      "auto_deploy": false,
+      "icon_uri": "app://qovery-console/terraform",
+      "service_type": "TERRAFORM",
+      "terraform_variables_source": {
+       "tf_var_file_paths": [],
+       "tf_vars": []
+      },
+      "engine": "TERRAFORM",
+      "backend": {
+       "kubernetes": {}
+      },
+      "provider_version": {
+       "read_from_terraform_block": false,
+       "explicit_version": "1.9.0"
+      },
+      "job_resources": {
+       "cpu_milli": 500,
+       "ram_mib": 512,
+       "gpu": 0,
+       "storage_gib": 1
+      },
+      "environment": {
+       "id": "env-1"
+      },
+      "use_cluster_credentials": false,
+      "action_extra_arguments": {},
+      "terraform_files_source": {
+       "git": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/tf.git",
+         "name": "me/tf",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "ghi789",
+         "has_access": true
+        }
+       }
+      },
+      "blueprint_id": "bp-1"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list-pods ws context terraform blueprint",
+   "args": [
+    "list-pods"
+   ],
+   "timeout": 20,
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "tf-1",
+    "service_type": "terraform"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/terraform/tf-1",
+     "status": 200,
+     "body": {
+      "id": "tf-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "name": "my-terraform",
+      "timeout_sec": 3600,
+      "auto_deploy": false,
+      "icon_uri": "app://qovery-console/terraform",
+      "service_type": "TERRAFORM",
+      "terraform_variables_source": {
+       "tf_var_file_paths": [],
+       "tf_vars": []
+      },
+      "engine": "TERRAFORM",
+      "backend": {
+       "kubernetes": {}
+      },
+      "provider_version": {
+       "read_from_terraform_block": false,
+       "explicit_version": "1.9.0"
+      },
+      "job_resources": {
+       "cpu_milli": 500,
+       "ram_mib": 512,
+       "gpu": 0,
+       "storage_gib": 1
+      },
+      "environment": {
+       "id": "env-1"
+      },
+      "use_cluster_credentials": false,
+      "action_extra_arguments": {},
+      "terraform_files_source": {
+       "git": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/tf.git",
+         "name": "me/tf",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "ghi789",
+         "has_access": true
+        }
+       }
+      },
+      "blueprint_id": "bp-1"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list-pods ws context terraform upper",
+   "args": [
+    "list-pods"
+   ],
+   "timeout": 20,
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "tf-1",
+    "service_type": "TERRAFORM"
+   }
+  },
+  {
+   "name": "list-pods ws context token",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ],
+   "timeout": 20,
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   }
+  },
+  {
+   "name": "list-pods ws connection refused",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ],
+   "timeout": 20,
+   "env": {
+    "QOVERY_WS_URL": "ws://127.0.0.1:1"
+   }
+  },
+  {
+   "name": "list-pods ws malformed ws url",
+   "args": [
+    "list-pods",
+    "https://console.qovery.com/organization/org-1/project/proj-1/environment/env-1/application/app-1"
+   ],
+   "timeout": 20,
+   "env": {
+    "QOVERY_WS_URL": "wss://user@127.0.0.1:1"
+   }
+  },
+  {
+   "name": "list-pods ws context pods",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-list",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-list"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-empty",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-empty"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-null",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-null"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-case",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-case"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-binary",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-binary"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-badjson",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-badjson"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-truncated",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-truncated"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-badport",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-badport"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-badtype",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-badtype"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-badport-case",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-badport-case"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-floatport",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-floatport"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-stringport",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-stringport"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-ports-object",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-ports-object"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-string",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-string"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-pod-string",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-pod-string"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-name-array",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-name-array"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-array",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-array"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-two-errors",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-two-errors"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-dup",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-dup"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-null-items",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-null-items"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-close",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-close"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pods-drop",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pods-drop"
+   },
+   "timeout": 20
+  },
+  {
+   "name": "list-pods ws context pf-reject",
+   "args": [
+    "list-pods"
+   ],
+   "stdin": "yes\n",
+   "context": {
+    "service_id": "pf-reject"
+   },
+   "timeout": 20
+  }
+ ]
+}

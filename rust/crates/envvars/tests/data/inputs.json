@@ -1,0 +1,82 @@
+{
+  "basic": {
+    "lines": true,
+    "variables": [
+      {"id": "v-a", "created_at": "2024-01-02T15:04:05.123456Z", "updated_at": "2024-03-04T05:06:07.987654321Z", "key": "DB_HOST", "value": "db.local", "scope": "APPLICATION", "variable_type": "VALUE", "service_name": "my-app", "service_id": "app-1", "is_secret": false},
+      {"id": "v-b", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07+02:00", "key": "DB_PASS", "value": null, "scope": "ENVIRONMENT", "variable_type": "VALUE", "is_secret": true},
+      {"id": "v-c", "created_at": "2024-01-02T15:04:05.5Z", "updated_at": "2024-03-04T05:06:07.000999Z", "key": "DATABASE_URL", "value": "db.local", "scope": "APPLICATION", "variable_type": "ALIAS", "service_name": "my-app", "is_secret": false,
+       "aliased_variable": {"id": "v-a", "key": "DB_HOST", "value": "db.local", "mount_path": "", "scope": "APPLICATION", "variable_type": "VALUE"}},
+      {"id": "v-d", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-12-31T23:59:59-05:30", "key": "DB_HOST", "value": "override", "scope": "APPLICATION", "variable_type": "OVERRIDE", "service_name": "my-app", "is_secret": false,
+       "overridden_variable": {"id": "v-p", "key": "DB_HOST", "value": "proj", "mount_path": "", "scope": "PROJECT", "variable_type": "VALUE"}},
+      {"id": "v-e", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07+00:00", "key": "SECRET_ALIAS", "value": null, "scope": "APPLICATION", "variable_type": "ALIAS", "is_secret": true,
+       "aliased_variable": {"id": "v-b", "key": "DB_PASS", "mount_path": "", "scope": "ENVIRONMENT", "variable_type": "VALUE"}},
+      {"id": "v-f", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07Z", "key": "URL", "value": "postgres://{{DB_USER}}:{{DB_PASS}}@{{DB_HOST}}/x", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "v-g", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07Z", "key": "DB_USER", "value": "admin", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "v-h", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07Z", "key": "HTML", "value": "<b>&amp;</b> \"é\"   \\ tab\tnl\n", "scope": "CONTAINER", "variable_type": "VALUE", "service_name": "<svc>", "is_secret": false},
+      {"id": "v-i", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07Z", "key": "EMPTY", "value": "", "scope": "JOB", "variable_type": "VALUE", "is_secret": false},
+      {"id": "v-j", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07Z", "key": "a_lower", "value": "1", "scope": "BUILT_IN", "variable_type": "BUILT_IN", "is_secret": false},
+      {"id": "v-k", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07Z", "key": "SECRET_OVERRIDE", "value": null, "scope": "APPLICATION", "variable_type": "OVERRIDE", "is_secret": true,
+       "overridden_variable": {"id": "v-b", "key": "DB_PASS", "mount_path": "", "scope": "ENVIRONMENT", "variable_type": "VALUE"}}
+    ]
+  },
+  "overwrite": {
+    "lines": true,
+    "variables": [
+      {"id": "o-1", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07Z", "key": "ALIAS_P", "value": "p", "scope": "APPLICATION", "variable_type": "ALIAS", "is_secret": false,
+       "aliased_variable": {"id": "o-2", "key": "P", "mount_path": "", "scope": "PROJECT", "variable_type": "VALUE"}},
+      {"id": "o-2", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07Z", "key": "P", "value": "p", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "o-3", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07Z", "key": "ALIAS_Q", "value": "q", "scope": "APPLICATION", "variable_type": "ALIAS", "is_secret": false,
+       "aliased_variable": {"id": "o-4", "key": "Q", "mount_path": "", "scope": "PROJECT", "variable_type": "VALUE"}},
+      {"id": "o-5", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07Z", "key": "Q2", "value": "q2", "scope": "APPLICATION", "variable_type": "ALIAS", "is_secret": false,
+       "aliased_variable": {"id": "o-4", "key": "Q", "mount_path": "", "scope": "PROJECT", "variable_type": "VALUE"}}
+    ]
+  },
+  "single": {
+    "lines": true,
+    "variables": [
+      {"id": "s-1", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07.999Z", "key": "ONLY", "value": "x", "scope": "ENVIRONMENT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "s-2", "created_at": "2024-01-02T15:04:05Z", "updated_at": "2024-03-04T05:06:07Z", "key": "ONLY_ALIAS", "value": "x", "scope": "APPLICATION", "variable_type": "ALIAS", "service_name": "svc", "is_secret": false,
+       "aliased_variable": {"id": "s-1", "key": "ONLY", "mount_path": "", "scope": "ENVIRONMENT", "variable_type": "VALUE"}}
+    ]
+  },
+  "empty": {
+    "lines": true,
+    "variables": []
+  },
+  "interp": {
+    "lines": false,
+    "variables": [
+      {"id": "i-1", "created_at": "2024-01-02T15:04:05Z", "key": "A", "value": "1", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-2", "created_at": "2024-01-02T15:04:05Z", "key": "B", "value": "2", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-3", "created_at": "2024-01-02T15:04:05Z", "key": "T1", "value": "{{A}}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-4", "created_at": "2024-01-02T15:04:05Z", "key": "T2", "value": "x{{A}}y{{B}}z", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-5", "created_at": "2024-01-02T15:04:05Z", "key": "T3", "value": "{{MISSING}}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-6", "created_at": "2024-01-02T15:04:05Z", "key": "ALIAS_A", "value": "ignored", "scope": "PROJECT", "variable_type": "ALIAS", "is_secret": false,
+       "aliased_variable": {"id": "i-1", "key": "A", "mount_path": "", "scope": "PROJECT", "variable_type": "VALUE"}},
+      {"id": "i-7", "created_at": "2024-01-02T15:04:05Z", "key": "T4", "value": "{{ALIAS_A}}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-8", "created_at": "2024-01-02T15:04:05Z", "key": "SECRET", "value": null, "scope": "PROJECT", "variable_type": "VALUE", "is_secret": true},
+      {"id": "i-9", "created_at": "2024-01-02T15:04:05Z", "key": "T5", "value": "s={{SECRET}}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-10", "created_at": "2024-01-02T15:04:05Z", "key": "T6", "value": "{single}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-11", "created_at": "2024-01-02T15:04:05Z", "key": "T7", "value": "a{b{{A}}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-12", "created_at": "2024-01-02T15:04:05Z", "key": "T8", "value": "{{A}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-13", "created_at": "2024-01-02T15:04:05Z", "key": "T9", "value": "{{}}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-14", "created_at": "2024-01-02T15:04:05Z", "key": "T10", "value": "é{{A}}ü{{B}}ß", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-15", "created_at": "2024-01-02T15:04:05Z", "key": "SELF", "value": "{{SELF}}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-16", "created_at": "2024-01-02T15:04:05Z", "key": "T11", "value": "{{A}}{{SELF}}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-17", "created_at": "2024-01-02T15:04:05Z", "key": "ORPHAN", "value": "orphan", "scope": "PROJECT", "variable_type": "ALIAS", "is_secret": false,
+       "aliased_variable": {"id": "i-x", "key": "NOPE", "mount_path": "", "scope": "PROJECT", "variable_type": "VALUE"}},
+      {"id": "i-18", "created_at": "2024-01-02T15:04:05Z", "key": "DUP", "value": "dup-alias", "scope": "PROJECT", "variable_type": "ALIAS", "is_secret": false,
+       "aliased_variable": {"id": "i-2", "key": "B", "mount_path": "", "scope": "PROJECT", "variable_type": "VALUE"}},
+      {"id": "i-19", "created_at": "2024-01-02T15:04:05Z", "key": "DUP", "value": "dup-plain", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-20", "created_at": "2024-01-02T15:04:05Z", "key": "T12", "value": "<{{DUP}}>", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-21", "created_at": "2024-01-02T15:04:05Z", "key": "T13", "value": "{{ORPHAN}}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-22", "created_at": "2024-01-02T15:04:05Z", "key": "NULLV", "value": null, "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-23", "created_at": "2024-01-02T15:04:05Z", "key": "T14", "value": "{{T1}}+{{T2}}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-24", "created_at": "2024-01-02T15:04:05Z", "key": "T15", "value": "{{{A}}}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-25", "created_at": "2024-01-02T15:04:05Z", "key": "T16", "value": "{{A}}}}{{B}}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false},
+      {"id": "i-26", "created_at": "2024-01-02T15:04:05Z", "key": "ALIAS_SECRET", "value": "zzz", "scope": "PROJECT", "variable_type": "ALIAS", "is_secret": true,
+       "aliased_variable": {"id": "i-8", "key": "SECRET", "mount_path": "", "scope": "PROJECT", "variable_type": "VALUE"}},
+      {"id": "i-27", "created_at": "2024-01-02T15:04:05Z", "key": "T17", "value": "{{ALIAS_SECRET}}", "scope": "PROJECT", "variable_type": "VALUE", "is_secret": false}
+    ]
+  }
+}

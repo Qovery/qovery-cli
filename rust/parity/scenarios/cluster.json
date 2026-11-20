@@ -1,0 +1,2259 @@
+{
+ "cases": [
+  {
+   "name": "cluster (group)",
+   "args": [
+    "cluster"
+   ]
+  },
+  {
+   "name": "cluster unknown sub",
+   "args": [
+    "cluster",
+    "nope"
+   ]
+  },
+  {
+   "name": "cluster analysis (group)",
+   "args": [
+    "cluster",
+    "analysis"
+   ]
+  },
+  {
+   "name": "cluster operator (group)",
+   "args": [
+    "cluster",
+    "operator"
+   ]
+  },
+  {
+   "name": "cluster operator extra arg",
+   "args": [
+    "cluster",
+    "operator",
+    "foo"
+   ]
+  },
+  {
+   "name": "list",
+   "args": [
+    "cluster",
+    "list"
+   ]
+  },
+  {
+   "name": "list json",
+   "args": [
+    "cluster",
+    "list",
+    "--json"
+   ]
+  },
+  {
+   "name": "list org flag",
+   "args": [
+    "cluster",
+    "list",
+    "--organization",
+    "my-org",
+    "--json"
+   ]
+  },
+  {
+   "name": "list org not found",
+   "args": [
+    "cluster",
+    "list",
+    "--organization",
+    "nope"
+   ]
+  },
+  {
+   "name": "list empty json",
+   "args": [
+    "cluster",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "list empty table",
+   "args": [
+    "cluster",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "list api error",
+   "args": [
+    "cluster",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 500,
+     "body": {
+      "message": "boom"
+     }
+    }
+   ]
+  },
+  {
+   "name": "list no token",
+   "args": [
+    "cluster",
+    "list"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "list statuses",
+   "args": [
+    "cluster",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "c-0",
+        "created_at": "2024-05-01T10:00:00Z",
+        "updated_at": "2024-06-02T11:30:00+02:00",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "n0",
+        "region": "r",
+        "cloud_provider": "AWS",
+        "status": "DEPLOYING"
+       },
+       {
+        "id": "c-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "updated_at": "2024-06-02T11:30:00+02:00",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "n1",
+        "region": "r",
+        "cloud_provider": "AWS",
+        "status": "DEPLOYMENT_ERROR"
+       },
+       {
+        "id": "c-2",
+        "created_at": "2024-05-01T10:00:00Z",
+        "updated_at": "2024-06-02T11:30:00+02:00",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "n2",
+        "region": "r",
+        "cloud_provider": "AWS",
+        "status": "STOPPED"
+       },
+       {
+        "id": "c-3",
+        "created_at": "2024-05-01T10:00:00Z",
+        "updated_at": "2024-06-02T11:30:00+02:00",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "n3",
+        "region": "r",
+        "cloud_provider": "AWS",
+        "status": "INVALID_CREDENTIALS"
+       },
+       {
+        "id": "c-4",
+        "created_at": "2024-05-01T10:00:00Z",
+        "updated_at": "2024-06-02T11:30:00+02:00",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "n4",
+        "region": "r",
+        "cloud_provider": "AWS",
+        "status": "DEPLOYMENT_QUEUED"
+       },
+       {
+        "id": "c-5",
+        "created_at": "2024-05-01T10:00:00Z",
+        "updated_at": "2024-06-02T11:30:00+02:00",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "n5",
+        "region": "r",
+        "cloud_provider": "AWS",
+        "status": "UNKNOWN"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy",
+   "args": [
+    "cluster",
+    "deploy",
+    "-n",
+    "my-cluster"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/cluster-1/deploy",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYING",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy org flag",
+   "args": [
+    "cluster",
+    "deploy",
+    "--organization",
+    "my-org",
+    "--cluster",
+    "my-cluster"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/cluster-1/deploy",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYING",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy watch",
+   "args": [
+    "cluster",
+    "deploy",
+    "-n",
+    "my-cluster",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/cluster-1/deploy",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYING",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/status",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYED",
+      "is_deployed": true,
+      "reason": "UNSPECIFIED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy watch polling",
+   "args": [
+    "cluster",
+    "deploy",
+    "-n",
+    "my-cluster",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/cluster-1/deploy",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYING",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/status",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "cluster_id": "cluster-1",
+        "status": "DEPLOYING",
+        "is_deployed": false,
+        "reason": "UNSPECIFIED"
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "cluster_id": "cluster-1",
+        "status": "DEPLOYED",
+        "is_deployed": true,
+        "reason": "UNSPECIFIED"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "deploy watch status error",
+   "args": [
+    "cluster",
+    "deploy",
+    "-n",
+    "my-cluster",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/cluster-1/deploy",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYING",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/status",
+     "status": 500,
+     "body": {
+      "m": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy not found",
+   "args": [
+    "cluster",
+    "deploy",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "deploy missing cluster",
+   "args": [
+    "cluster",
+    "deploy"
+   ]
+  },
+  {
+   "name": "deploy api error",
+   "args": [
+    "cluster",
+    "deploy",
+    "-n",
+    "my-cluster"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/cluster-1/deploy",
+     "status": 400,
+     "body": {
+      "message": "bad"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy accepted",
+   "args": [
+    "cluster",
+    "deploy",
+    "-n",
+    "my-cluster"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/cluster-1/deploy",
+     "status": 202,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYING",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy trimmed name",
+   "args": [
+    "cluster",
+    "deploy",
+    "-n",
+    " my-cluster "
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/cluster-1/deploy",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYING",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop",
+   "args": [
+    "cluster",
+    "stop",
+    "-n",
+    "my-cluster"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/cluster-1/stop",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "STOPPING",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop watch",
+   "args": [
+    "cluster",
+    "stop",
+    "-n",
+    "my-cluster",
+    "--watch"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/cluster-1/stop",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "STOPPING",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/status",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "STOPPED",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop not found",
+   "args": [
+    "cluster",
+    "stop",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "stop api error",
+   "args": [
+    "cluster",
+    "stop",
+    "-n",
+    "my-cluster"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/cluster-1/stop",
+     "status": 400,
+     "body": {
+      "message": "bad"
+     }
+    }
+   ]
+  },
+  {
+   "name": "stop org not found",
+   "args": [
+    "cluster",
+    "stop",
+    "-n",
+    "my-cluster",
+    "--organization",
+    "nope"
+   ]
+  },
+  {
+   "name": "upgrade skip confirmation",
+   "args": [
+    "cluster",
+    "upgrade",
+    "-n",
+    "my-cluster",
+    "-y"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/status",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYED",
+      "is_deployed": true,
+      "reason": "UNSPECIFIED",
+      "next_k8s_available_version": "1.31"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/cluster/cluster-1/upgrade",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYING",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade watch",
+   "args": [
+    "cluster",
+    "upgrade",
+    "-n",
+    "my-cluster",
+    "-y",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/status",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYED",
+      "is_deployed": true,
+      "reason": "UNSPECIFIED",
+      "next_k8s_available_version": "1.31"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/cluster/cluster-1/upgrade",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYING",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade no next version",
+   "args": [
+    "cluster",
+    "upgrade",
+    "-n",
+    "my-cluster",
+    "-y"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/status",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYED",
+      "is_deployed": true,
+      "reason": "UNSPECIFIED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade null next version",
+   "args": [
+    "cluster",
+    "upgrade",
+    "-n",
+    "my-cluster",
+    "-y"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/status",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYED",
+      "is_deployed": true,
+      "reason": "UNSPECIFIED",
+      "next_k8s_available_version": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade not found",
+   "args": [
+    "cluster",
+    "upgrade",
+    "-n",
+    "nope",
+    "-y"
+   ]
+  },
+  {
+   "name": "upgrade api error",
+   "args": [
+    "cluster",
+    "upgrade",
+    "-n",
+    "my-cluster",
+    "-y"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/status",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYED",
+      "is_deployed": true,
+      "reason": "UNSPECIFIED",
+      "next_k8s_available_version": "1.31"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/cluster/cluster-1/upgrade",
+     "status": 400,
+     "body": {
+      "message": "nope"
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade status error",
+   "args": [
+    "cluster",
+    "upgrade",
+    "-n",
+    "my-cluster",
+    "-y"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/status",
+     "status": 404,
+     "body": {}
+    }
+   ]
+  },
+  {
+   "name": "upgrade prompt yes (piped)",
+   "args": [
+    "cluster",
+    "upgrade",
+    "-n",
+    "my-cluster"
+   ],
+   "stdin": "\n",
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/status",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYED",
+      "is_deployed": true,
+      "reason": "UNSPECIFIED",
+      "next_k8s_available_version": "1.31"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/cluster/cluster-1/upgrade",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYING",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade prompt eof (piped)",
+   "args": [
+    "cluster",
+    "upgrade",
+    "-n",
+    "my-cluster"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/status",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYED",
+      "is_deployed": true,
+      "reason": "UNSPECIFIED",
+      "next_k8s_available_version": "1.31"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/cluster/cluster-1/upgrade",
+     "status": 200,
+     "body": {
+      "cluster_id": "cluster-1",
+      "status": "DEPLOYING",
+      "is_deployed": false,
+      "reason": "UNSPECIFIED"
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade missing cluster",
+   "args": [
+    "cluster",
+    "upgrade"
+   ]
+  },
+  {
+   "name": "get-token",
+   "args": [
+    "cluster",
+    "get-token",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/cluster/cluster-1/token",
+     "status": 200,
+     "body": {
+      "apiVersion": "client.authentication.k8s.io/v1",
+      "kind": "ExecCredential",
+      "spec": {
+       "interactive": false
+      },
+      "status": {
+       "expirationTimestamp": "2024-07-01T10:00:00Z",
+       "token": "k8s-token"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "get-token read-only",
+   "args": [
+    "cluster",
+    "get-token",
+    "--cluster-id",
+    "cluster-1",
+    "-r"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/cluster/cluster-1/token",
+     "status": 200,
+     "body": {
+      "apiVersion": "client.authentication.k8s.io/v1",
+      "kind": "ExecCredential",
+      "spec": {
+       "interactive": false
+      },
+      "status": {
+       "expirationTimestamp": "2024-07-01T10:00:00Z",
+       "token": "k8s-token"
+      }
+     },
+     "query": {
+      "read_only": "true"
+     }
+    }
+   ]
+  },
+  {
+   "name": "get-token no cluster id",
+   "args": [
+    "cluster",
+    "get-token"
+   ]
+  },
+  {
+   "name": "get-token api error",
+   "args": [
+    "cluster",
+    "get-token",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/cluster/cluster-1/token",
+     "status": 403,
+     "body": {
+      "error": "x"
+     }
+    }
+   ]
+  },
+  {
+   "name": "get-token missing property",
+   "args": [
+    "cluster",
+    "get-token",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/cluster/cluster-1/token",
+     "status": 200,
+     "body": {
+      "kind": "ExecCredential"
+     }
+    }
+   ]
+  },
+  {
+   "name": "get-token no token",
+   "args": [
+    "cluster",
+    "get-token",
+    "-c",
+    "cluster-1"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
+   "name": "kubeconfig",
+   "args": [
+    "cluster",
+    "kubeconfig",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/00000000-0000-0000-000000000000/cluster/cluster-1/kubeconfig",
+     "status": 200,
+     "body_raw": "apiVersion: v1\nkind: Config\n",
+     "query": {
+      "with_token_from_cli": "true"
+     }
+    }
+   ]
+  },
+  {
+   "name": "kubeconfig read-only",
+   "args": [
+    "cluster",
+    "kubeconfig",
+    "-c",
+    "cluster-1",
+    "--read-only"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/00000000-0000-0000-000000000000/cluster/cluster-1/kubeconfig",
+     "status": 200,
+     "body_raw": "apiVersion: v1\n",
+     "query": {
+      "read_only": "true"
+     }
+    }
+   ]
+  },
+  {
+   "name": "kubeconfig no cluster id",
+   "args": [
+    "cluster",
+    "kubeconfig"
+   ]
+  },
+  {
+   "name": "kubeconfig api error",
+   "args": [
+    "cluster",
+    "kubeconfig",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/00000000-0000-0000-000000000000/cluster/cluster-1/kubeconfig",
+     "status": 404,
+     "body": {
+      "e": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "lock yes",
+   "args": [
+    "cluster",
+    "lock",
+    "-c",
+    "cluster-1",
+    "-r",
+    "maint"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/cluster-1/lock",
+     "status": 200,
+     "body": {
+      "reason": "maint",
+      "cluster_id": "cluster-1",
+      "locked_at": "2024-07-01T10:00:00Z",
+      "owner_name": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "lock ttl",
+   "args": [
+    "cluster",
+    "lock",
+    "-c",
+    "cluster-1",
+    "-r",
+    "maint",
+    "-d",
+    "3"
+   ],
+   "stdin": "\nyes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/cluster-1/lock",
+     "status": 200,
+     "body": {
+      "reason": "maint",
+      "cluster_id": "cluster-1",
+      "locked_at": "2024-07-01T10:00:00Z",
+      "owner_name": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "lock no",
+   "args": [
+    "cluster",
+    "lock",
+    "-c",
+    "cluster-1",
+    "-r",
+    "maint"
+   ],
+   "stdin": "no\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/cluster-1/lock",
+     "status": 200,
+     "body": {
+      "reason": "maint",
+      "cluster_id": "cluster-1",
+      "locked_at": "2024-07-01T10:00:00Z",
+      "owner_name": "me"
+     }
+    }
+   ]
+  },
+  {
+   "name": "lock eof",
+   "args": [
+    "cluster",
+    "lock",
+    "-c",
+    "cluster-1",
+    "-r",
+    "maint"
+   ]
+  },
+  {
+   "name": "lock api error detail",
+   "args": [
+    "cluster",
+    "lock",
+    "-c",
+    "cluster-1",
+    "-r",
+    "maint"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/cluster-1/lock",
+     "status": 400,
+     "body": {
+      "detail": "already locked"
+     }
+    }
+   ]
+  },
+  {
+   "name": "lock api error no detail",
+   "args": [
+    "cluster",
+    "lock",
+    "-c",
+    "cluster-1",
+    "-r",
+    "maint"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/cluster-1/lock",
+     "status": 500,
+     "body_raw": "oops"
+    }
+   ]
+  },
+  {
+   "name": "lock missing flags",
+   "args": [
+    "cluster",
+    "lock"
+   ]
+  },
+  {
+   "name": "lock missing reason",
+   "args": [
+    "cluster",
+    "lock",
+    "-c",
+    "cluster-1"
+   ]
+  },
+  {
+   "name": "lock bad ttl",
+   "args": [
+    "cluster",
+    "lock",
+    "-c",
+    "cluster-1",
+    "-r",
+    "x",
+    "-d",
+    "abc"
+   ]
+  },
+  {
+   "name": "unlock yes",
+   "args": [
+    "cluster",
+    "unlock",
+    "-c",
+    "cluster-1"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/cluster/cluster-1/lock",
+     "status": 204
+    }
+   ]
+  },
+  {
+   "name": "unlock error",
+   "args": [
+    "cluster",
+    "unlock",
+    "-c",
+    "cluster-1"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "DELETE",
+     "path": "/cluster/cluster-1/lock",
+     "status": 404,
+     "body": {
+      "status": 404
+     }
+    }
+   ]
+  },
+  {
+   "name": "unlock no",
+   "args": [
+    "cluster",
+    "unlock"
+   ],
+   "stdin": "nope\n"
+  },
+  {
+   "name": "locked",
+   "args": [
+    "cluster",
+    "locked",
+    "-o",
+    "org-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/lock",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "cluster_id": "cluster-1",
+        "locked_at": "2024-07-01T10:00:00Z",
+        "owner_name": "John Doe",
+        "reason": "maintenance",
+        "ttl_in_days": 3
+       },
+       {
+        "cluster_id": "cluster-long-identifier-2",
+        "locked_at": "2024-07-02T11:30:15.5Z",
+        "owner_name": "Jane",
+        "reason": "upgrade"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "locked empty",
+   "args": [
+    "cluster",
+    "locked",
+    "--organization-id",
+    "org-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/lock",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "locked api error",
+   "args": [
+    "cluster",
+    "locked",
+    "-o",
+    "org-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/lock",
+     "status": 500,
+     "body": {
+      "m": "x"
+     }
+    }
+   ]
+  },
+  {
+   "name": "locked missing org",
+   "args": [
+    "cluster",
+    "locked"
+   ]
+  },
+  {
+   "name": "analysis list",
+   "args": [
+    "cluster",
+    "analysis",
+    "list",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/clusters/cluster-1/analysis",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "an-1",
+        "cluster_id": "cluster-1",
+        "organization_id": "org-1",
+        "kind": "COST_RECOMMENDATION",
+        "status": "SUCCEEDED",
+        "output_format": "JSON",
+        "created_at": "2024-07-01T10:00:00.123456Z",
+        "updated_at": "2024-07-01T10:05:00Z",
+        "triggered_by": "user@qovery.com"
+       },
+       {
+        "id": "an-2",
+        "cluster_id": "cluster-1",
+        "organization_id": "org-1",
+        "kind": "COST_RECOMMENDATION",
+        "status": "FAILED",
+        "output_format": "JSON",
+        "created_at": "2024-07-01T10:00:00.123456Z",
+        "updated_at": "2024-07-01T10:05:00Z",
+        "triggered_by": "user@qovery.com",
+        "error_message": "boom"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "analysis list json",
+   "args": [
+    "cluster",
+    "analysis",
+    "list",
+    "-c",
+    "cluster-1",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/clusters/cluster-1/analysis",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "an-1",
+        "cluster_id": "cluster-1",
+        "organization_id": "org-1",
+        "kind": "COST_RECOMMENDATION",
+        "status": "SUCCEEDED",
+        "output_format": "JSON",
+        "created_at": "2024-07-01T10:00:00.123456Z",
+        "updated_at": "2024-07-01T10:05:00Z",
+        "triggered_by": "user@qovery.com"
+       },
+       {
+        "id": "an-2",
+        "cluster_id": "cluster-1",
+        "organization_id": "org-1",
+        "kind": "COST_RECOMMENDATION",
+        "status": "FAILED",
+        "output_format": "JSON",
+        "created_at": "2024-07-01T10:00:00.123456Z",
+        "updated_at": "2024-07-01T10:05:00Z",
+        "triggered_by": "user@qovery.com",
+        "error_message": "boom"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "analysis list empty json",
+   "args": [
+    "cluster",
+    "analysis",
+    "list",
+    "-c",
+    "cluster-1",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/clusters/cluster-1/analysis",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "analysis list api error",
+   "args": [
+    "cluster",
+    "analysis",
+    "list",
+    "-c",
+    "cluster-1"
+   ]
+  },
+  {
+   "name": "analysis list missing cluster",
+   "args": [
+    "cluster",
+    "analysis",
+    "list"
+   ]
+  },
+  {
+   "name": "analysis logs",
+   "args": [
+    "cluster",
+    "analysis",
+    "logs",
+    "-c",
+    "cluster-1",
+    "-a",
+    "an-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/clusters/cluster-1/analysis/an-1/logs",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "timestamp": "2024-07-01T10:00:01.5Z",
+        "level": "INFO",
+        "message": "line one",
+        "line_order": 1
+       },
+       {
+        "timestamp": "2024-07-01T10:00:02Z",
+        "level": "INFO",
+        "message": "line <two> & \"three\"",
+        "line_order": 2
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "analysis logs json",
+   "args": [
+    "cluster",
+    "analysis",
+    "logs",
+    "-c",
+    "cluster-1",
+    "-a",
+    "an-1",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/clusters/cluster-1/analysis/an-1/logs",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "timestamp": "2024-07-01T10:00:01.5Z",
+        "level": "INFO",
+        "message": "line one",
+        "line_order": 1
+       },
+       {
+        "timestamp": "2024-07-01T10:00:02Z",
+        "level": "INFO",
+        "message": "line <two> & \"three\"",
+        "line_order": 2
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "analysis logs api error",
+   "args": [
+    "cluster",
+    "analysis",
+    "logs",
+    "-c",
+    "cluster-1",
+    "-a",
+    "an-1"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/clusters/cluster-1/analysis/an-1/logs",
+     "status": 403,
+     "body": {
+      "message": "denied"
+     }
+    }
+   ]
+  },
+  {
+   "name": "analysis logs missing analysis",
+   "args": [
+    "cluster",
+    "analysis",
+    "logs",
+    "-c",
+    "cluster-1"
+   ]
+  },
+  {
+   "name": "cost-recommendation no watch",
+   "args": [
+    "cluster",
+    "analysis",
+    "cost-recommendation",
+    "-c",
+    "cluster-1",
+    "--watch=false"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/clusters/cluster-1/analysis",
+     "status": 200,
+     "body": {
+      "id": "an-9",
+      "cluster_id": "cluster-1",
+      "organization_id": "org-1",
+      "kind": "COST_RECOMMENDATION",
+      "status": "PENDING",
+      "output_format": "JSON",
+      "created_at": "2024-07-01T10:00:00.123456Z",
+      "updated_at": "2024-07-01T10:05:00Z",
+      "triggered_by": "user@qovery.com"
+     }
+    }
+   ]
+  },
+  {
+   "name": "cost-recommendation flags",
+   "args": [
+    "cluster",
+    "analysis",
+    "cost-recommendation",
+    "-c",
+    "cluster-1",
+    "--watch=false",
+    "--output",
+    " TABLE ",
+    "--prometheus-url",
+    "http://prom:9090",
+    "--cmd-arg=--history_duration",
+    "--cmd-arg",
+    "336"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/clusters/cluster-1/analysis",
+     "status": 200,
+     "body": {
+      "id": "an-9",
+      "cluster_id": "cluster-1",
+      "organization_id": "org-1",
+      "kind": "COST_RECOMMENDATION",
+      "status": "PENDING",
+      "output_format": "JSON",
+      "created_at": "2024-07-01T10:00:00.123456Z",
+      "updated_at": "2024-07-01T10:05:00Z",
+      "triggered_by": "user@qovery.com"
+     }
+    }
+   ]
+  },
+  {
+   "name": "cost-recommendation watch succeeded",
+   "args": [
+    "cluster",
+    "analysis",
+    "cost-recommendation",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/clusters/cluster-1/analysis",
+     "status": 200,
+     "body": {
+      "id": "an-9",
+      "cluster_id": "cluster-1",
+      "organization_id": "org-1",
+      "kind": "COST_RECOMMENDATION",
+      "status": "SUCCEEDED",
+      "output_format": "JSON",
+      "created_at": "2024-07-01T10:00:00.123456Z",
+      "updated_at": "2024-07-01T10:05:00Z",
+      "triggered_by": "user@qovery.com"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/clusters/cluster-1/analysis/an-9/logs",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "timestamp": "2024-07-01T10:00:01.5Z",
+        "level": "INFO",
+        "message": "line one",
+        "line_order": 1
+       },
+       {
+        "timestamp": "2024-07-01T10:00:02Z",
+        "level": "INFO",
+        "message": "line <two> & \"three\"",
+        "line_order": 2
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "cost-recommendation watch no-logs",
+   "args": [
+    "cluster",
+    "analysis",
+    "cost-recommendation",
+    "-c",
+    "cluster-1",
+    "--no-logs"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/clusters/cluster-1/analysis",
+     "status": 200,
+     "body": {
+      "id": "an-9",
+      "cluster_id": "cluster-1",
+      "organization_id": "org-1",
+      "kind": "COST_RECOMMENDATION",
+      "status": "SUCCEEDED",
+      "output_format": "JSON",
+      "created_at": "2024-07-01T10:00:00.123456Z",
+      "updated_at": "2024-07-01T10:05:00Z",
+      "triggered_by": "user@qovery.com"
+     }
+    }
+   ]
+  },
+  {
+   "name": "cost-recommendation watch polling",
+   "args": [
+    "cluster",
+    "analysis",
+    "cost-recommendation",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/clusters/cluster-1/analysis",
+     "status": 200,
+     "body": {
+      "id": "an-9",
+      "cluster_id": "cluster-1",
+      "organization_id": "org-1",
+      "kind": "COST_RECOMMENDATION",
+      "status": "PENDING",
+      "output_format": "JSON",
+      "created_at": "2024-07-01T10:00:00.123456Z",
+      "updated_at": "2024-07-01T10:05:00Z",
+      "triggered_by": "user@qovery.com"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/clusters/cluster-1/analysis/an-9",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "id": "an-9",
+        "cluster_id": "cluster-1",
+        "organization_id": "org-1",
+        "kind": "COST_RECOMMENDATION",
+        "status": "FAILED",
+        "output_format": "JSON",
+        "created_at": "2024-07-01T10:00:00.123456Z",
+        "updated_at": "2024-07-01T10:05:00Z",
+        "triggered_by": "user@qovery.com",
+        "error_message": "engine crashed"
+       }
+      }
+     ]
+    },
+    {
+     "method": "GET",
+     "path": "/clusters/cluster-1/analysis/an-9/logs",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "timestamp": "2024-07-01T10:00:01.5Z",
+        "level": "INFO",
+        "message": "line one",
+        "line_order": 1
+       },
+       {
+        "timestamp": "2024-07-01T10:00:02Z",
+        "level": "INFO",
+        "message": "line <two> & \"three\"",
+        "line_order": 2
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "cost-recommendation invalid output",
+   "args": [
+    "cluster",
+    "analysis",
+    "cost-recommendation",
+    "-c",
+    "cluster-1",
+    "--output",
+    "yaml"
+   ]
+  },
+  {
+   "name": "cost-recommendation api error",
+   "args": [
+    "cluster",
+    "analysis",
+    "cost-recommendation",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/clusters/cluster-1/analysis",
+     "status": 400,
+     "body": {
+      "message": "nope"
+     }
+    }
+   ]
+  },
+  {
+   "name": "cost-recommendation logs error",
+   "args": [
+    "cluster",
+    "analysis",
+    "cost-recommendation",
+    "-c",
+    "cluster-1"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/clusters/cluster-1/analysis",
+     "status": 200,
+     "body": {
+      "id": "an-9",
+      "cluster_id": "cluster-1",
+      "organization_id": "org-1",
+      "kind": "COST_RECOMMENDATION",
+      "status": "SUCCEEDED",
+      "output_format": "JSON",
+      "created_at": "2024-07-01T10:00:00.123456Z",
+      "updated_at": "2024-07-01T10:05:00Z",
+      "triggered_by": "user@qovery.com"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deprecated-api failed",
+   "args": [
+    "cluster",
+    "analysis",
+    "deprecated-api",
+    "-c",
+    "cluster-1",
+    "--target-kubernetes-version",
+    "1.33",
+    "--output",
+    "csv"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/clusters/cluster-1/analysis",
+     "status": 200,
+     "body": {
+      "id": "an-7",
+      "cluster_id": "cluster-1",
+      "organization_id": "org-1",
+      "kind": "DEPRECATED_API_CHECK",
+      "status": "FAILED",
+      "output_format": "JSON",
+      "created_at": "2024-07-01T10:00:00.123456Z",
+      "updated_at": "2024-07-01T10:05:00Z",
+      "triggered_by": "user@qovery.com",
+      "error_message": "x"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/clusters/cluster-1/analysis/an-7/logs",
+     "status": 200,
+     "body": {
+      "results": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "deprecated-api missing cluster",
+   "args": [
+    "cluster",
+    "analysis",
+    "deprecated-api"
+   ]
+  },
+  {
+   "name": "operator status",
+   "args": [
+    "cluster",
+    "operator",
+    "status",
+    "--cluster",
+    "my-cluster"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/operator/status",
+     "status": 200,
+     "body": {
+      "organization_id": "org-1",
+      "cluster_id": "cluster-1",
+      "operator_connected": true,
+      "status": "OUTDATED_IMAGE",
+      "reported_runtime": "KUBERNETES",
+      "last_heartbeat": "2024-07-01T10:00:00.000Z",
+      "operator_version": "1.2.3",
+      "desired_image_version": "1.3.0",
+      "reported_chart_version": null,
+      "desired_chart_version": "",
+      "extra_field": "<x>"
+     }
+    }
+   ]
+  },
+  {
+   "name": "operator status json",
+   "args": [
+    "cluster",
+    "operator",
+    "status",
+    "--cluster",
+    "my-cluster",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/operator/status",
+     "status": 200,
+     "body": {
+      "organization_id": "org-1",
+      "cluster_id": "cluster-1",
+      "operator_connected": true,
+      "status": "OUTDATED_IMAGE",
+      "reported_runtime": "KUBERNETES",
+      "last_heartbeat": "2024-07-01T10:00:00.000Z",
+      "operator_version": "1.2.3",
+      "desired_image_version": "1.3.0",
+      "reported_chart_version": null,
+      "desired_chart_version": "",
+      "extra_field": "<x>"
+     }
+    }
+   ]
+  },
+  {
+   "name": "operator status never",
+   "args": [
+    "cluster",
+    "operator",
+    "status",
+    "--cluster",
+    "my-cluster"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/operator/status",
+     "status": 200,
+     "body": {
+      "organization_id": "org-1",
+      "cluster_id": "cluster-1",
+      "operator_connected": false,
+      "status": "NOT_ATTACHED",
+      "reported_runtime": "UNKNOWN"
+     }
+    }
+   ]
+  },
+  {
+   "name": "operator status not found",
+   "args": [
+    "cluster",
+    "operator",
+    "status",
+    "--cluster",
+    "nope"
+   ]
+  },
+  {
+   "name": "operator status api error",
+   "args": [
+    "cluster",
+    "operator",
+    "status",
+    "--cluster",
+    "my-cluster",
+    "--organization",
+    "my-org"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/cluster-1/operator/status",
+     "status": 500,
+     "body": {
+      "m": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "operator status missing cluster",
+   "args": [
+    "cluster",
+    "operator",
+    "status"
+   ]
+  },
+  {
+   "name": "list-nodes bad handshake",
+   "args": [
+    "cluster",
+    "list-nodes",
+    "-c",
+    "cluster-1"
+   ]
+  },
+  {
+   "name": "list-nodes ws refused",
+   "args": [
+    "cluster",
+    "list-nodes",
+    "-c",
+    "cluster-1"
+   ],
+   "env": {
+    "QOVERY_WS_URL": "ws://127.0.0.1:1"
+   }
+  },
+  {
+   "name": "debug-pod reconnects",
+   "args": [
+    "cluster",
+    "debug-pod",
+    "-c",
+    "cluster-1",
+    "-n",
+    "pool=a b",
+    "-p"
+   ],
+   "timeout": 3
+  },
+  {
+   "name": "debug-pod org id",
+   "args": [
+    "cluster",
+    "debug-pod",
+    "-c",
+    "cluster-1",
+    "-o",
+    "org-x"
+   ],
+   "timeout": 3
+  },
+  {
+   "name": "debug-pod missing cluster",
+   "args": [
+    "cluster",
+    "debug-pod"
+   ]
+  },
+  {
+   "name": "preflight unreachable",
+   "args": [
+    "cluster",
+    "preflight",
+    "--kubeconfig",
+    "kc"
+   ],
+   "files": {
+    "kc": "apiVersion: v1\nkind: Config\nclusters:\n- cluster:\n    server: http://127.0.0.1:1\n  name: c1\n- cluster:\n    insecure-skip-tls-verify: true\n  name: c2\ncontexts:\n- context:\n    cluster: c1\n    user: u1\n  name: ctx1\n- context:\n    cluster: missing\n    user: u1\n  name: no-cluster\n- context:\n    cluster: c2\n    user: u1\n  name: no-server\ncurrent-context: ctx1\nusers:\n- name: u1\n  user:\n    token: abc\n"
+   }
+  },
+  {
+   "name": "preflight unreachable json",
+   "args": [
+    "cluster",
+    "preflight",
+    "--kubeconfig",
+    "kc",
+    "--json",
+    "--install-path",
+    "CLI",
+    "--loki-object-storage"
+   ],
+   "files": {
+    "kc": "apiVersion: v1\nkind: Config\nclusters:\n- cluster:\n    server: http://127.0.0.1:1\n  name: c1\n- cluster:\n    insecure-skip-tls-verify: true\n  name: c2\ncontexts:\n- context:\n    cluster: c1\n    user: u1\n  name: ctx1\n- context:\n    cluster: missing\n    user: u1\n  name: no-cluster\n- context:\n    cluster: c2\n    user: u1\n  name: no-server\ncurrent-context: ctx1\nusers:\n- name: u1\n  user:\n    token: abc\n"
+   }
+  },
+  {
+   "name": "preflight default kubeconfig",
+   "args": [
+    "cluster",
+    "preflight",
+    "--context",
+    "ctx1"
+   ],
+   "files": {
+    ".kube/config": "apiVersion: v1\nkind: Config\nclusters:\n- cluster:\n    server: http://127.0.0.1:1\n  name: c1\n- cluster:\n    insecure-skip-tls-verify: true\n  name: c2\ncontexts:\n- context:\n    cluster: c1\n    user: u1\n  name: ctx1\n- context:\n    cluster: missing\n    user: u1\n  name: no-cluster\n- context:\n    cluster: c2\n    user: u1\n  name: no-server\ncurrent-context: ctx1\nusers:\n- name: u1\n  user:\n    token: abc\n"
+   }
+  },
+  {
+   "name": "preflight KUBECONFIG env",
+   "args": [
+    "cluster",
+    "preflight"
+   ],
+   "files": {
+    "a/kc": "apiVersion: v1\nkind: Config\nclusters:\n- cluster:\n    server: http://127.0.0.1:1\n  name: c1\n- cluster:\n    insecure-skip-tls-verify: true\n  name: c2\ncontexts:\n- context:\n    cluster: c1\n    user: u1\n  name: ctx1\n- context:\n    cluster: missing\n    user: u1\n  name: no-cluster\n- context:\n    cluster: c2\n    user: u1\n  name: no-server\ncurrent-context: ctx1\nusers:\n- name: u1\n  user:\n    token: abc\n"
+   },
+   "env": {
+    "KUBECONFIG": "/nonexistent:a/kc"
+   }
+  },
+  {
+   "name": "preflight missing kubeconfig",
+   "args": [
+    "cluster",
+    "preflight",
+    "--kubeconfig",
+    "nope"
+   ]
+  },
+  {
+   "name": "preflight unknown context",
+   "args": [
+    "cluster",
+    "preflight",
+    "--kubeconfig",
+    "kc",
+    "--context",
+    "nope"
+   ],
+   "files": {
+    "kc": "apiVersion: v1\nkind: Config\nclusters:\n- cluster:\n    server: http://127.0.0.1:1\n  name: c1\n- cluster:\n    insecure-skip-tls-verify: true\n  name: c2\ncontexts:\n- context:\n    cluster: c1\n    user: u1\n  name: ctx1\n- context:\n    cluster: missing\n    user: u1\n  name: no-cluster\n- context:\n    cluster: c2\n    user: u1\n  name: no-server\ncurrent-context: ctx1\nusers:\n- name: u1\n  user:\n    token: abc\n"
+   }
+  },
+  {
+   "name": "preflight context without cluster",
+   "args": [
+    "cluster",
+    "preflight",
+    "--kubeconfig",
+    "kc",
+    "--context",
+    "no-cluster"
+   ],
+   "files": {
+    "kc": "apiVersion: v1\nkind: Config\nclusters:\n- cluster:\n    server: http://127.0.0.1:1\n  name: c1\n- cluster:\n    insecure-skip-tls-verify: true\n  name: c2\ncontexts:\n- context:\n    cluster: c1\n    user: u1\n  name: ctx1\n- context:\n    cluster: missing\n    user: u1\n  name: no-cluster\n- context:\n    cluster: c2\n    user: u1\n  name: no-server\ncurrent-context: ctx1\nusers:\n- name: u1\n  user:\n    token: abc\n"
+   }
+  },
+  {
+   "name": "preflight context without server",
+   "args": [
+    "cluster",
+    "preflight",
+    "--kubeconfig",
+    "kc",
+    "--context",
+    "no-server"
+   ],
+   "files": {
+    "kc": "apiVersion: v1\nkind: Config\nclusters:\n- cluster:\n    server: http://127.0.0.1:1\n  name: c1\n- cluster:\n    insecure-skip-tls-verify: true\n  name: c2\ncontexts:\n- context:\n    cluster: c1\n    user: u1\n  name: ctx1\n- context:\n    cluster: missing\n    user: u1\n  name: no-cluster\n- context:\n    cluster: c2\n    user: u1\n  name: no-server\ncurrent-context: ctx1\nusers:\n- name: u1\n  user:\n    token: abc\n"
+   }
+  },
+  {
+   "name": "preflight no config",
+   "args": [
+    "cluster",
+    "preflight"
+   ]
+  },
+  {
+   "name": "preflight invalid install path",
+   "args": [
+    "cluster",
+    "preflight",
+    "--install-path",
+    "helm"
+   ]
+  },
+  {
+   "name": "preflight extra args",
+   "args": [
+    "cluster",
+    "preflight",
+    "foo"
+   ]
+  },
+  {
+   "name": "install eof",
+   "args": [
+    "cluster",
+    "install"
+   ]
+  },
+  {
+   "name": "install aws flow (piped)",
+   "args": [
+    "cluster",
+    "install",
+    "--base-values-file",
+    "base.yaml"
+   ],
+   "stdin": "\n\n\n\n\n\n\n",
+   "files": {
+    "base.yaml": "services:\n  qovery:\n    qovery-engine:\n      enabled: true\n  ingress:\n    ingress-nginx:\n      enabled: true\nexternal-dns:\n  provider:\n    name: pdns\nqovery:\n  clusterId: &clusterId set-by-customer\n  domain: &domain set-by-customer\nqovery-cluster-agent:\n  environmentVariables:\n    CLUSTER_ID: *clusterId\n    ORGANIZATION_ID: \"0123\"\n    LIST: [a, \"yes\", 1.0]\n"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/aws/region",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "name": "eu-west-3",
+        "country_code": "FR",
+        "country": "France",
+        "city": "Paris"
+       },
+       {
+        "name": "us-east-1",
+        "country_code": "US",
+        "country": "USA",
+        "city": "Virginia"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/aws/credentials",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cred-1",
+        "name": "my-creds",
+        "access_key_id": "x"
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster",
+     "status": 201,
+     "body": {
+      "id": "new-c",
+      "created_at": "2024-07-01T10:00:00Z",
+      "organization": {
+       "id": "org-1"
+      },
+      "name": "My-Cluster",
+      "region": "eu-west-3",
+      "cloud_provider": "AWS",
+      "kubernetes": "SELF_MANAGED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/new-c/installationHelmValues",
+     "status": 200,
+     "body_raw": "qovery:\n  clusterId: &clusterId new-c\n  domain: &domain zabc.example.com\n  acmeEmailAddr: acme@qovery.com\n"
+    }
+   ]
+  },
+  {
+   "name": "install base values ~/~/ prefix",
+   "args": [
+    "cluster",
+    "install",
+    "--base-values-file",
+    "~/~/nope.yaml"
+   ]
+  },
+  {
+   "name": "install missing base values file",
+   "args": [
+    "cluster",
+    "install",
+    "--base-values-file",
+    "nope.yaml"
+   ]
+  },
+  {
+   "name": "install base values dir",
+   "args": [
+    "cluster",
+    "install",
+    "--base-values-file",
+    "~/.qovery"
+   ]
+  },
+  {
+   "name": "install no token",
+   "args": [
+    "cluster",
+    "install"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  }
+ ]
+}

@@ -1,0 +1,1627 @@
+{
+ "fixtures": [
+  {
+   "method": "GET",
+   "path": "/environment/env-1/terraform",
+   "body": {
+    "results": [
+     {
+      "id": "tf-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "name": "my-terraform",
+      "timeout_sec": 3600,
+      "auto_deploy": false,
+      "icon_uri": "app://qovery-console/terraform",
+      "service_type": "TERRAFORM",
+      "terraform_variables_source": {
+       "tf_var_file_paths": [],
+       "tf_vars": []
+      },
+      "engine": "TERRAFORM",
+      "backend": {
+       "kubernetes": {}
+      },
+      "provider_version": {
+       "read_from_terraform_block": false,
+       "explicit_version": "1.9.0"
+      },
+      "job_resources": {
+       "cpu_milli": 500,
+       "ram_mib": 512,
+       "gpu": 0,
+       "storage_gib": 1
+      },
+      "environment": {
+       "id": "env-1"
+      },
+      "use_cluster_credentials": false,
+      "action_extra_arguments": {},
+      "terraform_files_source": {
+       "git": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/tf.git",
+         "name": "me/tf",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "ghi789",
+         "has_access": true
+        }
+       }
+      }
+     },
+     {
+      "id": "tf-bp",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "name": "orders-db",
+      "timeout_sec": 3600,
+      "auto_deploy": false,
+      "icon_uri": "app://qovery-console/postgresql",
+      "service_type": "TERRAFORM",
+      "terraform_variables_source": {
+       "tf_var_file_paths": [],
+       "tf_vars": []
+      },
+      "engine": "TERRAFORM",
+      "backend": {
+       "kubernetes": {}
+      },
+      "provider_version": {
+       "read_from_terraform_block": false,
+       "explicit_version": "1.9.0"
+      },
+      "job_resources": {
+       "cpu_milli": 500,
+       "ram_mib": 512,
+       "gpu": 0,
+       "storage_gib": 1
+      },
+      "environment": {
+       "id": "env-1"
+      },
+      "use_cluster_credentials": false,
+      "action_extra_arguments": {},
+      "terraform_files_source": {
+       "git": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/tf.git",
+         "name": "me/tf",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "ghi789",
+         "has_access": true
+        }
+       }
+      },
+      "blueprint_id": "bp-1"
+     },
+     {
+      "id": "tf-null",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "name": "null-bp",
+      "timeout_sec": 3600,
+      "auto_deploy": false,
+      "icon_uri": "x",
+      "service_type": "TERRAFORM",
+      "terraform_variables_source": {
+       "tf_var_file_paths": [],
+       "tf_vars": []
+      },
+      "engine": "TERRAFORM",
+      "backend": {
+       "kubernetes": {}
+      },
+      "provider_version": {
+       "read_from_terraform_block": false,
+       "explicit_version": "1.9.0"
+      },
+      "job_resources": {
+       "cpu_milli": 500,
+       "ram_mib": 512,
+       "gpu": 0,
+       "storage_gib": 1
+      },
+      "environment": {
+       "id": "env-1"
+      },
+      "use_cluster_credentials": false,
+      "action_extra_arguments": {},
+      "terraform_files_source": {
+       "git": {
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/tf.git",
+         "name": "me/tf",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "ghi789",
+         "has_access": true
+        }
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/environment/env-1/helm",
+   "body": {
+    "results": [
+     {
+      "id": "helm-bp",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "cache",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [],
+       "set_string": [],
+       "set_json": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/redis",
+      "service_type": "HELM",
+      "ports": [],
+      "blueprint_id": "bp-2"
+     },
+     {
+      "id": "helm-latest",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "latest-db",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [],
+       "set_string": [],
+       "set_json": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/redis",
+      "service_type": "HELM",
+      "ports": [],
+      "blueprint_id": "bp-3"
+     },
+     {
+      "id": "helm-broken",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "broken",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [],
+       "set_string": [],
+       "set_json": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/redis",
+      "service_type": "HELM",
+      "ports": [],
+      "blueprint_id": "bp-err"
+     },
+     {
+      "id": "helm-weird",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "weird-mode",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [],
+       "set_string": [],
+       "set_json": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/redis",
+      "service_type": "HELM",
+      "ports": [],
+      "blueprint_id": "bp-4"
+     },
+     {
+      "id": "helm-patchfail",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "patch-fail",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [],
+       "set_string": [],
+       "set_json": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/redis",
+      "service_type": "HELM",
+      "ports": [],
+      "blueprint_id": "bp-5"
+     },
+     {
+      "id": "helm-deployfail",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "deploy-fail",
+      "auto_preview": false,
+      "auto_deploy": false,
+      "source": {
+       "repository": {
+        "repository": {
+         "id": "hr-1",
+         "name": "bitnami",
+         "url": "https://charts.bitnami.com/bitnami"
+        },
+        "chart_name": "redis",
+        "chart_version": "18.0.0"
+       }
+      },
+      "arguments": [],
+      "allow_cluster_wide_resources": false,
+      "values_override": {
+       "set": [],
+       "set_string": [],
+       "set_json": [],
+       "file": null
+      },
+      "icon_uri": "app://qovery-console/redis",
+      "service_type": "HELM",
+      "ports": [],
+      "blueprint_id": "bp-6"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-1/update",
+   "body": {
+    "is_up_to_date": false,
+    "current_tag": "AWS/postgres/14/4.6.0",
+    "latest_tag": "AWS/postgres/14/4.6.0",
+    "new_required_values": [],
+    "new_optional_values": [],
+    "now_required_values": [],
+    "updated_values": [],
+    "removed_values": [],
+    "engine_diff": {
+     "updated_values": []
+    },
+    "new_major_versions": [
+     {
+      "service_version": "15",
+      "latest_tag": "AWS/postgres/15/1.5.0",
+      "mode": "UNSUPPORTED",
+      "unsupported_reason": "the target major is lower than the version running"
+     },
+     {
+      "service_version": "17",
+      "latest_tag": "AWS/postgres/17/1.5.0",
+      "mode": "UPGRADE"
+     },
+     {
+      "service_version": "18",
+      "latest_tag": "AWS/postgres/18/1.5.0",
+      "mode": "RELABEL"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-2/update",
+   "body": {
+    "is_up_to_date": false,
+    "current_tag": "redis-7",
+    "latest_tag": "redis-7",
+    "new_required_values": [],
+    "new_optional_values": [],
+    "now_required_values": [],
+    "updated_values": [],
+    "removed_values": [],
+    "engine_diff": {
+     "updated_values": []
+    },
+    "new_major_versions": [
+     {
+      "service_version": "8",
+      "latest_tag": "AWS/postgres/8/1.5.0",
+      "mode": "UPGRADE"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-3/update",
+   "body": {
+    "is_up_to_date": false,
+    "current_tag": "AWS/postgres/18/1.5.0",
+    "latest_tag": "AWS/postgres/18/1.5.0",
+    "new_required_values": [],
+    "new_optional_values": [],
+    "now_required_values": [],
+    "updated_values": [],
+    "removed_values": [],
+    "engine_diff": {
+     "updated_values": []
+    },
+    "new_major_versions": []
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-err/update",
+   "status": 400,
+   "body": {
+    "status": 400,
+    "error": "Bad Request",
+    "message": "tag change refused"
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-4/update",
+   "body": {
+    "is_up_to_date": false,
+    "current_tag": "AWS/postgres/14/4.6.0",
+    "latest_tag": "AWS/postgres/14/4.6.0",
+    "new_required_values": [],
+    "new_optional_values": [],
+    "now_required_values": [],
+    "updated_values": [],
+    "removed_values": [],
+    "engine_diff": {
+     "updated_values": []
+    },
+    "new_major_versions": [
+     {
+      "service_version": "18",
+      "latest_tag": "AWS/postgres/18/1.5.0",
+      "mode": "SOMETHING_NEW"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-5/update",
+   "body": {
+    "is_up_to_date": false,
+    "current_tag": "AWS/postgres/14/4.6.0",
+    "latest_tag": "AWS/postgres/14/4.6.0",
+    "new_required_values": [],
+    "new_optional_values": [],
+    "now_required_values": [],
+    "updated_values": [],
+    "removed_values": [],
+    "engine_diff": {
+     "updated_values": []
+    },
+    "new_major_versions": [
+     {
+      "service_version": "18",
+      "latest_tag": "AWS/postgres/18/1.5.0",
+      "mode": "RELABEL"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-6/update",
+   "body": {
+    "is_up_to_date": false,
+    "current_tag": "AWS/postgres/14/4.6.0",
+    "latest_tag": "AWS/postgres/14/4.6.0",
+    "new_required_values": [],
+    "new_optional_values": [],
+    "now_required_values": [],
+    "updated_values": [],
+    "removed_values": [],
+    "engine_diff": {
+     "updated_values": []
+    },
+    "new_major_versions": [
+     {
+      "service_version": "18",
+      "latest_tag": "AWS/postgres/18/1.5.0",
+      "mode": "UPGRADE"
+     }
+    ]
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-1",
+   "body": {
+    "id": "bp-1",
+    "name": "orders-db-blueprint",
+    "catalog_url": "https://catalog/x",
+    "tag": "AWS/postgres/14/4.6.0",
+    "environment_id": "env-1",
+    "service_type": "TERRAFORM",
+    "service_id": null,
+    "latest_deployment": null
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-2",
+   "body": {
+    "id": "bp-2",
+    "name": "cache-blueprint",
+    "catalog_url": "https://catalog/x",
+    "tag": "AWS/postgres/14/4.6.0",
+    "environment_id": "env-1",
+    "service_type": "TERRAFORM",
+    "service_id": null,
+    "latest_deployment": null
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-5",
+   "body": {
+    "id": "bp-5",
+    "name": "patch-fail-blueprint",
+    "catalog_url": "https://catalog/x",
+    "tag": "AWS/postgres/14/4.6.0",
+    "environment_id": "env-1",
+    "service_type": "TERRAFORM",
+    "service_id": null,
+    "latest_deployment": null
+   }
+  },
+  {
+   "method": "GET",
+   "path": "/blueprint/bp-6",
+   "body": {
+    "id": "bp-6",
+    "name": "deploy-fail-blueprint",
+    "catalog_url": "https://catalog/x",
+    "tag": "AWS/postgres/14/4.6.0",
+    "environment_id": "env-1",
+    "service_type": "TERRAFORM",
+    "service_id": null,
+    "latest_deployment": null
+   }
+  },
+  {
+   "method": "PATCH",
+   "path": "/blueprint/bp-5",
+   "status": 400,
+   "body": {
+    "message": "tag AWS/postgres/18/1.5.0 cannot be applied"
+   }
+  },
+  {
+   "method": "PATCH",
+   "path_regex": "^/blueprint/bp-[0-9]+$",
+   "body": {
+    "id": "bp-x",
+    "catalog_url": "https://catalog/x",
+    "tag": "AWS/postgres/18/1.5.0",
+    "environment_id": "env-1"
+   }
+  },
+  {
+   "method": "POST",
+   "path": "/blueprint/bp-6/deploy",
+   "status": 500,
+   "body_raw": ""
+  },
+  {
+   "method": "POST",
+   "path_regex": "^/blueprint/bp-[0-9]+/deploy$",
+   "status": 202,
+   "body": {
+    "deployment_id": "dep-42",
+    "execution_id": "exec-new"
+   }
+  }
+ ],
+ "cases": [
+  {
+   "name": "blueprint (group)",
+   "args": [
+    "blueprint"
+   ]
+  },
+  {
+   "name": "blueprint bogus arg",
+   "args": [
+    "blueprint",
+    "bogus"
+   ]
+  },
+  {
+   "name": "upgrade-major missing name",
+   "args": [
+    "blueprint",
+    "upgrade-major"
+   ]
+  },
+  {
+   "name": "upgrade-major list majors",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "orders-db"
+   ]
+  },
+  {
+   "name": "upgrade-major list majors helm",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "--name",
+    "cache"
+   ]
+  },
+  {
+   "name": "upgrade-major already latest",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "latest-db"
+   ]
+  },
+  {
+   "name": "upgrade-major not a blueprint",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "my-terraform"
+   ]
+  },
+  {
+   "name": "upgrade-major unknown service",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "nope"
+   ]
+  },
+  {
+   "name": "upgrade-major major not available",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "orders-db",
+    "--major",
+    "16"
+   ]
+  },
+  {
+   "name": "upgrade-major major on latest",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "latest-db",
+    "--major",
+    "18"
+   ]
+  },
+  {
+   "name": "upgrade-major unsupported",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "orders-db",
+    "--major",
+    "15",
+    "-y"
+   ]
+  },
+  {
+   "name": "upgrade-major unknown mode (Go enum decode error)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode",
+    "--major",
+    "18",
+    "-y"
+   ]
+  },
+  {
+   "name": "upgrade-major response mode not a string (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body": {
+      "is_up_to_date": false,
+      "current_tag": "AWS/postgres/14/4.6.0",
+      "latest_tag": "AWS/postgres/14/4.6.0",
+      "new_required_values": [],
+      "new_optional_values": [],
+      "now_required_values": [],
+      "updated_values": [],
+      "removed_values": [],
+      "engine_diff": {
+       "updated_values": []
+      },
+      "new_major_versions": [
+       {
+        "service_version": "18",
+        "latest_tag": "AWS/postgres/18/1.5.0",
+        "mode": 5
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response null mode (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body": {
+      "is_up_to_date": false,
+      "current_tag": "AWS/postgres/14/4.6.0",
+      "latest_tag": "AWS/postgres/14/4.6.0",
+      "new_required_values": [],
+      "new_optional_values": [],
+      "now_required_values": [],
+      "updated_values": [],
+      "removed_values": [],
+      "engine_diff": {
+       "updated_values": []
+      },
+      "new_major_versions": [
+       {
+        "service_version": "18",
+        "latest_tag": "AWS/postgres/18/1.5.0",
+        "mode": null
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response service_version not a string (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body": {
+      "is_up_to_date": false,
+      "current_tag": "AWS/postgres/14/4.6.0",
+      "latest_tag": "AWS/postgres/14/4.6.0",
+      "new_required_values": [],
+      "new_optional_values": [],
+      "now_required_values": [],
+      "updated_values": [],
+      "removed_values": [],
+      "engine_diff": {
+       "updated_values": []
+      },
+      "new_major_versions": [
+       {
+        "service_version": 18,
+        "latest_tag": "AWS/postgres/18/1.5.0",
+        "mode": "UPGRADE"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response unsupported_reason not a string (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body": {
+      "is_up_to_date": false,
+      "current_tag": "AWS/postgres/14/4.6.0",
+      "latest_tag": "AWS/postgres/14/4.6.0",
+      "new_required_values": [],
+      "new_optional_values": [],
+      "now_required_values": [],
+      "updated_values": [],
+      "removed_values": [],
+      "engine_diff": {
+       "updated_values": []
+      },
+      "new_major_versions": [
+       {
+        "service_version": "18",
+        "latest_tag": "AWS/postgres/18/1.5.0",
+        "mode": "UPGRADE",
+        "unsupported_reason": 3
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response null major (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body": {
+      "is_up_to_date": false,
+      "current_tag": "AWS/postgres/14/4.6.0",
+      "latest_tag": "AWS/postgres/14/4.6.0",
+      "new_required_values": [],
+      "new_optional_values": [],
+      "now_required_values": [],
+      "updated_values": [],
+      "removed_values": [],
+      "engine_diff": {
+       "updated_values": []
+      },
+      "new_major_versions": [
+       null
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response major not an object (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body": {
+      "is_up_to_date": false,
+      "current_tag": "AWS/postgres/14/4.6.0",
+      "latest_tag": "AWS/postgres/14/4.6.0",
+      "new_required_values": [],
+      "new_optional_values": [],
+      "now_required_values": [],
+      "updated_values": [],
+      "removed_values": [],
+      "engine_diff": {
+       "updated_values": []
+      },
+      "new_major_versions": [
+       "x"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response major missing mode (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body": {
+      "is_up_to_date": false,
+      "current_tag": "AWS/postgres/14/4.6.0",
+      "latest_tag": "AWS/postgres/14/4.6.0",
+      "new_required_values": [],
+      "new_optional_values": [],
+      "now_required_values": [],
+      "updated_values": [],
+      "removed_values": [],
+      "engine_diff": {
+       "updated_values": []
+      },
+      "new_major_versions": [
+       {
+        "service_version": "18",
+        "latest_tag": "t"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response first error in document order (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body": {
+      "is_up_to_date": false,
+      "current_tag": "AWS/postgres/14/4.6.0",
+      "latest_tag": "AWS/postgres/14/4.6.0",
+      "new_required_values": [],
+      "new_optional_values": [],
+      "now_required_values": [],
+      "updated_values": [],
+      "removed_values": [],
+      "engine_diff": {
+       "updated_values": []
+      },
+      "new_major_versions": [
+       {
+        "service_version": "18",
+        "latest_tag": "AWS/postgres/18/1.5.0",
+        "mode": "UPGRADE"
+       },
+       {
+        "mode": 5,
+        "service_version": 18,
+        "latest_tag": "t"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response majors not a list (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body": {
+      "is_up_to_date": false,
+      "current_tag": "AWS/postgres/14/4.6.0",
+      "latest_tag": "AWS/postgres/14/4.6.0",
+      "new_required_values": [],
+      "new_optional_values": [],
+      "now_required_values": [],
+      "updated_values": [],
+      "removed_values": [],
+      "engine_diff": {
+       "updated_values": []
+      },
+      "new_major_versions": {
+       "a": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response null fields kept empty (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body": {
+      "is_up_to_date": false,
+      "current_tag": "AWS/postgres/14/4.6.0",
+      "latest_tag": "AWS/postgres/14/4.6.0",
+      "new_required_values": [],
+      "new_optional_values": [],
+      "now_required_values": [],
+      "updated_values": [],
+      "removed_values": [],
+      "engine_diff": {
+       "updated_values": []
+      },
+      "new_major_versions": [
+       {
+        "service_version": null,
+        "latest_tag": "AWS/postgres/18/1.5.0",
+        "mode": "UPGRADE",
+        "unsupported_reason": null
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response missing required property (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body": {
+      "is_up_to_date": false,
+      "latest_tag": "AWS/postgres/14/4.6.0",
+      "new_required_values": [],
+      "new_optional_values": [],
+      "now_required_values": [],
+      "updated_values": [],
+      "removed_values": [],
+      "engine_diff": {
+       "updated_values": []
+      },
+      "new_major_versions": [
+       {
+        "service_version": "18",
+        "latest_tag": "AWS/postgres/18/1.5.0",
+        "mode": "SOMETHING_NEW"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response current_tag not a string (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body": {
+      "is_up_to_date": false,
+      "current_tag": 5,
+      "latest_tag": "AWS/postgres/14/4.6.0",
+      "new_required_values": [],
+      "new_optional_values": [],
+      "now_required_values": [],
+      "updated_values": [],
+      "removed_values": [],
+      "engine_diff": {
+       "updated_values": []
+      },
+      "new_major_versions": [
+       {
+        "service_version": "18",
+        "latest_tag": "AWS/postgres/18/1.5.0",
+        "mode": "SOMETHING_NEW"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response empty body (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body_raw": "",
+     "headers": {
+      "Content-Type": "application/json"
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response syntax error (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body_raw": "{x",
+     "headers": {
+      "Content-Type": "application/json"
+     }
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response not json (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body_raw": "hi"
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major response not an object (Go decode)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "weird-mode"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/blueprint/bp-4/update",
+     "body": []
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major check api error with body",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "broken"
+   ]
+  },
+  {
+   "name": "upgrade-major relabel --yes",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "orders-db",
+    "--major",
+    "18",
+    "--yes"
+   ]
+  },
+  {
+   "name": "upgrade-major upgrade helm -y",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "cache",
+    "--major",
+    "8",
+    "-y"
+   ]
+  },
+  {
+   "name": "upgrade-major prompt without tty",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "orders-db",
+    "--major",
+    "18"
+   ]
+  },
+  {
+   "name": "upgrade-major patch error",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "patch-fail",
+    "--major",
+    "18",
+    "-y"
+   ]
+  },
+  {
+   "name": "upgrade-major deploy error (empty body)",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "deploy-fail",
+    "--major",
+    "18",
+    "-y"
+   ]
+  },
+  {
+   "name": "upgrade-major terraform list error",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "orders-db"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/terraform",
+     "status": 503,
+     "body": {}
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major env not found",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "orders-db",
+    "--environment",
+    "nope"
+   ]
+  },
+  {
+   "name": "upgrade-major explicit org/project/env",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "orders-db",
+    "--organization",
+    "my-org",
+    "--project",
+    "my-project",
+    "--environment",
+    "my-env"
+   ]
+  },
+  {
+   "name": "upgrade-major watch success",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "orders-db",
+    "--major",
+    "17",
+    "-y",
+    "-w"
+   ],
+   "timeout": 60,
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-bp",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old"
+           }
+          ],
+          "helms": [
+           {
+            "id": "helm-bp",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-h"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-bp",
+            "state": "DEPLOYING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ],
+          "helms": [
+           {
+            "id": "helm-bp",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-h"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-bp",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ],
+          "helms": [
+           {
+            "id": "helm-bp",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-h"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major watch error state",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "orders-db",
+    "--major",
+    "17",
+    "-y",
+    "--watch"
+   ],
+   "timeout": 60,
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-bp",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old"
+           }
+          ],
+          "helms": [
+           {
+            "id": "helm-bp",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-h"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "terraforms": [
+           {
+            "id": "tf-bp",
+            "state": "DEPLOYMENT_ERROR",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ],
+          "helms": [
+           {
+            "id": "helm-bp",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-h"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "upgrade-major watch snapshot fails",
+   "args": [
+    "blueprint",
+    "upgrade-major",
+    "-n",
+    "orders-db",
+    "--major",
+    "17",
+    "-y",
+    "-w"
+   ],
+   "timeout": 90,
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "status": 500,
+     "body": {}
+    }
+   ]
+  }
+ ]
+}
