@@ -35,7 +35,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     go build -o qovery -ldflags "-X github.com/qovery/qovery-cli/utils.Version=$APP_VERSION"
 
-FROM public.ecr.aws/r3m4q3r9/pub-mirror-debian:bookworm-slim AS runner
+FROM public.ecr.aws/r3m4q3r9/qovery-ci:debian-trixie-slim AS runner
 
 RUN apt-get update && \
     apt-get -y upgrade && \
