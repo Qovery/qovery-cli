@@ -143,6 +143,8 @@ pub(crate) trait CommandRunner {
     fn run_quiet(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult;
     /// Keeps the output out of the debug log, which is uploaded on failure.
     fn run_unlogged(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult;
+    /// Logs only the command line and never writes to the terminal: the caller logs the output it keeps.
+    fn run_silent(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult;
 }
 
 /// `demoExecRunner`.
@@ -167,6 +169,14 @@ impl CommandRunner for ExecRunner {
     }
     fn run_unlogged(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult {
         self.execute(cancel, false, false, name, args)
+    }
+    fn run_silent(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult {
+        if let Some(log) = &self.log {
+            let mut parts = vec![name.to_string()];
+            parts.extend(args.iter().cloned());
+            write_to(log, &format!("$ {}\n", parts.join(" ")));
+        }
+        run_command(cancel, name, args, &[])
     }
 }
 
@@ -601,6 +611,31 @@ pub(crate) mod tests {
         );
 
         assert_eq!(Some(3), err.unwrap_err().exit_code);
+    }
+
+    #[test]
+    fn exec_runner_run_silent_keeps_the_terminal_and_the_log_clean() {
+        let (terminal, out) = buffer();
+        let (log, log_sink) = buffer();
+        let mut runner = ExecRunner {
+            out: Some(out),
+            log: Some(log_sink),
+            debug: true,
+        };
+
+        let (output, err) = runner.run_silent(
+            Cancel::new(),
+            "/bin/sh",
+            &sh("printf out; printf err >&2; exit 7"),
+        );
+
+        assert_eq!(Some(7), err.unwrap_err().exit_code);
+        assert_eq!("outerr", String::from_utf8_lossy(&output));
+        assert_eq!("", text(&terminal));
+        assert_eq!(
+            "$ /bin/sh -c printf out; printf err >&2; exit 7\n",
+            text(&log)
+        );
     }
 
     #[test]

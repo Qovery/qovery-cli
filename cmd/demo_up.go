@@ -150,6 +150,7 @@ func runDemoUp(ctx context.Context, cmd *cobra.Command, progress demoProgress, d
 			goos:        runtime.GOOS,
 			tempDir:     filepath.Dir(debugLogsPath),
 			kubeContext: demoKubeContext(demoClusterName),
+			debugLog:    debugLog,
 		},
 		clock:    demoSystemClock{},
 		out:      io.MultiWriter(terminalOutput, debugLog),
@@ -163,8 +164,8 @@ func runDemoUp(ctx context.Context, cmd *cobra.Command, progress demoProgress, d
 	if err != nil {
 		_, _ = fmt.Fprintf(debugLog, "\nERROR: %v\n", err)
 		_ = debugLog.Sync()
-		if ctx.Err() != nil {
-			return fmt.Errorf("%w: %w", errDemoInterrupted, err)
+		if errors.Is(err, errDemoInterrupted) {
+			return err
 		}
 		if refreshedType, refreshedToken, refreshErr := utils.GetAccessToken(false); refreshErr == nil {
 			tokenType, token = refreshedType, refreshedToken
@@ -641,6 +642,7 @@ type demoCommandRunner interface {
 	Run(context.Context, string, ...string) ([]byte, error)
 	RunQuiet(context.Context, string, ...string) ([]byte, error)
 	RunUnlogged(context.Context, string, ...string) ([]byte, error)
+	RunSilent(context.Context, string, ...string) ([]byte, error)
 }
 
 type demoExecRunner struct {
@@ -665,6 +667,21 @@ func (r *demoExecRunner) RunQuiet(ctx context.Context, name string, args ...stri
 // RunUnlogged keeps the output out of the debug log, which is uploaded on failure.
 func (r *demoExecRunner) RunUnlogged(ctx context.Context, name string, args ...string) ([]byte, error) {
 	return r.execute(ctx, false, false, name, args...)
+}
+
+// RunSilent logs only the command line and never writes to the terminal: the caller logs the output it keeps.
+func (r *demoExecRunner) RunSilent(ctx context.Context, name string, args ...string) ([]byte, error) {
+	if r.log != nil {
+		_, _ = fmt.Fprintf(r.log, "$ %s\n", strings.Join(append([]string{name}, args...), " "))
+	}
+	var output bytes.Buffer
+	command := exec.CommandContext(ctx, name, args...)
+	command.Cancel = func() error { return command.Process.Signal(os.Interrupt) }
+	command.WaitDelay = demoCommandInterruptGrace
+	command.Stdout = &output
+	command.Stderr = &output
+	err := command.Run()
+	return output.Bytes(), err
 }
 
 func (r *demoExecRunner) run(ctx context.Context, visible bool, name string, args ...string) ([]byte, error) {
@@ -710,6 +727,7 @@ type demoLocalCommands struct {
 	goos        string
 	tempDir     string
 	kubeContext string
+	debugLog    io.Writer
 }
 
 func demoKubeContext(clusterName string) string {

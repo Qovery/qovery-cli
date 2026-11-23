@@ -1,7 +1,7 @@
 //! Port of `demoLocalCommands` (`cmd/demo_up.go`, `cmd/demo_destroy.go`): docker, k3d, helm and kubectl calls.
 
 use crate::failure::*;
-use crate::runner::{Cancel, CommandRunner, ExecError};
+use crate::runner::{Cancel, CommandRunner, ExecError, Sink};
 use qovery_log::gofmt::quote;
 use serde::Deserialize;
 use std::collections::BTreeMap;
@@ -30,6 +30,11 @@ pub(crate) trait DemoLocal {
     fn legacy_qovery_release_exists(&mut self, cancel: Cancel) -> Result<bool, DemoError>;
     fn install_operator(&mut self, cancel: Cancel, bootstrap: &Bootstrap) -> Result<(), DemoError>;
     fn validate_workloads(&mut self, cancel: Cancel, namespace: &str) -> Result<(), DemoError>;
+    fn node_disk_pressure(
+        &mut self,
+        cancel: Cancel,
+    ) -> Result<(String, chrono::DateTime<chrono::Utc>), DemoError>;
+    fn collect_diagnostics(&mut self, cancel: Cancel);
 }
 
 /// `demoDestroyLocal` (used by `demo destroy`).
@@ -45,6 +50,7 @@ pub(crate) struct LocalCommands<R: CommandRunner> {
     pub goos: String,
     pub temp_dir: String,
     pub kube_context: String,
+    pub debug_log: Sink,
 }
 
 /// `demoKubeContext(clusterName)`.
@@ -158,12 +164,13 @@ fn overlaps(a: Prefix, b: Prefix) -> bool {
 // ---------------------------------------------------------------------------------------------------------
 
 impl<R: CommandRunner> LocalCommands<R> {
-    pub fn new(runner: R, goos: &str) -> Self {
+    pub fn new(runner: R, goos: &str, debug_log: Sink) -> Self {
         LocalCommands {
             runner,
             goos: goos.to_string(),
             temp_dir: String::new(),
             kube_context: String::new(),
+            debug_log,
         }
     }
 
@@ -799,6 +806,17 @@ impl<R: CommandRunner> DemoLocal for LocalCommands<R> {
         Ok(())
     }
 
+    fn node_disk_pressure(
+        &mut self,
+        cancel: Cancel,
+    ) -> Result<(String, chrono::DateTime<chrono::Utc>), DemoError> {
+        self.read_node_disk_pressure(cancel)
+    }
+
+    fn collect_diagnostics(&mut self, cancel: Cancel) {
+        self.collect_kubernetes_diagnostics(cancel, crate::diagnostics::DEMO_DIAGNOSTIC_BUDGET);
+    }
+
     fn validate_workloads(&mut self, cancel: Cancel, namespace: &str) -> Result<(), DemoError> {
         let kube_context = self.kube_context.clone();
         let (output, err) = self.runner.run_quiet(
@@ -1012,6 +1030,9 @@ pub(crate) mod tests {
         fn run_quiet(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult {
             self.run(cancel, name, args)
         }
+        fn run_silent(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult {
+            self.run(cancel, name, args)
+        }
         fn run_unlogged(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult {
             let mut call = vec![name.to_string()];
             call.extend(args.iter().cloned());
@@ -1032,7 +1053,7 @@ pub(crate) mod tests {
     }
 
     fn local(runner: RecordingRunner, goos: &str) -> LocalCommands<RecordingRunner> {
-        LocalCommands::new(runner, goos)
+        LocalCommands::new(runner, goos, crate::runner::tests::buffer().1)
     }
 
     // --- demo_destroy_test.go ---
@@ -1350,13 +1371,20 @@ pub(crate) mod tests {
         fn run_unlogged(&mut self, c: Cancel, n: &str, a: &[String]) -> RunResult {
             self.run(c, n, a)
         }
+        fn run_silent(&mut self, c: Cancel, n: &str, a: &[String]) -> RunResult {
+            self.run(c, n, a)
+        }
     }
 
     #[test]
     fn operator_values_file_is_protected_and_removed() {
         let dir = std::env::temp_dir().join(format!("qovery-demo-test-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
-        let mut l = LocalCommands::new(InspectingRunner::default(), "linux");
+        let mut l = LocalCommands::new(
+            InspectingRunner::default(),
+            "linux",
+            crate::runner::tests::buffer().1,
+        );
         l.temp_dir = dir.to_string_lossy().to_string();
         l.install_operator(Cancel::new(), &test_bootstrap())
             .unwrap();

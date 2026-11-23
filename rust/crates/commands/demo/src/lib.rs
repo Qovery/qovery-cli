@@ -8,6 +8,7 @@
 //! * [`upload`]: upload of the debug log after a failure
 
 mod api;
+mod diagnostics;
 mod failure;
 mod local;
 mod orchestrator;
@@ -446,6 +447,7 @@ fn run_demo_up(
             goos: go_os().to_string(),
             temp_dir,
             kube_context: local::demo_kube_context(&cluster_name),
+            debug_log: debug_log.clone(),
         },
         clock: orchestrator::SystemClock,
         out: Rc::new(RefCell::new(MultiWriter(vec![
@@ -467,10 +469,7 @@ fn run_demo_up(
     if let Err(err) = result {
         runner::write_to(&debug_log, &format!("\nERROR: {err}\n"));
         let _ = debug_log.borrow_mut().flush();
-        if cancel.is_canceled() {
-            let message = format!("{ERR_DEMO_INTERRUPTED}: {}", err.message);
-            let mut err = err.wrap(message);
-            err.interrupted = true;
+        if err.interrupted {
             return Err(err);
         }
         if let Ok((t, k)) = qovery_core::auth::get_access_token(false) {
@@ -546,6 +545,7 @@ fn run_demo_destroy(cancel: Cancel, ctx: &Ctx) -> Result<(), DemoError> {
                 debug: false,
             },
             go_os(),
+            Rc::new(RefCell::new(std::io::sink())),
         ),
         out: terminal_output,
     };
