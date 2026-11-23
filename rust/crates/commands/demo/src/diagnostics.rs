@@ -180,12 +180,11 @@ type KubectlResult = (Vec<u8>, bool, Result<(), ExecError>);
 impl<R: CommandRunner> LocalCommands<R> {
     /// `kubectl(ctx, timeout, args...)`.
     fn kubectl(&mut self, cancel: Cancel, timeout: Duration, extra: &[&str]) -> KubectlResult {
-        let mut args = vec![
-            "--context".to_string(),
-            self.kube_context.clone(),
+        let mut args = self.kubectl_target();
+        args.extend([
             "--request-timeout".to_string(),
             DEMO_DIAGNOSTIC_REQUEST_TIMEOUT.to_string(),
-        ];
+        ]);
         args.extend(extra.iter().map(|a| a.to_string()));
         let started_at = Instant::now();
         let (output, result) = self.runner.run_silent(cancel, timeout, "kubectl", &args);
@@ -843,5 +842,23 @@ panic: password=<redacted>
                 .is_err()
         );
         assert_eq!("kubectl get nodes timed out\n", text(&t.log));
+    }
+
+    #[test]
+    fn collect_diagnostics_targets_the_given_kubeconfig() {
+        let mut t = local(|_, _, _| ok(""));
+        t.local.kube_context = "vcluster_qls-a".into();
+        t.local.kubeconfig = "/kube/qls-a.yaml".into();
+
+        t.local
+            .collect_kubernetes_diagnostics(Cancel::new(), "qovery", DEMO_DIAGNOSTIC_BUDGET);
+
+        assert!(!t.calls.borrow().is_empty());
+        for call in t.calls.borrow().iter() {
+            assert!(
+                call.starts_with("silent: kubectl --context vcluster_qls-a --kubeconfig /kube/qls-a.yaml --request-timeout 10s "),
+                "{call}"
+            );
+        }
     }
 }

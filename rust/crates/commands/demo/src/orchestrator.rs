@@ -91,6 +91,9 @@ pub(crate) struct Config {
     pub operator_timeout: Duration,
     pub deployment_timeout: Duration,
     pub poll_interval: Duration,
+    /// Installs the Operator into this kube context instead of a local k3d cluster.
+    pub existing_kube_context: String,
+    pub skip_catalog: bool,
 }
 
 /// `demoOrchestrator`.
@@ -199,32 +202,7 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
             },
         )?;
 
-        self.run_phase(
-            cancel,
-            PHASE_LOCAL_CLUSTER,
-            "Creating or starting the local k3d cluster",
-            |o| {
-                if let Err(e) = o.local.ensure_k3d_cluster(cancel, &cfg.cluster_name) {
-                    if e.failure.is_some() {
-                        return Err(e);
-                    }
-                    return Err(new_demo_failure(
-                        ERROR_K3D_CLUSTER,
-                        "The local k3d cluster could not be created or started.",
-                        e.prefixed("cannot prepare local k3d cluster"),
-                    ));
-                }
-                o.wait_for_node_disk_pressure(cancel)?;
-                if let Err(e) = o.local.ensure_loopback(cancel) {
-                    return Err(new_demo_failure(
-                        ERROR_LOOPBACK,
-                        "The local loopback address could not be configured.",
-                        e.prefixed("cannot configure local loopback"),
-                    ));
-                }
-                Ok(())
-            },
-        )?;
+        self.ensure_local_cluster(cancel, &cfg)?;
 
         self.run_phase(cancel, PHASE_LEGACY_RELEASE_CHECK, "Checking for an unsupported legacy Qovery release", |o| {
             match o.local.legacy_qovery_release_exists(cancel) {
@@ -285,28 +263,14 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
         }
 
         let mut status = String::new();
-        if let Err(err) = self.run_phase(cancel, PHASE_PLATFORM_CATALOG_DEPLOYMENT, "Deploying the current self-managed platform catalog", |o| {
-            let current_status = o
-                .api
-                .get_cluster_status(&cfg.organization_id, &cluster_id)
-                .map_err(|e| demo_qovery_api_failure(e.prefixed("cannot read cluster deployment status")))?;
-            let deadline = o.clock.now() + from_std(cfg.deployment_timeout);
-            if is_demo_deployment_in_progress(&current_status) {
-                write_to(
-                    &o.out,
-                    &format!("A cluster deployment is already in progress ({current_status}); waiting for it to finish before deploying.\n"),
-                );
-                o.wait_until_no_deployment_in_progress(cancel, &cfg, &cluster_id, deadline)?;
+        if !cfg.skip_catalog {
+            match self.deploy_catalog(cancel, &cfg, &cluster_id) {
+                Ok(s) => status = s,
+                Err(err) => {
+                    self.diagnose_failure(cancel, &bootstrap.namespace);
+                    return Err(err);
+                }
             }
-            let initial_status = o
-                .api
-                .deploy_cluster(&cfg.organization_id, &cluster_id)
-                .map_err(|e| demo_qovery_api_failure(e.prefixed("cannot trigger cluster deployment")))?;
-            status = o.wait_for_deployment(cancel, &cfg, &cluster_id, initial_status, deadline)?;
-            Ok(())
-        }) {
-            self.diagnose_failure(cancel, &bootstrap.namespace);
-            return Err(err);
         }
 
         if let Err(err) = self.run_phase(
@@ -328,16 +292,101 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
             self.diagnose_failure(cancel, &bootstrap.namespace);
             return Err(err);
         }
+        self.print_summary(&cfg, &cluster_id, &status);
+        Ok(())
+    }
+
+    /// `ensureLocalCluster`: an existing kube context needs no local k3d cluster.
+    fn ensure_local_cluster(&mut self, cancel: Cancel, cfg: &Config) -> Result<(), DemoError> {
+        if !cfg.existing_kube_context.is_empty() {
+            return Ok(());
+        }
+        self.run_phase(
+            cancel,
+            PHASE_LOCAL_CLUSTER,
+            "Creating or starting the local k3d cluster",
+            |o| {
+                if let Err(e) = o.local.ensure_k3d_cluster(cancel, &cfg.cluster_name) {
+                    if e.failure.is_some() {
+                        return Err(e);
+                    }
+                    return Err(new_demo_failure(
+                        ERROR_K3D_CLUSTER,
+                        "The local k3d cluster could not be created or started.",
+                        e.prefixed("cannot prepare local k3d cluster"),
+                    ));
+                }
+                o.wait_for_node_disk_pressure(cancel)?;
+                if let Err(e) = o.local.ensure_loopback(cancel) {
+                    return Err(new_demo_failure(
+                        ERROR_LOOPBACK,
+                        "The local loopback address could not be configured.",
+                        e.prefixed("cannot configure local loopback"),
+                    ));
+                }
+                Ok(())
+            },
+        )
+    }
+
+    /// `deployCatalog`.
+    fn deploy_catalog(
+        &mut self,
+        cancel: Cancel,
+        cfg: &Config,
+        cluster_id: &str,
+    ) -> Result<String, DemoError> {
+        let mut status = String::new();
+        self.run_phase(cancel, PHASE_PLATFORM_CATALOG_DEPLOYMENT, "Deploying the current self-managed platform catalog", |o| {
+            let current_status = o
+                .api
+                .get_cluster_status(&cfg.organization_id, cluster_id)
+                .map_err(|e| demo_qovery_api_failure(e.prefixed("cannot read cluster deployment status")))?;
+            let deadline = o.clock.now() + from_std(cfg.deployment_timeout);
+            if is_demo_deployment_in_progress(&current_status) {
+                write_to(
+                    &o.out,
+                    &format!("A cluster deployment is already in progress ({current_status}); waiting for it to finish before deploying.\n"),
+                );
+                o.wait_until_no_deployment_in_progress(cancel, cfg, cluster_id, deadline)?;
+            }
+            let initial_status = o
+                .api
+                .deploy_cluster(&cfg.organization_id, cluster_id)
+                .map_err(|e| demo_qovery_api_failure(e.prefixed("cannot trigger cluster deployment")))?;
+            status = o.wait_for_deployment(cancel, cfg, cluster_id, initial_status, deadline)?;
+            Ok(())
+        })?;
+        Ok(status)
+    }
+
+    /// `printSummary`.
+    fn print_summary(&self, cfg: &Config, cluster_id: &str, status: &str) {
+        let deployment = if cfg.skip_catalog {
+            "The platform catalog was not deployed (--skip-catalog).\n".to_string()
+        } else {
+            format!("Cluster deployment finished with status {status}.\n")
+        };
+        if !cfg.existing_kube_context.is_empty() {
+            write_to(
+                &self.out,
+                &format!(
+                    "\nThe Qovery Operator is installed in kube context {} and connected to the Qovery cluster {}.\nCluster ID: {cluster_id}\n{deployment}",
+                    quote(&cfg.existing_kube_context),
+                    quote(&cfg.cluster_name),
+                ),
+            );
+            return;
+        }
         write_to(
             &self.out,
             &format!(
-                "\nQovery demo cluster is now installed !!!!\nThe kubeconfig is correctly set, so you can connect to it directly with kubectl or k9s from your local machine.\nTo stop or start your cluster, use `k3d cluster stop|start {0}`. To delete it, use `qovery demo destroy -c {0} -d`.\n\nGo to https://console.qovery.com to create your first environment on this cluster {1}.\nCluster deployment finished with status {2}.\n",
+                "\nQovery demo cluster is now installed !!!!\nThe kubeconfig is correctly set, so you can connect to it directly with kubectl or k9s from your local machine.\nTo stop or start your cluster, use `k3d cluster stop|start {0}`. To delete it, use `qovery demo destroy -c {0} -d`.\n\nGo to https://console.qovery.com to create your first environment on this cluster {1}.\n{2}",
                 cfg.cluster_name,
                 quote(&cfg.cluster_name),
-                status
+                deployment
             ),
         );
-        Ok(())
     }
 
     fn run_phase(
@@ -575,6 +624,8 @@ pub(crate) struct DestroyConfig {
     pub organization_id: String,
     pub cluster_name: String,
     pub delete_qovery_config: bool,
+    /// Set for an Operator installed with `demo up --kube-context`: the kube cluster is kept.
+    pub kube_context: String,
 }
 
 /// `demoDestroyOrchestrator`.
@@ -604,6 +655,10 @@ impl<A: DemoDestroyApi, L: DemoDestroyLocal> DestroyOrchestrator<A, L> {
                 Err(e) if e.not_a_demo => return Err(e),
                 Err(e) => lookup_err = Some(e),
             }
+        }
+
+        if !cfg.kube_context.is_empty() {
+            return self.destroy_from_kube_context(cancel, cfg, &cluster_id, found, lookup_err);
         }
 
         self.phase("Deleting the local k3d cluster and registry");
@@ -655,6 +710,72 @@ impl<A: DemoDestroyApi, L: DemoDestroyLocal> DestroyOrchestrator<A, L> {
             &self.out,
             &format!(
                 "Demo cluster {} and its Qovery configuration were deleted.\n",
+                quote(&cfg.cluster_name)
+            ),
+        );
+        Ok(())
+    }
+
+    /// `destroyFromKubeContext`.
+    fn destroy_from_kube_context(
+        &mut self,
+        cancel: Cancel,
+        cfg: &DestroyConfig,
+        cluster_id: &str,
+        found: bool,
+        lookup_err: Option<DemoError>,
+    ) -> Result<(), DemoError> {
+        let kube_context = quote(&cfg.kube_context);
+        self.phase(&format!(
+            "Uninstalling the Qovery Operator from kube context {kube_context}"
+        ));
+        let removed = self
+            .local
+            .uninstall_operator(cancel)
+            .map_err(|e| e.prefixed("cannot uninstall the Qovery Operator"))?;
+        if !removed {
+            write_to(
+                &self.out,
+                &format!("No Qovery Operator release was found in kube context {kube_context}.\n"),
+            );
+        }
+
+        if !cfg.delete_qovery_config {
+            write_to(
+                &self.out,
+                &format!(
+                    "The Qovery Operator was removed from kube context {kube_context}, which was kept. The Qovery configuration of cluster {} was preserved.\n",
+                    quote(&cfg.cluster_name)
+                ),
+            );
+            return Ok(());
+        }
+
+        self.phase("Deleting the Qovery cluster configuration");
+        if let Some(e) = lookup_err {
+            let message = format!(
+                "the Qovery Operator was removed from kube context {kube_context}, but its Qovery cluster cannot be looked up; run the command again to delete it: {}",
+                e.message
+            );
+            return Err(e.wrap(message));
+        }
+        if !found {
+            write_to(
+                &self.out,
+                &format!(
+                    "The Qovery Operator was removed from kube context {kube_context}. No Qovery cluster with this name exists in the current organization.\n"
+                ),
+            );
+            return Ok(());
+        }
+        if let Some(api) = self.api.as_mut() {
+            api.delete_cluster_config(&cfg.organization_id, cluster_id)
+                .map_err(|e| e.prefixed("cannot delete Qovery cluster configuration"))?;
+        }
+        write_to(
+            &self.out,
+            &format!(
+                "The Qovery Operator and the Qovery configuration of cluster {} were deleted. Kube context {kube_context} was kept.\n",
                 quote(&cfg.cluster_name)
             ),
         );
@@ -902,6 +1023,15 @@ mod tests {
             operator_timeout: Duration::from_secs(60),
             deployment_timeout: Duration::from_secs(60),
             poll_interval: Duration::from_secs(1),
+            existing_kube_context: String::new(),
+            skip_catalog: false,
+        }
+    }
+
+    fn existing_kube_context_config() -> Config {
+        Config {
+            existing_kube_context: "vcluster_qls-a".into(),
+            ..test_config()
         }
     }
 
@@ -1564,6 +1694,9 @@ mod tests {
         cluster_deleted: bool,
         loopback_removed: bool,
         loopback_err: Option<DemoError>,
+        operator_removed: bool,
+        no_operator_release: bool,
+        uninstall_err: Option<DemoError>,
     }
 
     impl DemoDestroyLocal for FakeDestroyLocal {
@@ -1578,6 +1711,13 @@ mod tests {
             self.loopback_removed = self.loopback_err.is_none();
             self.loopback_err.clone().map_or(Ok(()), Err)
         }
+        fn uninstall_operator(&mut self, _: Cancel) -> Result<bool, DemoError> {
+            if let Some(e) = &self.uninstall_err {
+                return Err(e.clone());
+            }
+            self.operator_removed = !self.no_operator_release;
+            Ok(self.operator_removed)
+        }
     }
 
     fn destroy_cfg(name: &str, delete: bool) -> DestroyConfig {
@@ -1585,6 +1725,14 @@ mod tests {
             organization_id: "organization-id".into(),
             cluster_name: name.into(),
             delete_qovery_config: delete,
+            kube_context: String::new(),
+        }
+    }
+
+    fn kube_context_destroy_cfg(delete: bool) -> DestroyConfig {
+        DestroyConfig {
+            kube_context: "vcluster_qls-a".into(),
+            ..destroy_cfg("qls-a", delete)
         }
     }
 
@@ -2059,5 +2207,172 @@ mod tests {
             PHASE_RESULT_FAILED,
             o.progress.0.phases.last().unwrap().0.result
         );
+    }
+
+    // --- existing kube context ---
+
+    #[test]
+    fn up_with_an_existing_kube_context_skips_the_local_cluster() {
+        let ev = events();
+        let api = FakeApi {
+            events: Some(ev.clone()),
+            operator_statuses: vec![ready(now())],
+            cluster_statuses: vec!["READY", "DEPLOYED"],
+            ..Default::default()
+        };
+        let local = FakeLocal {
+            events: Some(ev.clone()),
+            ..Default::default()
+        };
+        let (mut o, out) = orchestrator(api, local, clock(now()), RecordingProgress::default());
+        o.up(Cancel::new(), existing_kube_context_config()).unwrap();
+        assert_eq!(
+            vec![
+                "dependencies",
+                "credentials",
+                "find-cluster",
+                "legacy-release",
+                "create-cluster",
+                "operator-config",
+                "bootstrap",
+                "attach",
+                "install-operator",
+                "operator-status",
+                "cluster-status",
+                "deploy",
+                "cluster-status",
+                "validate-workloads",
+            ],
+            *ev.borrow()
+        );
+        assert!(
+            !o.progress
+                .phases
+                .iter()
+                .any(|(p, _)| p.phase == PHASE_LOCAL_CLUSTER)
+        );
+        let out = text(&out);
+        assert!(out.contains("installed in kube context \"vcluster_qls-a\""));
+        assert!(out.contains("Cluster ID: cluster-id"));
+        assert!(!out.contains("k3d"));
+    }
+
+    #[test]
+    fn up_skips_the_catalog_when_requested() {
+        let ev = events();
+        let api = FakeApi {
+            events: Some(ev.clone()),
+            operator_statuses: vec![ready(now())],
+            ..Default::default()
+        };
+        let local = FakeLocal {
+            events: Some(ev.clone()),
+            ..Default::default()
+        };
+        let (mut o, out) = orchestrator(api, local, clock(now()), RecordingProgress::default());
+        let cfg = Config {
+            skip_catalog: true,
+            ..existing_kube_context_config()
+        };
+        o.up(Cancel::new(), cfg).unwrap();
+        assert!(
+            !ev.borrow()
+                .iter()
+                .any(|e| e == "deploy" || e == "cluster-status")
+        );
+        assert_eq!(
+            vec![
+                PHASE_LOCAL_DEPENDENCIES,
+                PHASE_CREDENTIALS_AND_CLUSTER,
+                PHASE_LEGACY_RELEASE_CHECK,
+                PHASE_OPERATOR_BOOTSTRAP,
+                PHASE_OPERATOR_HEARTBEAT,
+                PHASE_WORKLOAD_VERIFICATION,
+            ],
+            o.progress
+                .phases
+                .iter()
+                .map(|(p, _)| p.phase.as_str())
+                .collect::<Vec<_>>()
+        );
+        assert!(text(&out).contains("The platform catalog was not deployed (--skip-catalog)."));
+    }
+
+    #[test]
+    fn destroy_with_a_kube_context_keeps_the_kube_cluster_and_qovery_configuration() {
+        let (out, sink) = buffer();
+        let mut o = DestroyOrchestrator::<FakeDestroyApi, _> {
+            api: None,
+            local: FakeDestroyLocal::default(),
+            out: sink,
+        };
+        o.destroy(Cancel::new(), &kube_context_destroy_cfg(false))
+            .unwrap();
+        assert!(o.local.operator_removed);
+        assert!(!o.local.cluster_deleted);
+        assert!(!o.local.loopback_removed);
+        assert!(text(&out).contains("Qovery configuration of cluster \"qls-a\" was preserved"));
+    }
+
+    #[test]
+    fn destroy_with_a_kube_context_deletes_the_qovery_cluster() {
+        let (out, sink) = buffer();
+        let mut o = DestroyOrchestrator {
+            api: Some(FakeDestroyApi {
+                cluster_found: true,
+                ..Default::default()
+            }),
+            local: FakeDestroyLocal::default(),
+            out: sink,
+        };
+        o.destroy(Cancel::new(), &kube_context_destroy_cfg(true))
+            .unwrap();
+        assert!(o.local.operator_removed);
+        assert!(!o.local.cluster_deleted);
+        assert_eq!("cluster-id", o.api.unwrap().deleted_cluster_id);
+        assert!(text(&out).contains("Kube context \"vcluster_qls-a\" was kept"));
+    }
+
+    #[test]
+    fn destroy_with_a_kube_context_is_idempotent() {
+        let (out, sink) = buffer();
+        let mut o = DestroyOrchestrator {
+            api: Some(FakeDestroyApi::default()),
+            local: FakeDestroyLocal {
+                no_operator_release: true,
+                ..Default::default()
+            },
+            out: sink,
+        };
+        o.destroy(Cancel::new(), &kube_context_destroy_cfg(true))
+            .unwrap();
+        assert!(o.api.unwrap().deleted_cluster_id.is_empty());
+        let out = text(&out);
+        assert!(out.contains("No Qovery Operator release was found"));
+        assert!(out.contains("No Qovery cluster with this name exists"));
+    }
+
+    #[test]
+    fn destroy_with_a_kube_context_keeps_the_qovery_cluster_when_the_uninstall_fails() {
+        let (_, sink) = buffer();
+        let mut o = DestroyOrchestrator {
+            api: Some(FakeDestroyApi {
+                cluster_found: true,
+                ..Default::default()
+            }),
+            local: FakeDestroyLocal {
+                uninstall_err: Some(DemoError::new("helm uninstall failed with exit code 1")),
+                ..Default::default()
+            },
+            out: sink,
+        };
+        let err = o
+            .destroy(Cancel::new(), &kube_context_destroy_cfg(true))
+            .unwrap_err();
+        assert!(
+            err.to_string()
+                .contains("cannot uninstall the Qovery Operator")
+        );
+        assert!(o.api.unwrap().deleted_cluster_id.is_empty());
     }
 }

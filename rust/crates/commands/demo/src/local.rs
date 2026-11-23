@@ -11,6 +11,8 @@ pub(crate) const DEMO_K3S_IMAGE: &str = "docker.io/rancher/k3s:v1.36.4-k3s1";
 pub(crate) const DEMO_SUBNET: &str = "172.42.0.0/16";
 pub(crate) const DEMO_NODE_IP: &str = "172.42.0.3";
 pub(crate) const DEMO_REGISTRY: &str = "qovery-registry.lan";
+/// `demoOperatorComponentKey`: also the name of the Operator Helm chart.
+const DEMO_OPERATOR_CHART: &str = "qovery-operator";
 
 /// `demoBootstrap`.
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -43,6 +45,7 @@ pub(crate) trait DemoDestroyLocal {
     fn check_destroy_dependencies(&mut self, cancel: Cancel) -> Result<(), DemoError>;
     fn delete_k3d_cluster(&mut self, cancel: Cancel, name: &str) -> Result<(), DemoError>;
     fn teardown_loopback(&mut self, cancel: Cancel) -> Result<(), DemoError>;
+    fn uninstall_operator(&mut self, cancel: Cancel) -> Result<bool, DemoError>;
 }
 
 /// `demoLocalCommands`.
@@ -52,6 +55,18 @@ pub(crate) struct LocalCommands<R: CommandRunner> {
     pub temp_dir: String,
     pub kube_context: String,
     pub debug_log: Sink,
+    pub kubeconfig: String,
+    /// Set when the kube context was given by the user: docker and k3d are not needed.
+    pub existing_cluster: bool,
+}
+
+/// `demoHelmTarget(kubeContext, kubeconfig)`.
+pub(crate) fn demo_helm_target(kube_context: &str, kubeconfig: &str) -> Vec<String> {
+    let mut target = args(&["--kube-context", kube_context]);
+    if !kubeconfig.is_empty() {
+        target.extend(args(&["--kubeconfig", kubeconfig]));
+    }
+    target
 }
 
 /// `demoKubeContext(clusterName)`.
@@ -172,7 +187,42 @@ impl<R: CommandRunner> LocalCommands<R> {
             temp_dir: String::new(),
             kube_context: String::new(),
             debug_log,
+            kubeconfig: String::new(),
+            existing_cluster: false,
         }
+    }
+
+    /// `newDemoLocalCommands`: targets the k3d cluster of `cluster_name`, or `kube_context` when it is set.
+    pub fn for_target(
+        runner: R,
+        goos: &str,
+        debug_log: Sink,
+        temp_dir: &str,
+        cluster_name: &str,
+        kube_context: &str,
+        kubeconfig: &str,
+    ) -> Self {
+        let mut local = Self::new(runner, goos, debug_log);
+        local.temp_dir = temp_dir.to_string();
+        local.kube_context = demo_kube_context(cluster_name);
+        if !kube_context.is_empty() {
+            local.kube_context = kube_context.to_string();
+            local.kubeconfig = kubeconfig.to_string();
+            local.existing_cluster = true;
+        }
+        local
+    }
+
+    fn helm_target(&self) -> Vec<String> {
+        demo_helm_target(&self.kube_context, &self.kubeconfig)
+    }
+
+    pub(crate) fn kubectl_target(&self) -> Vec<String> {
+        let mut target = args(&["--context", &self.kube_context]);
+        if !self.kubeconfig.is_empty() {
+            target.extend(args(&["--kubeconfig", &self.kubeconfig]));
+        }
+        target
     }
 
     fn ensure_demo_subnet_is_free(
@@ -484,7 +534,7 @@ impl<R: CommandRunner> LocalCommands<R> {
 pub(crate) fn build_demo_helm_args(
     bootstrap: &Bootstrap,
     values_path: &str,
-    kube_context: &str,
+    target: &[String],
 ) -> Result<Vec<String>, DemoError> {
     if bootstrap.release_name.trim().is_empty()
         || bootstrap.chart_reference.trim().is_empty()
@@ -506,11 +556,9 @@ pub(crate) fn build_demo_helm_args(
             "refusing to install the legacy Qovery umbrella chart",
         ));
     }
-    Ok(args(&[
-        "upgrade",
-        "--install",
-        "--kube-context",
-        kube_context,
+    let mut helm_args = args(&["upgrade", "--install"]);
+    helm_args.extend_from_slice(target);
+    helm_args.extend(args(&[
         &bootstrap.release_name,
         &bootstrap.chart_reference,
         "--version",
@@ -524,7 +572,8 @@ pub(crate) fn build_demo_helm_args(
         "--wait",
         "--timeout",
         "15m",
-    ]))
+    ]));
+    Ok(helm_args)
 }
 
 /// Go `path.Base`.
@@ -608,13 +657,21 @@ fn create_temp(dir: &str) -> std::io::Result<(std::fs::File, std::path::PathBuf)
 
 impl<R: CommandRunner> DemoLocal for LocalCommands<R> {
     fn check_dependencies(&mut self, cancel: Cancel) -> Result<(), DemoError> {
-        let missing: Vec<String> = ["docker", "k3d", "helm", "kubectl"]
+        let dependencies: &[&str] = if self.existing_cluster {
+            &["helm", "kubectl"]
+        } else {
+            &["docker", "k3d", "helm", "kubectl"]
+        };
+        let missing: Vec<String> = dependencies
             .iter()
             .filter(|d| self.runner.look_path(d).is_err())
             .map(|d| d.to_string())
             .collect();
         if !missing.is_empty() {
             return Err(missing_demo_dependencies_error(&self.goos, &missing));
+        }
+        if self.existing_cluster {
+            return Ok(());
         }
         if self
             .runner
@@ -738,27 +795,22 @@ impl<R: CommandRunner> DemoLocal for LocalCommands<R> {
 
     fn legacy_qovery_release_exists(&mut self, cancel: Cancel) -> Result<bool, DemoError> {
         // Helm 4 removed `helm list --all`; listing every status explicitly works on Helm 3 and 4.
-        let kube_context = self.kube_context.clone();
-        let (output, err) = self.runner.run_quiet(
-            cancel,
-            "helm",
-            &args(&[
-                "list",
-                "--kube-context",
-                &kube_context,
-                "--namespace",
-                "qovery",
-                "--deployed",
-                "--failed",
-                "--pending",
-                "--superseded",
-                "--uninstalling",
-                "--output",
-                "json",
-                "--filter",
-                "^qovery$",
-            ]),
-        );
+        let mut helm_args = args(&["list"]);
+        helm_args.extend(self.helm_target());
+        helm_args.extend(args(&[
+            "--namespace",
+            "qovery",
+            "--deployed",
+            "--failed",
+            "--pending",
+            "--superseded",
+            "--uninstalling",
+            "--output",
+            "json",
+            "--filter",
+            "^qovery$",
+        ]));
+        let (output, err) = self.runner.run_quiet(cancel, "helm", &helm_args);
         if let Err(e) = err {
             return Err(command_failed("helm list", &e));
         }
@@ -799,7 +851,7 @@ impl<R: CommandRunner> DemoLocal for LocalCommands<R> {
             ));
         }
         let path_text = path.to_string_lossy().to_string();
-        let helm_args = build_demo_helm_args(bootstrap, &path_text, &self.kube_context)?;
+        let helm_args = build_demo_helm_args(bootstrap, &path_text, &self.helm_target())?;
         let (_, err) = self.runner.run(cancel, "helm", &helm_args);
         if let Err(e) = err {
             return Err(command_failed("helm upgrade --install", &e));
@@ -824,21 +876,16 @@ impl<R: CommandRunner> DemoLocal for LocalCommands<R> {
     }
 
     fn validate_workloads(&mut self, cancel: Cancel, namespace: &str) -> Result<(), DemoError> {
-        let kube_context = self.kube_context.clone();
-        let (output, err) = self.runner.run_quiet(
-            cancel,
-            "kubectl",
-            &args(&[
-                "--context",
-                &kube_context,
-                "--namespace",
-                namespace,
-                "get",
-                "deployments",
-                "--output",
-                "json",
-            ]),
-        );
+        let mut kubectl_args = self.kubectl_target();
+        kubectl_args.extend(args(&[
+            "--namespace",
+            namespace,
+            "get",
+            "deployments",
+            "--output",
+            "json",
+        ]));
+        let (output, err) = self.runner.run_quiet(cancel, "kubectl", &kubectl_args);
         if let Err(e) = err {
             return Err(command_failed("kubectl get deployments", &e));
         }
@@ -885,7 +932,12 @@ impl<R: CommandRunner> DemoLocal for LocalCommands<R> {
 
 impl<R: CommandRunner> DemoDestroyLocal for LocalCommands<R> {
     fn check_destroy_dependencies(&mut self, _cancel: Cancel) -> Result<(), DemoError> {
-        for dependency in ["docker", "k3d"] {
+        let dependencies: &[&str] = if self.existing_cluster {
+            &["helm"]
+        } else {
+            &["docker", "k3d"]
+        };
+        for dependency in dependencies {
             if self.runner.look_path(dependency).is_err() {
                 return Err(DemoError::new(format!(
                     "required command {} is not installed",
@@ -975,6 +1027,64 @@ impl<R: CommandRunner> DemoDestroyLocal for LocalCommands<R> {
             return Err(command_failed("Windows loopback removal", &e));
         }
         Ok(())
+    }
+
+    /// `UninstallOperator`: removes every release of the qovery-operator chart from the kube context, and
+    /// reports false when there was none, so a second run succeeds.
+    fn uninstall_operator(&mut self, cancel: Cancel) -> Result<bool, DemoError> {
+        let mut list_args = args(&["list"]);
+        list_args.extend(self.helm_target());
+        list_args.extend(args(&[
+            "--all-namespaces",
+            "--deployed",
+            "--failed",
+            "--pending",
+            "--superseded",
+            "--uninstalling",
+            "--output",
+            "json",
+        ]));
+        let (output, err) = self.runner.run_quiet(cancel, "helm", &list_args);
+        if let Err(e) = err {
+            return Err(command_failed("helm list", &e));
+        }
+        #[derive(Deserialize)]
+        struct Release {
+            #[serde(default, alias = "Name", alias = "NAME")]
+            name: Option<String>,
+            #[serde(default, alias = "Namespace", alias = "NAMESPACE")]
+            namespace: Option<String>,
+            #[serde(default, alias = "Chart", alias = "CHART")]
+            chart: Option<String>,
+        }
+        let Ok(releases) = serde_json::from_slice::<Option<Vec<Option<Release>>>>(&output) else {
+            return Err(DemoError::new("helm returned an invalid release list"));
+        };
+        let operator_chart_prefix = format!("{DEMO_OPERATOR_CHART}-");
+        let mut removed = false;
+        for release in releases.unwrap_or_default().into_iter().flatten() {
+            if !release
+                .chart
+                .as_deref()
+                .unwrap_or("")
+                .starts_with(&operator_chart_prefix)
+            {
+                continue;
+            }
+            let mut uninstall_args = args(&[
+                "uninstall",
+                release.name.as_deref().unwrap_or(""),
+                "--namespace",
+                release.namespace.as_deref().unwrap_or(""),
+            ]);
+            uninstall_args.extend(self.helm_target());
+            uninstall_args.extend(args(&["--wait", "--timeout", "10m"]));
+            if let (_, Err(e)) = self.runner.run(cancel, "helm", &uninstall_args) {
+                return Err(command_failed("helm uninstall", &e));
+            }
+            removed = true;
+        }
+        Ok(removed)
     }
 }
 
@@ -1301,7 +1411,7 @@ pub(crate) mod tests {
         let args = build_demo_helm_args(
             &test_bootstrap(),
             "/tmp/protected-values.yaml",
-            "k3d-local-demo-user",
+            &demo_helm_target("k3d-local-demo-user", ""),
         )
         .unwrap();
         assert_eq!(
@@ -1335,7 +1445,7 @@ pub(crate) mod tests {
         let err = build_demo_helm_args(
             &bootstrap,
             "/tmp/protected-values.yaml",
-            "k3d-local-demo-user",
+            &demo_helm_target("k3d-local-demo-user", ""),
         )
         .unwrap_err();
         assert!(err.to_string().contains("umbrella chart"));
@@ -1611,5 +1721,154 @@ pub(crate) mod tests {
         assert!(!overlaps(parse_prefix("::/0").unwrap(), demo));
         assert!(overlaps(parse_prefix("0.0.0.0/0").unwrap(), demo));
         assert!(parse_prefix("172.42.0.0").is_none());
+    }
+
+    // --- existing kube context ---
+
+    fn existing(runner: RecordingRunner) -> LocalCommands<RecordingRunner> {
+        LocalCommands::for_target(
+            runner,
+            "linux",
+            crate::runner::tests::buffer().1,
+            "",
+            "qls-a",
+            "vcluster_qls-a",
+            "/kube/qls-a.yaml",
+        )
+    }
+
+    #[test]
+    fn existing_kube_context_never_calls_docker_or_k3d() {
+        let mut runner = RecordingRunner::with_outputs(vec![
+            Some("[]"),
+            Some(r#"{"items":[{"metadata":{"name":"qovery-operator"}}]}"#),
+        ]);
+        runner.missing = vec!["docker", "k3d", "sudo"];
+        let mut l = existing(runner);
+        l.check_dependencies(Cancel::new()).unwrap();
+        assert!(!l.legacy_qovery_release_exists(Cancel::new()).unwrap());
+        l.validate_workloads(Cancel::new(), "qovery").unwrap();
+        assert_eq!(2, l.runner.calls.len());
+        assert_eq!(
+            strs(&[
+                "helm",
+                "list",
+                "--kube-context",
+                "vcluster_qls-a",
+                "--kubeconfig",
+                "/kube/qls-a.yaml"
+            ]),
+            l.runner.calls[0][..6]
+        );
+        assert_eq!(
+            strs(&[
+                "kubectl",
+                "--context",
+                "vcluster_qls-a",
+                "--kubeconfig",
+                "/kube/qls-a.yaml",
+                "--namespace",
+                "qovery"
+            ]),
+            l.runner.calls[1][..7]
+        );
+        let target = l.helm_target();
+        let helm_args = build_demo_helm_args(&test_bootstrap(), "/tmp/v.yaml", &target).unwrap();
+        assert_eq!(
+            strs(&[
+                "upgrade",
+                "--install",
+                "--kube-context",
+                "vcluster_qls-a",
+                "--kubeconfig",
+                "/kube/qls-a.yaml",
+                "qovery-operator"
+            ]),
+            helm_args[..7]
+        );
+    }
+
+    #[test]
+    fn without_a_kube_context_the_k3d_cluster_is_targeted() {
+        let l = LocalCommands::for_target(
+            RecordingRunner::default(),
+            "linux",
+            crate::runner::tests::buffer().1,
+            "",
+            "local-demo-user",
+            "",
+            "",
+        );
+        assert!(!l.existing_cluster);
+        assert_eq!(
+            strs(&["--kube-context", "k3d-local-demo-user"]),
+            l.helm_target()
+        );
+        assert_eq!(
+            strs(&["--context", "k3d-local-demo-user"]),
+            l.kubectl_target()
+        );
+    }
+
+    #[test]
+    fn destroy_with_a_kube_context_only_needs_helm() {
+        let runner = RecordingRunner {
+            missing: vec!["docker", "k3d", "kubectl"],
+            ..Default::default()
+        };
+        let mut l = existing(runner);
+        l.check_destroy_dependencies(Cancel::new()).unwrap();
+    }
+
+    #[test]
+    fn uninstall_operator_removes_only_operator_releases() {
+        let mut l = existing(RecordingRunner::with_outputs(vec![Some(
+            r#"[{"name":"qovery-operator","namespace":"qovery","chart":"qovery-operator-1.2.3"},{"name":"vcluster","namespace":"qls","chart":"vcluster-0.20.0"}]"#,
+        )]));
+        assert!(l.uninstall_operator(Cancel::new()).unwrap());
+        assert_eq!(2, l.runner.calls.len());
+        assert_eq!(
+            strs(&[
+                "helm",
+                "list",
+                "--kube-context",
+                "vcluster_qls-a",
+                "--kubeconfig",
+                "/kube/qls-a.yaml",
+                "--all-namespaces",
+                "--deployed",
+                "--failed",
+                "--pending",
+                "--superseded",
+                "--uninstalling",
+                "--output",
+                "json"
+            ]),
+            l.runner.calls[0]
+        );
+        assert_eq!(
+            strs(&[
+                "helm",
+                "uninstall",
+                "qovery-operator",
+                "--namespace",
+                "qovery",
+                "--kube-context",
+                "vcluster_qls-a",
+                "--kubeconfig",
+                "/kube/qls-a.yaml",
+                "--wait",
+                "--timeout",
+                "10m"
+            ]),
+            l.runner.calls[1]
+        );
+    }
+
+    #[test]
+    fn uninstall_operator_without_a_release_is_a_no_op() {
+        let mut l = existing(RecordingRunner::with_outputs(vec![Some("[]")]));
+        assert!(!l.uninstall_operator(Cancel::new()).unwrap());
+        assert_eq!(1, l.runner.calls.len());
     }
 }
