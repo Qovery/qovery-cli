@@ -116,7 +116,6 @@ pub(crate) fn demo_failure_details(err: &DemoError) -> (String, String) {
     }
 }
 
-/// `demoSubnetInUseError(networkName)`.
 /// `demoDockerDiskPressureError(nodeName, waited)`.
 pub(crate) fn demo_docker_disk_pressure_error(
     node_name: &str,
@@ -133,6 +132,7 @@ pub(crate) fn demo_docker_disk_pressure_error(
     )
 }
 
+/// `demoSubnetInUseError(networkName)`.
 pub(crate) fn demo_subnet_in_use_error(network_name: &str) -> DemoError {
     let mut hint = format!(
         "Remove this network with `docker network rm {}`, then run `qovery demo up` again.",

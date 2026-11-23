@@ -17,10 +17,11 @@ const (
 	demoDefaultDeploymentTimeout   = 90 * time.Minute
 	demoDefaultPollInterval        = 5 * time.Second
 	// The kubelet reports disk pressure on its first eviction pass, about 10s after the node starts, and keeps it
-	// about 5 minutes after space is freed.
+	// about 5 minutes after its last observation, plus the eviction loop and node status delays.
 	demoNodeSettleAge               = 30 * time.Second
+	demoNodeReadTimeout             = 20 * time.Second
 	demoDiskPressureRecheckInterval = 10 * time.Second
-	demoDiskPressureMaxWait         = 5 * time.Minute
+	demoDiskPressureMaxWait         = 7 * time.Minute
 
 	demoPhaseLocalDependencies         = "local_dependencies"
 	demoPhaseCredentialsAndCluster     = "credentials_and_cluster"
@@ -72,8 +73,8 @@ type demoLocal interface {
 	LegacyQoveryReleaseExists(context.Context) (bool, error)
 	InstallOperator(context.Context, demoBootstrap) error
 	ValidateWorkloads(context.Context, string) error
-	NodeDiskPressure(context.Context) (string, time.Time, error)
-	CollectDiagnostics(context.Context)
+	NodeDiskPressure(context.Context, time.Duration) (string, time.Time, error)
+	CollectDiagnostics(context.Context, string)
 }
 
 type demoClock interface {
@@ -237,14 +238,14 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 		}
 		return nil
 	}); err != nil {
-		o.diagnoseFailure(ctx)
+		o.diagnoseFailure(ctx, bootstrap.Namespace)
 		return err
 	}
 
 	if err := o.runPhase(ctx, demoPhaseOperatorHeartbeat, "Waiting for a fresh Qovery Operator heartbeat", func() error {
 		return o.waitForOperator(ctx, cfg, clusterID)
 	}); err != nil {
-		o.diagnoseFailure(ctx)
+		o.diagnoseFailure(ctx, bootstrap.Namespace)
 		return err
 	}
 
@@ -268,7 +269,7 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 		status, err = o.waitForDeployment(ctx, cfg, clusterID, initialStatus, deadline)
 		return err
 	}); err != nil {
-		o.diagnoseFailure(ctx)
+		o.diagnoseFailure(ctx, bootstrap.Namespace)
 		return err
 	}
 
@@ -278,7 +279,7 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 		}
 		return nil
 	}); err != nil {
-		o.diagnoseFailure(ctx)
+		o.diagnoseFailure(ctx, bootstrap.Namespace)
 		return err
 	}
 	_, _ = fmt.Fprintf(
@@ -326,15 +327,19 @@ func (o *demoOrchestrator) runPhase(ctx context.Context, phase string, message s
 	return err
 }
 
-func (o *demoOrchestrator) diagnoseFailure(ctx context.Context) {
+func (o *demoOrchestrator) diagnoseFailure(ctx context.Context, namespace string) {
+	if namespace == "" {
+		namespace = demoOperatorNamespace
+	}
 	if ctx.Err() == nil {
-		o.local.CollectDiagnostics(ctx)
+		o.local.CollectDiagnostics(ctx, namespace)
 	}
 }
 
-// waitForNodeDiskPressure fails fast when Kubernetes cannot schedule pods for lack of disk; read failures are ignored.
+// waitForNodeDiskPressure waits up to demoDiskPressureMaxWait for a node under disk pressure to recover, and fails if
+// it does not; a failed read stops the wait without failing.
 func (o *demoOrchestrator) waitForNodeDiskPressure(ctx context.Context) error {
-	node, newest, err := o.local.NodeDiskPressure(ctx)
+	node, newest, err := o.local.NodeDiskPressure(ctx, demoNodeReadTimeout)
 	if err != nil {
 		return nil
 	}
@@ -342,27 +347,29 @@ func (o *demoOrchestrator) waitForNodeDiskPressure(ctx context.Context) error {
 		if err := o.clock.Sleep(ctx, min(demoNodeSettleAge-age, demoNodeSettleAge)); err != nil {
 			return err
 		}
-		if node, _, err = o.local.NodeDiskPressure(ctx); err != nil {
+		if node, _, err = o.local.NodeDiskPressure(ctx, demoNodeReadTimeout); err != nil {
 			return nil
 		}
 	}
 	if node == "" {
 		return nil
 	}
-	_, _ = fmt.Fprintf(o.out, "Node %s is under disk pressure; waiting up to %s for it to clear (Kubernetes keeps it about 5 minutes after space is freed).\n", node, demoDiskPressureMaxWait)
+	_, _ = fmt.Fprintf(o.out, "Node %s is under disk pressure: free some space now; Kubernetes can take up to 6 minutes to see it. Waiting up to %s.\n", node, demoDiskPressureMaxWait)
 	deadline := o.clock.Now().Add(demoDiskPressureMaxWait)
-	for o.clock.Now().Before(deadline) {
-		if err := o.clock.Sleep(ctx, demoDiskPressureRecheckInterval); err != nil {
+	for {
+		if err := o.clock.Sleep(ctx, min(demoDiskPressureRecheckInterval, deadline.Sub(o.clock.Now()))); err != nil {
 			return err
 		}
-		if current, _, err := o.local.NodeDiskPressure(ctx); err == nil {
-			if current == "" {
-				return nil
-			}
-			node = current
+		remaining := deadline.Sub(o.clock.Now())
+		if remaining <= 0 {
+			return demoDockerDiskPressureError(node, demoDiskPressureMaxWait)
 		}
+		current, _, err := o.local.NodeDiskPressure(ctx, min(demoNodeReadTimeout, remaining))
+		if err != nil || current == "" {
+			return nil
+		}
+		node = current
 	}
-	return demoDockerDiskPressureError(node, demoDiskPressureMaxWait)
 }
 
 func (o *demoOrchestrator) clusterResolved(clusterID string) {

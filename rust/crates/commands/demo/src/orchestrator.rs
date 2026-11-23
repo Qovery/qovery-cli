@@ -1,6 +1,7 @@
 //! Port of `cmd/demo_up_orchestrator.go` and of `demoDestroyOrchestrator` (`cmd/demo_destroy.go`).
 
 use crate::api::{Credential, DemoApi, DemoDestroyApi, OperatorStatus};
+use crate::diagnostics::DEMO_OPERATOR_NAMESPACE;
 use crate::failure::*;
 use crate::local::{Bootstrap, DEMO_NODE_IP, DemoDestroyLocal, DemoLocal};
 use crate::runner::{Cancel, Sink, write_to};
@@ -13,10 +14,11 @@ pub(crate) const DEMO_DEFAULT_OPERATOR_TIMEOUT: Duration = Duration::from_secs(1
 pub(crate) const DEMO_DEFAULT_DEPLOYMENT_TIMEOUT: Duration = Duration::from_secs(90 * 60);
 pub(crate) const DEMO_DEFAULT_POLL_INTERVAL: Duration = Duration::from_secs(5);
 /// `demoNodeSettleAge`: the kubelet reports disk pressure on its first eviction pass, about 10s after the node
-/// starts, and keeps it about 5 minutes after space is freed.
+/// starts, and keeps it about 5 minutes after its last observation, plus the eviction loop and node status delays.
 pub(crate) const DEMO_NODE_SETTLE_AGE: Duration = Duration::from_secs(30);
+pub(crate) const DEMO_NODE_READ_TIMEOUT: Duration = Duration::from_secs(20);
 pub(crate) const DEMO_DISK_PRESSURE_RECHECK_INTERVAL: Duration = Duration::from_secs(10);
-pub(crate) const DEMO_DISK_PRESSURE_MAX_WAIT: Duration = Duration::from_secs(5 * 60);
+pub(crate) const DEMO_DISK_PRESSURE_MAX_WAIT: Duration = Duration::from_secs(7 * 60);
 
 pub(crate) const PHASE_LOCAL_DEPENDENCIES: &str = "local_dependencies";
 pub(crate) const PHASE_CREDENTIALS_AND_CLUSTER: &str = "credentials_and_cluster";
@@ -268,7 +270,7 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
             }
             Ok(())
         }) {
-            self.diagnose_failure(cancel);
+            self.diagnose_failure(cancel, &bootstrap.namespace);
             return Err(err);
         }
 
@@ -278,7 +280,7 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
             "Waiting for a fresh Qovery Operator heartbeat",
             |o| o.wait_for_operator(cancel, &cfg, &cluster_id),
         ) {
-            self.diagnose_failure(cancel);
+            self.diagnose_failure(cancel, &bootstrap.namespace);
             return Err(err);
         }
 
@@ -303,7 +305,7 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
             status = o.wait_for_deployment(cancel, &cfg, &cluster_id, initial_status, deadline)?;
             Ok(())
         }) {
-            self.diagnose_failure(cancel);
+            self.diagnose_failure(cancel, &bootstrap.namespace);
             return Err(err);
         }
 
@@ -323,7 +325,7 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
                     })
             },
         ) {
-            self.diagnose_failure(cancel);
+            self.diagnose_failure(cancel, &bootstrap.namespace);
             return Err(err);
         }
         write_to(
@@ -364,8 +366,9 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
             duration,
             ..Default::default()
         };
+        let canceled = result.is_err() && cancel.is_canceled();
         if let Err(err) = &result {
-            if cancel.is_canceled() {
+            if canceled {
                 execution.result = PHASE_RESULT_CANCELED.to_string();
             } else {
                 execution.result = PHASE_RESULT_FAILED.to_string();
@@ -374,7 +377,7 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
         }
         self.progress.phase_finished(execution);
         match result {
-            Err(err) if cancel.is_canceled() => {
+            Err(err) if canceled => {
                 let message = format!("{ERR_DEMO_INTERRUPTED}: {}", err.message);
                 let mut err = err.wrap(message);
                 err.interrupted = true;
@@ -384,17 +387,25 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
         }
     }
 
-    /// `diagnoseFailure(ctx)`.
-    fn diagnose_failure(&mut self, cancel: Cancel) {
+    /// `diagnoseFailure(ctx, namespace)`.
+    fn diagnose_failure(&mut self, cancel: Cancel, namespace: &str) {
+        let namespace = if namespace.is_empty() {
+            DEMO_OPERATOR_NAMESPACE
+        } else {
+            namespace
+        };
         if !cancel.is_canceled() {
-            self.local.collect_diagnostics(cancel);
+            self.local.collect_diagnostics(cancel, namespace);
         }
     }
 
-    /// `waitForNodeDiskPressure(ctx)`: fails fast when Kubernetes cannot schedule pods for lack of disk; read
-    /// failures are ignored.
+    /// `waitForNodeDiskPressure(ctx)`: waits up to `DEMO_DISK_PRESSURE_MAX_WAIT` for a node under disk pressure to
+    /// recover, and fails if it does not; a failed read stops the wait without failing.
     fn wait_for_node_disk_pressure(&mut self, cancel: Cancel) -> Result<(), DemoError> {
-        let Ok((mut node, newest)) = self.local.node_disk_pressure(cancel) else {
+        let Ok((mut node, newest)) = self
+            .local
+            .node_disk_pressure(cancel, DEMO_NODE_READ_TIMEOUT)
+        else {
             return Ok(());
         };
         let settle = from_std(DEMO_NODE_SETTLE_AGE);
@@ -402,7 +413,10 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
         if node.is_empty() && age < settle {
             self.clock
                 .sleep(cancel, to_std(settle - age).min(DEMO_NODE_SETTLE_AGE))?;
-            match self.local.node_disk_pressure(cancel) {
+            match self
+                .local
+                .node_disk_pressure(cancel, DEMO_NODE_READ_TIMEOUT)
+            {
                 Ok((current, _)) => node = current,
                 Err(_) => return Ok(()),
             }
@@ -413,25 +427,30 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
         write_to(
             &self.out,
             &format!(
-                "Node {node} is under disk pressure; waiting up to {} for it to clear (Kubernetes keeps it about 5 minutes after space is freed).\n",
+                "Node {node} is under disk pressure: free some space now; Kubernetes can take up to 6 minutes to see it. Waiting up to {}.\n",
                 duration_string(DEMO_DISK_PRESSURE_MAX_WAIT)
             ),
         );
         let deadline = self.clock.now() + from_std(DEMO_DISK_PRESSURE_MAX_WAIT);
-        while self.clock.now() < deadline {
+        loop {
+            let remaining = to_std(deadline - self.clock.now());
             self.clock
-                .sleep(cancel, DEMO_DISK_PRESSURE_RECHECK_INTERVAL)?;
-            if let Ok((current, _)) = self.local.node_disk_pressure(cancel) {
-                if current.is_empty() {
-                    return Ok(());
-                }
-                node = current;
+                .sleep(cancel, DEMO_DISK_PRESSURE_RECHECK_INTERVAL.min(remaining))?;
+            let remaining = to_std(deadline - self.clock.now());
+            if remaining.is_zero() {
+                return Err(demo_docker_disk_pressure_error(
+                    &node,
+                    DEMO_DISK_PRESSURE_MAX_WAIT,
+                ));
+            }
+            match self
+                .local
+                .node_disk_pressure(cancel, DEMO_NODE_READ_TIMEOUT.min(remaining))
+            {
+                Ok((current, _)) if !current.is_empty() => node = current,
+                _ => return Ok(()),
             }
         }
-        Err(demo_docker_disk_pressure_error(
-            &node,
-            DEMO_DISK_PRESSURE_MAX_WAIT,
-        ))
     }
 
     fn wait_for_operator(
@@ -687,6 +706,7 @@ mod tests {
         cluster_status_calls: usize,
         deploy_calls: usize,
         operator_cpu_architecture: String,
+        configure_err: Option<DemoError>,
     }
 
     impl FakeApi {
@@ -725,7 +745,7 @@ mod tests {
         fn configure_operator(&mut self, _: &str, _: &str, cpu: &str) -> Result<(), DemoError> {
             self.event("operator-config");
             self.operator_cpu_architecture = cpu.to_string();
-            Ok(())
+            self.configure_err.clone().map_or(Ok(()), Err)
         }
         fn get_operator_bootstrap(&mut self, _: &str, _: &str) -> Result<Bootstrap, DemoError> {
             self.event("bootstrap");
@@ -770,6 +790,7 @@ mod tests {
         workloads_err: Option<DemoError>,
         on_diagnostics: Option<Box<dyn Fn()>>,
         disk_pressure: Vec<Result<(String, DateTime<Utc>), DemoError>>,
+        read_timeouts: Vec<Duration>,
     }
 
     impl FakeLocal {
@@ -805,16 +826,21 @@ mod tests {
             self.event("validate-workloads");
             self.workloads_err.clone().map_or(Ok(()), Err)
         }
-        fn node_disk_pressure(&mut self, _: Cancel) -> Result<(String, DateTime<Utc>), DemoError> {
+        fn node_disk_pressure(
+            &mut self,
+            _: Cancel,
+            timeout: Duration,
+        ) -> Result<(String, DateTime<Utc>), DemoError> {
             self.event("node-disk-pressure");
+            self.read_timeouts.push(timeout);
             match self.disk_pressure.len() {
                 0 => Ok((String::new(), DateTime::<Utc>::MIN_UTC)),
                 1 => self.disk_pressure[0].clone(),
                 _ => self.disk_pressure.remove(0),
             }
         }
-        fn collect_diagnostics(&mut self, _: Cancel) {
-            self.event("diagnostics");
+        fn collect_diagnostics(&mut self, _: Cancel, namespace: &str) {
+            self.event(&format!("diagnostics:{namespace}"));
             if let Some(on_diagnostics) = &self.on_diagnostics {
                 on_diagnostics();
             }
@@ -1684,16 +1710,35 @@ mod tests {
     #[test]
     fn collects_diagnostics_after_the_failed_phase_without_changing_it() {
         let failing = |m: &str| Some(DemoError::new(m));
-        for (name, api, local, phase, code) in [
+        let custom = Bootstrap {
+            namespace: "qovery-system".into(),
+            ..test_bootstrap()
+        };
+        for (name, api, local, phase, code, namespace) in [
             (
-                "operator bootstrap",
-                FakeApi::default(),
+                "operator bootstrap, API",
+                FakeApi {
+                    configure_err: failing("boom"),
+                    ..Default::default()
+                },
+                FakeLocal::default(),
+                PHASE_OPERATOR_BOOTSTRAP,
+                ERROR_QOVERY_API,
+                "qovery",
+            ),
+            (
+                "operator bootstrap, helm",
+                FakeApi {
+                    bootstrap: Some(custom.clone()),
+                    ..Default::default()
+                },
                 FakeLocal {
                     install_err: failing("exit status 1"),
                     ..Default::default()
                 },
                 PHASE_OPERATOR_BOOTSTRAP,
                 ERROR_OPERATOR_INSTALL,
+                "qovery-system",
             ),
             (
                 "operator heartbeat",
@@ -1701,6 +1746,7 @@ mod tests {
                 FakeLocal::default(),
                 PHASE_OPERATOR_HEARTBEAT,
                 ERROR_OPERATOR_HEARTBEAT_TIMEOUT,
+                "qovery",
             ),
             (
                 "platform catalog",
@@ -1712,6 +1758,7 @@ mod tests {
                 FakeLocal::default(),
                 PHASE_PLATFORM_CATALOG_DEPLOYMENT,
                 ERROR_CLUSTER_DEPLOYMENT,
+                "qovery",
             ),
             (
                 "workload verification",
@@ -1725,6 +1772,7 @@ mod tests {
                 },
                 PHASE_WORKLOAD_VERIFICATION,
                 ERROR_WORKLOAD_VERIFICATION,
+                "qovery",
             ),
         ] {
             let cancel = Cancel::new();
@@ -1755,7 +1803,11 @@ mod tests {
             let err = o.up(cancel, test_config()).unwrap_err();
 
             assert!(!err.interrupted, "{name}");
-            assert_eq!("diagnostics", ev.borrow().last().unwrap(), "{name}");
+            assert_eq!(
+                &format!("diagnostics:{namespace}"),
+                ev.borrow().last().unwrap(),
+                "{name}"
+            );
             let last = &o.progress.phases.last().unwrap().0;
             assert_eq!(
                 (phase, PHASE_RESULT_FAILED, code),
@@ -1786,6 +1838,10 @@ mod tests {
         }
     }
 
+    fn has_diagnostics(ev: &Events) -> bool {
+        ev.borrow().iter().any(|e| e.starts_with("diagnostics"))
+    }
+
     #[test]
     fn skips_diagnostics_when_interrupted_or_before_the_local_cluster() {
         let cancel = Cancel::new();
@@ -1807,7 +1863,7 @@ mod tests {
             (),
         );
         assert!(o.up(cancel, test_config()).unwrap_err().interrupted);
-        assert!(!ev.borrow().contains(&"diagnostics".to_string()));
+        assert!(!has_diagnostics(&ev));
 
         let ev = events();
         let (mut o, _) = orchestrator(
@@ -1821,7 +1877,7 @@ mod tests {
             (),
         );
         o.up(Cancel::new(), test_config()).unwrap_err();
-        assert!(!ev.borrow().contains(&"diagnostics".to_string()));
+        assert!(!has_diagnostics(&ev));
     }
 
     /// `sleepRecordingDemoClock`.
@@ -1860,6 +1916,16 @@ mod tests {
                 vec![],
                 false,
                 false,
+            ),
+            (
+                "read failure while waiting stops the wait",
+                vec![
+                    read("server-0", old),
+                    Err(DemoError::new("kubectl get nodes failed")),
+                ],
+                vec![s(10)],
+                false,
+                true,
             ),
             (
                 "fresh node read again at 30s",
@@ -1917,14 +1983,19 @@ mod tests {
 
             assert_eq!(
                 message,
-                text(&out_buffer).contains(
-                    "Node server-0 is under disk pressure; waiting up to 5m0s for it to clear"
-                ),
+                text(&out_buffer).contains("Node server-0 is under disk pressure: free some space now; Kubernetes can take up to 6 minutes to see it. Waiting up to 7m0s.\n"),
                 "{name}"
             );
             if !failure {
                 result.unwrap();
                 assert_eq!(sleeps, o.clock.sleeps[..sleeps.len()].to_vec(), "{name}");
+                assert!(
+                    o.local
+                        .read_timeouts
+                        .iter()
+                        .all(|t| *t == DEMO_NODE_READ_TIMEOUT),
+                    "{name}"
+                );
                 continue;
             }
             let err = result.unwrap_err();
@@ -1935,16 +2006,58 @@ mod tests {
                 safe_message
             );
             assert!(err.message.contains(
-                "still under disk pressure (node.kubernetes.io/disk-pressure) after 5m0s"
+                "still under disk pressure (node.kubernetes.io/disk-pressure) after 7m0s"
             ));
             assert!(err.message.contains("`docker builder prune -f` and `docker image prune -a -f`, or increase the disk size in Docker Desktop (Settings > Resources), then run `qovery demo up` again"));
-            assert_eq!(30, o.clock.sleeps.len());
+            assert_eq!(42, o.clock.sleeps.len());
+            assert_eq!(42, o.local.read_timeouts.len());
+            assert_eq!(s(10), o.local.read_timeouts[41]);
+            assert_eq!(DEMO_NODE_READ_TIMEOUT, o.local.read_timeouts[40]);
             assert_eq!(
                 PHASE_LOCAL_CLUSTER,
                 o.progress.phases.last().unwrap().0.phase
             );
             assert!(!ev.borrow().contains(&"legacy-release".to_string()));
-            assert!(!ev.borrow().contains(&"diagnostics".to_string()));
+            assert!(!has_diagnostics(&ev));
         }
+    }
+
+    /// `cancelingDemoProgress`.
+    struct CancelingProgress(RecordingProgress, Cancel);
+
+    impl Progress for CancelingProgress {
+        fn cluster_resolved(&mut self, cluster_id: &str) {
+            self.0.cluster_resolved(cluster_id)
+        }
+        fn phase_finished(&mut self, execution: PhaseExecution) {
+            let failed = execution.result == PHASE_RESULT_FAILED;
+            self.0.phase_finished(execution);
+            if failed {
+                self.1.cancel();
+            }
+        }
+    }
+
+    #[test]
+    fn classifies_a_phase_once_before_reporting_it() {
+        let cancel = Cancel::new();
+        let local = FakeLocal {
+            k3d_err: Some(DemoError::new("boom")),
+            ..Default::default()
+        };
+        let (mut o, _) = orchestrator(
+            FakeApi::default(),
+            local,
+            clock(now()),
+            CancelingProgress(RecordingProgress::default(), cancel),
+        );
+
+        let err = o.up(cancel, test_config()).unwrap_err();
+
+        assert!(!err.interrupted);
+        assert_eq!(
+            PHASE_RESULT_FAILED,
+            o.progress.0.phases.last().unwrap().0.result
+        );
     }
 }

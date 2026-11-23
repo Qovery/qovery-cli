@@ -33,8 +33,9 @@ pub(crate) trait DemoLocal {
     fn node_disk_pressure(
         &mut self,
         cancel: Cancel,
+        timeout: std::time::Duration,
     ) -> Result<(String, chrono::DateTime<chrono::Utc>), DemoError>;
-    fn collect_diagnostics(&mut self, cancel: Cancel);
+    fn collect_diagnostics(&mut self, cancel: Cancel, namespace: &str);
 }
 
 /// `demoDestroyLocal` (used by `demo destroy`).
@@ -809,12 +810,17 @@ impl<R: CommandRunner> DemoLocal for LocalCommands<R> {
     fn node_disk_pressure(
         &mut self,
         cancel: Cancel,
+        timeout: std::time::Duration,
     ) -> Result<(String, chrono::DateTime<chrono::Utc>), DemoError> {
-        self.read_node_disk_pressure(cancel)
+        self.read_node_disk_pressure(cancel, timeout)
     }
 
-    fn collect_diagnostics(&mut self, cancel: Cancel) {
-        self.collect_kubernetes_diagnostics(cancel, crate::diagnostics::DEMO_DIAGNOSTIC_BUDGET);
+    fn collect_diagnostics(&mut self, cancel: Cancel, namespace: &str) {
+        self.collect_kubernetes_diagnostics(
+            cancel,
+            namespace,
+            crate::diagnostics::DEMO_DIAGNOSTIC_BUDGET,
+        );
     }
 
     fn validate_workloads(&mut self, cancel: Cancel, namespace: &str) -> Result<(), DemoError> {
@@ -1030,7 +1036,13 @@ pub(crate) mod tests {
         fn run_quiet(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult {
             self.run(cancel, name, args)
         }
-        fn run_silent(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult {
+        fn run_silent(
+            &mut self,
+            cancel: Cancel,
+            _: std::time::Duration,
+            name: &str,
+            args: &[String],
+        ) -> RunResult {
             self.run(cancel, name, args)
         }
         fn run_unlogged(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult {
@@ -1371,7 +1383,13 @@ pub(crate) mod tests {
         fn run_unlogged(&mut self, c: Cancel, n: &str, a: &[String]) -> RunResult {
             self.run(c, n, a)
         }
-        fn run_silent(&mut self, c: Cancel, n: &str, a: &[String]) -> RunResult {
+        fn run_silent(
+            &mut self,
+            c: Cancel,
+            _: std::time::Duration,
+            n: &str,
+            a: &[String],
+        ) -> RunResult {
             self.run(c, n, a)
         }
     }

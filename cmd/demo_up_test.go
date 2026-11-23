@@ -952,6 +952,7 @@ type fakeDemoAPI struct {
 	deployCalls             int
 	deployStatus            string
 	operatorCPUArchitecture string
+	configureErr            error
 }
 
 func (f *fakeDemoAPI) event(value string) {
@@ -979,7 +980,7 @@ func (f *fakeDemoAPI) CreateCluster(context.Context, string, string, demoCredent
 func (f *fakeDemoAPI) ConfigureOperator(_ context.Context, _ string, _ string, cpuArchitecture string) error {
 	f.event("operator-config")
 	f.operatorCPUArchitecture = cpuArchitecture
-	return nil
+	return f.configureErr
 }
 
 func (f *fakeDemoAPI) GetOperatorBootstrap(context.Context, string, string) (demoBootstrap, error) {
@@ -1038,6 +1039,7 @@ type fakeDemoLocal struct {
 	workloadsErr  error
 	onDiagnostics func()
 	diskPressure  []fakeDemoNodeRead
+	readTimeouts  []time.Duration
 }
 
 type fakeDemoNodeRead struct {
@@ -1082,8 +1084,9 @@ func (f *fakeDemoLocal) ValidateWorkloads(context.Context, string) error {
 	return f.workloadsErr
 }
 
-func (f *fakeDemoLocal) NodeDiskPressure(context.Context) (string, time.Time, error) {
+func (f *fakeDemoLocal) NodeDiskPressure(_ context.Context, timeout time.Duration) (string, time.Time, error) {
 	f.event("node-disk-pressure")
+	f.readTimeouts = append(f.readTimeouts, timeout)
 	if len(f.diskPressure) == 0 {
 		return "", time.Time{}, nil
 	}
@@ -1094,8 +1097,8 @@ func (f *fakeDemoLocal) NodeDiskPressure(context.Context) (string, time.Time, er
 	return read.node, read.createdAt, read.err
 }
 
-func (f *fakeDemoLocal) CollectDiagnostics(context.Context) {
-	f.event("diagnostics")
+func (f *fakeDemoLocal) CollectDiagnostics(_ context.Context, namespace string) {
+	f.event("diagnostics:" + namespace)
 	if f.onDiagnostics != nil {
 		f.onDiagnostics()
 	}

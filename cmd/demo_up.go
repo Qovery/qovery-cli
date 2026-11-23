@@ -666,35 +666,26 @@ func (r *demoExecRunner) RunQuiet(ctx context.Context, name string, args ...stri
 
 // RunUnlogged keeps the output out of the debug log, which is uploaded on failure.
 func (r *demoExecRunner) RunUnlogged(ctx context.Context, name string, args ...string) ([]byte, error) {
-	return r.execute(ctx, false, false, name, args...)
+	return r.execute(ctx, false, false, false, name, args...)
 }
 
 // RunSilent logs only the command line and never writes to the terminal: the caller logs the output it keeps.
+// A command whose context ends is killed after a short grace.
 func (r *demoExecRunner) RunSilent(ctx context.Context, name string, args ...string) ([]byte, error) {
-	if r.log != nil {
-		_, _ = fmt.Fprintf(r.log, "$ %s\n", strings.Join(append([]string{name}, args...), " "))
-	}
-	var output bytes.Buffer
-	command := exec.CommandContext(ctx, name, args...)
-	command.Cancel = func() error { return command.Process.Signal(os.Interrupt) }
-	command.WaitDelay = demoCommandInterruptGrace
-	command.Stdout = &output
-	command.Stderr = &output
-	err := command.Run()
-	return output.Bytes(), err
+	return r.execute(ctx, false, false, true, name, args...)
 }
 
 func (r *demoExecRunner) run(ctx context.Context, visible bool, name string, args ...string) ([]byte, error) {
-	return r.execute(ctx, visible, true, name, args...)
+	return r.execute(ctx, visible, true, false, name, args...)
 }
 
-func (r *demoExecRunner) execute(ctx context.Context, visible bool, logOutput bool, name string, args ...string) ([]byte, error) {
+func (r *demoExecRunner) execute(ctx context.Context, visible bool, logOutput bool, silent bool, name string, args ...string) ([]byte, error) {
 	commandLine := strings.Join(append([]string{name}, args...), " ")
 	if r.log != nil {
 		_, _ = fmt.Fprintf(r.log, "$ %s\n", commandLine)
 	}
-	showCommand := visible || r.debug
-	streamOutput := visible || (r.debug && logOutput)
+	showCommand := !silent && (visible || r.debug)
+	streamOutput := !silent && (visible || (r.debug && logOutput))
 	if showCommand && r.out != nil {
 		_, _ = fmt.Fprintf(r.out, "$ %s\n", commandLine)
 	}
@@ -710,10 +701,13 @@ func (r *demoExecRunner) execute(ctx context.Context, visible bool, logOutput bo
 	command := exec.CommandContext(ctx, name, args...)
 	command.Cancel = func() error { return command.Process.Signal(os.Interrupt) }
 	command.WaitDelay = demoCommandInterruptGrace
+	if silent {
+		command.WaitDelay = demoDiagnosticKillGrace
+	}
 	command.Stdout = io.MultiWriter(writers...)
 	command.Stderr = command.Stdout
 	err := command.Run()
-	if err != nil && !streamOutput && r.out != nil {
+	if err != nil && !streamOutput && !silent && r.out != nil {
 		if !showCommand {
 			_, _ = fmt.Fprintf(r.out, "$ %s\n", commandLine)
 		}
