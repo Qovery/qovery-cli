@@ -102,6 +102,9 @@ type demoConfig struct {
 	OperatorTimeout   time.Duration
 	DeploymentTimeout time.Duration
 	PollInterval      time.Duration
+	// ExistingKubeContext installs the Operator into this kube context instead of a local k3d cluster.
+	ExistingKubeContext string
+	SkipCatalog         bool
 }
 
 type demoOrchestrator struct {
@@ -160,30 +163,7 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 		return err
 	}
 
-	if err := o.runPhase(ctx, demoPhaseLocalCluster, "Creating or starting the local k3d cluster", func() error {
-		if err := o.local.EnsureK3dCluster(ctx, cfg.ClusterName); err != nil {
-			var failure *demoFailure
-			if errors.As(err, &failure) {
-				return err
-			}
-			return newDemoFailure(
-				demoErrorK3dCluster,
-				"The local k3d cluster could not be created or started.",
-				fmt.Errorf("cannot prepare local k3d cluster: %w", err),
-			)
-		}
-		if err := o.waitForNodeDiskPressure(ctx); err != nil {
-			return err
-		}
-		if err := o.local.EnsureLoopback(ctx); err != nil {
-			return newDemoFailure(
-				demoErrorLoopback,
-				"The local loopback address could not be configured.",
-				fmt.Errorf("cannot configure local loopback: %w", err),
-			)
-		}
-		return nil
-	}); err != nil {
+	if err := o.ensureLocalCluster(ctx, cfg); err != nil {
 		return err
 	}
 
@@ -249,8 +229,62 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 		return err
 	}
 
+	status := ""
+	if !cfg.SkipCatalog {
+		var err error
+		if status, err = o.deployCatalog(ctx, cfg, clusterID); err != nil {
+			o.diagnoseFailure(ctx, bootstrap.Namespace)
+			return err
+		}
+	}
+
+	if err := o.runPhase(ctx, demoPhaseWorkloadVerification, "Verifying Operator and Engine workloads", func() error {
+		if err := o.local.ValidateWorkloads(ctx, bootstrap.Namespace); err != nil {
+			return newDemoFailure(demoErrorWorkloadVerification, "The Operator and Engine workloads are not healthy.", err)
+		}
+		return nil
+	}); err != nil {
+		o.diagnoseFailure(ctx, bootstrap.Namespace)
+		return err
+	}
+	o.printSummary(cfg, clusterID, status)
+	return nil
+}
+
+// ensureLocalCluster creates or starts the local k3d cluster. An existing kube context needs none of it.
+func (o *demoOrchestrator) ensureLocalCluster(ctx context.Context, cfg demoConfig) error {
+	if cfg.ExistingKubeContext != "" {
+		return nil
+	}
+	return o.runPhase(ctx, demoPhaseLocalCluster, "Creating or starting the local k3d cluster", func() error {
+		if err := o.local.EnsureK3dCluster(ctx, cfg.ClusterName); err != nil {
+			var failure *demoFailure
+			if errors.As(err, &failure) {
+				return err
+			}
+			return newDemoFailure(
+				demoErrorK3dCluster,
+				"The local k3d cluster could not be created or started.",
+				fmt.Errorf("cannot prepare local k3d cluster: %w", err),
+			)
+		}
+		if err := o.waitForNodeDiskPressure(ctx); err != nil {
+			return err
+		}
+		if err := o.local.EnsureLoopback(ctx); err != nil {
+			return newDemoFailure(
+				demoErrorLoopback,
+				"The local loopback address could not be configured.",
+				fmt.Errorf("cannot configure local loopback: %w", err),
+			)
+		}
+		return nil
+	})
+}
+
+func (o *demoOrchestrator) deployCatalog(ctx context.Context, cfg demoConfig, clusterID string) (string, error) {
 	var status string
-	if err := o.runPhase(ctx, demoPhasePlatformCatalogDeployment, "Deploying the current self-managed platform catalog", func() error {
+	err := o.runPhase(ctx, demoPhasePlatformCatalogDeployment, "Deploying the current self-managed platform catalog", func() error {
 		currentStatus, err := o.api.GetClusterStatus(ctx, cfg.OrganizationID, clusterID)
 		if err != nil {
 			return demoQoveryAPIFailure(fmt.Errorf("cannot read cluster deployment status: %w", err))
@@ -268,27 +302,32 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 		}
 		status, err = o.waitForDeployment(ctx, cfg, clusterID, initialStatus, deadline)
 		return err
-	}); err != nil {
-		o.diagnoseFailure(ctx, bootstrap.Namespace)
-		return err
-	}
+	})
+	return status, err
+}
 
-	if err := o.runPhase(ctx, demoPhaseWorkloadVerification, "Verifying Operator and Engine workloads", func() error {
-		if err := o.local.ValidateWorkloads(ctx, bootstrap.Namespace); err != nil {
-			return newDemoFailure(demoErrorWorkloadVerification, "The Operator and Engine workloads are not healthy.", err)
-		}
-		return nil
-	}); err != nil {
-		o.diagnoseFailure(ctx, bootstrap.Namespace)
-		return err
+func (o *demoOrchestrator) printSummary(cfg demoConfig, clusterID string, status string) {
+	deployment := fmt.Sprintf("Cluster deployment finished with status %s.\n", status)
+	if cfg.SkipCatalog {
+		deployment = "The platform catalog was not deployed (--skip-catalog).\n"
+	}
+	if cfg.ExistingKubeContext != "" {
+		_, _ = fmt.Fprintf(
+			o.out,
+			"\nThe Qovery Operator is installed in kube context %q and connected to the Qovery cluster %q.\nCluster ID: %s\n%s",
+			cfg.ExistingKubeContext,
+			cfg.ClusterName,
+			clusterID,
+			deployment,
+		)
+		return
 	}
 	_, _ = fmt.Fprintf(
 		o.out,
-		"\nQovery demo cluster is now installed !!!!\nThe kubeconfig is correctly set, so you can connect to it directly with kubectl or k9s from your local machine.\nTo stop or start your cluster, use `k3d cluster stop|start %[1]s`. To delete it, use `qovery demo destroy -c %[1]s -d`.\n\nGo to https://console.qovery.com to create your first environment on this cluster %[1]q.\nCluster deployment finished with status %[2]s.\n",
+		"\nQovery demo cluster is now installed !!!!\nThe kubeconfig is correctly set, so you can connect to it directly with kubectl or k9s from your local machine.\nTo stop or start your cluster, use `k3d cluster stop|start %[1]s`. To delete it, use `qovery demo destroy -c %[1]s -d`.\n\nGo to https://console.qovery.com to create your first environment on this cluster %[1]q.\n%[2]s",
 		cfg.ClusterName,
-		status,
+		deployment,
 	)
-	return nil
 }
 
 func (o *demoOrchestrator) runPhase(ctx context.Context, phase string, message string, run func() error) error {

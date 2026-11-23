@@ -14,11 +14,12 @@ import (
 
 func TestPostDemoDebugLogRetriesOnceOnServerErrors(t *testing.T) {
 	tests := []struct {
-		name          string
-		statuses      []int
-		wantRequests  int
-		wantErr       bool
-		wantAuthError bool
+		name            string
+		statuses        []int
+		wantRequests    int
+		wantErr         bool
+		wantAuthError   bool
+		wantUnsupported bool
 	}{
 		{name: "stored at once", statuses: []int{http.StatusOK}, wantRequests: 1},
 		{name: "stored on retry", statuses: []int{http.StatusInternalServerError, http.StatusOK}, wantRequests: 2},
@@ -26,6 +27,7 @@ func TestPostDemoDebugLogRetriesOnceOnServerErrors(t *testing.T) {
 		{name: "client error is not retried", statuses: []int{http.StatusBadRequest}, wantRequests: 1, wantErr: true},
 		{name: "unauthorized", statuses: []int{http.StatusUnauthorized}, wantRequests: 1, wantErr: true, wantAuthError: true},
 		{name: "forbidden", statuses: []int{http.StatusForbidden}, wantRequests: 1, wantErr: true, wantAuthError: true},
+		{name: "endpoint missing on the target API", statuses: []int{http.StatusNotFound}, wantRequests: 1, wantErr: true, wantUnsupported: true},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -51,6 +53,7 @@ func TestPostDemoDebugLogRetriesOnceOnServerErrors(t *testing.T) {
 			}
 			require.Error(t, err)
 			assert.Equal(t, test.wantAuthError, isDemoDebugLogAuthFailure(err))
+			assert.Equal(t, test.wantUnsupported, isDemoDebugLogUnsupported(err))
 		})
 	}
 }

@@ -454,3 +454,16 @@ func TestDemoUpClassifiesAPhaseOnceBeforeReportingIt(t *testing.T) {
 	assert.NotErrorIs(t, err, errDemoInterrupted)
 	assert.Equal(t, demoPhaseResultFailed, progress.phases[len(progress.phases)-1].Result)
 }
+
+func TestDemoCollectDiagnosticsTargetsTheGivenKubeconfig(t *testing.T) {
+	runner := &scriptedDemoRunner{respond: func(context.Context, string) ([]byte, error) { return nil, nil }}
+	local := newDemoLocalCommands(runner, "", "qls-a", "vcluster_qls-a", "/kube/qls-a.yaml")
+	local.debugLog = &bytes.Buffer{}
+
+	local.CollectDiagnostics(context.Background(), "qovery")
+
+	assert.NotEmpty(t, runner.calls)
+	for _, call := range runner.calls {
+		assert.True(t, strings.HasPrefix(call, "silent: kubectl --context vcluster_qls-a --kubeconfig /kube/qls-a.yaml --request-timeout 10s "), call)
+	}
+}
