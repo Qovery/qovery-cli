@@ -14,7 +14,8 @@ var demoCmd = &cobra.Command{
 	Long: `Try Qovery on your local machine.
 
 qovery demo up creates a local k3d cluster, installs the Qovery Operator on it and lets Qovery
-deploy the self-managed platform catalog with Engine v2.`,
+deploy the self-managed platform catalog with Engine v2. With --kube-context, it installs the
+Qovery Operator into an existing kube context instead, without prompting.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
 		_ = cmd.Help()

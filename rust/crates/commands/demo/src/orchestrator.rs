@@ -127,6 +127,19 @@ pub(crate) fn operator_status_ready(status: &OperatorStatus, now: DateTime<Utc>)
     }
 }
 
+/// `legacyDemoReleaseError(existingKubeContext)`.
+pub(crate) fn legacy_demo_release_error(existing_kube_context: &str) -> DemoError {
+    if !existing_kube_context.is_empty() {
+        return DemoError::new(format!(
+            "legacy Helm release \"qovery\" exists in namespace \"qovery\" of kube context {}; adopting an old demo is not supported: uninstall it with `helm uninstall qovery --namespace qovery --kube-context {existing_kube_context}` before running `qovery demo up`",
+            quote(existing_kube_context)
+        ));
+    }
+    DemoError::new(
+        "legacy Helm release \"qovery\" exists in namespace \"qovery\"; adopting an old demo is not supported: destroy and recreate the local cluster before running `qovery demo up`",
+    )
+}
+
 /// `isDemoDeploymentInProgress(status)`.
 pub(crate) fn is_demo_deployment_in_progress(status: &str) -> bool {
     status.ends_with("QUEUED") || status.ends_with("ING")
@@ -204,8 +217,11 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
 
         self.ensure_local_cluster(cancel, &cfg)?;
 
-        self.run_phase(cancel, PHASE_LEGACY_RELEASE_CHECK, "Checking for an unsupported legacy Qovery release", |o| {
-            match o.local.legacy_qovery_release_exists(cancel) {
+        self.run_phase(
+            cancel,
+            PHASE_LEGACY_RELEASE_CHECK,
+            "Checking for an unsupported legacy Qovery release",
+            |o| match o.local.legacy_qovery_release_exists(cancel) {
                 Err(e) => Err(new_demo_failure(
                     ERROR_HELM_LIST,
                     "Listing the local Helm releases failed.",
@@ -214,11 +230,11 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
                 Ok(true) => Err(new_demo_failure(
                     ERROR_LEGACY_RELEASE,
                     "A legacy Qovery demo release exists on the local cluster.",
-                    DemoError::new("legacy Helm release \"qovery\" exists in namespace \"qovery\"; adopting an old demo is not supported: destroy and recreate the local cluster before running `qovery demo up`"),
+                    legacy_demo_release_error(&cfg.existing_kube_context),
                 )),
                 Ok(false) => Ok(()),
-            }
-        })?;
+            },
+        )?;
 
         let mut bootstrap = Bootstrap::default();
         if let Err(err) = self.run_phase(cancel, PHASE_OPERATOR_BOOTSTRAP, "Bootstrapping and attaching the Qovery Operator", |o| {
@@ -642,6 +658,10 @@ impl<A: DemoDestroyApi, L: DemoDestroyLocal> DestroyOrchestrator<A, L> {
             .check_destroy_dependencies(cancel)
             .map_err(|e| e.prefixed("local dependency check failed"))?;
 
+        if !cfg.kube_context.is_empty() {
+            return self.destroy_from_kube_context(cancel, cfg);
+        }
+
         let (mut cluster_id, mut found) = (String::new(), false);
         let mut lookup_err: Option<DemoError> = None;
         if cfg.delete_qovery_config {
@@ -655,10 +675,6 @@ impl<A: DemoDestroyApi, L: DemoDestroyLocal> DestroyOrchestrator<A, L> {
                 Err(e) if e.not_a_demo => return Err(e),
                 Err(e) => lookup_err = Some(e),
             }
-        }
-
-        if !cfg.kube_context.is_empty() {
-            return self.destroy_from_kube_context(cancel, cfg, &cluster_id, found, lookup_err);
         }
 
         self.phase("Deleting the local k3d cluster and registry");
@@ -716,15 +732,31 @@ impl<A: DemoDestroyApi, L: DemoDestroyLocal> DestroyOrchestrator<A, L> {
         Ok(())
     }
 
-    /// `destroyFromKubeContext`.
+    /// `destroyFromKubeContext`: refuses to touch the Operator unless the Qovery cluster named by
+    /// --cluster-name is a demo cluster, or is gone.
     fn destroy_from_kube_context(
         &mut self,
         cancel: Cancel,
         cfg: &DestroyConfig,
-        cluster_id: &str,
-        found: bool,
-        lookup_err: Option<DemoError>,
     ) -> Result<(), DemoError> {
+        let Some(api) = self.api.as_mut() else {
+            return Err(DemoError::new(
+                "qovery API is required to check the Qovery cluster before uninstalling the Qovery Operator",
+            ));
+        };
+        let (cluster_id, found) = match api.find_cluster(&cfg.organization_id, &cfg.cluster_name) {
+            Ok(result) => result,
+            Err(e) if e.not_a_demo => return Err(e),
+            Err(e) => {
+                let message = format!(
+                    "cannot look up the Qovery cluster {}, so the Qovery Operator was not uninstalled: {}",
+                    quote(&cfg.cluster_name),
+                    e.message
+                );
+                return Err(e.wrap(message));
+            }
+        };
+
         let kube_context = quote(&cfg.kube_context);
         self.phase(&format!(
             "Uninstalling the Qovery Operator from kube context {kube_context}"
@@ -733,7 +765,12 @@ impl<A: DemoDestroyApi, L: DemoDestroyLocal> DestroyOrchestrator<A, L> {
             .local
             .uninstall_operator(cancel)
             .map_err(|e| e.prefixed("cannot uninstall the Qovery Operator"))?;
-        if !removed {
+        if removed {
+            write_to(
+                &self.out,
+                &format!("The Qovery Operator was removed from kube context {kube_context}.\n"),
+            );
+        } else {
             write_to(
                 &self.out,
                 &format!("No Qovery Operator release was found in kube context {kube_context}.\n"),
@@ -744,7 +781,7 @@ impl<A: DemoDestroyApi, L: DemoDestroyLocal> DestroyOrchestrator<A, L> {
             write_to(
                 &self.out,
                 &format!(
-                    "The Qovery Operator was removed from kube context {kube_context}, which was kept. The Qovery configuration of cluster {} was preserved.\n",
+                    "Kube context {kube_context} was kept. The Qovery configuration of cluster {} was preserved.\n",
                     quote(&cfg.cluster_name)
                 ),
             );
@@ -752,30 +789,23 @@ impl<A: DemoDestroyApi, L: DemoDestroyLocal> DestroyOrchestrator<A, L> {
         }
 
         self.phase("Deleting the Qovery cluster configuration");
-        if let Some(e) = lookup_err {
-            let message = format!(
-                "the Qovery Operator was removed from kube context {kube_context}, but its Qovery cluster cannot be looked up; run the command again to delete it: {}",
-                e.message
-            );
-            return Err(e.wrap(message));
-        }
         if !found {
             write_to(
                 &self.out,
                 &format!(
-                    "The Qovery Operator was removed from kube context {kube_context}. No Qovery cluster with this name exists in the current organization.\n"
+                    "Kube context {kube_context} was kept. No Qovery cluster with this name exists in the current organization.\n"
                 ),
             );
             return Ok(());
         }
         if let Some(api) = self.api.as_mut() {
-            api.delete_cluster_config(&cfg.organization_id, cluster_id)
+            api.delete_cluster_config(&cfg.organization_id, &cluster_id)
                 .map_err(|e| e.prefixed("cannot delete Qovery cluster configuration"))?;
         }
         write_to(
             &self.out,
             &format!(
-                "The Qovery Operator and the Qovery configuration of cluster {} were deleted. Kube context {kube_context} was kept.\n",
+                "The Qovery configuration of cluster {} was deleted. Kube context {kube_context} was kept.\n",
                 quote(&cfg.cluster_name)
             ),
         );
@@ -2301,8 +2331,11 @@ mod tests {
     #[test]
     fn destroy_with_a_kube_context_keeps_the_kube_cluster_and_qovery_configuration() {
         let (out, sink) = buffer();
-        let mut o = DestroyOrchestrator::<FakeDestroyApi, _> {
-            api: None,
+        let mut o = DestroyOrchestrator {
+            api: Some(FakeDestroyApi {
+                cluster_found: true,
+                ..Default::default()
+            }),
             local: FakeDestroyLocal::default(),
             out: sink,
         };
@@ -2350,6 +2383,69 @@ mod tests {
         let out = text(&out);
         assert!(out.contains("No Qovery Operator release was found"));
         assert!(out.contains("No Qovery cluster with this name exists"));
+        assert!(!out.contains("was removed"));
+    }
+
+    #[test]
+    fn destroy_with_a_kube_context_refuses_a_cluster_that_is_not_a_demo() {
+        for delete in [false, true] {
+            let mut e = DemoError::new(format!(
+                "cluster \"production\" in this organization {ERR_NOT_A_DEMO_CLUSTER}"
+            ));
+            e.not_a_demo = true;
+            let (_, sink) = buffer();
+            let mut o = DestroyOrchestrator {
+                api: Some(FakeDestroyApi {
+                    find_err: Some(e),
+                    ..Default::default()
+                }),
+                local: FakeDestroyLocal::default(),
+                out: sink,
+            };
+            assert!(
+                o.destroy(Cancel::new(), &kube_context_destroy_cfg(delete))
+                    .unwrap_err()
+                    .not_a_demo
+            );
+            assert!(!o.local.operator_removed);
+            assert!(o.api.unwrap().deleted_cluster_id.is_empty());
+        }
+    }
+
+    #[test]
+    fn destroy_with_a_kube_context_does_not_uninstall_when_the_lookup_fails() {
+        let (_, sink) = buffer();
+        let mut o = DestroyOrchestrator {
+            api: Some(FakeDestroyApi {
+                find_err: Some(DemoError::new("503 Service Unavailable")),
+                ..Default::default()
+            }),
+            local: FakeDestroyLocal::default(),
+            out: sink,
+        };
+        let err = o
+            .destroy(Cancel::new(), &kube_context_destroy_cfg(false))
+            .unwrap_err();
+        assert!(
+            err.to_string()
+                .contains("the Qovery Operator was not uninstalled")
+        );
+        assert!(!o.local.operator_removed);
+    }
+
+    #[test]
+    fn legacy_release_error_fits_the_target() {
+        assert!(
+            legacy_demo_release_error("")
+                .to_string()
+                .contains("destroy and recreate the local cluster")
+        );
+        let existing = legacy_demo_release_error("vcluster_qls-a").to_string();
+        assert!(
+            existing
+                .contains("helm uninstall qovery --namespace qovery --kube-context vcluster_qls-a")
+        );
+        assert!(!existing.contains("local cluster"));
     }
 
     #[test]

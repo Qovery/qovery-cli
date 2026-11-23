@@ -68,7 +68,7 @@ type demoAttemptTelemetry struct {
 
 var demoUpCmd = &cobra.Command{
 	Use:   "up",
-	Short: "Create a local k3d cluster running the Qovery Operator and Engine v2",
+	Short: "Create a local k3d cluster, or use an existing kube context, running the Qovery Operator and Engine v2",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		attempt := newDemoAttempt()

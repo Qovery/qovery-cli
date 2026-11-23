@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -28,7 +29,7 @@ var (
 
 var demoDestroyCmd = &cobra.Command{
 	Use:   "destroy",
-	Short: "Remove the local demo cluster",
+	Short: "Remove the local demo cluster, or the Qovery Operator of an existing kube context",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
@@ -58,7 +59,7 @@ func runDemoDestroy(ctx context.Context, cmd *cobra.Command) error {
 
 	var api demoDestroyAPI
 	organizationID := ""
-	if demoDestroyDeleteQoveryConfig {
+	if demoDestroyDeleteQoveryConfig || demoDestroyKubeContext != "" {
 		tokenType, token, err := utils.GetAccessToken(false)
 		if err != nil {
 			return fmt.Errorf("authentication failed; run `qovery auth` first: %w", err)
@@ -132,6 +133,10 @@ func (o *demoDestroyOrchestrator) Destroy(ctx context.Context, cfg demoDestroyCo
 		return fmt.Errorf("local dependency check failed: %w", err)
 	}
 
+	if cfg.KubeContext != "" {
+		return o.destroyFromKubeContext(ctx, cfg)
+	}
+
 	clusterID, found := "", false
 	var lookupErr error
 	if cfg.DeleteQoveryConfig {
@@ -142,10 +147,6 @@ func (o *demoDestroyOrchestrator) Destroy(ctx context.Context, cfg demoDestroyCo
 		if errors.Is(lookupErr, errNotADemoCluster) {
 			return lookupErr
 		}
-	}
-
-	if cfg.KubeContext != "" {
-		return o.destroyFromKubeContext(ctx, cfg, clusterID, found, lookupErr)
 	}
 
 	o.phase("Deleting the local k3d cluster and registry")
@@ -176,33 +177,45 @@ func (o *demoDestroyOrchestrator) Destroy(ctx context.Context, cfg demoDestroyCo
 	return nil
 }
 
-func (o *demoDestroyOrchestrator) destroyFromKubeContext(ctx context.Context, cfg demoDestroyConfig, clusterID string, found bool, lookupErr error) error {
+// destroyFromKubeContext refuses to touch the Operator unless the Qovery cluster named by --cluster-name is a demo
+// cluster, or is gone: a production cluster's Operator must not be removed by a mistyped name.
+func (o *demoDestroyOrchestrator) destroyFromKubeContext(ctx context.Context, cfg demoDestroyConfig) error {
+	if o.api == nil {
+		return errors.New("qovery API is required to check the Qovery cluster before uninstalling the Qovery Operator")
+	}
+	clusterID, found, err := o.api.FindCluster(ctx, cfg.OrganizationID, cfg.ClusterName)
+	if errors.Is(err, errNotADemoCluster) {
+		return err
+	}
+	if err != nil {
+		return fmt.Errorf("cannot look up the Qovery cluster %q, so the Qovery Operator was not uninstalled: %w", cfg.ClusterName, err)
+	}
+
 	o.phase(fmt.Sprintf("Uninstalling the Qovery Operator from kube context %q", cfg.KubeContext))
 	removed, err := o.local.UninstallOperator(ctx)
 	if err != nil {
 		return fmt.Errorf("cannot uninstall the Qovery Operator: %w", err)
 	}
-	if !removed {
+	if removed {
+		_, _ = fmt.Fprintf(o.out, "The Qovery Operator was removed from kube context %q.\n", cfg.KubeContext)
+	} else {
 		_, _ = fmt.Fprintf(o.out, "No Qovery Operator release was found in kube context %q.\n", cfg.KubeContext)
 	}
 
 	if !cfg.DeleteQoveryConfig {
-		_, _ = fmt.Fprintf(o.out, "The Qovery Operator was removed from kube context %q, which was kept. The Qovery configuration of cluster %q was preserved.\n", cfg.KubeContext, cfg.ClusterName)
+		_, _ = fmt.Fprintf(o.out, "Kube context %q was kept. The Qovery configuration of cluster %q was preserved.\n", cfg.KubeContext, cfg.ClusterName)
 		return nil
 	}
 
 	o.phase("Deleting the Qovery cluster configuration")
-	if lookupErr != nil {
-		return fmt.Errorf("the Qovery Operator was removed from kube context %q, but its Qovery cluster cannot be looked up; run the command again to delete it: %w", cfg.KubeContext, lookupErr)
-	}
 	if !found {
-		_, _ = fmt.Fprintf(o.out, "The Qovery Operator was removed from kube context %q. No Qovery cluster with this name exists in the current organization.\n", cfg.KubeContext)
+		_, _ = fmt.Fprintf(o.out, "Kube context %q was kept. No Qovery cluster with this name exists in the current organization.\n", cfg.KubeContext)
 		return nil
 	}
 	if err := o.api.DeleteClusterConfig(ctx, cfg.OrganizationID, clusterID); err != nil {
 		return fmt.Errorf("cannot delete Qovery cluster configuration: %w", err)
 	}
-	_, _ = fmt.Fprintf(o.out, "The Qovery Operator and the Qovery configuration of cluster %q were deleted. Kube context %q was kept.\n", cfg.ClusterName, cfg.KubeContext)
+	_, _ = fmt.Fprintf(o.out, "The Qovery configuration of cluster %q was deleted. Kube context %q was kept.\n", cfg.ClusterName, cfg.KubeContext)
 	return nil
 }
 
@@ -235,19 +248,9 @@ func (l *demoLocalCommands) CheckDestroyDependencies(_ context.Context) error {
 // UninstallOperator removes every release of the qovery-operator chart from the kube context. It reports false
 // when there was none, so a second run succeeds.
 func (l *demoLocalCommands) UninstallOperator(ctx context.Context) (bool, error) {
-	args := append([]string{"list"}, l.helmTarget()...)
-	args = append(args, "--all-namespaces", "--deployed", "--failed", "--pending", "--superseded", "--uninstalling", "--output", "json")
-	output, err := l.runner.RunQuiet(ctx, "helm", args...)
+	releases, err := l.listAllHelmReleases(ctx)
 	if err != nil {
-		return false, commandFailed("helm list", err)
-	}
-	var releases []struct {
-		Name      string `json:"name"`
-		Namespace string `json:"namespace"`
-		Chart     string `json:"chart"`
-	}
-	if err := json.Unmarshal(output, &releases); err != nil {
-		return false, errors.New("helm returned an invalid release list")
+		return false, err
 	}
 	removed := false
 	for _, release := range releases {
@@ -262,6 +265,37 @@ func (l *demoLocalCommands) UninstallOperator(ctx context.Context) (bool, error)
 		removed = true
 	}
 	return removed, nil
+}
+
+// demoHelmListPageSize is the default of `helm list --max`; `--max 0` returns a server default, not every release.
+const demoHelmListPageSize = 256
+
+type demoHelmRelease struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+	Chart     string `json:"chart"`
+}
+
+// listAllHelmReleases pages through `helm list` so a release past the first page is not missed.
+func (l *demoLocalCommands) listAllHelmReleases(ctx context.Context) ([]demoHelmRelease, error) {
+	var all []demoHelmRelease
+	for {
+		args := append([]string{"list"}, l.helmTarget()...)
+		args = append(args, "--all-namespaces", "--deployed", "--failed", "--pending", "--superseded", "--uninstalling",
+			"--max", strconv.Itoa(demoHelmListPageSize), "--offset", strconv.Itoa(len(all)), "--output", "json")
+		output, err := l.runner.RunQuiet(ctx, "helm", args...)
+		if err != nil {
+			return nil, commandFailed("helm list", err)
+		}
+		var page []demoHelmRelease
+		if err := json.Unmarshal(output, &page); err != nil {
+			return nil, errors.New("helm returned an invalid release list")
+		}
+		all = append(all, page...)
+		if len(page) < demoHelmListPageSize {
+			return all, nil
+		}
+	}
 }
 
 func (l *demoLocalCommands) DeleteK3dCluster(ctx context.Context, name string) error {

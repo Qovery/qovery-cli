@@ -180,7 +180,7 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 			return newDemoFailure(
 				demoErrorLegacyRelease,
 				"A legacy Qovery demo release exists on the local cluster.",
-				errors.New("legacy Helm release \"qovery\" exists in namespace \"qovery\"; adopting an old demo is not supported: destroy and recreate the local cluster before running `qovery demo up`"),
+				legacyDemoReleaseError(cfg.ExistingKubeContext),
 			)
 		}
 		return nil
@@ -249,6 +249,13 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 	}
 	o.printSummary(cfg, clusterID, status)
 	return nil
+}
+
+func legacyDemoReleaseError(existingKubeContext string) error {
+	if existingKubeContext != "" {
+		return fmt.Errorf("legacy Helm release \"qovery\" exists in namespace \"qovery\" of kube context %q; adopting an old demo is not supported: uninstall it with `helm uninstall qovery --namespace qovery --kube-context %s` before running `qovery demo up`", existingKubeContext, existingKubeContext)
+	}
+	return errors.New("legacy Helm release \"qovery\" exists in namespace \"qovery\"; adopting an old demo is not supported: destroy and recreate the local cluster before running `qovery demo up`")
 }
 
 // ensureLocalCluster creates or starts the local k3d cluster. An existing kube context needs none of it.

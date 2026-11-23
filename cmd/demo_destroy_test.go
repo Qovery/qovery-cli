@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"testing"
@@ -190,7 +191,7 @@ func (f *fakeDemoDestroyLocal) TeardownLoopback(context.Context) error {
 func TestDemoDestroyWithAKubeContextKeepsTheKubeClusterAndQoveryConfiguration(t *testing.T) {
 	local := &fakeDemoDestroyLocal{}
 	output := &bytes.Buffer{}
-	orchestrator := demoDestroyOrchestrator{local: local, out: output}
+	orchestrator := demoDestroyOrchestrator{api: &fakeDemoDestroyAPI{clusterFound: true}, local: local, out: output}
 
 	err := orchestrator.Destroy(context.Background(), demoDestroyConfig{ClusterName: "qls-a", KubeContext: "vcluster_qls-a"})
 
@@ -238,6 +239,7 @@ func TestDemoDestroyWithAKubeContextIsIdempotent(t *testing.T) {
 	assert.Empty(t, api.deletedClusterID)
 	assert.Contains(t, output.String(), "No Qovery Operator release was found")
 	assert.Contains(t, output.String(), "No Qovery cluster with this name exists")
+	assert.NotContains(t, output.String(), "was removed")
 }
 
 func TestDemoDestroyWithAKubeContextKeepsTheQoveryClusterWhenTheUninstallFails(t *testing.T) {
@@ -271,7 +273,7 @@ func TestDemoUninstallOperatorRemovesOnlyOperatorReleases(t *testing.T) {
 	require.Len(t, runner.calls, 2)
 	assert.Equal(t, []string{
 		"helm", "list", "--kube-context", "vcluster_qls-a", "--kubeconfig", "/kube/qls-a.yaml", "--all-namespaces",
-		"--deployed", "--failed", "--pending", "--superseded", "--uninstalling", "--output", "json",
+		"--deployed", "--failed", "--pending", "--superseded", "--uninstalling", "--max", "256", "--offset", "0", "--output", "json",
 	}, runner.calls[0])
 	assert.Equal(t, []string{
 		"helm", "uninstall", "qovery-operator", "--namespace", "qovery",
@@ -285,4 +287,65 @@ func TestDemoDestroyWithAKubeContextOnlyNeedsHelm(t *testing.T) {
 
 	require.NoError(t, local.CheckDestroyDependencies(context.Background()))
 	assert.Equal(t, []string{"helm"}, runner.lookedUp)
+}
+
+func TestDemoDestroyWithAKubeContextRefusesAClusterThatIsNotADemo(t *testing.T) {
+	for _, deleteConfig := range []bool{false, true} {
+		local := &fakeDemoDestroyLocal{}
+		api := &fakeDemoDestroyAPI{findErr: fmt.Errorf("cluster %q in this organization %w", "production", errNotADemoCluster)}
+		orchestrator := demoDestroyOrchestrator{api: api, local: local, out: &bytes.Buffer{}}
+
+		err := orchestrator.Destroy(context.Background(), demoDestroyConfig{
+			OrganizationID:     "organization-id",
+			ClusterName:        "production",
+			DeleteQoveryConfig: deleteConfig,
+			KubeContext:        "production",
+		})
+
+		require.ErrorIs(t, err, errNotADemoCluster)
+		assert.False(t, local.operatorRemoved)
+		assert.Empty(t, api.deletedClusterID)
+	}
+}
+
+func TestDemoDestroyWithAKubeContextDoesNotUninstallWhenTheLookupFails(t *testing.T) {
+	local := &fakeDemoDestroyLocal{}
+	orchestrator := demoDestroyOrchestrator{api: &fakeDemoDestroyAPI{findErr: errors.New("503 Service Unavailable")}, local: local, out: &bytes.Buffer{}}
+
+	err := orchestrator.Destroy(context.Background(), demoDestroyConfig{ClusterName: "qls-a", KubeContext: "vcluster_qls-a"})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "the Qovery Operator was not uninstalled")
+	assert.False(t, local.operatorRemoved)
+}
+
+func TestDemoUninstallOperatorPagesThroughEveryRelease(t *testing.T) {
+	firstPage := make([]demoHelmRelease, demoHelmListPageSize)
+	for i := range firstPage {
+		firstPage[i] = demoHelmRelease{Name: fmt.Sprintf("app-%d", i), Namespace: "apps", Chart: "app-1.0.0"}
+	}
+	firstPageJSON, err := json.Marshal(firstPage)
+	require.NoError(t, err)
+	runner := &recordingDemoRunner{outputs: [][]byte{
+		firstPageJSON,
+		[]byte(`[{"name":"qovery-operator","namespace":"qovery","chart":"qovery-operator-1.2.3"}]`),
+		nil,
+	}}
+	local := newDemoLocalCommands(runner, "", "qls-a", "vcluster_qls-a", "")
+
+	removed, err := local.UninstallOperator(context.Background())
+
+	require.NoError(t, err)
+	assert.True(t, removed)
+	require.Len(t, runner.calls, 3)
+	assert.Equal(t, "0", runner.calls[0][indexOf(runner.calls[0], "--offset")+1])
+	assert.Equal(t, "256", runner.calls[1][indexOf(runner.calls[1], "--offset")+1])
+	assert.Equal(t, []string{"helm", "uninstall", "qovery-operator", "--namespace", "qovery"}, runner.calls[2][:5])
+}
+
+func TestDemoUpLegacyReleaseErrorFitsTheTarget(t *testing.T) {
+	assert.Contains(t, legacyDemoReleaseError("").Error(), "destroy and recreate the local cluster")
+	existing := legacyDemoReleaseError("vcluster_qls-a").Error()
+	assert.Contains(t, existing, "helm uninstall qovery --namespace qovery --kube-context vcluster_qls-a")
+	assert.NotContains(t, existing, "local cluster")
 }

@@ -11,6 +11,20 @@ pub(crate) const DEMO_K3S_IMAGE: &str = "docker.io/rancher/k3s:v1.36.4-k3s1";
 pub(crate) const DEMO_SUBNET: &str = "172.42.0.0/16";
 pub(crate) const DEMO_NODE_IP: &str = "172.42.0.3";
 pub(crate) const DEMO_REGISTRY: &str = "qovery-registry.lan";
+/// `demoHelmListPageSize`: the default of `helm list --max`; `--max 0` returns a server default, not every release.
+const DEMO_HELM_LIST_PAGE_SIZE: usize = 256;
+
+/// `demoHelmRelease`.
+#[derive(Deserialize, Default)]
+struct HelmRelease {
+    #[serde(default, alias = "Name", alias = "NAME")]
+    name: Option<String>,
+    #[serde(default, alias = "Namespace", alias = "NAMESPACE")]
+    namespace: Option<String>,
+    #[serde(default, alias = "Chart", alias = "CHART")]
+    chart: Option<String>,
+}
+
 /// `demoOperatorComponentKey`: also the name of the Operator Helm chart.
 const DEMO_OPERATOR_CHART: &str = "qovery-operator";
 
@@ -215,6 +229,48 @@ impl<R: CommandRunner> LocalCommands<R> {
 
     fn helm_target(&self) -> Vec<String> {
         demo_helm_target(&self.kube_context, &self.kubeconfig)
+    }
+
+    /// `listAllHelmReleases`: pages through `helm list` so a release past the first page is not missed.
+    fn list_all_helm_releases(&mut self, cancel: Cancel) -> Result<Vec<HelmRelease>, DemoError> {
+        let mut all: Vec<HelmRelease> = Vec::new();
+        loop {
+            let mut list_args = args(&["list"]);
+            list_args.extend(self.helm_target());
+            list_args.extend(args(&[
+                "--all-namespaces",
+                "--deployed",
+                "--failed",
+                "--pending",
+                "--superseded",
+                "--uninstalling",
+                "--max",
+                &DEMO_HELM_LIST_PAGE_SIZE.to_string(),
+                "--offset",
+                &all.len().to_string(),
+                "--output",
+                "json",
+            ]));
+            let (output, err) = self.runner.run_quiet(cancel, "helm", &list_args);
+            if let Err(e) = err {
+                return Err(command_failed("helm list", &e));
+            }
+            let Ok(page) = serde_json::from_slice::<Option<Vec<Option<HelmRelease>>>>(&output)
+            else {
+                return Err(DemoError::new("helm returned an invalid release list"));
+            };
+            // Go decodes a JSON null element into a zero-valued release
+            let page: Vec<HelmRelease> = page
+                .unwrap_or_default()
+                .into_iter()
+                .map(Option::unwrap_or_default)
+                .collect();
+            let count = page.len();
+            all.extend(page);
+            if count < DEMO_HELM_LIST_PAGE_SIZE {
+                return Ok(all);
+            }
+        }
     }
 
     pub(crate) fn kubectl_target(&self) -> Vec<String> {
@@ -1032,37 +1088,10 @@ impl<R: CommandRunner> DemoDestroyLocal for LocalCommands<R> {
     /// `UninstallOperator`: removes every release of the qovery-operator chart from the kube context, and
     /// reports false when there was none, so a second run succeeds.
     fn uninstall_operator(&mut self, cancel: Cancel) -> Result<bool, DemoError> {
-        let mut list_args = args(&["list"]);
-        list_args.extend(self.helm_target());
-        list_args.extend(args(&[
-            "--all-namespaces",
-            "--deployed",
-            "--failed",
-            "--pending",
-            "--superseded",
-            "--uninstalling",
-            "--output",
-            "json",
-        ]));
-        let (output, err) = self.runner.run_quiet(cancel, "helm", &list_args);
-        if let Err(e) = err {
-            return Err(command_failed("helm list", &e));
-        }
-        #[derive(Deserialize)]
-        struct Release {
-            #[serde(default, alias = "Name", alias = "NAME")]
-            name: Option<String>,
-            #[serde(default, alias = "Namespace", alias = "NAMESPACE")]
-            namespace: Option<String>,
-            #[serde(default, alias = "Chart", alias = "CHART")]
-            chart: Option<String>,
-        }
-        let Ok(releases) = serde_json::from_slice::<Option<Vec<Option<Release>>>>(&output) else {
-            return Err(DemoError::new("helm returned an invalid release list"));
-        };
+        let releases = self.list_all_helm_releases(cancel)?;
         let operator_chart_prefix = format!("{DEMO_OPERATOR_CHART}-");
         let mut removed = false;
-        for release in releases.unwrap_or_default().into_iter().flatten() {
+        for release in releases {
             if !release
                 .chart
                 .as_deref()
@@ -1841,6 +1870,10 @@ pub(crate) mod tests {
                 "--pending",
                 "--superseded",
                 "--uninstalling",
+                "--max",
+                "256",
+                "--offset",
+                "0",
                 "--output",
                 "json"
             ]),
@@ -1870,5 +1903,44 @@ pub(crate) mod tests {
         let mut l = existing(RecordingRunner::with_outputs(vec![Some("[]")]));
         assert!(!l.uninstall_operator(Cancel::new()).unwrap());
         assert_eq!(1, l.runner.calls.len());
+    }
+
+    #[test]
+    fn uninstall_operator_pages_through_every_release() {
+        let first_page: &'static str = Box::leak(
+            format!(
+                "[{}]",
+                (0..256)
+                    .map(|i| format!(
+                        r#"{{"name":"app-{i}","namespace":"apps","chart":"app-1.0.0"}}"#
+                    ))
+                    .collect::<Vec<_>>()
+                    .join(",")
+            )
+            .into_boxed_str(),
+        );
+        let mut l = existing(RecordingRunner::with_outputs(vec![
+            Some(first_page),
+            Some(
+                r#"[{"name":"qovery-operator","namespace":"qovery","chart":"qovery-operator-1.2.3"}]"#,
+            ),
+        ]));
+        assert!(l.uninstall_operator(Cancel::new()).unwrap());
+        assert_eq!(3, l.runner.calls.len());
+        let offset = |call: &Vec<String>| {
+            call[call.iter().position(|a| a == "--offset").unwrap() + 1].clone()
+        };
+        assert_eq!("0", offset(&l.runner.calls[0]));
+        assert_eq!("256", offset(&l.runner.calls[1]));
+        assert_eq!(
+            strs(&[
+                "helm",
+                "uninstall",
+                "qovery-operator",
+                "--namespace",
+                "qovery"
+            ]),
+            l.runner.calls[2][..5]
+        );
     }
 }

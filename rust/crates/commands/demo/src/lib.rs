@@ -31,7 +31,7 @@ const DEMO_IMPLEMENTATION: &str = "engine_v2";
 pub fn command() -> Command {
     Command::new("demo")
         .short("Try Qovery on your local machine")
-        .long("Try Qovery on your local machine.\n\nqovery demo up creates a local k3d cluster, installs the Qovery Operator on it and lets Qovery\ndeploy the self-managed platform catalog with Engine v2.")
+        .long("Try Qovery on your local machine.\n\nqovery demo up creates a local k3d cluster, installs the Qovery Operator on it and lets Qovery\ndeploy the self-managed platform catalog with Engine v2. With --kube-context, it installs the\nQovery Operator into an existing kube context instead, without prompting.")
         .run(run_demo)
         .subcommand(destroy())
         .subcommand(up())
@@ -39,7 +39,7 @@ pub fn command() -> Command {
 
 fn up() -> Command {
     Command::new("up")
-        .short("Create a local k3d cluster running the Qovery Operator and Engine v2")
+        .short("Create a local k3d cluster, or use an existing kube context, running the Qovery Operator and Engine v2")
         .args(ArgsRule::NoArgs)
         .flag(
             Flag::string("cluster-name", "The name of the local demo cluster")
@@ -68,7 +68,7 @@ fn up() -> Command {
 
 fn destroy() -> Command {
     Command::new("destroy")
-        .short("Remove the local demo cluster")
+        .short("Remove the local demo cluster, or the Qovery Operator of an existing kube context")
         .args(ArgsRule::NoArgs)
         .flag(
             Flag::string("cluster-name", "The name of the local demo cluster")
@@ -595,7 +595,7 @@ fn run_demo_destroy(cancel: Cancel, ctx: &Ctx) -> Result<(), DemoError> {
 
     let mut api = None;
     let mut organization_id = String::new();
-    if delete_qovery_config {
+    if delete_qovery_config || !kube_context.is_empty() {
         let (token_type, token) = qovery_core::auth::get_access_token(false).map_err(|e| {
             DemoError::new(format!(
                 "authentication failed; run `qovery auth` first: {e}"
