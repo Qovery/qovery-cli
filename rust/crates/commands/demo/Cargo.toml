@@ -18,3 +18,4 @@ reqwest.workspace = true
 url.workspace = true
 uuid = { workspace = true, features = ["v7"] }
 libc = "0.2"
+regex.workspace = true

@@ -11,7 +11,7 @@ use std::collections::BTreeMap;
 pub(crate) const DEMO_PLATFORM_TEMPLATE_KEY: &str = "qovery-demo-v0";
 const DEMO_OPERATOR_COMPONENT_KEY: &str = "qovery-operator";
 const DEMO_CPU_ARCHITECTURES_FIELD: &str = "cpuArchitectures";
-const DEMO_REDACTED_VALUE: &str = "<redacted>";
+pub(crate) const DEMO_REDACTED_VALUE: &str = "<redacted>";
 
 /// `demoCredential`.
 #[derive(Debug, Clone, Default, PartialEq)]

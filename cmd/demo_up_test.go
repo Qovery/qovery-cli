@@ -38,7 +38,7 @@ func TestDemoUpFreshCreationOrder(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, []string{
-		"dependencies", "credentials", "find-cluster", "k3d", "loopback",
+		"dependencies", "credentials", "find-cluster", "k3d", "node-disk-pressure", "loopback",
 		"legacy-release", "create-cluster", "operator-config", "bootstrap", "attach", "install-operator", "operator-status",
 		"cluster-status", "deploy", "cluster-status", "validate-workloads",
 	}, events)
@@ -952,6 +952,7 @@ type fakeDemoAPI struct {
 	deployCalls             int
 	deployStatus            string
 	operatorCPUArchitecture string
+	configureErr            error
 }
 
 func (f *fakeDemoAPI) event(value string) {
@@ -979,7 +980,7 @@ func (f *fakeDemoAPI) CreateCluster(context.Context, string, string, demoCredent
 func (f *fakeDemoAPI) ConfigureOperator(_ context.Context, _ string, _ string, cpuArchitecture string) error {
 	f.event("operator-config")
 	f.operatorCPUArchitecture = cpuArchitecture
-	return nil
+	return f.configureErr
 }
 
 func (f *fakeDemoAPI) GetOperatorBootstrap(context.Context, string, string) (demoBootstrap, error) {
@@ -1035,6 +1036,16 @@ type fakeDemoLocal struct {
 	k3dErr        error
 	legacyRelease bool
 	installErr    error
+	workloadsErr  error
+	onDiagnostics func()
+	diskPressure  []fakeDemoNodeRead
+	readTimeouts  []time.Duration
+}
+
+type fakeDemoNodeRead struct {
+	node      string
+	createdAt time.Time
+	err       error
 }
 
 func (f *fakeDemoLocal) event(value string) {
@@ -1070,7 +1081,27 @@ func (f *fakeDemoLocal) InstallOperator(context.Context, demoBootstrap) error {
 
 func (f *fakeDemoLocal) ValidateWorkloads(context.Context, string) error {
 	f.event("validate-workloads")
-	return nil
+	return f.workloadsErr
+}
+
+func (f *fakeDemoLocal) NodeDiskPressure(_ context.Context, timeout time.Duration) (string, time.Time, error) {
+	f.event("node-disk-pressure")
+	f.readTimeouts = append(f.readTimeouts, timeout)
+	if len(f.diskPressure) == 0 {
+		return "", time.Time{}, nil
+	}
+	read := f.diskPressure[0]
+	if len(f.diskPressure) > 1 {
+		f.diskPressure = f.diskPressure[1:]
+	}
+	return read.node, read.createdAt, read.err
+}
+
+func (f *fakeDemoLocal) CollectDiagnostics(_ context.Context, namespace string) {
+	f.event("diagnostics:" + namespace)
+	if f.onDiagnostics != nil {
+		f.onDiagnostics()
+	}
 }
 
 type fakeDemoClock struct {
@@ -1128,6 +1159,10 @@ func (r *inspectingDemoRunner) RunQuiet(ctx context.Context, name string, args .
 	return r.Run(ctx, name, args...)
 }
 
+func (r *inspectingDemoRunner) RunSilent(ctx context.Context, name string, args ...string) ([]byte, error) {
+	return r.Run(ctx, name, args...)
+}
+
 func (r *inspectingDemoRunner) RunUnlogged(ctx context.Context, name string, args ...string) ([]byte, error) {
 	return r.Run(ctx, name, args...)
 }
@@ -1157,6 +1192,10 @@ type recordingDemoRunner struct {
 func (r *recordingDemoRunner) LookPath(string) error { return nil }
 
 func (r *recordingDemoRunner) RunQuiet(ctx context.Context, name string, args ...string) ([]byte, error) {
+	return r.Run(ctx, name, args...)
+}
+
+func (r *recordingDemoRunner) RunSilent(ctx context.Context, name string, args ...string) ([]byte, error) {
 	return r.Run(ctx, name, args...)
 }
 

@@ -250,6 +250,11 @@ case("up umbrella chart refused", RERUN, env=env(LOCAL_RERUN),
 UP_FAIL_OUT = UP_FAIL + ["stdout"]
 case("up helm install fails", RERUN, env=env(LOCAL_RERUN, {"FAKE_HELM_UPGRADE": "Error: timed out", "FAKE_HELM_UPGRADE_EXIT": "1"}),
      fixtures=api_ok(), ignore=UP_FAIL_OUT)
+# The node read finds disk pressure, then none 10s later: both CLIs wait once and go on.
+NODE_LINE = "k3d-my-demo-server-0\t2026-01-01T00:00:00Z\t%s\t%s"
+case("up disk pressure clears", RERUN, env=env(LOCAL_RERUN, {
+    "FAKE_KUBECTL_1": NODE_LINE % ("node.kubernetes.io/disk-pressure", "True"), "FAKE_KUBECTL_2": NODE_LINE % ("", "False")}),
+    fixtures=api_ok(), ignore=["stdout"], timeout=60)
 case("up operator status error", RERUN, env=env(LOCAL_RERUN),
      fixtures=api_ok(operator={"method": "GET", "path": "/organization/org-1/cluster/demo-1/operator/status", "status": 500, "body": {}}),
      ignore=UP_FAIL_OUT)

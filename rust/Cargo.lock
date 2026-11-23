@@ -2668,6 +2668,7 @@ dependencies = [
  "qovery-cobra",
  "qovery-core",
  "qovery-log",
+ "regex",
  "reqwest",
  "serde",
  "serde_json",

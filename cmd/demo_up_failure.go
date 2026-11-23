@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 )
 
 const (
@@ -19,6 +20,7 @@ const (
 	demoErrorK3dCluster               = "K3D_CLUSTER_FAILED"
 	demoErrorSubnetInUse              = "DEMO_SUBNET_IN_USE"
 	demoErrorLoopback                 = "LOOPBACK_SETUP_FAILED"
+	demoErrorDockerDiskPressure       = "DOCKER_DISK_PRESSURE"
 	demoErrorHelmList                 = "HELM_LIST_FAILED"
 	demoErrorLegacyRelease            = "LEGACY_RELEASE_EXISTS"
 	demoErrorOperatorInstall          = "OPERATOR_INSTALL_FAILED"
@@ -52,6 +54,14 @@ func demoFailureDetails(err error) (string, string) {
 		return failure.code, failure.safeMessage
 	}
 	return demoUnknownErrorCode, demoSafeErrorMessage
+}
+
+func demoDockerDiskPressureError(nodeName string, waited time.Duration) error {
+	return newDemoFailure(
+		demoErrorDockerDiskPressure,
+		"Docker is running out of disk space: Kubernetes cannot start new pods.",
+		fmt.Errorf("node %s of the local cluster is still under disk pressure (%s) after %s: Docker is running out of disk space. Free space with `docker builder prune -f` and `docker image prune -a -f`, or increase the disk size in Docker Desktop (Settings > Resources), then run `qovery demo up` again", nodeName, demoDiskPressureTaint, waited),
+	)
 }
 
 func demoSubnetInUseError(networkName string) error {

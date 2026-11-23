@@ -11,6 +11,8 @@ use std::time::{Duration, Instant};
 
 /// `demoCommandInterruptGrace`: leaves time for helm --atomic to roll back after an interrupt.
 pub(crate) const DEMO_COMMAND_INTERRUPT_GRACE: Duration = Duration::from_secs(120);
+/// `demoDiagnosticKillGrace`: a diagnostic command past its deadline is killed this long after its interrupt.
+pub(crate) const DEMO_DIAGNOSTIC_KILL_GRACE: Duration = Duration::from_secs(2);
 
 // ---------------------------------------------------------------------------------------------------------
 // Cancellation
@@ -143,6 +145,15 @@ pub(crate) trait CommandRunner {
     fn run_quiet(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult;
     /// Keeps the output out of the debug log, which is uploaded on failure.
     fn run_unlogged(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult;
+    /// Logs only the command line and never writes to the terminal: the caller logs the output it keeps. The
+    /// command is interrupted after `timeout` (Go: a context with that deadline) and killed after a short grace.
+    fn run_silent(
+        &mut self,
+        cancel: Cancel,
+        timeout: Duration,
+        name: &str,
+        args: &[String],
+    ) -> RunResult;
 }
 
 /// `demoExecRunner`.
@@ -160,13 +171,22 @@ impl CommandRunner for ExecRunner {
         look_path(name).map(|_| ())
     }
     fn run(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult {
-        self.execute(cancel, true, true, name, args)
+        self.execute(cancel, true, true, None, name, args)
     }
     fn run_quiet(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult {
-        self.execute(cancel, false, true, name, args)
+        self.execute(cancel, false, true, None, name, args)
     }
     fn run_unlogged(&mut self, cancel: Cancel, name: &str, args: &[String]) -> RunResult {
-        self.execute(cancel, false, false, name, args)
+        self.execute(cancel, false, false, None, name, args)
+    }
+    fn run_silent(
+        &mut self,
+        cancel: Cancel,
+        timeout: Duration,
+        name: &str,
+        args: &[String],
+    ) -> RunResult {
+        self.execute(cancel, false, false, Some(timeout), name, args)
     }
 }
 
@@ -176,6 +196,7 @@ impl ExecRunner {
         cancel: Cancel,
         visible: bool,
         log_output: bool,
+        silent: Option<Duration>,
         name: &str,
         args: &[String],
     ) -> RunResult {
@@ -185,8 +206,8 @@ impl ExecRunner {
         if let Some(log) = &self.log {
             write_to(log, &format!("$ {command_line}\n"));
         }
-        let show_command = visible || self.debug;
-        let stream_output = visible || (self.debug && log_output);
+        let show_command = silent.is_none() && (visible || self.debug);
+        let stream_output = silent.is_none() && (visible || (self.debug && log_output));
         if show_command && let Some(out) = &self.out {
             write_to(out, &format!("$ {command_line}\n"));
         }
@@ -198,9 +219,20 @@ impl ExecRunner {
         if stream_output && let Some(out) = &self.out {
             writers.push(out.clone());
         }
-        let (output, result) = run_command(cancel, name, args, &writers);
+        let (output, result) = match silent {
+            Some(timeout) => run_command_with_wait_delay(
+                cancel,
+                Some(Instant::now() + timeout),
+                name,
+                args,
+                &writers,
+                DEMO_DIAGNOSTIC_KILL_GRACE,
+            ),
+            None => run_command(cancel, name, args, &writers),
+        };
         if result.is_err()
             && !stream_output
+            && silent.is_none()
             && let Some(out) = &self.out
         {
             if !show_command {
@@ -256,11 +288,20 @@ fn interrupt(child: &mut std::process::Child) {
 /// `exec.CommandContext(ctx, name, args...)` with `Cancel` sending SIGINT and `WaitDelay` set to the interrupt
 /// grace; stdout and stderr go, combined, to the returned buffer and to `writers`.
 fn run_command(cancel: Cancel, name: &str, args: &[String], writers: &[Sink]) -> RunResult {
-    run_command_with_wait_delay(cancel, name, args, writers, DEMO_COMMAND_INTERRUPT_GRACE)
+    run_command_with_wait_delay(
+        cancel,
+        None,
+        name,
+        args,
+        writers,
+        DEMO_COMMAND_INTERRUPT_GRACE,
+    )
 }
 
+/// `run_command` whose process is also interrupted at `deadline`.
 fn run_command_with_wait_delay(
     cancel: Cancel,
+    deadline: Option<Instant>,
     name: &str,
     args: &[String],
     writers: &[Sink],
@@ -320,7 +361,7 @@ fn run_command_with_wait_delay(
     });
 
     // Returning drops `rx`: what an orphaned grandchild may still write past `WaitDelay` is discarded.
-    supervise(cancel, &mut child, &rx, writers, wait_delay)
+    supervise(cancel, deadline, &mut child, &rx, writers, wait_delay)
 }
 
 /// `exec.ErrWaitDelay`.
@@ -338,6 +379,7 @@ const POLL_INTERVAL: Duration = Duration::from_millis(20);
 ///   `ErrWaitDelay` when the pipe had to be abandoned.
 fn supervise(
     cancel: Cancel,
+    deadline: Option<Instant>,
     child: &mut std::process::Child,
     rx: &mpsc::Receiver<Vec<u8>>,
     writers: &[Sink],
@@ -375,7 +417,8 @@ fn supervise(
                 Err(e) => return (output, Err(ExecError::new(e.to_string()))),
             }
         }
-        if exited.is_none() && !interrupted && cancel.is_canceled() {
+        let done = cancel.is_canceled() || deadline.is_some_and(|d| Instant::now() >= d);
+        if exited.is_none() && !interrupted && done {
             interrupt(child);
             interrupted = true;
             wait_delay_start.get_or_insert_with(Instant::now);
@@ -565,6 +608,7 @@ pub(crate) mod tests {
     fn run_command_kills_commands_still_running_after_wait_delay() {
         let (_, err) = run_command_with_wait_delay(
             cancel_soon(),
+            None,
             "/bin/sh",
             &sh("trap '' INT; sleep 5"),
             &[],
@@ -579,6 +623,7 @@ pub(crate) mod tests {
         let started = Instant::now();
         let (output, err) = run_command_with_wait_delay(
             Cancel::new(),
+            None,
             "/bin/sh",
             &sh("echo done; sleep 5 & exit 0"),
             &[],
@@ -594,6 +639,7 @@ pub(crate) mod tests {
     fn run_command_prefers_the_exit_error_over_wait_delay() {
         let (_, err) = run_command_with_wait_delay(
             Cancel::new(),
+            None,
             "/bin/sh",
             &sh("sleep 5 & exit 3"),
             &[],
@@ -601,6 +647,42 @@ pub(crate) mod tests {
         );
 
         assert_eq!(Some(3), err.unwrap_err().exit_code);
+    }
+
+    #[test]
+    fn exec_runner_run_silent_keeps_the_terminal_and_the_log_clean() {
+        let (terminal, out) = buffer();
+        let (log, log_sink) = buffer();
+        let mut runner = ExecRunner {
+            out: Some(out),
+            log: Some(log_sink),
+            debug: true,
+        };
+
+        let (output, err) = runner.run_silent(
+            Cancel::new(),
+            Duration::from_secs(5),
+            "/bin/sh",
+            &sh("printf out; printf err >&2; exit 7"),
+        );
+
+        assert_eq!(Some(7), err.unwrap_err().exit_code);
+        assert_eq!("outerr", String::from_utf8_lossy(&output));
+        assert_eq!("", text(&terminal));
+        assert_eq!(
+            "$ /bin/sh -c printf out; printf err >&2; exit 7\n",
+            text(&log)
+        );
+
+        let started_at = Instant::now();
+        let (_, err) = runner.run_silent(
+            Cancel::new(),
+            Duration::from_millis(100),
+            "/bin/sh",
+            &sh("trap '' INT; sleep 10"),
+        );
+        assert!(err.is_err());
+        assert!(started_at.elapsed() < DEMO_DIAGNOSTIC_KILL_GRACE + Duration::from_secs(2));
     }
 
     #[test]

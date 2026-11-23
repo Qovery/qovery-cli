@@ -17,6 +17,7 @@ pub(crate) const ERROR_CLUSTER_NAME_NOT_A_DEMO: &str = "CLUSTER_NAME_NOT_A_DEMO"
 pub(crate) const ERROR_K3D_CLUSTER: &str = "K3D_CLUSTER_FAILED";
 pub(crate) const ERROR_SUBNET_IN_USE: &str = "DEMO_SUBNET_IN_USE";
 pub(crate) const ERROR_LOOPBACK: &str = "LOOPBACK_SETUP_FAILED";
+pub(crate) const ERROR_DOCKER_DISK_PRESSURE: &str = "DOCKER_DISK_PRESSURE";
 pub(crate) const ERROR_HELM_LIST: &str = "HELM_LIST_FAILED";
 pub(crate) const ERROR_LEGACY_RELEASE: &str = "LEGACY_RELEASE_EXISTS";
 pub(crate) const ERROR_OPERATOR_INSTALL: &str = "OPERATOR_INSTALL_FAILED";
@@ -113,6 +114,22 @@ pub(crate) fn demo_failure_details(err: &DemoError) -> (String, String) {
             DEMO_SAFE_ERROR_MESSAGE.to_string(),
         ),
     }
+}
+
+/// `demoDockerDiskPressureError(nodeName, waited)`.
+pub(crate) fn demo_docker_disk_pressure_error(
+    node_name: &str,
+    waited: std::time::Duration,
+) -> DemoError {
+    new_demo_failure(
+        ERROR_DOCKER_DISK_PRESSURE,
+        "Docker is running out of disk space: Kubernetes cannot start new pods.",
+        DemoError::new(format!(
+            "node {node_name} of the local cluster is still under disk pressure ({}) after {}: Docker is running out of disk space. Free space with `docker builder prune -f` and `docker image prune -a -f`, or increase the disk size in Docker Desktop (Settings > Resources), then run `qovery demo up` again",
+            crate::diagnostics::DEMO_DISK_PRESSURE_TAINT,
+            qovery_log::gofmt::duration_string(waited)
+        )),
+    )
 }
 
 /// `demoSubnetInUseError(networkName)`.
