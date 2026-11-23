@@ -17,8 +17,16 @@ pub(crate) const DEMO_DIAGNOSTIC_MAX_BYTES: usize = 32 * 1024;
 pub(crate) const DEMO_DISK_PRESSURE_TAINT: &str = "node.kubernetes.io/disk-pressure";
 pub(crate) const DEMO_OPERATOR_NAMESPACE: &str = "qovery";
 
-/// `demoSecretQuoted` (Go's `\s` is `[\t\n\f\r ]`).
-const SECRET_QUOTED: &str = r#"(\\")(?:[^"\\]|\\[^"])*\\"|(")(?:[^"\\]|\\.)*"|(')(?:[^'\\]|\\.)*'"#;
+/// `demoSecretQuoted`.
+const SECRET_QUOTED: &str = concat!(
+    // In a JSON string containing JSON, an inner escape starts with two backslashes.
+    // Match it as a unit so an escaped inner quote does not end the value.
+    r#"(?P<jsonOpen>\\")(?:[^"\\\r\n]|\\\\(?:\\["\\]|[^"\\\r\n])|\\[^"\\\r\n])*(?P<jsonClose>\\")"#,
+    r#"|(?P<doubleOpen>")(?:[^"\\]|\\.)*(?P<doubleClose>")"#,
+    r"|(?P<singleOpen>')(?:[^'\\]|\\.)*(?P<singleClose>')",
+    // A byte limit can leave a quote unclosed. Mask the rest of that line.
+    r#"|(?P<unclosed>\\"|["'])[^\r\n]*"#,
+);
 /// `demoSecretWords`.
 const SECRET_WORDS: &str = r"token|secret|password|passwd|jwt|credentials?|api[_-]?key|access[_-]?key|secret[_-]?key|private[_-]?key";
 const WS: &str = r"[\t\n\f\r ]";
@@ -26,7 +34,9 @@ const WS: &str = r"[\t\n\f\r ]";
 /// `demoSecretPatterns`.
 static SECRET_PATTERNS: LazyLock<Vec<(Regex, String)>> = LazyLock::new(|| {
     let name = format!(r#"[A-Za-z0-9_.-]*(?:{SECRET_WORDS})(?:\\?["'])?"#);
-    let quoted = format!("${{1}}${{2}}${{3}}${{4}}{DEMO_REDACTED_VALUE}${{2}}${{3}}${{4}}");
+    let quoted = format!(
+        "${{1}}${{jsonOpen}}${{doubleOpen}}${{singleOpen}}${{unclosed}}{DEMO_REDACTED_VALUE}${{jsonClose}}${{doubleClose}}${{singleClose}}"
+    );
     let re = |pattern: String| Regex::new(&pattern).unwrap();
     vec![
         (
@@ -34,7 +44,7 @@ static SECRET_PATTERNS: LazyLock<Vec<(Regex, String)>> = LazyLock::new(|| {
             DEMO_REDACTED_VALUE.to_string(),
         ),
         (
-            re(r"([A-Za-z][A-Za-z0-9+.-]*://[^/\t\n\f\r :@]+:)[^/\t\n\f\r @]+@".into()),
+            re(r#"([A-Za-z][A-Za-z0-9+.-]*://)[^/?#@\t\n\f\r "<>]+@"#.into()),
             format!("${{1}}{DEMO_REDACTED_VALUE}@"),
         ),
         (
@@ -58,10 +68,6 @@ static SECRET_PATTERNS: LazyLock<Vec<(Regex, String)>> = LazyLock::new(|| {
                 r#"(?i)({name}{WS}*[:=]{WS}*)(?:{SECRET_QUOTED}|[^\t\n\f\r "',;}}]+)"#
             )),
             quoted,
-        ),
-        (
-            re(format!(r#"(?im)({name}{WS}*[:=]{WS}*\\?["'])[^"'\r\n]*$"#)),
-            format!("${{1}}{DEMO_REDACTED_VALUE}"),
         ),
     ]
 });
@@ -694,11 +700,31 @@ panic: password=<redacted>
             ),
             (
                 "pulling https://robot:s3cret@registry.example/v2/ failed".into(),
-                "pulling https://robot:<redacted>@registry.example/v2/ failed",
+                "pulling https://<redacted>@registry.example/v2/ failed",
+            ),
+            (
+                "redis://:opaque-password@cache.example:6379/0".into(),
+                "redis://<redacted>@cache.example:6379/0",
+            ),
+            (
+                "https://opaque-token@api.example/path".into(),
+                "https://<redacted>@api.example/path",
+            ),
+            (
+                "https://api.example/path/user@example".into(),
+                "https://api.example/path/user@example",
             ),
             (
                 "kubectl --token abc get pods".into(),
                 "kubectl --token <redacted> get pods",
+            ),
+            (
+                "kubectl --token \"opaque-token".into(),
+                "kubectl --token \"<redacted>",
+            ),
+            (
+                "helm --password='opaque-password\r\nnext entry".into(),
+                "helm --password='<redacted>\r\nnext entry",
             ),
             (
                 r#"helm --password "a b" --namespace x"#.into(),
@@ -714,11 +740,23 @@ panic: password=<redacted>
                 r#"{\"token\":\"<redacted>\",\"level\":\"info\"}"#,
             ),
             (
+                r#"{"message":"{\"password\":\"abc\\\"opaque-suffix\"}","level":"info"}"#.into(),
+                r#"{"message":"{\"password\":\"<redacted>\"}","level":"info"}"#,
+            ),
+            (
+                r#"{"message":"{\"password\":\"abc\\\\\"}","level":"info"}"#.into(),
+                r#"{"message":"{\"password\":\"<redacted>\"}","level":"info"}"#,
+            ),
+            (
                 r#"password="abc\"SECRET" user=admin"#.into(),
                 r#"password="<redacted>" user=admin"#,
             ),
             (r"password=abc\def next".into(), "password=<redacted> next"),
             (r#"token="abc def"#.into(), r#"token="<redacted>"#),
+            (
+                r#"password="abc'opaque-suffix"#.into(),
+                r#"password="<redacted>"#,
+            ),
             (
                 r#"secretToken: "my pass word" next"#.into(),
                 r#"secretToken: "<redacted>" next"#,

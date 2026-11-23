@@ -22,10 +22,16 @@ const (
 )
 
 const (
-	demoSecretQuoted      = `(\\")(?:[^"\\]|\\[^"])*\\"|(")(?:[^"\\]|\\.)*"|(')(?:[^'\\]|\\.)*'`
+	// In a JSON string containing JSON, an inner escape starts with two backslashes.
+	// Match it as a unit so an escaped inner quote does not end the value.
+	demoSecretQuoted = `(?P<jsonOpen>\\")(?:[^"\\\r\n]|\\\\(?:\\["\\]|[^"\\\r\n])|\\[^"\\\r\n])*(?P<jsonClose>\\")` +
+		`|(?P<doubleOpen>")(?:[^"\\]|\\.)*(?P<doubleClose>")` +
+		`|(?P<singleOpen>')(?:[^'\\]|\\.)*(?P<singleClose>')` +
+		// A byte limit can leave a quote unclosed. Mask the rest of that line.
+		`|(?P<unclosed>\\"|["'])[^\r\n]*`
 	demoSecretWords       = `token|secret|password|passwd|jwt|credentials?|api[_-]?key|access[_-]?key|secret[_-]?key|private[_-]?key`
 	demoSecretName        = `[A-Za-z0-9_.-]*(?:` + demoSecretWords + `)(?:\\?["'])?`
-	demoQuotedReplacement = "${1}${2}${3}${4}" + demoRedactedValue + "${2}${3}${4}"
+	demoQuotedReplacement = "${1}${jsonOpen}${doubleOpen}${singleOpen}${unclosed}" + demoRedactedValue + "${jsonClose}${doubleClose}${singleClose}"
 )
 
 var demoSecretPatterns = []struct {
@@ -33,12 +39,11 @@ var demoSecretPatterns = []struct {
 	replacement string
 }{
 	{regexp.MustCompile(`eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*`), demoRedactedValue},
-	{regexp.MustCompile(`([A-Za-z][A-Za-z0-9+.-]*://[^/\s:@]+:)[^/\s@]+@`), "${1}" + demoRedactedValue + "@"},
+	{regexp.MustCompile(`([A-Za-z][A-Za-z0-9+.-]*://)[^/?#@\s"<>]+@`), "${1}" + demoRedactedValue + "@"},
 	{regexp.MustCompile(`(?i)((?:authorization|cookie|set-cookie|(?:x-)?api-key)(?:\\?["'])?\s*:\s*)(?:` + demoSecretQuoted + `|[^\r\n]+)`), demoQuotedReplacement},
 	{regexp.MustCompile(`(?i)(bearer\s+)[A-Za-z0-9._~+/=-]+`), "${1}" + demoRedactedValue},
 	{regexp.MustCompile(`(?i)(--[A-Za-z0-9-]*(?:` + demoSecretWords + `)(?:=|\s+))(?:` + demoSecretQuoted + `|[^\s"']+)`), demoQuotedReplacement},
 	{regexp.MustCompile(`(?i)(` + demoSecretName + `\s*[:=]\s*)(?:` + demoSecretQuoted + `|[^\s"',;}]+)`), demoQuotedReplacement},
-	{regexp.MustCompile(`(?im)(` + demoSecretName + `\s*[:=]\s*\\?["'])[^"'\r\n]*$`), "${1}" + demoRedactedValue},
 }
 
 func redactDemoDiagnostic(text string) string {
