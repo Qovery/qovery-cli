@@ -253,7 +253,7 @@ func (o *demoOrchestrator) Up(ctx context.Context, cfg demoConfig) error {
 
 func legacyDemoReleaseError(existingKubeContext string) error {
 	if existingKubeContext != "" {
-		return fmt.Errorf("legacy Helm release \"qovery\" exists in namespace \"qovery\" of kube context %q; adopting an old demo is not supported: uninstall it with `helm uninstall qovery --namespace qovery --kube-context %s` before running `qovery demo up`", existingKubeContext, existingKubeContext)
+		return fmt.Errorf("legacy Helm release \"qovery\" exists in namespace \"qovery\" of kube context %q; adopting an old demo is not supported: uninstall it with `helm uninstall qovery --namespace qovery --kube-context %s` before running `qovery demo up`", existingKubeContext, demoShellQuote(existingKubeContext))
 	}
 	return errors.New("legacy Helm release \"qovery\" exists in namespace \"qovery\"; adopting an old demo is not supported: destroy and recreate the local cluster before running `qovery demo up`")
 }

@@ -348,4 +348,5 @@ func TestDemoUpLegacyReleaseErrorFitsTheTarget(t *testing.T) {
 	existing := legacyDemoReleaseError("vcluster_qls-a").Error()
 	assert.Contains(t, existing, "helm uninstall qovery --namespace qovery --kube-context vcluster_qls-a")
 	assert.NotContains(t, existing, "local cluster")
+	assert.Contains(t, legacyDemoReleaseError("my ctx").Error(), "--kube-context 'my ctx'`")
 }

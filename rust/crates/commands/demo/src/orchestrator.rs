@@ -131,8 +131,9 @@ pub(crate) fn operator_status_ready(status: &OperatorStatus, now: DateTime<Utc>)
 pub(crate) fn legacy_demo_release_error(existing_kube_context: &str) -> DemoError {
     if !existing_kube_context.is_empty() {
         return DemoError::new(format!(
-            "legacy Helm release \"qovery\" exists in namespace \"qovery\" of kube context {}; adopting an old demo is not supported: uninstall it with `helm uninstall qovery --namespace qovery --kube-context {existing_kube_context}` before running `qovery demo up`",
-            quote(existing_kube_context)
+            "legacy Helm release \"qovery\" exists in namespace \"qovery\" of kube context {}; adopting an old demo is not supported: uninstall it with `helm uninstall qovery --namespace qovery --kube-context {}` before running `qovery demo up`",
+            quote(existing_kube_context),
+            demo_shell_quote(existing_kube_context)
         ));
     }
     DemoError::new(
@@ -2446,6 +2447,11 @@ mod tests {
                 .contains("helm uninstall qovery --namespace qovery --kube-context vcluster_qls-a")
         );
         assert!(!existing.contains("local cluster"));
+        assert!(
+            legacy_demo_release_error("my ctx")
+                .to_string()
+                .contains("--kube-context 'my ctx'`")
+        );
     }
 
     #[test]
