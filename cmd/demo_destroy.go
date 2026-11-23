@@ -29,7 +29,7 @@ var (
 
 var demoDestroyCmd = &cobra.Command{
 	Use:   "destroy",
-	Short: "Remove the local demo cluster, or the Qovery Operator of an existing kube context",
+	Short: "Remove the local demo cluster",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Capture(cmd)
@@ -98,6 +98,10 @@ func init() {
 	demoDestroyCmd.Flags().StringVar(&demoDestroyKubeContext, "kube-context", "", "Uninstall the Qovery Operator from this existing kube context instead of deleting a local k3d cluster; the kube cluster is kept")
 	demoDestroyCmd.Flags().StringVar(&demoDestroyKubeconfig, "kubeconfig", "", "The kubeconfig file holding --kube-context (default: the kubectl and helm default)")
 	demoDestroyCmd.Flags().StringVar(&demoDestroyOrganizationID, "organization-id", "", "The organization ID (default: the current context organization)")
+	// The existing kube context mode is for the Qovery team (qovery-local-stack), so its flags stay out of the help.
+	for _, name := range []string{"kube-context", "kubeconfig", "organization-id"} {
+		_ = demoDestroyCmd.Flags().MarkHidden(name)
+	}
 	demoCmd.AddCommand(demoDestroyCmd)
 }
 

@@ -68,7 +68,7 @@ type demoAttemptTelemetry struct {
 
 var demoUpCmd = &cobra.Command{
 	Use:   "up",
-	Short: "Create a local k3d cluster, or use an existing kube context, running the Qovery Operator and Engine v2",
+	Short: "Create a local k3d cluster running the Qovery Operator and Engine v2",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		attempt := newDemoAttempt()
@@ -242,6 +242,10 @@ func init() {
 	demoUpCmd.Flags().StringVar(&demoKubeconfig, "kubeconfig", "", "The kubeconfig file holding --kube-context (default: the kubectl and helm default)")
 	demoUpCmd.Flags().StringVar(&demoOrganizationID, "organization-id", "", "The organization ID (default: the current context organization)")
 	demoUpCmd.Flags().BoolVar(&demoSkipCatalog, "skip-catalog", false, "Do not deploy the platform catalog once the Qovery Operator is connected")
+	// The existing kube context mode is for the Qovery team (qovery-local-stack), so its flags stay out of the help.
+	for _, name := range []string{"kube-context", "kubeconfig", "organization-id", "skip-catalog"} {
+		_ = demoUpCmd.Flags().MarkHidden(name)
+	}
 	demoCmd.AddCommand(demoUpCmd)
 }
 

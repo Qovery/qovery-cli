@@ -31,15 +31,16 @@ const DEMO_IMPLEMENTATION: &str = "engine_v2";
 pub fn command() -> Command {
     Command::new("demo")
         .short("Try Qovery on your local machine")
-        .long("Try Qovery on your local machine.\n\nqovery demo up creates a local k3d cluster, installs the Qovery Operator on it and lets Qovery\ndeploy the self-managed platform catalog with Engine v2. With --kube-context, it installs the\nQovery Operator into an existing kube context instead, without prompting.")
+        .long("Try Qovery on your local machine.\n\nqovery demo up creates a local k3d cluster, installs the Qovery Operator on it and lets Qovery\ndeploy the self-managed platform catalog with Engine v2.")
         .run(run_demo)
         .subcommand(destroy())
         .subcommand(up())
 }
 
+/// The existing kube context flags are for the Qovery team (qovery-local-stack), so they stay out of the help.
 fn up() -> Command {
     Command::new("up")
-        .short("Create a local k3d cluster, or use an existing kube context, running the Qovery Operator and Engine v2")
+        .short("Create a local k3d cluster running the Qovery Operator and Engine v2")
         .args(ArgsRule::NoArgs)
         .flag(
             Flag::string("cluster-name", "The name of the local demo cluster")
@@ -50,25 +51,25 @@ fn up() -> Command {
         .flag(Flag::string(
             "kube-context",
             "Install the Qovery Operator into this existing kube context instead of creating a local k3d cluster; never prompts",
-        ))
+        ).hidden())
         .flag(Flag::string(
             "kubeconfig",
             "The kubeconfig file holding --kube-context (default: the kubectl and helm default)",
-        ))
+        ).hidden())
         .flag(Flag::string(
             "organization-id",
             "The organization ID (default: the current context organization)",
-        ))
+        ).hidden())
         .flag(Flag::bool(
             "skip-catalog",
             "Do not deploy the platform catalog once the Qovery Operator is connected",
-        ))
+        ).hidden())
         .run(run_up)
 }
 
 fn destroy() -> Command {
     Command::new("destroy")
-        .short("Remove the local demo cluster, or the Qovery Operator of an existing kube context")
+        .short("Remove the local demo cluster")
         .args(ArgsRule::NoArgs)
         .flag(
             Flag::string("cluster-name", "The name of the local demo cluster")
@@ -85,15 +86,15 @@ fn destroy() -> Command {
         .flag(Flag::string(
             "kube-context",
             "Uninstall the Qovery Operator from this existing kube context instead of deleting a local k3d cluster; the kube cluster is kept",
-        ))
+        ).hidden())
         .flag(Flag::string(
             "kubeconfig",
             "The kubeconfig file holding --kube-context (default: the kubectl and helm default)",
-        ))
+        ).hidden())
         .flag(Flag::string(
             "organization-id",
             "The organization ID (default: the current context organization)",
-        ))
+        ).hidden())
         .run(run_destroy)
 }
 

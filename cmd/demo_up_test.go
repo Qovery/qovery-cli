@@ -19,6 +19,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/qovery/qovery-cli/utils"
 	qovery "github.com/qovery/qovery-client-go"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -1741,4 +1742,18 @@ type lookPathRecordingDemoRunner struct {
 func (r *lookPathRecordingDemoRunner) LookPath(name string) error {
 	r.lookedUp = append(r.lookedUp, name)
 	return nil
+}
+
+func TestDemoKubeContextFlagsAreHiddenFromTheHelp(t *testing.T) {
+	for cmd, names := range map[*cobra.Command][]string{
+		demoUpCmd:      {"kube-context", "kubeconfig", "organization-id", "skip-catalog"},
+		demoDestroyCmd: {"kube-context", "kubeconfig", "organization-id"},
+	} {
+		for _, name := range names {
+			flag := cmd.Flags().Lookup(name)
+			if assert.NotNil(t, flag, name) {
+				assert.True(t, flag.Hidden, "%s %s", cmd.Name(), name)
+			}
+		}
+	}
 }
