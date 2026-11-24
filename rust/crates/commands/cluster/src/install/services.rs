@@ -607,7 +607,10 @@ impl SelfManagedClusterService for SelfManagedClusterServiceImpl<'_> {
             path_escape(organization_id),
             path_escape(cluster_id)
         );
-        match self.client.send(Method::GET, &path, &[], None) {
+        match self
+            .client
+            .send_accept(Method::GET, &path, &[], None, "application/x-yaml")
+        {
             Err(e) => Err(e.to_string()),
             Ok(r) if r.status >= 300 => Err(format!("{}: {}", fatih::red("Error"), r.text())),
             Ok(r) => Ok(r.text()),

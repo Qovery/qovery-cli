@@ -19,7 +19,7 @@ pub struct App {
 
 fn default_on_error(err: &str) -> ! {
     qovery_log::println_error(err);
-    std::process::exit(0)
+    qovery_log::exit::exit(0)
 }
 
 impl App {
@@ -93,13 +93,13 @@ pub fn execute_with_args(mut app: App, args: Vec<String>) -> ! {
 
     if std::env::var_os("QOVERY_DUMP_SPEC").is_some() {
         println!("{}", crate::spec::dump(&tree));
-        std::process::exit(0);
+        qovery_log::exit::exit(0);
     }
 
     match execute_c(&tree, &args, &app.initializers) {
         Ok(()) => {
             qovery_log::flush();
-            std::process::exit(0)
+            qovery_log::exit::exit(0)
         }
         Err(e) => (app.on_error)(&e),
     }

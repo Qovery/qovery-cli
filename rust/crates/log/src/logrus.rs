@@ -145,13 +145,13 @@ pub fn error(msg: impl AsRef<str>) {
 pub fn fatal(msg: impl AsRef<str>) -> ! {
     emit(Level::Fatal, msg.as_ref(), &[]);
     crate::printer::flush();
-    std::process::exit(1)
+    crate::exit::exit(1)
 }
 /// `log.Panic(...)`: logs at panic level then panics (Go exits with status 2 and a stack trace).
 pub fn panic(msg: impl AsRef<str>) -> ! {
     emit(Level::Panic, msg.as_ref(), &[]);
     crate::printer::flush();
-    std::process::exit(2)
+    crate::exit::exit(2)
 }
 /// `log.WithFields(fields).Info(msg)` and friends.
 pub fn with_fields(level: Level, msg: impl AsRef<str>, fields: &[(&str, String)]) {

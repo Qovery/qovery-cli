@@ -10,7 +10,8 @@ fixtures.json is a list of routes:
 
 * `responses` is a sequence: each matching request consumes the next one, the last one repeats.
 * Routes are tried in order; the first match wins. Unmatched requests get a 404 and are logged with "unmatched": true.
-* Every request is appended to the request log as one JSON line: method, path, query, body.
+* Every request is appended to the request log as one JSON line: method, path, query, body, and accept when the
+  Accept header is neither application/json nor */*.
 """
 
 import json
@@ -55,6 +56,12 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             body = raw.decode("utf-8", "replace")
         entry = {"method": self.command, "path": url.path, "query": {k: sorted(v) for k, v in sorted(query.items())}, "body": body}
+        # The API answers 406 when the Accept header is not the media type of the endpoint (application/x-yaml
+        # for the kubeconfig...). JSON and */* are left out: Go sends no Accept at all on some endpoints, reqwest
+        # defaults to */*.
+        accept = self.headers.get("Accept")
+        if accept and accept not in ("application/json", "*/*"):
+            entry["accept"] = accept
         response = None
         with LOCK:
             for i, route in enumerate(FIXTURES):
