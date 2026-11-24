@@ -130,11 +130,16 @@ fn start_child_shell() -> Result<(), String> {
 
 /// `pkg.LoadCredentials`.
 fn load_cluster_credentials(cluster_id: &str, no_bastion: bool) -> Result<(), String> {
-    if !no_bastion {
-        // Go discards the cleanup closure (`SetBastionConnection()` in `pkg/admin_load_credentials.go`): the SSH
-        // tunnel outlives the command and no cleanup logs are printed. Kept as is for parity.
-        let _cleanup = set_bastion_connection();
+    // `defer SetBastionConnection()()`: the SSH tunnel is closed once the child shell exits, or on error
+    let cleanup = (!no_bastion).then(set_bastion_connection);
+    let r = load_cluster_credentials_with_tunnel(cluster_id);
+    if let Some(cleanup) = cleanup {
+        cleanup();
     }
+    r
+}
+
+fn load_cluster_credentials_with_tunnel(cluster_id: &str) -> Result<(), String> {
     let creds = cluster_credentials(cluster_id);
     if creds.is_empty() {
         return Err(format!("no credentials found for cluster ID {cluster_id}"));
@@ -263,13 +268,14 @@ pub fn credentials_from_payload(
 fn kubeconfig_by_cluster_id(cluster_id: &str) -> String {
     let client = qovery_core::check_error(qovery_core::client::get_client());
     let res = client
-        .execute(
+        .execute_accept(
             Method::GET,
             &format!(
                 "/organization/00000000-0000-0000-000000000000/cluster/{cluster_id}/kubeconfig"
             ),
             &[("with_token_from_cli", "true".to_string())],
             None,
+            "application/x-yaml",
         )
         .unwrap_or_else(|e| qovery_core::exit_with_error(e));
     if res.status != 200 {
@@ -284,9 +290,30 @@ fn kubeconfig_by_cluster_id(cluster_id: &str) -> String {
 
 /// `pkg.SetBastionConnection`: an SSH SOCKS tunnel through the bastion, `HTTPS_PROXY` pointing to it.
 /// Returns the cleanup function (a no-op when the tunnel could not be set up).
+///
+/// The tunnel never outlives the CLI: when the CLI exits before the cleanup function is called (`check_error`,
+/// `logrus::fatal`, ...), an exit hook kills ssh, silently like Go where ssh dies with it (`Pdeathsig`); a CLI
+/// killed by a signal is covered by `Pdeathsig` on Linux.
 fn set_bastion_connection() -> Box<dyn FnOnce()> {
     match setup_ssh_connection() {
-        Ok(child) => Box::new(move || cleanup_ssh_connection(child)),
+        Ok(child) => {
+            let child = std::sync::Arc::new(std::sync::Mutex::new(Some(child)));
+            let take = |c: &std::sync::Mutex<Option<std::process::Child>>| {
+                c.lock().unwrap_or_else(|e| e.into_inner()).take()
+            };
+            let on_exit = child.clone();
+            qovery_log::exit::at_exit(move || {
+                if let Some(mut c) = take(&on_exit) {
+                    let _ = c.kill();
+                    let _ = c.wait();
+                }
+            });
+            Box::new(move || {
+                if let Some(c) = take(&child) {
+                    cleanup_ssh_connection(c)
+                }
+            })
+        }
         Err(e) => {
             logrus::error(format!("Failed to setup SSH connection: {e}"));
             logrus::warn(
@@ -323,15 +350,15 @@ fn setup_ssh_connection() -> Result<std::process::Child, String> {
         destination.as_str(),
     ];
     let ssh = look_path("ssh").map_err(|e| format!("error starting SSH command: {e}"))?;
-    let mut child = std::process::Command::new(ssh)
-        .args(args)
-        .spawn()
-        .map_err(|e| {
-            format!(
-                "error starting SSH command: {}",
-                crate::common::go_os_error(&e)
-            )
-        })?;
+    let mut cmd = std::process::Command::new(ssh);
+    cmd.args(args);
+    kill_with_parent(&mut cmd);
+    let mut child = cmd.spawn().map_err(|e| {
+        format!(
+            "error starting SSH command: {}",
+            crate::common::go_os_error(&e)
+        )
+    })?;
     if let Err(e) = wait_for_ssh_connection("127.0.0.1:1080", Duration::from_secs(30)) {
         if let Err(k) = child.kill() {
             logrus::error(format!("failed to kill SSH process: {k}"));
@@ -339,9 +366,41 @@ fn setup_ssh_connection() -> Result<std::process::Child, String> {
         return Err(format!("error waiting for SSH connection: {e}"));
     }
     logrus::info("SSH connection established successfully");
-    set_env("HTTPS_PROXY", "socks5://127.0.0.1:1080");
+    // socks5h: the bastion resolves the host names. With socks5 reqwest resolves them locally and may hand an IPv6
+    // address the bastion cannot reach (Go sends the host name for both schemes)
+    set_env("HTTPS_PROXY", SOCKS_PROXY);
     Ok(child)
 }
+
+/// `HTTPS_PROXY` of the bastion tunnel.
+pub const SOCKS_PROXY: &str = "socks5h://127.0.0.1:1080";
+
+/// `SysProcAttr{Pdeathsig: SIGTERM}` (`pkg/bastion_linux.go`): ssh gets SIGTERM when the CLI dies.
+#[cfg(target_os = "linux")]
+fn kill_with_parent(cmd: &mut std::process::Command) {
+    use std::os::unix::process::CommandExt;
+    let parent = std::process::id() as libc::pid_t;
+    // SAFETY: prctl, getppid and raise are async-signal-safe, and nothing else runs between fork and exec
+    unsafe {
+        cmd.pre_exec(move || {
+            if libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGTERM) == -1 {
+                return Err(std::io::Error::last_os_error());
+            }
+            // The CLI died between fork and prctl: no signal will come, deliver it now (as the Go runtime does)
+            if libc::getppid() != parent {
+                libc::raise(libc::SIGTERM);
+            }
+            Ok(())
+        });
+    }
+}
+
+/// No parent death signal outside of Linux (macOS and Windows have no equivalent, Go's `Pdeathsig` is Linux only
+/// too). The tunnel is still closed when the CLI exits by itself (cleanup function and exit hooks), and Ctrl-C or a
+/// terminal hangup reach ssh directly (same foreground process group): only a CLI killed from outside
+/// (`kill <pid>`) leaves ssh running there, as with the Go CLI.
+#[cfg(not(target_os = "linux"))]
+fn kill_with_parent(_cmd: &mut std::process::Command) {}
 
 fn wait_for_ssh_connection(address: &str, timeout: Duration) -> Result<(), String> {
     let deadline = Instant::now() + timeout;

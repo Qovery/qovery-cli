@@ -173,7 +173,7 @@ pub fn go_panic(msg: &str) -> ! {
     qovery_log::flush();
     eprint!("panic: {msg}\n\ngoroutine 1 [running]:\n");
     qovery_log::flush();
-    std::process::exit(2)
+    qovery_log::exit::exit(2)
 }
 
 /// Go runtime panic on a nil pointer dereference (exit status 2).

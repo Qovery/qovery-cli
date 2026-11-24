@@ -168,6 +168,7 @@ impl Client {
         url: &str,
         query: &[(&str, String)],
         body: Option<&Value>,
+        accept: &str,
     ) {
         let parsed = url::Url::parse(url).ok();
         let host = parsed
@@ -206,7 +207,7 @@ impl Client {
         if let Some(p) = &payload {
             d.push_str(&format!("Content-Length: {}\r\n", p.len()));
         }
-        d.push_str("Accept: application/json\r\n");
+        d.push_str(&format!("Accept: {accept}\r\n"));
         d.push_str(&format!("Authorization: {}\r\n", self.authorization));
         if payload.is_some() {
             d.push_str("Content-Type: application/json\r\n");
@@ -226,13 +227,27 @@ impl Client {
         query: &[(&str, String)],
         body: Option<&Value>,
     ) -> Result<Response, ApiError> {
+        self.send_accept(method, path, query, body, "application/json")
+    }
+
+    /// [`Client::send`] with the `Accept` header of the endpoint: the Go generated client sends the media type
+    /// the OpenAPI spec declares (`application/x-yaml` for the kubeconfig, ...), and the API answers
+    /// `406 Not Acceptable` to `application/json` there.
+    pub fn send_accept(
+        &self,
+        method: Method,
+        path: &str,
+        query: &[(&str, String)],
+        body: Option<&Value>,
+        accept: &str,
+    ) -> Result<Response, ApiError> {
         let url = self.url(path);
         let mut req = self
             .http
             .request(method.clone(), &url)
             .header("Authorization", &self.authorization)
             .header("User-Agent", &self.user_agent)
-            .header("Accept", "application/json");
+            .header("Accept", accept);
         if !query.is_empty() {
             req = req.query(query);
         }
@@ -242,7 +257,7 @@ impl Client {
                 .body(serde_json::to_vec(b).unwrap_or_default());
         }
         if self.verbose {
-            self.dump_request(&method, &url, query, body);
+            self.dump_request(&method, &url, query, body, accept);
         }
         let res = req.send().map_err(|e| {
             let mut full_url = url.clone();
@@ -287,7 +302,19 @@ impl Client {
         query: &[(&str, String)],
         body: Option<&Value>,
     ) -> Result<Response, ApiError> {
-        let res = self.send(method, path, query, body)?;
+        self.execute_accept(method, path, query, body, "application/json")
+    }
+
+    /// [`Client::execute`] with the `Accept` header of the endpoint, see [`Client::send_accept`].
+    pub fn execute_accept(
+        &self,
+        method: Method,
+        path: &str,
+        query: &[(&str, String)],
+        body: Option<&Value>,
+        accept: &str,
+    ) -> Result<Response, ApiError> {
+        let res = self.send_accept(method, path, query, body, accept)?;
         if res.status >= 300 {
             return Err(ApiError {
                 status: Some(res.status),

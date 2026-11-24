@@ -136,7 +136,7 @@ pub fn get_kubeconfig_by_cluster_id(cluster_id: &str, read_only: bool) -> String
         "/organization/00000000-0000-0000-000000000000/cluster/{}/kubeconfig",
         path_escape(cluster_id)
     );
-    let res = match client.execute(Method::GET, &path, &query, None) {
+    let res = match client.execute_accept(Method::GET, &path, &query, None, "application/x-yaml") {
         Ok(r) => r,
         Err(e) => exit_with_error(e),
     };

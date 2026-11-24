@@ -9,6 +9,7 @@
 //! * [`gofmt`]: Go formatting helpers (`%q`, `time.Time.String()`, `time.Duration.String()`)
 //! * [`gotime`]: Go `time.Parse(time.RFC3339, ...)` with its error messages
 
+pub mod exit;
 pub mod fatih;
 pub mod gofmt;
 pub mod gojson;

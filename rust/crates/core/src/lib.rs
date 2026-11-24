@@ -47,11 +47,11 @@ pub fn check_error<T, E: std::fmt::Display>(r: Result<T, E>) -> T {
 pub fn exit_with_error(e: impl std::fmt::Display) -> ! {
     qovery_log::println_error(e);
     qovery_log::flush();
-    std::process::exit(1)
+    qovery_log::exit::exit(1)
 }
 
 /// `os.Exit(code)` after flushing stdout/stderr.
 pub fn exit(code: i32) -> ! {
     qovery_log::flush();
-    std::process::exit(code)
+    qovery_log::exit::exit(code)
 }

@@ -2366,6 +2366,7 @@ version = "1.175.1"
 dependencies = [
  "chrono",
  "futures-util",
+ "libc",
  "qovery-api",
  "qovery-cmd-auth",
  "qovery-cobra",
