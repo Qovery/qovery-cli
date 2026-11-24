@@ -13,8 +13,11 @@ This command works with applications, containers, databases, jobs (cronjobs and 
 
 The --version parameter accepts:
   - Git commit IDs (for applications, git-based jobs, git-based helms)
-  - Container image tags (for containers, image-based jobs)
+  - Container image tags (for image containers, image-based jobs)
   - Helm chart versions (for helm repository charts)
+
+A Git container takes no --version: it deploys its current commit. To deploy another
+commit, use: qovery container deploy -n my-container --commit-id abc123
 
 For helm charts, you can also specify:
   - --values-override-version: Git commit ID for helm values override
@@ -181,6 +184,12 @@ fn run_deploy(ctx: &Ctx) {
         }
     }
 
+    let version = ctx.string("version");
+    // checked before any deploy so a rejected container leaves the other services untouched
+    for container in &containers {
+        check_error(services::check_container_image_tag(container, &version));
+    }
+
     let watch = services::new_services_watch(
         &client,
         &env_id,
@@ -188,7 +197,6 @@ fn run_deploy(ctx: &Ctx) {
         ctx.bool("watch"),
     );
 
-    let version = ctx.string("version");
     if !applications.is_empty() {
         check_error(services::deploy_applications(
             &client,

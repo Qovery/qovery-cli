@@ -160,6 +160,21 @@ fn post_decoded<T: serde::de::DeserializeOwned>(
     decode_go_response::<T>(&res).map(|_| ())
 }
 
+/// [`post_decoded`] with the error decorated like Go `withAPIErrorDetail(err)`: the generated client's
+/// errors carry the response body (status >= 300 and 2xx decoding errors alike).
+fn post_decoded_with_detail<T: serde::de::DeserializeOwned>(
+    client: &Client,
+    path: &str,
+    body: Option<&Value>,
+) -> Result<(), String> {
+    let res = client
+        .execute(Method::POST, path, &[], body)
+        .map_err(|e| qovery_api::with_api_error_detail(&e.message, &e.body))?;
+    decode_go_response::<T>(&res)
+        .map(|_| ())
+        .map_err(|e| qovery_api::with_api_error_detail(&e, &res.text()))
+}
+
 /// Port of `deployAllServices(client, envId, req)`: `POST /environment/{id}/service/deploy`.
 pub fn deploy_all_services(
     client: &Client,
@@ -217,8 +232,9 @@ pub fn deploy_applications(
     )
 }
 
-/// Port of `utils.DeployContainers(client, envId, containerList, tag)`: deploys with `tag`, or the current
-/// tag of each container when empty.
+/// Port of `utils.DeployContainers(client, envId, containerList, tag)`: image containers are deployed with
+/// `tag`, or their current tag when empty; a Git container is sent without image tag (it deploys its current
+/// commit) and rejects a `tag`. The error carries the API's message (`withAPIErrorDetail`).
 pub fn deploy_containers(
     client: &Client,
     env_id: &str,
@@ -228,25 +244,128 @@ pub fn deploy_containers(
     if container_list.is_empty() {
         return Ok(());
     }
-    let containers = container_list
-        .iter()
-        .map(|c| DeployAllRequestContainer {
-            id: c.id.clone(),
-            image_tag: Some(if tag.is_empty() {
+    let mut containers = Vec::new();
+    for c in container_list {
+        check_container_image_tag(c, tag)?;
+        let image_tag = get_container_git_repository(c).is_none().then(|| {
+            if tag.is_empty() {
                 c.tag.clone()
             } else {
                 tag.to_string()
-            }),
-        })
-        .collect();
-    deploy_all_services(
+            }
+        });
+        containers.push(DeployAllRequestContainer {
+            id: c.id.clone(),
+            image_tag,
+        });
+    }
+    post_decoded_with_detail::<EnvironmentStatus>(
         client,
-        env_id,
-        &DeployAllRequest {
+        &format!("/environment/{}/service/deploy", path_escape(env_id)),
+        Some(&to_value(&DeployAllRequest {
             containers: Some(containers),
             ..Default::default()
-        },
+        })),
     )
+}
+
+/// Port of `utils.DeployContainersAtCommit(client, containerList, commitId)`: `POST /container/{id}/deploy`
+/// with `git_commit_id` for each Git container, after checking all of them (a list with an image container
+/// deploys nothing).
+pub fn deploy_containers_at_commit(
+    client: &Client,
+    container_list: &[Container],
+    commit_id: &str,
+) -> Result<(), String> {
+    for c in container_list {
+        check_container_commit_id(c)?;
+    }
+    for c in container_list {
+        post_decoded_with_detail::<Status>(
+            client,
+            &format!("/container/{}/deploy", path_escape(&c.id)),
+            Some(&serde_json::json!({ "git_commit_id": commit_id })),
+        )
+        .map_err(|e| {
+            format!(
+                "cannot deploy container {} at commit {commit_id}: {e}",
+                c.name
+            )
+        })?;
+    }
+    Ok(())
+}
+
+/// Port of `utils.CheckContainerImageTag(container, tag)`: a Git container takes no image tag, Qovery builds
+/// its image from a commit.
+pub fn check_container_image_tag(container: &Container, tag: &str) -> Result<(), String> {
+    let Some(repository) = get_container_git_repository(container) else {
+        return Ok(());
+    };
+    if tag.is_empty() {
+        return Ok(());
+    }
+    Err(format!(
+        "container {0} is a Git container built from {1}: it cannot be deployed with an image tag. Deploy a commit with: qovery container deploy -n {0} --commit-id <commit sha>",
+        container.name,
+        git_repository_label(repository)
+    ))
+}
+
+/// Port of `utils.CheckContainerCommitId(container)`: an image container has no Git repository to build.
+pub fn check_container_commit_id(container: &Container) -> Result<(), String> {
+    if get_container_git_repository(container).is_some() {
+        return Ok(());
+    }
+    Err(format!(
+        "container {} runs the image {} from registry {}: --commit-id only applies to Git containers. Deploy another image with --tag",
+        container.name,
+        container_image_label(container),
+        container_registry_name(container)
+    ))
+}
+
+/// Port of `utils.GetContainerGitRepository(container)`: the `git_repository` of the container's `source`,
+/// `None` for an image container, including when an older API sends no source. (The Go client's strict
+/// `oneOf` decoding of `source` is not reproduced.)
+pub fn get_container_git_repository(container: &Container) -> Option<&Value> {
+    container
+        .extra
+        .get("source")?
+        .get("git_repository")
+        .filter(|r| r.is_object())
+}
+
+/// `container.Registry.Name`.
+pub fn container_registry_name(container: &Container) -> &str {
+    container
+        .extra
+        .get("registry")
+        .map(|r| str_field(r, "name"))
+        .unwrap_or_default()
+}
+
+/// Port of `utils.ContainerSourceLabel(container)`: `Git <url> (branch <branch>)` or `Registry <name>`.
+pub fn container_source_label(container: &Container) -> String {
+    match get_container_git_repository(container) {
+        Some(repository) => format!("Git {}", git_repository_label(repository)),
+        None => format!("Registry {}", container_registry_name(container)),
+    }
+}
+
+/// Port of `utils.ContainerImageLabel(container)`: the image the container runs (on a Git container, the last
+/// image Qovery built).
+pub fn container_image_label(container: &Container) -> String {
+    format!("{}:{}", container.image_name, container.tag)
+}
+
+/// `gitRepositoryLabel(repository)`.
+fn git_repository_label(repository: &Value) -> String {
+    let url = str_field(repository, "url");
+    match str_field(repository, "branch") {
+        "" => url.to_string(),
+        branch => format!("{url} (branch {branch})"),
+    }
 }
 
 /// Port of `utils.DeployJobs(client, envId, jobList, commitId, tag)`: docker jobs get `commitId` (`latest`

@@ -4,53 +4,15 @@
 
 use crate::model::{VariableResponse, VariableScope};
 use qovery_api::models::ResultList;
-use qovery_api::{ApiError, Client};
+use qovery_api::{ApiError, Client, Method};
 use qovery_core::context::ServiceType;
 use qovery_log::pterm::FG_RED;
 use serde_json::{Map, Value, json};
 
 /// Go `withAPIErrorDetail(err)`: append the API's own message (the `detail` of the problem response, e.g.
-/// which scope already holds the key on a 409) to the bare status line. Without a JSON `detail`, the raw
-/// response body is appended; errors without a response body are returned unchanged.
+/// which scope already holds the key on a 409) to the bare status line, see [`qovery_api::with_api_error_detail`].
 pub fn with_api_error_detail(err: &ApiError) -> String {
-    if err.body.is_empty() {
-        return err.to_string();
-    }
-    match problem_detail(&err.body) {
-        Some(detail) if !detail.is_empty() => format!("{err}: {detail}"),
-        _ => format!("{err}: {}", err.body),
-    }
-}
-
-/// `json.Unmarshal(body, &struct{ Detail string `json:"detail"` })`: `None` when Go fails to unmarshal.
-/// Go matches the key case-insensitively and ignores `null`.
-fn problem_detail(body: &str) -> Option<String> {
-    let v: Value = serde_json::from_str(body).ok()?;
-    match v {
-        Value::Null => Some(String::new()),
-        Value::Object(m) => {
-            let mut detail = String::new();
-            let mut exact = None;
-            for (k, val) in &m {
-                if !k.eq_ignore_ascii_case("detail") {
-                    continue;
-                }
-                match val {
-                    Value::Null => {}
-                    Value::String(s) => {
-                        if k == "detail" {
-                            exact = Some(s.clone());
-                        } else {
-                            detail = s.clone();
-                        }
-                    }
-                    _ => return None,
-                }
-            }
-            Some(exact.unwrap_or(detail))
-        }
-        _ => None,
-    }
+    qovery_api::with_api_error_detail(&err.message, &err.body)
 }
 
 fn not_found(what: &str, key: &str) -> String {
@@ -59,10 +21,84 @@ fn not_found(what: &str, key: &str) -> String {
 
 /// `POST /variable` (Go `CreateVariable`), the error decorated by [`with_api_error_detail`].
 fn create_variable(client: &Client, body: Value) -> Result<(), String> {
-    client
-        .post::<Value, _>("/variable", &body)
+    let res = client
+        .send(Method::POST, "/variable", &[], Some(&body))
+        .map_err(|e| with_api_error_detail(&e))?;
+    if res.status >= 300 {
+        let message = if res.status == 409 {
+            variable_conflict_error(&res)
+        } else {
+            res.status_line()
+        };
+        let err = ApiError {
+            status: Some(res.status),
+            message,
+            body: res.text(),
+        };
+        return Err(with_api_error_detail(&err));
+    }
+    Client::decode::<Value>(res)
         .map(|_| ())
         .map_err(|e| with_api_error_detail(&e))
+}
+
+/// `GenericOpenAPIError.Error()` of a 409 on `POST /variable`: the Go client decodes the body as a
+/// `VariableConflictResponse` (`status` and `detail` required) and formats it with `formatErrorMessage`, i.e.
+/// `<status line> <title> (<detail>)` where `title` is a `*string` printed with `%s`: `%!s(*string=<nil>)` when
+/// absent, a pointer address otherwise (it changes on every run, rendered here with a fixed address). A body
+/// that cannot be decoded gives the decoding error alone. Field type errors are not reproduced.
+fn variable_conflict_error(res: &qovery_api::Response) -> String {
+    let empty = Map::new();
+    let model = if res.body.is_empty() {
+        // `decode` leaves the model zeroed
+        &empty
+    } else {
+        let content_type = res
+            .headers
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or_default();
+        if !qovery_api::is_go_json_content_type(content_type) {
+            return "undefined response type".to_string();
+        }
+        if let Err(e) = qovery_log::gojson::go_json_check_valid(&res.body) {
+            return e;
+        }
+        let kind = match serde_json::from_slice::<Value>(&res.body) {
+            Ok(Value::Object(m)) => {
+                if let Some(p) = ["status", "detail"].iter().find(|p| !m.contains_key(**p)) {
+                    return format!("no value given for required property {p}");
+                }
+                return format_variable_conflict(&res.status_line(), &m);
+            }
+            // `json.Unmarshal(null, &map)` leaves the map empty
+            Ok(Value::Null) => return "no value given for required property status".to_string(),
+            Ok(Value::Array(_)) => "array",
+            Ok(Value::String(_)) => "string",
+            Ok(Value::Number(_)) => "number",
+            Ok(Value::Bool(_)) => "bool",
+            Err(e) => return e.to_string(),
+        };
+        return format!(
+            "json: cannot unmarshal {kind} into Go value of type map[string]interface {{}}"
+        );
+    };
+    format_variable_conflict(&res.status_line(), model)
+}
+
+/// `formatErrorMessage(status, &VariableConflictResponse)`.
+fn format_variable_conflict(status_line: &str, model: &Map<String, Value>) -> String {
+    let title = match model.get("title") {
+        None | Some(Value::Null) => "%!s(*string=<nil>)",
+        Some(_) => "%!s(*string=0xc000010000)",
+    };
+    let detail = model
+        .get("detail")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    format!("{status_line} {title} ({detail})")
+        .trim()
+        .to_string()
 }
 
 /// `PUT /variable/{id}` (Go `EditVariable`).

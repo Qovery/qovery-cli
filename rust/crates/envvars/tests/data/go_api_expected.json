@@ -124,7 +124,7 @@
     "value": ""
   },
   "create_environment_variable_conflict": {
-    "error": "409 Conflict: Key already exists at ENVIRONMENT scope",
+    "error": "409 Conflict %!s(*string=\u003cnil\u003e) (Key already exists at ENVIRONMENT scope): Key already exists at ENVIRONMENT scope",
     "requests": [
       {
         "method": "POST",
@@ -323,7 +323,7 @@
     "value": ""
   },
   "create_service_external_secret_conflict": {
-    "error": "409 Conflict: Key already exists at ENVIRONMENT scope",
+    "error": "409 Conflict %!s(*string=\u003cnil\u003e) (Key already exists at ENVIRONMENT scope): Key already exists at ENVIRONMENT scope",
     "requests": [
       {
         "method": "POST",
@@ -437,7 +437,7 @@
     "value": ""
   },
   "create_service_variable_conflict": {
-    "error": "409 Conflict: Key already exists at ENVIRONMENT scope",
+    "error": "409 Conflict %!s(*string=\u003cnil\u003e) (Key already exists at ENVIRONMENT scope): Key already exists at ENVIRONMENT scope",
     "requests": [
       {
         "method": "POST",
@@ -455,7 +455,7 @@
     "value": ""
   },
   "create_service_variable_emptybody": {
-    "error": "409 Conflict",
+    "error": "409 Conflict %!s(*string=\u003cnil\u003e) ()",
     "requests": [
       {
         "method": "POST",
@@ -473,7 +473,7 @@
     "value": ""
   },
   "create_service_variable_html": {
-    "error": "409 Conflict: \u003cb\u003e\u0026\u003c/b\u003e \"q\"",
+    "error": "no value given for required property status: \u003cb\u003e\u0026\u003c/b\u003e \"q\"",
     "requests": [
       {
         "method": "POST",
