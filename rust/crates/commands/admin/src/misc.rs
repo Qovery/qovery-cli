@@ -327,17 +327,42 @@ pub fn require_extended_credentials() -> Command {
             "production",
             "Require extended credentials for production clusters",
         ))
+        .flag(Flag::string(
+            "target-cluster-id",
+            "Only require extended credentials for the cluster with this UUID",
+        ))
         .run(run_require_extended_credentials)
 }
 
 fn run_require_extended_credentials(ctx: &Ctx) {
     let production = ctx.bool("production");
-    if let Err(e) = require_extended_credentials_call(production) {
+    let target_cluster_id = ctx.string("target-cluster-id");
+    // An explicitly empty value must not silently fall back to "all clusters".
+    if ctx.changed("target-cluster-id") && target_cluster_id.is_empty() {
+        exit_with_error("--target-cluster-id cannot be empty");
+    }
+    if let Err(e) = require_extended_credentials_call(production, &target_cluster_id) {
         exit_with_error(e);
     }
 }
 
-fn require_extended_credentials_call(production: bool) -> Result<(), String> {
+/// `pkg.RequireExtendedCredentials`.
+fn require_extended_credentials_call(
+    production: bool,
+    target_cluster_id: &str,
+) -> Result<(), String> {
+    if target_cluster_id.is_empty() {
+        return require_extended_credentials_for_all_clusters(production);
+    }
+    if production {
+        return Err("--production cannot be used with --target-cluster-id".to_string());
+    }
+    let cluster_id = go_uuid_parse(target_cluster_id)
+        .map_err(|e| format!("invalid --target-cluster-id: {e}"))?;
+    require_extended_credentials_for_cluster(&cluster_id)
+}
+
+fn require_extended_credentials_for_all_clusters(production: bool) -> Result<(), String> {
     let body = go_json(&json!({ "production": production }));
     let url = format!("{}/cluster/requireWideAccessToDeploy", admin_url());
     let auth = authorization()?;
@@ -355,6 +380,91 @@ fn require_extended_credentials_call(production: bool) -> Result<(), String> {
     Ok(())
 }
 
+fn require_extended_credentials_for_cluster(cluster_id: &str) -> Result<(), String> {
+    let url = format!(
+        "{}/cluster/{cluster_id}/requireWideAccessToDeploy",
+        admin_url()
+    );
+    let auth = authorization()?;
+    // Go sends an empty body (`postWithBody(url, "")`) with the JSON content type.
+    let res = Req::new(Method::POST, &url, &auth).body("").send()?;
+    let result = res.text();
+    if !(200..300).contains(&res.status) {
+        return Err(format!(
+            "could not require extended credentials for cluster {cluster_id} (error {}: {result})",
+            res.status_line()
+        ));
+    }
+    qovery_log::println(format!(
+        "Extended credentials required for cluster {cluster_id}: {result}"
+    ));
+    Ok(())
+}
+
+/// Port of `uuid.Parse` (github.com/google/uuid v1.6.0): accepts the 36-char form, the 32-char
+/// form without dashes, the `{...}` form (braces are not checked, only the length) and the
+/// `urn:uuid:` form. Returns the canonical lowercase hyphenated form (`UUID.String()`).
+/// Lengths are in bytes, like Go.
+fn go_uuid_parse(s: &str) -> Result<String, String> {
+    let mut b = s.as_bytes();
+    match b.len() {
+        36 => {}
+        45 => {
+            if !b[..9].eq_ignore_ascii_case(b"urn:uuid:") {
+                // `%q` of the 9 first bytes (only exact when they are valid UTF-8, like any argv text)
+                return Err(format!(
+                    "invalid urn prefix: {}",
+                    qovery_log::gofmt::quote(&String::from_utf8_lossy(&b[..9]))
+                ));
+            }
+            b = &b[9..];
+        }
+        38 => b = &b[1..],
+        32 => {}
+        n => return Err(format!("invalid UUID length: {n}")),
+    }
+    let hex = |hi: u8, lo: u8| -> Option<u8> {
+        let nibble = |c: u8| (c as char).to_digit(16).map(|d| d as u8);
+        Some(nibble(hi)? << 4 | nibble(lo)?)
+    };
+    const INVALID_FORMAT: &str = "invalid UUID format";
+    let mut out = [0u8; 16];
+    if b.len() == 32 {
+        for (i, o) in out.iter_mut().enumerate() {
+            *o = hex(b[i * 2], b[i * 2 + 1]).ok_or(INVALID_FORMAT)?;
+        }
+    } else {
+        if b[8] != b'-' || b[13] != b'-' || b[18] != b'-' || b[23] != b'-' {
+            return Err(INVALID_FORMAT.to_string());
+        }
+        for (i, x) in [0, 2, 4, 6, 9, 11, 14, 16, 19, 21, 24, 26, 28, 30, 32, 34]
+            .into_iter()
+            .enumerate()
+        {
+            out[i] = hex(b[x], b[x + 1]).ok_or(INVALID_FORMAT)?;
+        }
+    }
+    Ok(format!(
+        "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+        out[0],
+        out[1],
+        out[2],
+        out[3],
+        out[4],
+        out[5],
+        out[6],
+        out[7],
+        out[8],
+        out[9],
+        out[10],
+        out[11],
+        out[12],
+        out[13],
+        out[14],
+        out[15]
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     /// `--safeguardDuration` goes through Go `time.ParseDuration`: one optional sign, negative values allowed.
@@ -370,6 +480,49 @@ mod tests {
         assert_eq!(
             p("-5x").unwrap_err(),
             "time: unknown unit \"x\" in duration \"-5x\""
+        );
+    }
+
+    /// `--target-cluster-id` goes through Go `uuid.Parse`, then `UUID.String()`.
+    #[test]
+    fn go_uuid_parse_forms() {
+        use super::go_uuid_parse as p;
+        let canonical = "123e4567-e89b-12d3-a456-426614174000";
+        assert_eq!(p(canonical).unwrap(), canonical);
+        assert_eq!(
+            p("123E4567-E89B-12D3-A456-426614174000").unwrap(),
+            canonical
+        );
+        assert_eq!(p("123e4567e89b12d3a456426614174000").unwrap(), canonical);
+        assert_eq!(
+            p("{123e4567-e89b-12d3-a456-426614174000}").unwrap(),
+            canonical
+        );
+        assert_eq!(
+            p("urn:uuid:123e4567-e89b-12d3-a456-426614174000").unwrap(),
+            canonical
+        );
+        assert_eq!(
+            p("URN:UUID:123e4567-e89b-12d3-a456-426614174000").unwrap(),
+            canonical
+        );
+        assert_eq!(p("abc").unwrap_err(), "invalid UUID length: 3");
+        assert_eq!(p("").unwrap_err(), "invalid UUID length: 0");
+        assert_eq!(
+            p("urm:uuid:123e4567-e89b-12d3-a456-426614174000").unwrap_err(),
+            "invalid urn prefix: \"urm:uuid:\""
+        );
+        assert_eq!(
+            p("123e4567-e89b-12d3-a456_426614174000").unwrap_err(),
+            "invalid UUID format"
+        );
+        assert_eq!(
+            p("123e4567-e89b-12d3-a456-42661417400g").unwrap_err(),
+            "invalid UUID format"
+        );
+        assert_eq!(
+            p("123e4567e89b12d3a45642661417400g").unwrap_err(),
+            "invalid UUID format"
         );
     }
 }
