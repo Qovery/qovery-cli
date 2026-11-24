@@ -37,7 +37,7 @@ func requireExtendedCredentials(cmd *cobra.Command) {
 		os.Exit(1)
 	}
 
-	err :=pkg.RequireExtendedCredentials(requireExtendedCredentialsProduction, requireExtendedCredentialsTargetClusterId)
+	err := pkg.RequireExtendedCredentials(requireExtendedCredentialsProduction, requireExtendedCredentialsTargetClusterId)
 	if err != nil {
 		utils.PrintlnError(err)
 		os.Exit(1)
