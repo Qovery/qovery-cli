@@ -337,6 +337,10 @@ pub fn require_extended_credentials() -> Command {
 fn run_require_extended_credentials(ctx: &Ctx) {
     let production = ctx.bool("production");
     let target_cluster_id = ctx.string("target-cluster-id");
+    // An explicitly empty value must not silently fall back to "all clusters".
+    if ctx.changed("target-cluster-id") && target_cluster_id.is_empty() {
+        exit_with_error("--target-cluster-id cannot be empty");
+    }
     if let Err(e) = require_extended_credentials_call(production, &target_cluster_id) {
         exit_with_error(e);
     }

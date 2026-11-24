@@ -816,6 +816,24 @@
    ]
   },
   {
+   "name": "require-extended-credentials target-cluster-id explicitly empty",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--target-cluster-id="
+   ]
+  },
+  {
+   "name": "require-extended-credentials target-cluster-id explicitly empty with production",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--production",
+    "--target-cluster-id",
+    ""
+   ]
+  },
+  {
    "name": "require-extended-credentials target-cluster-id without value",
    "args": [
     "admin",
