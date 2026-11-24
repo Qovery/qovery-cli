@@ -651,6 +651,194 @@
    }
   },
   {
+   "name": "require-extended-credentials target-cluster-id",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--target-cluster-id",
+    "123e4567-e89b-12d3-a456-426614174000"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/123e4567-e89b-12d3-a456-426614174000/requireWideAccessToDeploy",
+     "status": 200,
+     "body": {
+      "updated": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "require-extended-credentials target-cluster-id 204",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--target-cluster-id=123e4567-e89b-12d3-a456-426614174000"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/123e4567-e89b-12d3-a456-426614174000/requireWideAccessToDeploy",
+     "status": 204,
+     "body_raw": ""
+    }
+   ]
+  },
+  {
+   "name": "require-extended-credentials target-cluster-id 400",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--target-cluster-id",
+    "123e4567-e89b-12d3-a456-426614174000"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/123e4567-e89b-12d3-a456-426614174000/requireWideAccessToDeploy",
+     "status": 400,
+     "body_raw": "bad"
+    }
+   ]
+  },
+  {
+   "name": "require-extended-credentials target-cluster-id uppercase",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--target-cluster-id",
+    "123E4567-E89B-12D3-A456-426614174000"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/123e4567-e89b-12d3-a456-426614174000/requireWideAccessToDeploy",
+     "status": 200,
+     "body": {
+      "updated": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "require-extended-credentials target-cluster-id no dashes",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--target-cluster-id",
+    "123e4567e89b12d3a456426614174000"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/123e4567-e89b-12d3-a456-426614174000/requireWideAccessToDeploy",
+     "status": 200,
+     "body": {
+      "updated": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "require-extended-credentials target-cluster-id braces",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--target-cluster-id",
+    "{123e4567-e89b-12d3-a456-426614174000}"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/123e4567-e89b-12d3-a456-426614174000/requireWideAccessToDeploy",
+     "status": 200,
+     "body": {
+      "updated": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "require-extended-credentials target-cluster-id urn",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--target-cluster-id",
+    "urn:uuid:123e4567-e89b-12d3-a456-426614174000"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/cluster/123e4567-e89b-12d3-a456-426614174000/requireWideAccessToDeploy",
+     "status": 200,
+     "body": {
+      "updated": 1
+     }
+    }
+   ]
+  },
+  {
+   "name": "require-extended-credentials target-cluster-id invalid length",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--target-cluster-id",
+    "not-a-uuid"
+   ]
+  },
+  {
+   "name": "require-extended-credentials target-cluster-id invalid format",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--target-cluster-id",
+    "123e4567-e89b-12d3-a456-42661417400g"
+   ]
+  },
+  {
+   "name": "require-extended-credentials target-cluster-id invalid urn prefix",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--target-cluster-id",
+    "urm:uuid:123e4567-e89b-12d3-a456-426614174000"
+   ]
+  },
+  {
+   "name": "require-extended-credentials target-cluster-id with production",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--production",
+    "--target-cluster-id",
+    "123e4567-e89b-12d3-a456-426614174000"
+   ]
+  },
+  {
+   "name": "require-extended-credentials target-cluster-id without value",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--target-cluster-id"
+   ]
+  },
+  {
+   "name": "require-extended-credentials target-cluster-id no token",
+   "args": [
+    "admin",
+    "require-extended-credentials",
+    "--target-cluster-id",
+    "123e4567-e89b-12d3-a456-426614174000"
+   ],
+   "env": {
+    "QOVERY_CLI_ACCESS_TOKEN": ""
+   },
+   "context": {
+    "access_token": ""
+   }
+  },
+  {
    "name": "encrypt-secret no org",
    "args": [
     "admin",
