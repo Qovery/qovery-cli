@@ -20,6 +20,65 @@ use std::time::Duration;
 
 pub use reqwest::Method;
 
+/// Go `withAPIErrorDetail(err)` (`utils/env_var.go`) on a `GenericOpenAPIError` whose `Error()` is `message`
+/// and `Body()` is `body`: append the API's own message (the `detail` of the problem response) or, without a
+/// JSON `detail`, the raw body. An error without a body is returned unchanged.
+pub fn with_api_error_detail(message: &str, body: &str) -> String {
+    if body.is_empty() {
+        return message.to_string();
+    }
+    match problem_detail(body) {
+        Some(detail) if !detail.is_empty() => format!("{message}: {detail}"),
+        _ => format!("{message}: {body}"),
+    }
+}
+
+/// `json.Unmarshal(body, &struct{ Detail string `json:"detail"` })`: `None` when Go fails to unmarshal.
+/// Go matches the key case-insensitively and ignores `null`.
+fn problem_detail(body: &str) -> Option<String> {
+    let v: Value = serde_json::from_str(body).ok()?;
+    match v {
+        Value::Null => Some(String::new()),
+        Value::Object(m) => {
+            let mut detail = String::new();
+            let mut exact = None;
+            for (k, val) in &m {
+                if !k.eq_ignore_ascii_case("detail") {
+                    continue;
+                }
+                match val {
+                    Value::Null => {}
+                    Value::String(s) => {
+                        if k == "detail" {
+                            exact = Some(s.clone());
+                        } else {
+                            detail = s.clone();
+                        }
+                    }
+                    _ => return None,
+                }
+            }
+            Some(exact.unwrap_or(detail))
+        }
+        _ => None,
+    }
+}
+
+/// The generated Go client's `JsonCheck`: `(?i:(?:application|text)/(?:[^;]+\+)?json)` (unanchored). A
+/// response whose `Content-Type` does not match is not decoded: Go fails with `undefined response type`.
+pub fn is_go_json_content_type(content_type: &str) -> bool {
+    let ct = content_type.to_ascii_lowercase();
+    ["application/", "text/"].iter().any(|prefix| {
+        ct.match_indices(prefix).any(|(i, _)| {
+            let rest = &ct[i + prefix.len()..];
+            rest.starts_with("json")
+                || rest
+                    .match_indices("+json")
+                    .any(|(j, _)| j > 0 && !rest[..j].contains(';'))
+        })
+    })
+}
+
 /// Error returned by API calls; `Display` matches the Go client's error string.
 #[derive(Debug, Clone)]
 pub struct ApiError {
@@ -325,7 +384,8 @@ impl Client {
         Ok(res)
     }
 
-    fn decode<T: DeserializeOwned>(res: Response) -> Result<T, ApiError> {
+    /// Decode the JSON body of a successful response (an empty body decodes as `null`).
+    pub fn decode<T: DeserializeOwned>(res: Response) -> Result<T, ApiError> {
         let body = if res.body.is_empty() {
             b"null".to_vec()
         } else {

@@ -13,6 +13,19 @@ import json
 
 OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(PARITY, "scenarios", "environment.json")
 
+def git_containers_fixture():
+    """The default container list plus a Git container (source.git_repository)."""
+    default = json.load(open(os.path.join(PARITY, "fixtures", "default.json")))
+    route = next(f for f in default if f.get("path") == "/environment/env-1/container")
+    image = route["body"]["results"][0]
+    git = dict(image, id="cont-g", name="git-container", image_name="qovery-built", tag="abc123",
+               source={"git_repository": {"provider": "GITHUB", "owner": "acme", "url": "https://github.com/acme/app.git",
+                                          "name": "acme/app", "branch": "main", "dockerfile_path": "Dockerfile"}})
+    return {"method": "GET", "path": "/environment/env-1/container", "status": 200, "body": {"results": [image, git]}}
+
+
+GIT_CONTAINERS = git_containers_fixture()
+
 def status(id_, state):
     return {"id": id_, "state": state, "service_deployment_status": "UP_TO_DATE", "is_part_last_deployment": True,
             "status_details": {"action": "DEPLOY", "status": "SUCCESS", "sub_action": "NONE"},
@@ -271,6 +284,10 @@ case("deploy --applications commit api error", [E, "deploy", "--applications", "
      fixtures=[err("GET", "/application/app-1/commit")])
 case("deploy --containers", [E, "deploy", "--containers", "my-container:v2,my-container"])
 case("deploy --containers unknown", [E, "deploy", "--containers", "nope:v1"])
+case("deploy --containers git container", [E, "deploy", "--containers", "git-container,my-container:v2"],
+     fixtures=[GIT_CONTAINERS])
+case("deploy --containers git container tag", [E, "deploy", "--containers", "my-container:v2,git-container:v3"],
+     fixtures=[GIT_CONTAINERS])
 case("deploy --cronjobs", [E, "deploy", "--cronjobs", "my-cron:latest"])
 case("deploy --cronjobs commit", [E, "deploy", "--cronjobs", "my-cron:abc"])
 case("deploy --lifecycles", [E, "deploy", "--lifecycles", "my-lifecycle:1.2"])

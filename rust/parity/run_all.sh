@@ -28,7 +28,7 @@ run_scenario() { # <scenario file>
     case "$name" in
     log_ws) cmd=(python3 parity/log_ws_compare.py "$file" --retries "$retries") ;;
     shell_ws | list-pods_ws) cmd=(python3 parity/shell_ws_compare.py "$file" --retries "$retries") ;;
-    port-forward_ws) cmd=(python3 parity/port-forward_ws_compare.py "$file") ;;
+    port-forward_ws) cmd=(python3 parity/port-forward_ws_compare.py "$file" --retries "$retries") ;;
     esac
     local result=ok
     "${cmd[@]}" >"$logs/$name.log" 2>&1 || result=DRIFT

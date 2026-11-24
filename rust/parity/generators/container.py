@@ -229,6 +229,47 @@ case("deploy --watch error", ["container", "deploy", "-n", "my-container", "--wa
 case("deploy --watch api error on request", ["container", "deploy", "-n", "my-container", "--watch"],
      [err("POST", "/environment/env-1/service/deploy", ERR400), watch_fixture("DEPLOYED")], timeout=60)
 
+# ---- Git containers (source.git_repository) ------------------------------------------------------------------
+GIT_REPO = {"provider": "GITHUB", "owner": "acme", "url": "https://github.com/acme/app.git", "name": "acme/app",
+            "dockerfile_path": "Dockerfile"}
+GIT_CONT = container("cont-g", "git-container", image_name="qovery-built", tag="abc123",
+                     source={"git_repository": dict(GIT_REPO, branch="main", deployed_commit_id="abc123")})
+GIT_CONT_NO_BRANCH = container("cont-h", "git-nobranch", source={"git_repository": GIT_REPO})
+IMAGE_SRC_CONT = container("cont-i", "image-source",
+                           source={"image": {"image_name": "nginx", "tag": "1.25", "registry": {
+                               "id": "reg-1", "name": "Docker Hub", "url": "https://docker.io", "kind": "DOCKER_HUB"}}})
+GIT_CONTAINERS = {"method": "GET", "path": "/environment/env-1/container", "status": 200,
+                  "body": {"results": [CONT1, GIT_CONT, GIT_CONT_NO_BRANCH, IMAGE_SRC_CONT]}}
+GIT_DEPLOY = post("/container/cont-g/deploy", CONT_STATUS_RESP)
+case("list git containers", ["container", "list"], [GIT_CONTAINERS])
+case("list git containers --json", ["container", "list", "--json"], [GIT_CONTAINERS])
+case("deploy git container", ["container", "deploy", "-n", "git-container"], [GIT_CONTAINERS, DEPLOY])
+case("deploy git and image containers", ["container", "deploy", "--containers", "git-container,my-container,image-source"],
+     [GIT_CONTAINERS, DEPLOY])
+case("deploy git container --tag", ["container", "deploy", "-n", "git-container", "-t", "v2"], [GIT_CONTAINERS, DEPLOY])
+case("deploy git container no branch --tag", ["container", "deploy", "-n", "git-nobranch", "-t", "v2"],
+     [GIT_CONTAINERS, DEPLOY])
+case("deploy --commit-id", ["container", "deploy", "-n", "git-container", "--commit-id", "def456"],
+     [GIT_CONTAINERS, GIT_DEPLOY])
+case("deploy -c", ["container", "deploy", "-n", "git-container", "-c", "def456"], [GIT_CONTAINERS, GIT_DEPLOY])
+case("deploy --commit-id image container", ["container", "deploy", "-n", "my-container", "-c", "def456"],
+     [GIT_CONTAINERS, GIT_DEPLOY])
+case("deploy --commit-id mixed containers", ["container", "deploy", "--containers", "git-container,my-container",
+                                             "-c", "def456"], [GIT_CONTAINERS, GIT_DEPLOY])
+case("deploy --commit-id and --tag", ["container", "deploy", "-n", "git-container", "-c", "def456", "-t", "v2"],
+     [GIT_CONTAINERS, GIT_DEPLOY])
+case("deploy --commit-id latest", ["container", "deploy", "-n", "git-container", "-c", " Latest "],
+     [GIT_CONTAINERS, GIT_DEPLOY])
+case("deploy --commit-id api error", ["container", "deploy", "-n", "git-container", "-c", "nope"],
+     [GIT_CONTAINERS, err("POST", "/container/cont-g/deploy",
+                          {"status": 400, "body": {"status": 400, "detail": "commit nope not found"}})])
+case("deploy --commit-id api error raw body", ["container", "deploy", "-n", "git-container", "-c", "nope"],
+     [GIT_CONTAINERS, err("POST", "/container/cont-g/deploy", ERR400)])
+case("deploy --commit-id --watch", ["container", "deploy", "-n", "git-container", "-c", "def456", "-w"],
+     [GIT_CONTAINERS, GIT_DEPLOY, watch_fixture("DEPLOYED", ("cont-g",))], timeout=60)
+case("deploy git container --tag --watch", ["container", "deploy", "-n", "git-container", "-t", "v2", "-w"],
+     [GIT_CONTAINERS, DEPLOY, watch_fixture("DEPLOYED", ("cont-g",))], timeout=60)
+
 # ---- redeploy ------------------------------------------------------------------------------------------------
 REDEPLOY = post("/container/cont-1/deploy", CONT_STATUS_RESP)
 case("redeploy", ["container", "redeploy", "-n", "my-container"], [REDEPLOY])

@@ -127,6 +127,9 @@ Before writing a helper, look for it here (all of them reproduce the Go texts ex
 | `os.UserHomeDir()` (`$HOME`, `%USERPROFILE%` on Windows, never the passwd database) | `qovery_core::gosys::user_home_dir` |
 | `time.Parse(time.RFC3339, ...)` (and `time.Time` JSON decoding) | `qovery_log::gotime::{parse_rfc3339, parse_rfc3339_unix}` |
 | `time.ParseDuration` (signed, Go error texts) | `qovery_log::gofmt::parse_duration_nanos` (flags: `ctx.duration_nanos`) |
+| `withAPIErrorDetail(err)` (`utils/env_var.go`) | `qovery_api::with_api_error_detail` |
+| the generated client's `JsonCheck` (`undefined response type`) | `qovery_api::is_go_json_content_type` |
+| `utils.GetContainerGitRepository` / `ContainerSourceLabel` / `ContainerImageLabel` / `CheckContainerImageTag` / `CheckContainerCommitId` / `DeployContainersAtCommit` | `qovery_services::{get_container_git_repository, container_source_label, container_image_label, check_container_image_tag, check_container_commit_id, deploy_containers_at_commit}` |
 
 Deliberately **not** shared (the Go behaviours differ): the other `encoding/json` scanners (`admin/gojson.rs` is
 go-jose's fork of encoding/json, `env/gojson.rs` is a `json.Decoder` stream with its own `EOF`/type errors), and the
