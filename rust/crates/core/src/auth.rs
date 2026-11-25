@@ -117,7 +117,9 @@ pub fn refresh_access_token(refresh_token: &str, client_id: &str) -> Result<Stri
         ));
     }
     let generic = "error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ";
-    let res = reqwest::blocking::Client::new()
+    let res = qovery_api::http_client_builder()
+        .build()
+        .expect("cannot build http client")
         .post(OAUTH_TOKEN_ENDPOINT)
         .form(&[
             ("client_id", client_id),

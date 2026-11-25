@@ -204,7 +204,9 @@ fn serve_authorization(mut stream: TcpStream, verifier: &str) -> bool {
                 exit(0)
             };
             let redirect = oauth_redirect();
-            let res = reqwest::blocking::Client::new()
+            let res = qovery_api::http_client_builder()
+                .build()
+                .expect("cannot build http client")
                 .post(OAUTH_TOKEN_ENDPOINT)
                 .form(&[
                     ("client_id", OAUTH_CLIENT),
@@ -270,7 +272,9 @@ fn device_flow_parameters() -> DeviceFlowParameters {
         query_escape(OAUTH_AUDIENCE),
         query_escape(&oauth_redirect())
     );
-    let res = reqwest::blocking::Client::new()
+    let res = qovery_api::http_client_builder()
+        .build()
+        .expect("cannot build http client")
         .post(OAUTH_DEVICE_CODE_ENDPOINT)
         .header("content-type", "application/x-www-form-urlencoded")
         .body(payload)
@@ -297,7 +301,9 @@ fn get_tokens_with(params: &DeviceFlowParameters) -> Result<TokensResponse, Stri
         "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Adevice_code&device_code={}&client_id={OAUTH_HEADLESS_CLIENT}",
         params.device_code
     );
-    let res = reqwest::blocking::Client::new()
+    let res = qovery_api::http_client_builder()
+        .build()
+        .expect("cannot build http client")
         .post(OAUTH_TOKEN_ENDPOINT)
         .header("content-type", "application/x-www-form-urlencoded")
         .body(payload)

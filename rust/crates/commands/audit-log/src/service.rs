@@ -226,7 +226,7 @@ pub fn download_audit_logs(options: &DownloadOptions) -> Result<(), String> {
 
     let mut continue_token = String::new();
     let mut total_events = 0usize;
-    let http = reqwest::blocking::Client::builder()
+    let http = qovery_api::http_client_builder()
         .timeout(None)
         .build()
         .map_err(|e| e.to_string())?;

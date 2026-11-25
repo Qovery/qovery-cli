@@ -87,7 +87,7 @@ impl<'a> Req<'a> {
             }
             None => return Err(go_err("unsupported protocol scheme \"\"".to_string())),
         }
-        let client = reqwest::blocking::Client::builder()
+        let client = qovery_api::http_client_builder()
             .timeout(self.timeout)
             .build()
             .map_err(|e| go_err(e.to_string()))?;

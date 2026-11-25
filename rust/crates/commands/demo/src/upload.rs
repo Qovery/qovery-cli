@@ -147,7 +147,7 @@ pub(crate) fn upload_error_logs(
         .append_pair("organization", organization)
         .finish();
     let endpoint = format!("{}/admin/demoDebugLog?{}", client.base_url(), query);
-    let http = reqwest::blocking::Client::builder()
+    let http = qovery_api::http_client_builder()
         .timeout(Duration::from_secs(30))
         .build()
         .expect("http client");
@@ -237,7 +237,9 @@ mod tests {
         ];
         for (statuses, want_requests, want_err, want_auth_error) in cases {
             let (url, bodies) = server(statuses);
-            let http = reqwest::blocking::Client::new();
+            let http = qovery_api::http_client_builder()
+                .build()
+                .expect("cannot build http client");
             let result = post_demo_debug_log(
                 &http,
                 &url,
@@ -269,7 +271,9 @@ mod tests {
             listener.local_addr().unwrap()
         );
         drop(listener);
-        let http = reqwest::blocking::Client::new();
+        let http = qovery_api::http_client_builder()
+            .build()
+            .expect("cannot build http client");
         let err = post_demo_debug_log(&http, &url, "Token abc", b"{}", Duration::ZERO).unwrap_err();
         assert!(!is_demo_debug_log_auth_failure(&err));
         assert!(err.message.starts_with("Post \""), "{}", err.message);
@@ -278,7 +282,9 @@ mod tests {
     #[test]
     fn does_not_retry_an_invalid_endpoint() {
         let started_at = std::time::Instant::now();
-        let http = reqwest::blocking::Client::new();
+        let http = qovery_api::http_client_builder()
+            .build()
+            .expect("cannot build http client");
         let err = post_demo_debug_log(
             &http,
             "://no-scheme",

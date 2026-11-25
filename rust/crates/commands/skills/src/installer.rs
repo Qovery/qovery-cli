@@ -163,7 +163,7 @@ fn run_installer(args: &[&str]) -> Result<(), String> {
 
 /// `downloadInstaller`: save the installer to a temporary file, so it is never piped into a shell.
 fn download_installer() -> Result<tempfile::TempPath, String> {
-    let client = reqwest::blocking::Client::builder()
+    let client = qovery_api::http_client_builder()
         .timeout(Duration::from_secs(30))
         .build()
         .map_err(|e| e.to_string())?;
