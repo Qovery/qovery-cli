@@ -6,7 +6,7 @@ Starts parity/shell_ws_mock.py (websocket gateway) and, per case and per binary,
 case's TCP `session` against the local port, sends SIGINT and compares exit code, stdout, stderr, API requests and
 the bytes received by the TCP clients.
 
-Usage: port-forward_ws_compare.py [scenario.json] [-v] [--only NAME]
+Usage: port-forward_ws_compare.py [scenario.json] [-v] [--only NAME] [--retries N]
 
 Scenario: like compare.py, plus per case
   "session": [{"connect": "a"}, {"send": "a", "data": "hello"}, {"recv": "a", "until": "echo:hello"},
@@ -172,11 +172,24 @@ def run_one(binary, scenario, case, ws):
     }
 
 
+def diff_case(scenario, case, ws):
+    go = run_one(compare.GO_BIN, scenario, case, ws)
+    rs = run_one(compare.RUST_BIN, scenario, case, ws)
+    ignore = set(case.get("ignore") or [])
+    diffs = []
+    for key in ("exit", "stdout", "stderr", "requests", "tcp"):
+        if key not in ignore and go[key] != rs[key]:
+            d = difflib.unified_diff(compare.show(go[key]).splitlines(), compare.show(rs[key]).splitlines(), "go/" + key, "rust/" + key, lineterm="", n=2)
+            diffs.append("\n".join(d))
+    return go, diffs
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("scenario", nargs="?", default=os.path.join(PARITY_DIR, "scenarios", "port-forward_ws.json"))
     ap.add_argument("--only")
     ap.add_argument("-v", "--verbose", action="store_true")
+    ap.add_argument("--retries", type=int, default=0, help="re-run a differing case up to N times before reporting it")
     a = ap.parse_args()
     sc = json.load(open(a.scenario))
     wsdir = tempfile.mkdtemp(prefix="pf-ws-")
@@ -187,21 +200,18 @@ def main():
             if a.only and a.only not in case["name"]:
                 continue
             total += 1
-            go = run_one(compare.GO_BIN, sc, case, ws)
-            rs = run_one(compare.RUST_BIN, sc, case, ws)
-            ignore = set(case.get("ignore") or [])
-            diffs = []
-            for key in ("exit", "stdout", "stderr", "requests", "tcp"):
-                if key not in ignore and go[key] != rs[key]:
-                    d = difflib.unified_diff(compare.show(go[key]).splitlines(), compare.show(rs[key]).splitlines(), "go/" + key, "rust/" + key, lineterm="", n=2)
-                    diffs.append("\n".join(d))
+            # the Go confirmation prompt (promptui) redraws racily: a case only drifts when every attempt differs
+            for attempt in range(a.retries + 1):
+                go, diffs = diff_case(sc, case, ws)
+                if not diffs:
+                    break
             if diffs:
                 print("DIFF  %s   [qovery %s]" % (case["name"], " ".join(case["args"])))
                 for d in diffs:
                     print("\n".join("      " + l for l in d.splitlines()))
             else:
                 ok += 1
-                print("SAME  %s" % case["name"])
+                print("SAME  %s%s" % (case["name"], "   (attempt %d)" % (attempt + 1) if attempt else ""))
                 if a.verbose:
                     for key in ("stdout", "stderr", "tcp"):
                         print("      %s: %s" % (key, compare.show(go[key]).replace("\n", "\n              ")))

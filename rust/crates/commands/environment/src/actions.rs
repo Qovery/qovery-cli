@@ -254,7 +254,7 @@ pub(crate) fn deploy() -> Command {
         ))
         .flag(Flag::string(
             "containers",
-            "Containers to deploy E.g. --containers container1:image_tag,container2:image_tag). If you omit the image tag, the same image tag will be used",
+            "Containers to deploy E.g. --containers container1:image_tag,container2:image_tag). If you omit the image tag, the same image tag will be used. A Git container takes no image tag: it deploys its current commit",
         ))
         .flag(Flag::string(
             "lifecycles",
@@ -472,6 +472,11 @@ fn get_deployment_request_for_multiple_services(
             let Some(container) = find_by_name(&containers, &name) else {
                 fail(format!("container {name} not found"));
             };
+            if let Some(version) = &version {
+                check_error(qovery_services::check_container_image_tag(
+                    container, version,
+                ));
+            }
             request
                 .containers
                 .get_or_insert_with(Vec::new)

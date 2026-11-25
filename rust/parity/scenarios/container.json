@@ -1190,6 +1190,3574 @@
    "timeout": 60
   },
   {
+   "name": "list git containers",
+   "args": [
+    "container",
+    "list"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "list git containers --json",
+   "args": [
+    "container",
+    "list",
+    "--json"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy git container",
+   "args": [
+    "container",
+    "deploy",
+    "-n",
+    "git-container"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYING"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy git and image containers",
+   "args": [
+    "container",
+    "deploy",
+    "--containers",
+    "git-container,my-container,image-source"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYING"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy git container --tag",
+   "args": [
+    "container",
+    "deploy",
+    "-n",
+    "git-container",
+    "-t",
+    "v2"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYING"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy git container no branch --tag",
+   "args": [
+    "container",
+    "deploy",
+    "-n",
+    "git-nobranch",
+    "-t",
+    "v2"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYING"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --commit-id",
+   "args": [
+    "container",
+    "deploy",
+    "-n",
+    "git-container",
+    "--commit-id",
+    "def456"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/container/cont-g/deploy",
+     "status": 202,
+     "body": {
+      "id": "cont-1",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "exec-1"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy -c",
+   "args": [
+    "container",
+    "deploy",
+    "-n",
+    "git-container",
+    "-c",
+    "def456"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/container/cont-g/deploy",
+     "status": 202,
+     "body": {
+      "id": "cont-1",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "exec-1"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --commit-id image container",
+   "args": [
+    "container",
+    "deploy",
+    "-n",
+    "my-container",
+    "-c",
+    "def456"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/container/cont-g/deploy",
+     "status": 202,
+     "body": {
+      "id": "cont-1",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "exec-1"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --commit-id mixed containers",
+   "args": [
+    "container",
+    "deploy",
+    "--containers",
+    "git-container,my-container",
+    "-c",
+    "def456"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/container/cont-g/deploy",
+     "status": 202,
+     "body": {
+      "id": "cont-1",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "exec-1"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --commit-id and --tag",
+   "args": [
+    "container",
+    "deploy",
+    "-n",
+    "git-container",
+    "-c",
+    "def456",
+    "-t",
+    "v2"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/container/cont-g/deploy",
+     "status": 202,
+     "body": {
+      "id": "cont-1",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "exec-1"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --commit-id latest",
+   "args": [
+    "container",
+    "deploy",
+    "-n",
+    "git-container",
+    "-c",
+    " Latest "
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/container/cont-g/deploy",
+     "status": 202,
+     "body": {
+      "id": "cont-1",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "exec-1"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --commit-id api error",
+   "args": [
+    "container",
+    "deploy",
+    "-n",
+    "git-container",
+    "-c",
+    "nope"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/container/cont-g/deploy",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "detail": "commit nope not found"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --commit-id api error raw body",
+   "args": [
+    "container",
+    "deploy",
+    "-n",
+    "git-container",
+    "-c",
+    "nope"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/container/cont-g/deploy",
+     "status": 400,
+     "body": {
+      "status": 400,
+      "message": "bad request"
+     }
+    }
+   ]
+  },
+  {
+   "name": "deploy --commit-id --watch",
+   "args": [
+    "container",
+    "deploy",
+    "-n",
+    "git-container",
+    "-c",
+    "def456",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/container/cont-g/deploy",
+     "status": 202,
+     "body": {
+      "id": "cont-1",
+      "state": "DEPLOYING",
+      "service_deployment_status": "UP_TO_DATE",
+      "is_part_last_deployment": true,
+      "status_details": {
+       "action": "DEPLOY",
+       "status": "SUCCESS",
+       "sub_action": "NONE"
+      },
+      "deployment_request_id": null,
+      "deployment_requests_count": 0,
+      "execution_id": "exec-1"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "containers": [
+           {
+            "id": "cont-g",
+            "state": "STOPPED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old-cont-g"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "containers": [
+           {
+            "id": "cont-g",
+            "state": "DEPLOYING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new-cont-g"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "containers": [
+           {
+            "id": "cont-g",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new-cont-g"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "deploy git container --tag --watch",
+   "args": [
+    "container",
+    "deploy",
+    "-n",
+    "git-container",
+    "-t",
+    "v2",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/container",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cont-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "my-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       },
+       {
+        "id": "cont-g",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "qovery-built",
+        "tag": "abc123",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-container",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile",
+          "branch": "main",
+          "deployed_commit_id": "abc123"
+         }
+        }
+       },
+       {
+        "id": "cont-h",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "git-nobranch",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "git_repository": {
+          "provider": "GITHUB",
+          "owner": "acme",
+          "url": "https://github.com/acme/app.git",
+          "name": "acme/app",
+          "dockerfile_path": "Dockerfile"
+         }
+        }
+       },
+       {
+        "id": "cont-i",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "image_name": "nginx",
+        "tag": "1.25",
+        "registry": {
+         "id": "reg-1",
+         "name": "Docker Hub",
+         "url": "https://docker.io",
+         "kind": "DOCKER_HUB"
+        },
+        "environment": {
+         "id": "env-1"
+        },
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "name": "image-source",
+        "cpu": 250,
+        "memory": 256,
+        "gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "healthchecks": {
+         "checks": []
+        },
+        "auto_preview": false,
+        "icon_uri": "app://qovery-console/container",
+        "service_type": "CONTAINER",
+        "auto_deploy": false,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": [],
+        "source": {
+         "image": {
+          "image_name": "nginx",
+          "tag": "1.25",
+          "registry": {
+           "id": "reg-1",
+           "name": "Docker Hub",
+           "url": "https://docker.io",
+           "kind": "DOCKER_HUB"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYING"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "containers": [
+           {
+            "id": "cont-g",
+            "state": "STOPPED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old-cont-g"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "containers": [
+           {
+            "id": "cont-g",
+            "state": "DEPLOYING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new-cont-g"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "containers": [
+           {
+            "id": "cont-g",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new-cont-g"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
    "name": "redeploy",
    "args": [
     "container",

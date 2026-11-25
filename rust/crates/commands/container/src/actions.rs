@@ -24,7 +24,8 @@ pub fn deploy() -> Command {
     with_context_flags(Command::new("deploy").short("Deploy a container"))
         .flag(container_flag())
         .flag(Flag::string("containers", CONTAINERS_USAGE))
-        .flag(Flag::string("tag", "Container Tag").short('t'))
+        .flag(Flag::string("tag", "Container Tag (image containers only)").short('t'))
+        .flag(Flag::string("commit-id", "Container Commit ID (Git containers only)").short('c'))
         .flag(Flag::bool("watch", WATCH_USAGE).short('w'))
         .run(run_deploy)
 }
@@ -132,15 +133,59 @@ fn names_label(ctx: &Ctx) -> String {
     ))
 }
 
+/// `validateContainerDeployVersion(tag, commitId)`: checked before signing in.
+fn validate_container_deploy_version(tag: &str, commit_id: &str) -> Result<(), String> {
+    if !tag.is_empty() && !commit_id.is_empty() {
+        return Err("use either --tag or --commit-id, not both".to_string());
+    }
+    if qovery_services::is_latest_commit_keyword(commit_id) {
+        return Err(format!(
+            "--commit-id {} is not supported for Git containers: pass a commit SHA",
+            qovery_services::LATEST_COMMIT_KEYWORD
+        ));
+    }
+    Ok(())
+}
+
+/// `checkContainersMatchDeployVersion(containerList, tag, commitId)`: checked before `--watch` reads statuses.
+fn check_containers_match_deploy_version(
+    list: &[Container],
+    tag: &str,
+    commit_id: &str,
+) -> Result<(), String> {
+    for container in list {
+        if commit_id.is_empty() {
+            qovery_services::check_container_image_tag(container, tag)?;
+        } else {
+            qovery_services::check_container_commit_id(container)?;
+        }
+    }
+    Ok(())
+}
+
 fn run_deploy(ctx: &Ctx) {
-    let (client, env_id, list) = prepare(ctx);
-    let watch = new_services_watch(&client, &env_id, container_ids(&list), ctx.bool("watch"));
-    check_error(qovery_services::deploy_containers(
+    telemetry::capture(ctx);
+    let (tag, commit_id) = (ctx.string("tag"), ctx.string("commit-id"));
+    check_error(validate_container_deploy_version(&tag, &commit_id));
+    let client = client::get_client_or_exit();
+    validate_container_arguments(&ctx.string("container"), &ctx.string("containers"));
+    let env_id = environment_id_from_flags_or_exit(&client, ctx);
+    let list = build_container_list(
         &client,
         &env_id,
-        &list,
-        &ctx.string("tag"),
+        &ctx.string("container"),
+        &ctx.string("containers"),
+    );
+    check_error(check_containers_match_deploy_version(
+        &list, &tag, &commit_id,
     ));
+    let watch = new_services_watch(&client, &env_id, container_ids(&list), ctx.bool("watch"));
+    // `deployContainers`: --commit-id deploys each container at that commit, otherwise deploy-all
+    check_error(if commit_id.is_empty() {
+        qovery_services::deploy_containers(&client, &env_id, &list, &tag)
+    } else {
+        qovery_services::deploy_containers_at_commit(&client, &list, &commit_id)
+    });
     qovery_log::println(format!(
         "Request to deploy container(s) {} has been queued..",
         names_label(ctx)

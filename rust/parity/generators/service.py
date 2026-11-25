@@ -18,6 +18,19 @@ def err(method, path, status=500):
     return {"method": method, "path": path, "status": status, "body": {"status": status, "error": "boom"}}
 def empty(path):
     return {"method": "GET", "path": path, "status": 200, "body": {"results": []}}
+
+def git_containers_fixture():
+    """The default container list plus a Git container (source.git_repository)."""
+    default = json.load(open(os.path.join(PARITY, "fixtures", "default.json")))
+    route = next(f for f in default if f.get("path") == "/environment/env-1/container")
+    image = route["body"]["results"][0]
+    git = dict(image, id="cont-g", name="git-container", image_name="qovery-built", tag="abc123",
+               source={"git_repository": {"provider": "GITHUB", "owner": "acme", "url": "https://github.com/acme/app.git",
+                                          "name": "acme/app", "branch": "main", "dockerfile_path": "Dockerfile"}})
+    return {"method": "GET", "path": "/environment/env-1/container", "status": 200, "body": {"results": [image, git]}}
+
+
+GIT_CONTAINERS = git_containers_fixture()
 def link(kind, id, url):
     return {"method": "GET", "path": "/%s/%s/link" % (kind, id), "status": 200, "body": {"results": [
         {"service_id": id, "service_type": kind.upper(), "url": url, "internal_port": 80, "external_port": 443, "is_qovery_domain": True, "is_default": True},
@@ -76,6 +89,10 @@ c("deploy app", ["service", "deploy", "-n", "my-app"], fixtures=[DEPLOY_OK])
 c("deploy app version", ["service", "deploy", "-n", "my-app", "--version", "c0ffee"], fixtures=[DEPLOY_OK])
 c("deploy container", ["service", "deploy", "-n", "my-container"], fixtures=[DEPLOY_OK])
 c("deploy container version", ["service", "deploy", "--service", "my-container", "-v", "2.0"], fixtures=[DEPLOY_OK])
+c("deploy git container", ["service", "deploy", "-n", "git-container"], fixtures=[GIT_CONTAINERS, DEPLOY_OK])
+c("deploy git container version", ["service", "deploy", "--services", "my-app,git-container", "-v", "v2"],
+  fixtures=[GIT_CONTAINERS, DEPLOY_OK])
+c("deploy git container api error", ["service", "deploy", "-n", "git-container"], fixtures=[GIT_CONTAINERS, DEPLOY_500])
 c("deploy database", ["service", "deploy", "-n", "my-db", "-v", "ignored"], fixtures=[DEPLOY_OK])
 c("deploy cron", ["service", "deploy", "-n", "my-cron"], fixtures=[DEPLOY_OK])
 c("deploy cron version", ["service", "deploy", "-n", "my-cron", "-v", "abcdef"], fixtures=[DEPLOY_OK])

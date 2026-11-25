@@ -96,13 +96,25 @@ fn run_list(ctx: &Ctx) {
         let results: Vec<Value> = containers
             .iter()
             .map(|c| {
-                json!({
+                let mut result = json!({
                     "id": c.id,
                     "name": c.name,
                     "type": "Container",
                     "status": qovery_core::status::find_status(&statuses.applications, &c.id),
                     "last_update": time_string_from_rfc3339(c.updated_at.as_deref().unwrap_or("")),
-                })
+                    "source": "image",
+                    "registry": qovery_services::container_registry_name(c),
+                    "image_name": c.image_name,
+                    "tag": c.tag,
+                });
+                if let Some(repository) = qovery_services::get_container_git_repository(c) {
+                    result["source"] = json!("git_repository");
+                    result["git_repository"] = json!({
+                        "url": repository.get("url").and_then(Value::as_str).unwrap_or_default(),
+                        "branch": repository.get("branch").and_then(Value::as_str).unwrap_or_default(),
+                    });
+                }
+                result
             })
             .collect();
         let out = if results.is_empty() {
@@ -123,10 +135,23 @@ fn run_list(ctx: &Ctx) {
                 "Container".to_string(),
                 qovery_core::status::find_status_text_with_color(&statuses.containers, &c.id),
                 time_string_from_rfc3339(c.updated_at.as_deref().unwrap_or("")),
+                qovery_services::container_source_label(c),
+                qovery_services::container_image_label(c),
             ]
         })
         .collect();
-    qovery_log::print_table(&["Id", "Name", "Type", "Status", "Last Update"], &data);
+    qovery_log::print_table(
+        &[
+            "Id",
+            "Name",
+            "Type",
+            "Status",
+            "Last Update",
+            "Source",
+            "Image",
+        ],
+        &data,
+    );
 }
 
 /// Go: `utils.PrintlnError(errors.Errorf("status code: %s ; body: %s", res.Status, string(result)))`.
