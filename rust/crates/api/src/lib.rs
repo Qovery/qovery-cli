@@ -181,10 +181,69 @@ pub fn api_base_url() -> String {
     }
 }
 
+/// `reqwest::blocking::Client::builder()` with Go's proxy semantics. The proxy comes from the environment as with
+/// reqwest (`HTTPS_PROXY`, `HTTP_PROXY`, `ALL_PROXY`, `NO_PROXY`), but a `socks5://` proxy resolves the host names
+/// at the proxy, as Go's `net/http` does (`socks5h` for reqwest). The bastion tunnel of `qovery admin` exports
+/// `HTTPS_PROXY=socks5://...` (Go and kube clients reject `socks5h`) and a name resolved locally may give an
+/// address the bastion cannot reach (IPv6).
+pub fn http_client_builder() -> reqwest::blocking::ClientBuilder {
+    let builder = reqwest::blocking::Client::builder();
+    let Some([https, http, all]) = remote_dns_proxies(|n| std::env::var(n).ok()) else {
+        return builder;
+    };
+    // the first proxy matching the request scheme wins: the scheme's own variable, then ALL_PROXY
+    let no_proxy = reqwest::NoProxy::from_env();
+    let proxies = [
+        reqwest::Proxy::https(https),
+        reqwest::Proxy::http(http),
+        reqwest::Proxy::all(all),
+    ];
+    // explicit proxies turn the environment ones off
+    let mut builder = builder.no_proxy();
+    for proxy in proxies.into_iter().flatten() {
+        builder = builder.proxy(proxy.no_proxy(no_proxy.clone()));
+    }
+    builder
+}
+
+/// The `[HTTPS, HTTP, ALL]` proxy variables read as reqwest does, with `socks5://` turned into `socks5h://`;
+/// `None` when no variable is a `socks5://` one (the reqwest environment proxies are then kept as is).
+fn remote_dns_proxies(var: impl Fn(&str) -> Option<String>) -> Option<[String; 3]> {
+    // reqwest ignores the proxy variables in a CGI script
+    if var("REQUEST_METHOD").is_some() {
+        return None;
+    }
+    let first = |names: [&str; 2]| names.iter().find_map(|n| var(n)).unwrap_or_default();
+    let proxies = [
+        first(["HTTPS_PROXY", "https_proxy"]),
+        first(["HTTP_PROXY", "http_proxy"]),
+        first(["ALL_PROXY", "all_proxy"]),
+    ];
+    let is_socks5 = |v: &str| {
+        v.get(..9)
+            .is_some_and(|s| s.eq_ignore_ascii_case("socks5://"))
+    };
+    if !proxies.iter().any(|v| is_socks5(v)) {
+        return None;
+    }
+    Some(proxies.map(|v| {
+        if is_socks5(&v) {
+            format!("socks5h://{}", &v[9..])
+        } else {
+            v
+        }
+    }))
+}
+
+/// `reqwest::blocking::get` through [`http_client_builder`].
+pub fn http_get<U: reqwest::IntoUrl>(url: U) -> reqwest::Result<reqwest::blocking::Response> {
+    http_client_builder().build()?.get(url).send()
+}
+
 impl Client {
     /// `authorization` is the full header value, e.g. `Bearer xxx` or `Token xxx`.
     pub fn new(authorization: &str, cli_version: &str, verbose: bool) -> Self {
-        let http = reqwest::blocking::Client::builder()
+        let http = http_client_builder()
             .timeout(Duration::from_secs(60))
             .build()
             .expect("cannot build http client");
@@ -598,4 +657,59 @@ fn go_transport_error(e: &reqwest::Error, url: &str) -> String {
         source = s.source();
     }
     e.to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::remote_dns_proxies;
+
+    fn proxies(vars: &[(&str, &str)]) -> Option<[String; 3]> {
+        remote_dns_proxies(|n| {
+            vars.iter()
+                .find(|(k, _)| *k == n)
+                .map(|(_, v)| v.to_string())
+        })
+    }
+
+    #[test]
+    fn socks5_proxies_resolve_names_remotely() {
+        assert_eq!(
+            proxies(&[("HTTPS_PROXY", "socks5://127.0.0.1:1080")]),
+            Some(["socks5h://127.0.0.1:1080".into(), "".into(), "".into()])
+        );
+        assert_eq!(
+            proxies(&[
+                ("https_proxy", "SOCKS5://u:p@proxy:1080"),
+                ("HTTP_PROXY", "http://proxy:3128"),
+                ("all_proxy", "socks5://all:1080"),
+            ]),
+            Some([
+                "socks5h://u:p@proxy:1080".into(),
+                "http://proxy:3128".into(),
+                "socks5h://all:1080".into()
+            ])
+        );
+    }
+
+    #[test]
+    fn other_proxies_are_left_to_reqwest() {
+        assert_eq!(proxies(&[]), None);
+        assert_eq!(proxies(&[("HTTPS_PROXY", "http://proxy:3128")]), None);
+        assert_eq!(
+            proxies(&[("HTTPS_PROXY", "socks5h://127.0.0.1:1080")]),
+            None
+        );
+        // an empty upper-case variable hides the lower-case one, as in reqwest
+        assert_eq!(
+            proxies(&[("HTTPS_PROXY", ""), ("https_proxy", "socks5://p:1080")]),
+            None
+        );
+        assert_eq!(
+            proxies(&[
+                ("REQUEST_METHOD", "GET"),
+                ("HTTPS_PROXY", "socks5://127.0.0.1:1080")
+            ]),
+            None
+        );
+    }
 }

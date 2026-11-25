@@ -465,7 +465,7 @@ fn run_api(ctx: &Ctx) {
     let user_accept_encoding = parsed_headers
         .keys()
         .any(|k| k.eq_ignore_ascii_case("accept-encoding"));
-    let mut builder = reqwest::blocking::Client::builder().timeout(Duration::from_secs(60));
+    let mut builder = qovery_api::http_client_builder().timeout(Duration::from_secs(60));
     if user_accept_encoding {
         builder = builder.no_gzip();
     }
@@ -572,7 +572,7 @@ fn write_response(mut resp: reqwest::blocking::Response, include: bool) -> Resul
 fn run_spec(ctx: &Ctx) {
     telemetry::capture(ctx);
 
-    let client = match reqwest::blocking::Client::builder()
+    let client = match qovery_api::http_client_builder()
         .timeout(Duration::from_secs(30))
         .build()
     {

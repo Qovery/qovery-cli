@@ -162,7 +162,7 @@ pub fn capture_with_event_and_properties(
             "properties": properties,
         }],
     });
-    let Ok(client) = reqwest::blocking::Client::builder()
+    let Ok(client) = qovery_api::http_client_builder()
         .timeout(std::time::Duration::from_secs(5))
         .build()
     else {

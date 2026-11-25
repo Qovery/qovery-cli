@@ -638,7 +638,7 @@ impl SelfManagedClusterService for SelfManagedClusterServiceImpl<'_> {
             }
             _ => "",
         };
-        let res = reqwest::blocking::get(url).map_err(|e| {
+        let res = qovery_api::http_get(url).map_err(|e| {
             let reason = std::error::Error::source(&e)
                 .map(|s| s.to_string())
                 .unwrap_or_else(|| e.to_string());

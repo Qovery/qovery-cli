@@ -125,7 +125,7 @@ fn http_request_with(
             qovery_log::gofmt::quote(parsed.scheme())
         ));
     }
-    let mut builder = reqwest::blocking::Client::builder();
+    let mut builder = qovery_api::http_client_builder();
     builder = builder.timeout(timeout);
     let client = builder.build().map_err(|e| e.to_string())?;
     let mut req = client.request(method.clone(), parsed);

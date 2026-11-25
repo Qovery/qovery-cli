@@ -96,7 +96,7 @@ fn run(_ctx: &Ctx) {
         qovery_core::exit(0);
     }
 
-    let resp = match reqwest::blocking::get(&url) {
+    let resp = match qovery_api::http_get(&url) {
         Ok(r) => r,
         Err(e) => {
             println_error(format!(

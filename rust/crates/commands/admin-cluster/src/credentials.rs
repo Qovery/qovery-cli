@@ -366,14 +366,14 @@ fn setup_ssh_connection() -> Result<std::process::Child, String> {
         return Err(format!("error waiting for SSH connection: {e}"));
     }
     logrus::info("SSH connection established successfully");
-    // socks5h: the bastion resolves the host names. With socks5 reqwest resolves them locally and may hand an IPv6
-    // address the bastion cannot reach (Go sends the host name for both schemes)
+    // socks5 as in Go: the child shell tools (kube clients, Bun...) reject socks5h. The CLI's own requests still
+    // resolve the host names at the bastion (qovery_api::http_client_builder)
     set_env("HTTPS_PROXY", SOCKS_PROXY);
     Ok(child)
 }
 
 /// `HTTPS_PROXY` of the bastion tunnel.
-pub const SOCKS_PROXY: &str = "socks5h://127.0.0.1:1080";
+pub const SOCKS_PROXY: &str = "socks5://127.0.0.1:1080";
 
 /// `SysProcAttr{Pdeathsig: SIGTERM}` (`pkg/bastion_linux.go`): ssh gets SIGTERM when the CLI dies.
 #[cfg(target_os = "linux")]

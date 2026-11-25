@@ -25,7 +25,7 @@ fn go_semver_error(_raw: &str, _rust_err: &str) -> String {
 /// `pkg.GetLatestOnlineVersionUrl()`: follows the GitHub "latest release" redirect and returns the URL path.
 pub fn latest_online_version_url() -> Result<String, String> {
     let url = "https://github.com/Qovery/qovery-cli/releases/latest";
-    let res = reqwest::blocking::get(url)
+    let res = qovery_api::http_get(url)
         .map_err(|_| "can't reach Github, please check your network connectivity".to_string())?;
     Ok(res.url().path().to_string())
 }
