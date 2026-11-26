@@ -47,44 +47,10 @@ var applicationUpdateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		var storage []qovery.ServiceStorageRequestStorageInner
-		for _, s := range application.Storage {
-			storage = append(storage, qovery.ServiceStorageRequestStorageInner{
-				Id:         &s.Id,
-				Type:       s.Type,
-				Size:       s.Size,
-				MountPoint: s.MountPoint,
-			})
-		}
-
-		req := qovery.ApplicationEditRequest{
-			Storage:     storage,
-			Name:        &application.Name,
-			Description: application.Description,
-			GitRepository: &qovery.ApplicationGitRepositoryRequest{
-				Branch:     application.GitRepository.Branch,
-				GitTokenId: application.GitRepository.GitTokenId,
-				RootPath:   application.GitRepository.RootPath,
-				Url:        application.GitRepository.Url,
-				Provider:   application.GitRepository.Provider,
-			},
-			BuildMode:           application.BuildMode,
-			DockerfilePath:      application.DockerfilePath,
-			Cpu:                 application.Cpu,
-			Memory:              application.Memory,
-			MinRunningInstances: application.MinRunningInstances,
-			MaxRunningInstances: application.MaxRunningInstances,
-			Healthchecks:        application.Healthchecks,
-			AutoPreview:         application.AutoPreview,
-			Ports:               application.Ports,
-			Arguments:           application.Arguments,
-			Entrypoint:          application.Entrypoint,
-			AutoDeploy:          *qovery.NewNullableBool(application.AutoDeploy),
-			Autoscaling:         utils.ConvertAutoscalingResponseToRequest(application.Autoscaling),
-		}
-
-		if applicationBranch != "" {
-			req.GitRepository.Branch = &applicationBranch
+		req, err := applicationEditRequest(application, applicationBranch)
+		if err != nil {
+			utils.PrintlnError(err)
+			os.Exit(1)
 		}
 
 		applyApplicationAutoFlags(cmd, &req)
@@ -111,6 +77,58 @@ func init() {
 	applicationUpdateCmd.Flags().BoolVarP(&applicationAutoPreview, "auto-preview", "", false, "Add the service to pull-request preview environments; previews build pull-request code with the environment's secrets")
 
 	_ = applicationUpdateCmd.MarkFlagRequired("application")
+}
+
+func applicationEditRequest(application *qovery.Application, branch string) (qovery.ApplicationEditRequest, error) {
+	var storage []qovery.ServiceStorageRequestStorageInner
+	for _, s := range application.Storage {
+		storage = append(storage, qovery.ServiceStorageRequestStorageInner{
+			Id:         &s.Id,
+			Type:       s.Type,
+			Size:       s.Size,
+			MountPoint: s.MountPoint,
+		})
+	}
+
+	var gitRepository *qovery.ApplicationGitRepositoryRequest
+	if application.GitRepository != nil {
+		gitRepository = &qovery.ApplicationGitRepositoryRequest{
+			Branch:     application.GitRepository.Branch,
+			GitTokenId: application.GitRepository.GitTokenId,
+			RootPath:   application.GitRepository.RootPath,
+			Url:        application.GitRepository.Url,
+			Provider:   application.GitRepository.Provider,
+		}
+	}
+
+	req := qovery.ApplicationEditRequest{
+		Storage:             storage,
+		Name:                &application.Name,
+		Description:         application.Description,
+		GitRepository:       gitRepository,
+		BuildMode:           application.BuildMode,
+		DockerfilePath:      application.DockerfilePath,
+		Cpu:                 application.Cpu,
+		Memory:              application.Memory,
+		MinRunningInstances: application.MinRunningInstances,
+		MaxRunningInstances: application.MaxRunningInstances,
+		Healthchecks:        application.Healthchecks,
+		AutoPreview:         application.AutoPreview,
+		Ports:               application.Ports,
+		Arguments:           application.Arguments,
+		Entrypoint:          application.Entrypoint,
+		AutoDeploy:          *qovery.NewNullableBool(application.AutoDeploy),
+		Autoscaling:         utils.ConvertAutoscalingResponseToRequest(application.Autoscaling),
+	}
+
+	if branch != "" {
+		if req.GitRepository == nil {
+			return req, fmt.Errorf("application %s runs an image, not a Git repository: --branch only applies to Git applications", application.Name)
+		}
+		req.GitRepository.Branch = &branch
+	}
+
+	return req, nil
 }
 
 func applyApplicationAutoFlags(cmd *cobra.Command, req *qovery.ApplicationEditRequest) {

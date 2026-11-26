@@ -14,8 +14,8 @@ use qovery_log::gofmt::{go_json, time_string_from_rfc3339};
 use qovery_log::pterm::FG_BLUE;
 use qovery_services::{
     RebootServicesRequest, application_ids, cancel_service_deployment,
-    convert_autoscaling_response_to_request, deploy_applications, go_healthcheck,
-    is_latest_commit_keyword, new_services_watch, path_escape, reboot_services,
+    check_applications_commit_id, convert_autoscaling_response_to_request, deploy_applications,
+    go_healthcheck, is_latest_commit_keyword, new_services_watch, path_escape, reboot_services,
     resolve_latest_application_commit, state,
 };
 use serde_json::{Map, Value, json};
@@ -162,6 +162,11 @@ pub(crate) fn deploy() -> Command {
 
 fn run_deploy(ctx: &Ctx) {
     let (client, env_id, list, names) = multi_services_start(ctx);
+    check_error(check_applications_commit_id(
+        &list,
+        &ctx.string("commit-id"),
+        "--commit-id",
+    ));
     let watch = new_services_watch(&client, &env_id, application_ids(&list), ctx.bool("watch"));
     check_error(deploy_applications(
         &client,
@@ -188,6 +193,11 @@ pub(crate) fn redeploy() -> Command {
 
 fn run_redeploy(ctx: &Ctx) {
     let (client, env_id, list, names) = multi_services_start(ctx);
+    check_error(check_applications_commit_id(
+        &list,
+        &ctx.string("commit-id"),
+        "--commit-id",
+    ));
     let watch = new_services_watch(&client, &env_id, application_ids(&list), ctx.bool("watch"));
     let application = &list[0];
 
@@ -463,16 +473,10 @@ fn run_update(ctx: &Ctx) {
     let name = ctx.string("application");
     let application = find_application_or_exit(&client, &env_id, &name);
 
-    let mut req =
-        application_edit_request(&serde_json::to_value(&application).unwrap_or(Value::Null));
-    let branch = ctx.string("branch");
-    if !branch.is_empty()
-        && let Some(git) = req
-            .get_mut("git_repository")
-            .and_then(|g| g.as_object_mut())
-    {
-        git.insert("branch".into(), Value::String(branch));
-    }
+    let mut req = check_error(application_edit_request(
+        &serde_json::to_value(&application).unwrap_or(Value::Null),
+        &ctx.string("branch"),
+    ));
     if ctx.changed("auto-deploy") {
         req.insert("auto_deploy".into(), Value::Bool(ctx.bool("auto-deploy")));
     }
@@ -524,8 +528,9 @@ fn go_service_port(p: &Value) -> Value {
 }
 
 /// The `qovery.ApplicationEditRequest` built by `cmd/application_update.go` from the current application,
-/// serialized like the Go client (`ToMap`).
-fn application_edit_request(app: &Value) -> Map<String, Value> {
+/// serialized like the Go client (`ToMap`), with `branch` when set. An application without Git repository
+/// is sent without `git_repository` and rejects a `branch`.
+fn application_edit_request(app: &Value, branch: &str) -> Result<Map<String, Value>, String> {
     let mut req = Map::new();
 
     // storage: only when the application has some (Go appends to a nil slice)
@@ -559,34 +564,39 @@ fn application_edit_request(app: &Value) -> Map<String, Value> {
     );
     copy_ptr(app, &mut req, "description");
 
-    let empty = Value::Object(Map::new());
-    let git = app
-        .get("git_repository")
-        .filter(|g| g.is_object())
-        .unwrap_or(&empty);
-    let mut git_req = Map::new();
-    git_req.insert(
-        "url".into(),
-        Value::String(
-            git.get("url")
-                .and_then(|v| v.as_str())
-                .unwrap_or_default()
-                .to_string(),
-        ),
-    );
-    copy_ptr(git, &mut git_req, "branch");
-    copy_ptr(git, &mut git_req, "root_path");
-    copy_nullable(git, &mut git_req, "git_token_id");
-    git_req.insert(
-        "provider".into(),
-        Value::String(
-            git.get("provider")
-                .and_then(|v| v.as_str())
-                .unwrap_or_default()
-                .to_string(),
-        ),
-    );
-    req.insert("git_repository".into(), Value::Object(git_req));
+    if let Some(git) = app.get("git_repository").filter(|g| g.is_object()) {
+        let mut git_req = Map::new();
+        git_req.insert(
+            "url".into(),
+            Value::String(
+                git.get("url")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or_default()
+                    .to_string(),
+            ),
+        );
+        copy_ptr(git, &mut git_req, "branch");
+        if !branch.is_empty() {
+            git_req.insert("branch".into(), Value::String(branch.to_string()));
+        }
+        copy_ptr(git, &mut git_req, "root_path");
+        copy_nullable(git, &mut git_req, "git_token_id");
+        git_req.insert(
+            "provider".into(),
+            Value::String(
+                git.get("provider")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or_default()
+                    .to_string(),
+            ),
+        );
+        req.insert("git_repository".into(), Value::Object(git_req));
+    } else if !branch.is_empty() {
+        return Err(format!(
+            "application {} runs an image, not a Git repository: --branch only applies to Git applications",
+            app.get("name").and_then(|v| v.as_str()).unwrap_or_default()
+        ));
+    }
 
     copy_ptr(app, &mut req, "build_mode");
     copy_nullable(app, &mut req, "dockerfile_path");
@@ -618,7 +628,7 @@ fn application_edit_request(app: &Value) -> Map<String, Value> {
     if let Some(autoscaling) = convert_autoscaling_response_to_request(app.get("autoscaling")) {
         req.insert("autoscaling".into(), autoscaling);
     }
-    req
+    Ok(req)
 }
 
 #[cfg(test)]
@@ -633,7 +643,7 @@ mod tests {
             "dockerfile_path": null, "cpu": 500, "ports": [{"id": "p", "internal_port": 80, "name": null, "publicly_accessible": true, "protocol": "HTTP"}],
             "arguments": [], "healthchecks": {"checks": []}
         });
-        let req = application_edit_request(&app);
+        let req = application_edit_request(&app, "").unwrap();
         assert_eq!(
             Value::Object(req),
             json!({
@@ -644,6 +654,35 @@ mod tests {
                 "ports": [{"id": "p", "internal_port": 80, "publicly_accessible": true, "protocol": "HTTP"}],
                 "arguments": [], "auto_deploy": null
             })
+        );
+    }
+
+    #[test]
+    fn edit_request_without_git_repository_keeps_the_other_fields() {
+        let app = json!({"id": "app-image", "name": "web", "description": "serves the site", "git_repository": null, "auto_preview": false});
+        let req = application_edit_request(&app, "").unwrap();
+        assert_eq!(
+            Value::Object(req),
+            json!({"name": "web", "description": "serves the site", "auto_preview": false, "healthchecks": {}, "auto_deploy": null})
+        );
+    }
+
+    #[test]
+    fn edit_request_branch_without_git_repository_is_rejected() {
+        let app = json!({"id": "app-image", "name": "web"});
+        assert_eq!(
+            application_edit_request(&app, "feature"),
+            Err("application web runs an image, not a Git repository: --branch only applies to Git applications".to_string())
+        );
+    }
+
+    #[test]
+    fn edit_request_branch_on_git_application_changes_only_the_branch() {
+        let app = json!({"name": "api", "git_repository": {"provider": "GITHUB", "url": "u", "branch": "main", "root_path": "/"}});
+        let req = application_edit_request(&app, "feature").unwrap();
+        assert_eq!(
+            req.get("git_repository"),
+            Some(&json!({"url": "u", "branch": "feature", "root_path": "/", "provider": "GITHUB"}))
         );
     }
 }

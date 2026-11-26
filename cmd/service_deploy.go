@@ -82,10 +82,11 @@ Examples:
 			}
 		}
 
-		// checked before any deploy so a rejected container leaves the other services untouched
+		// checked before any deploy so a rejected container or application leaves the other services untouched
 		for _, container := range containers {
 			checkError(utils.CheckContainerImageTag(container, serviceDeployVersion))
 		}
+		checkError(utils.CheckApplicationsCommitId(applications, serviceDeployVersion, "--version"))
 
 		watch := utils.NewServicesWatch(client, envId, utils.Map(servicesToDeploy, serviceDeployId), serviceDeployWatchFlag)
 

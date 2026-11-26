@@ -189,7 +189,9 @@ pub fn deploy_all_services(
 }
 
 /// Port of `utils.DeployApplications(client, envId, applicationList, commitId)`: deploys with `commitId`
-/// (`latest` resolves the newest commit of each application), or the deployed commit when empty.
+/// (`latest` resolves the newest commit of each application), or the deployed commit when empty. An
+/// application without Git repository is sent without commit: check `commitId` with
+/// [`check_applications_commit_id`] first.
 pub fn deploy_applications(
     client: &Client,
     env_id: &str,
@@ -201,11 +203,16 @@ pub fn deploy_applications(
     }
     let mut applications = Vec::new();
     for application in application_list {
+        let Some(git_repository) = &application.git_repository else {
+            applications.push(DeployAllRequestApplication {
+                application_id: application.id.clone(),
+                git_commit_id: None,
+            });
+            continue;
+        };
         // if commitId is not set, use the deployed commit id
-        let mut application_commit_id = application
-            .git_repository
-            .as_ref()
-            .and_then(|g| g.get("deployed_commit_id"))
+        let mut application_commit_id = git_repository
+            .get("deployed_commit_id")
             .and_then(|c| c.as_str())
             .map(|s| s.to_string());
         if is_latest_commit_keyword(commit_id) {
@@ -294,6 +301,25 @@ pub fn deploy_containers_at_commit(
         })?;
     }
     Ok(())
+}
+
+/// Port of `utils.CheckApplicationsCommitId(applicationList, commitId, flag)`: a commit, `latest` included,
+/// is refused when an application has no Git repository (it runs an image).
+pub fn check_applications_commit_id(
+    applications: &[Application],
+    commit_id: &str,
+    flag: &str,
+) -> Result<(), String> {
+    if commit_id.is_empty() {
+        return Ok(());
+    }
+    match applications.iter().find(|a| a.git_repository.is_none()) {
+        Some(application) => Err(format!(
+            "application {} runs an image, not a Git repository: {flag} only applies to Git applications",
+            application.name
+        )),
+        None => Ok(()),
+    }
 }
 
 /// Port of `utils.CheckContainerImageTag(container, tag)`: a Git container takes no image tag, Qovery builds
@@ -734,5 +760,28 @@ mod tests {
             git_commit_id: None,
         };
         assert_eq!(to_value(&job), json!({"id": "j", "image_tag": "1"}));
+    }
+
+    #[test]
+    fn commit_refused_for_application_without_git_repository() {
+        let applications: Vec<Application> = serde_json::from_value(json!([
+            {"id": "app-git", "name": "api", "git_repository": {"url": "u"}},
+            {"id": "app-image", "name": "web"}
+        ]))
+        .unwrap();
+        for commit_id in ["9b8a7c6", "latest"] {
+            assert_eq!(
+                check_applications_commit_id(&applications, commit_id, "--version"),
+                Err("application web runs an image, not a Git repository: --version only applies to Git applications".to_string())
+            );
+        }
+        assert_eq!(
+            check_applications_commit_id(&applications, "", "--commit-id"),
+            Ok(())
+        );
+        assert_eq!(
+            check_applications_commit_id(&applications[..1], "latest", "--commit-id"),
+            Ok(())
+        );
     }
 }

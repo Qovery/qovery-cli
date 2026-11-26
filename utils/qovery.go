@@ -1517,6 +1517,8 @@ func GetDeploymentStageId(client *qovery.APIClient, serviceId string) string {
 	return sourceDeploymentStage.Id
 }
 
+// DeployApplications sends an application without Git repository without commit: check commitId with
+// CheckApplicationsCommitId first.
 func DeployApplications(client *qovery.APIClient, envId string, applicationList []*qovery.Application, commitId string) error {
 	if len(applicationList) == 0 {
 		return nil
@@ -1525,6 +1527,12 @@ func DeployApplications(client *qovery.APIClient, envId string, applicationList 
 	var applicationsToDeploy []qovery.DeployAllRequestApplicationsInner
 
 	for _, application := range applicationList {
+		if application.GitRepository == nil {
+			applicationsToDeploy = append(applicationsToDeploy, qovery.DeployAllRequestApplicationsInner{
+				ApplicationId: application.Id,
+			})
+			continue
+		}
 
 		// if commitId is not set, use the deployed commit id
 		applicationCommitId := application.GitRepository.DeployedCommitId
@@ -1608,6 +1616,22 @@ func DeployContainersAtCommit(client *qovery.APIClient, containerList []*qovery.
 		_, _, err := client.ContainerActionsAPI.DeployContainer(context.Background(), container.Id).ContainerDeployRequest(req).Execute()
 		if err != nil {
 			return fmt.Errorf("cannot deploy container %s at commit %s: %w", container.Name, commitId, withAPIErrorDetail(err))
+		}
+	}
+
+	return nil
+}
+
+// CheckApplicationsCommitId rejects a commit, latest included, when an application has no Git repository: it runs an image.
+func CheckApplicationsCommitId(applicationList []*qovery.Application, commitId string, flag string) error {
+	if commitId == "" {
+		return nil
+	}
+
+	for _, application := range applicationList {
+		if application.GitRepository == nil {
+			return fmt.Errorf("application %s runs an image, not a Git repository: %s only applies to Git applications",
+				application.Name, flag)
 		}
 	}
 

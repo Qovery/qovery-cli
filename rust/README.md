@@ -108,6 +108,10 @@ A case can `"ignore"` some of `exit`, `stdout`, `stderr`, `requests`, `context` 
 reproduced (Go map iteration order, Go panic stack traces, random ids, timestamps): the reason is in the case name
 or in a `note`/`_comment` field.
 
+Parity only proves both CLIs agree. A case that must refuse something can also assert what both do with
+`"expect": {"exit": 1, "stdout_contains": "...", "requests": ["GET /environment/env-1/application"]}`, where
+`requests` is the exact ordered list of `METHOD /path` sent.
+
 Websocket commands use their own runners (they start a websocket mock and substitute `$WS` in the scenario):
 
 ```sh

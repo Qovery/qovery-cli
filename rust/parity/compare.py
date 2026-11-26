@@ -26,6 +26,9 @@ Each binary runs in a fresh sandbox $HOME (same path for both), with QOVERY_API_
 server, QOVERY_TELEMETRY=false, NO tty. Compared: exit code, stdout, stderr, the API requests (method, path,
 query, JSON body) and the final content of ~/.qovery/context.json. `ignore` can list any of
 "exit", "stdout", "stderr", "requests", "context" for a case.
+A case can also assert what both CLIs must do, on top of parity:
+  "expect": {"exit": 1, "stdout_contains": "...", "requests": ["GET /environment/env-1/application"]}
+"requests" is the exact ordered list of "METHOD /path" the CLI must send.
 Volatile values are normalized: logrus timestamps, durations like "1.234s", the sandbox paths.
 """
 
@@ -168,6 +171,19 @@ def show(s):
     return s.replace("\x1b", "\\e")
 
 
+def unmet_expectations(expect, side, result):
+    unmet = []
+    if "exit" in expect and result["exit"] != str(expect["exit"]):
+        unmet.append("%s/expect: exit %s, got %s" % (side, expect["exit"], result["exit"]))
+    if "stdout_contains" in expect and expect["stdout_contains"] not in result["stdout"]:
+        unmet.append("%s/expect: stdout without %r, got %r" % (side, expect["stdout_contains"], result["stdout"]))
+    if "requests" in expect:
+        sent = [r["method"] + " " + r["path"] for r in map(json.loads, filter(None, result["requests"].split("\n")))]
+        if sent != expect["requests"]:
+            unmet.append("%s/expect: requests %s, got %s" % (side, expect["requests"], sent))
+    return unmet
+
+
 def diff_case(scenario, case):
     go = run_one(GO_BIN, scenario, case)
     rs = run_one(RUST_BIN, scenario, case)
@@ -181,6 +197,8 @@ def diff_case(scenario, case):
                 show(go[key]).splitlines(), show(rs[key]).splitlines(), "go/" + key, "rust/" + key, lineterm="", n=2
             )
             diffs.append("\n".join(d))
+    for side, result in (("go", go), ("rust", rs)):
+        diffs.extend(unmet_expectations(case.get("expect") or {}, side, result))
     return go, diffs
 
 
