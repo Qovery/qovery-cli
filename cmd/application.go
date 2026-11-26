@@ -13,6 +13,7 @@ var applicationBranch string
 var targetApplicationName string
 var applicationCustomDomain string
 var applicationAutoDeploy bool
+var applicationAutoPreview bool
 
 var applicationCmd = &cobra.Command{
 	Use:   "application",

@@ -390,6 +390,13 @@ case("update", ["container", "update", "-n", "my-container"], [UPDATE1])
 case("update image and tag", ["container", "update", "-n", "my-container", "--image-name", "httpd", "--tag", "2.4"],
      [UPDATE1])
 case("update rich container", ["container", "update", "-n", "other-container", "--tag", "5"], [UPDATE2])
+case("update auto-deploy", ["container", "update", "-n", "my-container", "--auto-deploy"], [UPDATE1])
+case("update auto-deploy false", ["container", "update", "-n", "other-container", "--auto-deploy=false"], [UPDATE2])
+case("update auto-preview", ["container", "update", "-n", "my-container", "--auto-preview"], [UPDATE1])
+case("update auto-preview false", ["container", "update", "-n", "other-container", "--auto-preview=false"],
+     [UPDATE2])
+case("update auto-deploy and auto-preview", ["container", "update", "-n", "other-container", "--auto-deploy",
+                                             "--auto-preview=false", "--tag", "5"], [UPDATE2])
 case("update api error", ["container", "update", "-n", "my-container"], [err("PUT", "/container/cont-1", ERR400)])
 case("update api error 500", ["container", "update", "-n", "my-container"], [err("PUT", "/container/cont-1")])
 case("update unknown container", ["container", "update", "-n", "nope"])

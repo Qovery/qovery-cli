@@ -87,9 +87,7 @@ var applicationUpdateCmd = &cobra.Command{
 			req.GitRepository.Branch = &applicationBranch
 		}
 
-		if cmd.Flags().Changed("auto-deploy") {
-			req.AutoDeploy = *qovery.NewNullableBool(&applicationAutoDeploy)
-		}
+		applyApplicationAutoFlags(cmd, &req)
 
 		_, _, err = client.ApplicationMainCallsAPI.EditApplication(context.Background(), application.Id).ApplicationEditRequest(req).Execute()
 
@@ -110,6 +108,16 @@ func init() {
 	applicationUpdateCmd.Flags().StringVarP(&applicationName, "application", "n", "", "Application Name")
 	applicationUpdateCmd.Flags().StringVarP(&applicationBranch, "branch", "", "", "Application Git Branch")
 	applicationUpdateCmd.Flags().BoolVarP(&applicationAutoDeploy, "auto-deploy", "", false, "Application Auto Deploy")
+	applicationUpdateCmd.Flags().BoolVarP(&applicationAutoPreview, "auto-preview", "", false, "Add the service to pull-request preview environments; previews build pull-request code with the environment's secrets")
 
 	_ = applicationUpdateCmd.MarkFlagRequired("application")
+}
+
+func applyApplicationAutoFlags(cmd *cobra.Command, req *qovery.ApplicationEditRequest) {
+	if cmd.Flags().Changed("auto-deploy") {
+		req.AutoDeploy = *qovery.NewNullableBool(&applicationAutoDeploy)
+	}
+	if cmd.Flags().Changed("auto-preview") {
+		req.AutoPreview = &applicationAutoPreview
+	}
 }

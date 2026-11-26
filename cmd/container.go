@@ -13,6 +13,8 @@ var containerTag string
 var containerCommitId string
 var targetContainerName string
 var containerCustomDomain string
+var containerAutoDeploy bool
+var containerAutoPreview bool
 
 var containerCmd = &cobra.Command{
 	Use:   "container",

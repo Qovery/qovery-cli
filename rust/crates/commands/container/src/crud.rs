@@ -48,6 +48,14 @@ pub fn update() -> Command {
         .flag(container_flag().required())
         .flag(Flag::string("image-name", "Container Image Name"))
         .flag(Flag::string("tag", "Container Tag"))
+        .flag(Flag::bool(
+            "auto-deploy",
+            "Deploy on every push to the branch (container built from Git) or on a new image tag",
+        ))
+        .flag(Flag::bool(
+            "auto-preview",
+            "Add the service to pull-request preview environments; previews build pull-request code with the environment's secrets",
+        ))
         .run(run_update)
 }
 
@@ -374,7 +382,13 @@ fn run_update(ctx: &Ctx) {
         tag_flag
     };
 
-    let req = update_request(&container, &image_name, &tag);
+    let mut req = update_request(&container, &image_name, &tag);
+    if ctx.changed("auto-deploy") {
+        req["auto_deploy"] = Value::Bool(ctx.bool("auto-deploy"));
+    }
+    if ctx.changed("auto-preview") {
+        req["auto_preview"] = Value::Bool(ctx.bool("auto-preview"));
+    }
     let id = str_of(&container, "id").to_string();
     if let Err(e) = client.execute(Method::PUT, &format!("/container/{id}"), &[], Some(&req)) {
         if e.status != Some(200) {

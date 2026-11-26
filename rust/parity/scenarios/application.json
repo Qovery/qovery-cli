@@ -4298,6 +4298,226 @@
    ]
   },
   {
+   "name": "update auto-preview",
+   "args": [
+    "application",
+    "update",
+    "-n",
+    "my-app",
+    "--auto-preview"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/application/app-1",
+     "status": 200,
+     "body": {
+      "id": "app-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "my-app",
+      "healthchecks": {
+       "checks": []
+      },
+      "icon_uri": "app://qovery-console/application",
+      "service_type": "APPLICATION",
+      "git_repository": {
+       "provider": "GITHUB",
+       "owner": "me",
+       "url": "https://github.com/me/app.git",
+       "name": "me/app",
+       "branch": "main",
+       "root_path": "/",
+       "deployed_commit_id": "abc123",
+       "has_access": true
+      },
+      "build_mode": "DOCKER",
+      "dockerfile_path": "Dockerfile",
+      "cpu": 500,
+      "memory": 512,
+      "gpu": 0,
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "min_running_instances": 1,
+      "max_running_instances": 1,
+      "auto_preview": false,
+      "auto_deploy": true,
+      "ports": [],
+      "arguments": [],
+      "annotations_groups": [],
+      "labels_groups": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "update auto-preview false",
+   "args": [
+    "application",
+    "update",
+    "-n",
+    "my-app",
+    "--auto-preview=false"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "body": {
+      "results": [
+       {
+        "id": "app-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "name": "my-app",
+        "healthchecks": {
+         "checks": []
+        },
+        "icon_uri": "app://qovery-console/application",
+        "service_type": "APPLICATION",
+        "git_repository": {
+         "provider": "GITHUB",
+         "owner": "me",
+         "url": "https://github.com/me/app.git",
+         "name": "me/app",
+         "branch": "main",
+         "root_path": "/",
+         "deployed_commit_id": "abc123",
+         "has_access": true
+        },
+        "build_mode": "DOCKER",
+        "dockerfile_path": "Dockerfile",
+        "cpu": 500,
+        "memory": 512,
+        "gpu": 0,
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "auto_preview": true,
+        "auto_deploy": true,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       }
+      ]
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/application/app-1",
+     "status": 200,
+     "body": {
+      "id": "app-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "my-app",
+      "healthchecks": {
+       "checks": []
+      },
+      "icon_uri": "app://qovery-console/application",
+      "service_type": "APPLICATION",
+      "git_repository": {
+       "provider": "GITHUB",
+       "owner": "me",
+       "url": "https://github.com/me/app.git",
+       "name": "me/app",
+       "branch": "main",
+       "root_path": "/",
+       "deployed_commit_id": "abc123",
+       "has_access": true
+      },
+      "build_mode": "DOCKER",
+      "dockerfile_path": "Dockerfile",
+      "cpu": 500,
+      "memory": 512,
+      "gpu": 0,
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "min_running_instances": 1,
+      "max_running_instances": 1,
+      "auto_preview": false,
+      "auto_deploy": true,
+      "ports": [],
+      "arguments": [],
+      "annotations_groups": [],
+      "labels_groups": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "update auto-deploy and auto-preview",
+   "args": [
+    "application",
+    "update",
+    "-n",
+    "my-app",
+    "--auto-deploy=false",
+    "--auto-preview"
+   ],
+   "fixtures": [
+    {
+     "method": "PUT",
+     "path": "/application/app-1",
+     "status": 200,
+     "body": {
+      "id": "app-1",
+      "created_at": "2024-05-01T10:00:00.123456Z",
+      "updated_at": "2024-06-02T11:30:00Z",
+      "environment": {
+       "id": "env-1"
+      },
+      "name": "my-app",
+      "healthchecks": {
+       "checks": []
+      },
+      "icon_uri": "app://qovery-console/application",
+      "service_type": "APPLICATION",
+      "git_repository": {
+       "provider": "GITHUB",
+       "owner": "me",
+       "url": "https://github.com/me/app.git",
+       "name": "me/app",
+       "branch": "main",
+       "root_path": "/",
+       "deployed_commit_id": "abc123",
+       "has_access": true
+      },
+      "build_mode": "DOCKER",
+      "dockerfile_path": "Dockerfile",
+      "cpu": 500,
+      "memory": 512,
+      "gpu": 0,
+      "maximum_cpu": 4000,
+      "maximum_memory": 8192,
+      "maximum_gpu": 0,
+      "min_running_instances": 1,
+      "max_running_instances": 1,
+      "auto_preview": false,
+      "auto_deploy": true,
+      "ports": [],
+      "arguments": [],
+      "annotations_groups": [],
+      "labels_groups": []
+     }
+    }
+   ]
+  },
+  {
    "name": "update rich application",
    "args": [
     "application",
