@@ -256,6 +256,11 @@ case("update", A + ["update"] + N, [UPD])
 case("update branch", A + ["update"] + N + ["--branch", "feature"], [UPD])
 case("update auto-deploy false", A + ["update"] + N + ["--auto-deploy=false"], [UPD])
 case("update auto-deploy", A + ["update"] + N + ["--auto-deploy"], [UPD])
+case("update auto-preview", A + ["update"] + N + ["--auto-preview"], [UPD])
+PREVIEW_ON = dict(copy.deepcopy(APP1), auto_preview=True)
+case("update auto-preview false", A + ["update"] + N + ["--auto-preview=false"],
+     [{"method": "GET", "path": "/environment/env-1/application", "body": {"results": [PREVIEW_ON]}}, UPD])
+case("update auto-deploy and auto-preview", A + ["update"] + N + ["--auto-deploy=false", "--auto-preview"], [UPD])
 RICH = copy.deepcopy(APP1)
 RICH.update({
     "description": "desc", "storage": [{"id": "st-1", "type": "FAST_SSD", "size": 10, "mount_point": "/data"}],

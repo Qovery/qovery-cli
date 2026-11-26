@@ -449,6 +449,10 @@ pub(crate) fn update() -> Command {
         .flag(application_flag().required())
         .flag(Flag::string("branch", "Application Git Branch"))
         .flag(Flag::bool("auto-deploy", "Application Auto Deploy"))
+        .flag(Flag::bool(
+            "auto-preview",
+            "Add the service to pull-request preview environments; previews build pull-request code with the environment's secrets",
+        ))
         .run(run_update)
 }
 
@@ -471,6 +475,9 @@ fn run_update(ctx: &Ctx) {
     }
     if ctx.changed("auto-deploy") {
         req.insert("auto_deploy".into(), Value::Bool(ctx.bool("auto-deploy")));
+    }
+    if ctx.changed("auto-preview") {
+        req.insert("auto_preview".into(), Value::Bool(ctx.bool("auto-preview")));
     }
 
     check_error(client.execute(

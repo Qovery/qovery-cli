@@ -97,6 +97,7 @@ var containerUpdateCmd = &cobra.Command{
 			AutoDeploy:          *qovery.NewNullableBool(container.AutoDeploy),
 			Autoscaling:         utils.ConvertAutoscalingResponseToRequest(container.Autoscaling),
 		}
+		applyContainerAutoFlags(cmd, &req)
 
 		_, res, err := client.ContainerMainCallsAPI.EditContainer(context.Background(), container.Id).ContainerRequest(req).Execute()
 		if err != nil {
@@ -123,6 +124,17 @@ func init() {
 	containerUpdateCmd.Flags().StringVarP(&containerName, "container", "n", "", "Container Name")
 	containerUpdateCmd.Flags().StringVarP(&containerImageName, "image-name", "", "", "Container Image Name")
 	containerUpdateCmd.Flags().StringVarP(&containerTag, "tag", "", "", "Container Tag")
+	containerUpdateCmd.Flags().BoolVarP(&containerAutoDeploy, "auto-deploy", "", false, "Deploy on every push to the branch (container built from Git) or on a new image tag")
+	containerUpdateCmd.Flags().BoolVarP(&containerAutoPreview, "auto-preview", "", false, "Add the service to pull-request preview environments; previews build pull-request code with the environment's secrets")
 
 	_ = containerUpdateCmd.MarkFlagRequired("container")
+}
+
+func applyContainerAutoFlags(cmd *cobra.Command, req *qovery.ContainerRequest) {
+	if cmd.Flags().Changed("auto-deploy") {
+		req.AutoDeploy = *qovery.NewNullableBool(&containerAutoDeploy)
+	}
+	if cmd.Flags().Changed("auto-preview") {
+		req.AutoPreview = &containerAutoPreview
+	}
 }
