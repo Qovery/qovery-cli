@@ -16,12 +16,14 @@ func setFlagForTest(t *testing.T, cmd *cobra.Command, name string, value string)
 	if flag == nil {
 		t.Fatalf("flag --%s is not registered on %s", name, cmd.CommandPath())
 	}
+	originalValue := flag.Value.String()
+	originalChanged := flag.Changed
 	if err := cmd.Flags().Set(name, value); err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		_ = flag.Value.Set(flag.DefValue)
-		flag.Changed = false
+		_ = flag.Value.Set(originalValue)
+		flag.Changed = originalChanged
 	})
 }
 
