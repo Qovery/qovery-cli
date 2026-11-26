@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 	"testing"
 
 	"github.com/qovery/qovery-client-go"
@@ -39,21 +38,24 @@ func TestApplicationDeployWithoutGitRepositorySendsNoCommit(t *testing.T) {
 	}
 }
 
-func TestApplicationDeployCommitWithoutGitRepositoryIsRejectedBeforeSending(t *testing.T) {
+func TestApplicationCommitWithoutGitRepositoryIsRejected(t *testing.T) {
+	applications := []*qovery.Application{gitApplication(), applicationWithoutGitRepository()}
 	for _, commitId := range []string{"9b8a7c6", "latest"} {
-		client, requests := newRecordingQoveryClient(t)
-
-		err := utils.DeployApplications(client, "env-1", []*qovery.Application{applicationWithoutGitRepository()}, commitId)
-		if err == nil {
-			t.Fatalf("expected an error for commit %s on an application without Git repository", commitId)
-		}
-		for _, expected := range []string{"web", "not built from a Git repository", commitId} {
-			if !strings.Contains(err.Error(), expected) {
-				t.Errorf("expected %q in the error, got %v", expected, err)
+		for _, flag := range []string{"--commit-id", "--version"} {
+			err := utils.CheckApplicationsCommitId(applications, commitId, flag)
+			expected := "application web runs an image, not a Git repository: " + flag + " only applies to Git applications"
+			if err == nil || err.Error() != expected {
+				t.Errorf("expected %q for commit %s, got %v", expected, commitId, err)
 			}
 		}
-		if len(*requests) != 0 {
-			t.Fatalf("expected no request, got %v", *requests)
-		}
+	}
+}
+
+func TestApplicationCommitOnGitApplicationsOrNoCommitIsAccepted(t *testing.T) {
+	if err := utils.CheckApplicationsCommitId([]*qovery.Application{gitApplication()}, "latest", "--commit-id"); err != nil {
+		t.Errorf("expected a commit to be accepted for a Git application, got %v", err)
+	}
+	if err := utils.CheckApplicationsCommitId([]*qovery.Application{applicationWithoutGitRepository()}, "", "--commit-id"); err != nil {
+		t.Errorf("expected no commit to be accepted for an application without Git repository, got %v", err)
 	}
 }

@@ -111,7 +111,7 @@ func TestApplicationUpdateBranchWithoutGitRepositoryIsRejected(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected an error for --branch on an application without Git repository")
 	}
-	for _, expected := range []string{"web", "not built from a Git repository", "--branch"} {
+	for _, expected := range []string{"web", "runs an image, not a Git repository", "--branch"} {
 		if !strings.Contains(err.Error(), expected) {
 			t.Errorf("expected %q in the error, got %v", expected, err)
 		}

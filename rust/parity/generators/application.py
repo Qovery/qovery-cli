@@ -159,6 +159,8 @@ case("deploy without git repository commit latest", A + ["deploy"] + N + ["--com
 case("deploy multi one without git repository", A + ["deploy", "--applications", "other-app,my-app"], [IMAGE_APPS, SVC_DEPLOY])
 case("deploy multi latest one without git repository", A + ["deploy", "--applications", "other-app,my-app", "-c", "latest"],
      [IMAGE_APPS, SVC_DEPLOY, COMMITS, COMMITS2])
+case("deploy without git repository commit id --watch", A + ["deploy"] + N + ["-c", "abcdef", "--watch"],
+     [IMAGE_APPS, SVC_DEPLOY, watch(stages(st("app-1", "DEPLOYED", "e0")), stages(st("app-1", "DEPLOYED", "e1")))])
 case("deploy both flags", A + ["deploy", "-n", "my-app", "--applications", "my-app"])
 case("deploy no flags", A + ["deploy"])
 case("deploy not found", A + ["deploy", "-n", "nope"])
@@ -181,6 +183,10 @@ case("redeploy commit latest", A + ["redeploy"] + N + ["-c", "latest"], [APP_DEP
 case("redeploy no deployed commit", A + ["redeploy", "-n", "other-app"],
      [{"method": "GET", "path": "/environment/env-1/application", "body": {"results": [dict(APP2, git_repository={"provider": "GITHUB", "owner": "me", "url": "u", "name": "n"})]}},
       ok("POST", "/application/app-2/deploy", STATUS_OK, 202)])
+case("redeploy without git repository", A + ["redeploy"] + N, [IMAGE_APPS, APP_DEPLOY])
+case("redeploy without git repository commit", A + ["redeploy"] + N + ["-c", "abcdef"], [IMAGE_APPS, APP_DEPLOY])
+case("redeploy without git repository commit latest", A + ["redeploy"] + N + ["-c", "latest", "-w"],
+     [IMAGE_APPS, APP_DEPLOY, COMMITS, watch(stages(st("app-1", "DEPLOYED", "e0")))])
 case("redeploy missing app flag", A + ["redeploy"])
 case("redeploy not found", A + ["redeploy", "-n", "nope"])
 case("redeploy api error", A + ["redeploy"] + N, [err("POST", "/application/app-1/deploy", 500)])

@@ -14,8 +14,8 @@ use qovery_log::gofmt::{go_json, time_string_from_rfc3339};
 use qovery_log::pterm::FG_BLUE;
 use qovery_services::{
     RebootServicesRequest, application_ids, cancel_service_deployment,
-    convert_autoscaling_response_to_request, deploy_applications, go_healthcheck,
-    is_latest_commit_keyword, new_services_watch, path_escape, reboot_services,
+    check_applications_commit_id, convert_autoscaling_response_to_request, deploy_applications,
+    go_healthcheck, is_latest_commit_keyword, new_services_watch, path_escape, reboot_services,
     resolve_latest_application_commit, state,
 };
 use serde_json::{Map, Value, json};
@@ -162,6 +162,11 @@ pub(crate) fn deploy() -> Command {
 
 fn run_deploy(ctx: &Ctx) {
     let (client, env_id, list, names) = multi_services_start(ctx);
+    check_error(check_applications_commit_id(
+        &list,
+        &ctx.string("commit-id"),
+        "--commit-id",
+    ));
     let watch = new_services_watch(&client, &env_id, application_ids(&list), ctx.bool("watch"));
     check_error(deploy_applications(
         &client,
@@ -188,6 +193,11 @@ pub(crate) fn redeploy() -> Command {
 
 fn run_redeploy(ctx: &Ctx) {
     let (client, env_id, list, names) = multi_services_start(ctx);
+    check_error(check_applications_commit_id(
+        &list,
+        &ctx.string("commit-id"),
+        "--commit-id",
+    ));
     let watch = new_services_watch(&client, &env_id, application_ids(&list), ctx.bool("watch"));
     let application = &list[0];
 
@@ -583,7 +593,7 @@ fn application_edit_request(app: &Value, branch: &str) -> Result<Map<String, Val
         req.insert("git_repository".into(), Value::Object(git_req));
     } else if !branch.is_empty() {
         return Err(format!(
-            "application {} is not built from a Git repository: --branch only applies to Git applications",
+            "application {} runs an image, not a Git repository: --branch only applies to Git applications",
             app.get("name").and_then(|v| v.as_str()).unwrap_or_default()
         ));
     }
@@ -662,7 +672,7 @@ mod tests {
         let app = json!({"id": "app-image", "name": "web"});
         assert_eq!(
             application_edit_request(&app, "feature"),
-            Err("application web is not built from a Git repository: --branch only applies to Git applications".to_string())
+            Err("application web runs an image, not a Git repository: --branch only applies to Git applications".to_string())
         );
     }
 

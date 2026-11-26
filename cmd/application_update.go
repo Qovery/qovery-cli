@@ -123,7 +123,7 @@ func applicationEditRequest(application *qovery.Application, branch string) (qov
 
 	if branch != "" {
 		if req.GitRepository == nil {
-			return req, fmt.Errorf("application %s is not built from a Git repository: --branch only applies to Git applications", application.Name)
+			return req, fmt.Errorf("application %s runs an image, not a Git repository: --branch only applies to Git applications", application.Name)
 		}
 		req.GitRepository.Branch = &branch
 	}

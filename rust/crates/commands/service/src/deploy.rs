@@ -185,10 +185,15 @@ fn run_deploy(ctx: &Ctx) {
     }
 
     let version = ctx.string("version");
-    // checked before any deploy so a rejected container leaves the other services untouched
+    // checked before any deploy so a rejected container or application leaves the other services untouched
     for container in &containers {
         check_error(services::check_container_image_tag(container, &version));
     }
+    check_error(services::check_applications_commit_id(
+        &applications,
+        &version,
+        "--version",
+    ));
 
     let watch = services::new_services_watch(
         &client,

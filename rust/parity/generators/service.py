@@ -99,6 +99,9 @@ c("deploy app without git repository", ["service", "deploy", "-n", "my-app"], fi
 c("deploy app without git repository version", ["service", "deploy", "-n", "my-app", "-v", "c0ffee"], fixtures=[IMAGE_APPS, DEPLOY_OK])
 c("deploy services app without git repository version", ["service", "deploy", "--services", "my-container,my-app,my-db", "-v", "v2"],
   fixtures=[IMAGE_APPS, DEPLOY_OK])
+c("deploy services app without git repository version watch", ["service", "deploy", "--services", "my-container,my-app", "-v", "v2", "-w"],
+  fixtures=[IMAGE_APPS, DEPLOY_OK, WATCH], timeout=60)
+c("deploy app without git repository latest", ["service", "deploy", "-n", "my-app", "-v", "latest"], fixtures=[IMAGE_APPS, DEPLOY_OK])
 c("deploy database", ["service", "deploy", "-n", "my-db", "-v", "ignored"], fixtures=[DEPLOY_OK])
 c("deploy cron", ["service", "deploy", "-n", "my-cron"], fixtures=[DEPLOY_OK])
 c("deploy cron version", ["service", "deploy", "-n", "my-cron", "-v", "abcdef"], fixtures=[DEPLOY_OK])

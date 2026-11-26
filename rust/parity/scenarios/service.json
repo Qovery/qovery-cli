@@ -1227,6 +1227,230 @@
    ]
   },
   {
+   "name": "deploy services app without git repository version watch",
+   "args": [
+    "service",
+    "deploy",
+    "--services",
+    "my-container,my-app",
+    "-v",
+    "v2",
+    "-w"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "app-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "name": "my-app",
+        "healthchecks": {
+         "checks": []
+        },
+        "icon_uri": "app://qovery-console/application",
+        "service_type": "APPLICATION",
+        "cpu": 500,
+        "memory": 512,
+        "gpu": 0,
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "auto_preview": false,
+        "auto_deploy": true,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/environment/env-1/statusesWithStages",
+     "responses": [
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "applications": [
+           {
+            "id": "app-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-old"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "applications": [
+           {
+            "id": "app-1",
+            "state": "DEPLOYING",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "body": {
+        "environment": {
+         "id": "env-1",
+         "state": "DEPLOYED",
+         "last_deployment_state": "DEPLOYED",
+         "last_deployment_date": "2024-06-02T11:30:00Z",
+         "last_deployment_id": "dep-1",
+         "total_deployment_duration_in_seconds": 42
+        },
+        "stages": [
+         {
+          "applications": [
+           {
+            "id": "app-1",
+            "state": "DEPLOYED",
+            "service_deployment_status": "UP_TO_DATE",
+            "is_part_last_deployment": true,
+            "status_details": {
+             "action": "DEPLOY",
+             "status": "SUCCESS",
+             "sub_action": "NONE"
+            },
+            "deployment_request_id": null,
+            "deployment_requests_count": 0,
+            "execution_id": "exec-new"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "timeout": 60
+  },
+  {
+   "name": "deploy app without git repository latest",
+   "args": [
+    "service",
+    "deploy",
+    "-n",
+    "my-app",
+    "-v",
+    "latest"
+   ],
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/environment/env-1/application",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "app-1",
+        "created_at": "2024-05-01T10:00:00.123456Z",
+        "updated_at": "2024-06-02T11:30:00Z",
+        "environment": {
+         "id": "env-1"
+        },
+        "name": "my-app",
+        "healthchecks": {
+         "checks": []
+        },
+        "icon_uri": "app://qovery-console/application",
+        "service_type": "APPLICATION",
+        "cpu": 500,
+        "memory": 512,
+        "gpu": 0,
+        "maximum_cpu": 4000,
+        "maximum_memory": 8192,
+        "maximum_gpu": 0,
+        "min_running_instances": 1,
+        "max_running_instances": 1,
+        "auto_preview": false,
+        "auto_deploy": true,
+        "ports": [],
+        "arguments": [],
+        "annotations_groups": [],
+        "labels_groups": []
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/environment/env-1/service/deploy",
+     "status": 202,
+     "body": {
+      "id": "env-1",
+      "state": "DEPLOYING",
+      "last_deployment_state": "DEPLOYED"
+     }
+    }
+   ]
+  },
+  {
    "name": "deploy database",
    "args": [
     "service",

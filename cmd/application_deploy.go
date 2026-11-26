@@ -21,6 +21,7 @@ var applicationDeployCmd = &cobra.Command{
 
 		// deploy multiple services
 		applicationList := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)
+		checkError(utils.CheckApplicationsCommitId(applicationList, applicationCommitID, "--commit-id"))
 		watch := utils.NewServicesWatch(client, envId, applicationIds(applicationList), watchFlag)
 		err := utils.DeployApplications(client, envId, applicationList, applicationCommitID)
 		checkError(err)

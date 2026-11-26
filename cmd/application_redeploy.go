@@ -20,6 +20,7 @@ var applicationRedeployCmd = &cobra.Command{
 		envId := getEnvironmentIdFromContextPanicInCaseOfError(client)
 
 		applicationList := buildApplicationListFromApplicationNames(client, envId, applicationName, applicationNames)
+		checkError(utils.CheckApplicationsCommitId(applicationList, applicationCommitID, "--commit-id"))
 		watch := utils.NewServicesWatch(client, envId, applicationIds(applicationList), watchFlag)
 		application := applicationList[0]
 
