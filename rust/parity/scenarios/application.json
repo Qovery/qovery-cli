@@ -1123,18 +1123,15 @@
        }
       ]
      }
-    },
-    {
-     "method": "POST",
-     "path": "/environment/env-1/service/deploy",
-     "status": 202,
-     "body": {
-      "id": "env-1",
-      "state": "DEPLOYING",
-      "last_deployment_state": "DEPLOYED"
-     }
     }
-   ]
+   ],
+   "expect": {
+    "exit": 1,
+    "stdout_contains": "application my-app runs an image, not a Git repository: --commit-id only applies to Git applications",
+    "requests": [
+     "GET /environment/env-1/application"
+    ]
+   }
   },
   {
    "name": "deploy without git repository commit latest",
@@ -1222,40 +1219,15 @@
        }
       ]
      }
-    },
-    {
-     "method": "POST",
-     "path": "/environment/env-1/service/deploy",
-     "status": 202,
-     "body": {
-      "id": "env-1",
-      "state": "DEPLOYING",
-      "last_deployment_state": "DEPLOYED"
-     }
-    },
-    {
-     "method": "GET",
-     "path": "/application/app-1/commit",
-     "body": {
-      "results": [
-       {
-        "created_at": "2024-06-01T10:00:00Z",
-        "git_commit_id": "old111",
-        "tag": "",
-        "message": "old commit",
-        "author_name": "me"
-       },
-       {
-        "created_at": "2024-06-03T10:00:00Z",
-        "git_commit_id": "new999",
-        "tag": "v1",
-        "message": "newest commit\n\nbody",
-        "author_name": "me"
-       }
-      ]
-     }
     }
-   ]
+   ],
+   "expect": {
+    "exit": 1,
+    "stdout_contains": "application my-app runs an image, not a Git repository: --commit-id only applies to Git applications",
+    "requests": [
+     "GET /environment/env-1/application"
+    ]
+   }
   },
   {
    "name": "deploy multi one without git repository",
@@ -1440,55 +1412,15 @@
        }
       ]
      }
-    },
-    {
-     "method": "POST",
-     "path": "/environment/env-1/service/deploy",
-     "status": 202,
-     "body": {
-      "id": "env-1",
-      "state": "DEPLOYING",
-      "last_deployment_state": "DEPLOYED"
-     }
-    },
-    {
-     "method": "GET",
-     "path": "/application/app-1/commit",
-     "body": {
-      "results": [
-       {
-        "created_at": "2024-06-01T10:00:00Z",
-        "git_commit_id": "old111",
-        "tag": "",
-        "message": "old commit",
-        "author_name": "me"
-       },
-       {
-        "created_at": "2024-06-03T10:00:00Z",
-        "git_commit_id": "new999",
-        "tag": "v1",
-        "message": "newest commit\n\nbody",
-        "author_name": "me"
-       }
-      ]
-     }
-    },
-    {
-     "method": "GET",
-     "path": "/application/app-2/commit",
-     "body": {
-      "results": [
-       {
-        "created_at": "2024-06-04T10:00:00Z",
-        "git_commit_id": "app2new",
-        "tag": "",
-        "message": "app2 commit",
-        "author_name": "me"
-       }
-      ]
-     }
     }
-   ]
+   ],
+   "expect": {
+    "exit": 1,
+    "stdout_contains": "application my-app runs an image, not a Git repository: --commit-id only applies to Git applications",
+    "requests": [
+     "GET /environment/env-1/application"
+    ]
+   }
   },
   {
    "name": "deploy without git repository commit id --watch",
@@ -1577,84 +1509,15 @@
        }
       ]
      }
-    },
-    {
-     "method": "POST",
-     "path": "/environment/env-1/service/deploy",
-     "status": 202,
-     "body": {
-      "id": "env-1",
-      "state": "DEPLOYING",
-      "last_deployment_state": "DEPLOYED"
-     }
-    },
-    {
-     "method": "GET",
-     "path": "/environment/env-1/statusesWithStages",
-     "responses": [
-      {
-       "status": 200,
-       "body": {
-        "environment": {
-         "id": "env-1",
-         "state": "DEPLOYING",
-         "last_deployment_state": "DEPLOYED"
-        },
-        "stages": [
-         {
-          "applications": [
-           {
-            "id": "app-1",
-            "state": "DEPLOYED",
-            "service_deployment_status": "UP_TO_DATE",
-            "is_part_last_deployment": true,
-            "status_details": {
-             "action": "DEPLOY",
-             "status": "SUCCESS",
-             "sub_action": "NONE"
-            },
-            "deployment_request_id": null,
-            "deployment_requests_count": 0,
-            "execution_id": "e0"
-           }
-          ]
-         }
-        ]
-       }
-      },
-      {
-       "status": 200,
-       "body": {
-        "environment": {
-         "id": "env-1",
-         "state": "DEPLOYING",
-         "last_deployment_state": "DEPLOYED"
-        },
-        "stages": [
-         {
-          "applications": [
-           {
-            "id": "app-1",
-            "state": "DEPLOYED",
-            "service_deployment_status": "UP_TO_DATE",
-            "is_part_last_deployment": true,
-            "status_details": {
-             "action": "DEPLOY",
-             "status": "SUCCESS",
-             "sub_action": "NONE"
-            },
-            "deployment_request_id": null,
-            "deployment_requests_count": 0,
-            "execution_id": "e1"
-           }
-          ]
-         }
-        ]
-       }
-      }
-     ]
     }
-   ]
+   ],
+   "expect": {
+    "exit": 1,
+    "stdout_contains": "application my-app runs an image, not a Git repository: --commit-id only applies to Git applications",
+    "requests": [
+     "GET /environment/env-1/application"
+    ]
+   }
   },
   {
    "name": "deploy both flags",
@@ -2509,26 +2372,15 @@
        }
       ]
      }
-    },
-    {
-     "method": "POST",
-     "path": "/application/app-1/deploy",
-     "status": 202,
-     "body": {
-      "id": "x",
-      "state": "QUEUED",
-      "service_deployment_status": "UP_TO_DATE",
-      "is_part_last_deployment": false,
-      "status_details": {
-       "action": "DEPLOY",
-       "status": "QUEUED",
-       "sub_action": "NONE"
-      },
-      "deployment_request_id": null,
-      "deployment_requests_count": 0
-     }
     }
-   ]
+   ],
+   "expect": {
+    "exit": 1,
+    "stdout_contains": "application my-app runs an image, not a Git repository: --commit-id only applies to Git applications",
+    "requests": [
+     "GET /environment/env-1/application"
+    ]
+   }
   },
   {
    "name": "redeploy without git repository commit latest",
@@ -2617,84 +2469,15 @@
        }
       ]
      }
-    },
-    {
-     "method": "POST",
-     "path": "/application/app-1/deploy",
-     "status": 202,
-     "body": {
-      "id": "x",
-      "state": "QUEUED",
-      "service_deployment_status": "UP_TO_DATE",
-      "is_part_last_deployment": false,
-      "status_details": {
-       "action": "DEPLOY",
-       "status": "QUEUED",
-       "sub_action": "NONE"
-      },
-      "deployment_request_id": null,
-      "deployment_requests_count": 0
-     }
-    },
-    {
-     "method": "GET",
-     "path": "/application/app-1/commit",
-     "body": {
-      "results": [
-       {
-        "created_at": "2024-06-01T10:00:00Z",
-        "git_commit_id": "old111",
-        "tag": "",
-        "message": "old commit",
-        "author_name": "me"
-       },
-       {
-        "created_at": "2024-06-03T10:00:00Z",
-        "git_commit_id": "new999",
-        "tag": "v1",
-        "message": "newest commit\n\nbody",
-        "author_name": "me"
-       }
-      ]
-     }
-    },
-    {
-     "method": "GET",
-     "path": "/environment/env-1/statusesWithStages",
-     "responses": [
-      {
-       "status": 200,
-       "body": {
-        "environment": {
-         "id": "env-1",
-         "state": "DEPLOYING",
-         "last_deployment_state": "DEPLOYED"
-        },
-        "stages": [
-         {
-          "applications": [
-           {
-            "id": "app-1",
-            "state": "DEPLOYED",
-            "service_deployment_status": "UP_TO_DATE",
-            "is_part_last_deployment": true,
-            "status_details": {
-             "action": "DEPLOY",
-             "status": "SUCCESS",
-             "sub_action": "NONE"
-            },
-            "deployment_request_id": null,
-            "deployment_requests_count": 0,
-            "execution_id": "e0"
-           }
-          ]
-         }
-        ]
-       }
-      }
-     ]
     }
-   ]
+   ],
+   "expect": {
+    "exit": 1,
+    "stdout_contains": "application my-app runs an image, not a Git repository: --commit-id only applies to Git applications",
+    "requests": [
+     "GET /environment/env-1/application"
+    ]
+   }
   },
   {
    "name": "redeploy missing app flag",
@@ -6219,53 +6002,15 @@
        }
       ]
      }
-    },
-    {
-     "method": "PUT",
-     "path": "/application/app-1",
-     "status": 200,
-     "body": {
-      "id": "app-1",
-      "created_at": "2024-05-01T10:00:00.123456Z",
-      "updated_at": "2024-06-02T11:30:00Z",
-      "environment": {
-       "id": "env-1"
-      },
-      "name": "my-app",
-      "healthchecks": {
-       "checks": []
-      },
-      "icon_uri": "app://qovery-console/application",
-      "service_type": "APPLICATION",
-      "git_repository": {
-       "provider": "GITHUB",
-       "owner": "me",
-       "url": "https://github.com/me/app.git",
-       "name": "me/app",
-       "branch": "main",
-       "root_path": "/",
-       "deployed_commit_id": "abc123",
-       "has_access": true
-      },
-      "build_mode": "DOCKER",
-      "dockerfile_path": "Dockerfile",
-      "cpu": 500,
-      "memory": 512,
-      "gpu": 0,
-      "maximum_cpu": 4000,
-      "maximum_memory": 8192,
-      "maximum_gpu": 0,
-      "min_running_instances": 1,
-      "max_running_instances": 1,
-      "auto_preview": false,
-      "auto_deploy": true,
-      "ports": [],
-      "arguments": [],
-      "annotations_groups": [],
-      "labels_groups": []
-     }
     }
-   ]
+   ],
+   "expect": {
+    "exit": 1,
+    "stdout_contains": "application my-app runs an image, not a Git repository: --branch only applies to Git applications",
+    "requests": [
+     "GET /environment/env-1/application"
+    ]
+   }
   },
   {
    "name": "update api error",

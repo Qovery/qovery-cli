@@ -154,13 +154,16 @@ case("deploy multi not found", A + ["deploy", "--applications", "my-app, nope"],
 IMAGE_APP = {k: v for k, v in APP1.items() if k not in ("git_repository", "build_mode", "dockerfile_path")}
 IMAGE_APPS = {"method": "GET", "path": "/environment/env-1/application", "body": {"results": [IMAGE_APP, APP2]}}
 case("deploy without git repository", A + ["deploy"] + N, [IMAGE_APPS, SVC_DEPLOY])
-case("deploy without git repository commit id", A + ["deploy"] + N + ["-c", "abcdef"], [IMAGE_APPS, SVC_DEPLOY])
-case("deploy without git repository commit latest", A + ["deploy"] + N + ["--commit-id", "latest"], [IMAGE_APPS, SVC_DEPLOY, COMMITS])
+def refused(flag="--commit-id"):
+    """An image application refuses a Git-only flag: the error, and no request after the application list."""
+    return {"exit": 1, "stdout_contains": "application my-app runs an image, not a Git repository: %s only applies to Git applications" % flag,
+            "requests": ["GET /environment/env-1/application"]}
+case("deploy without git repository commit id", A + ["deploy"] + N + ["-c", "abcdef"], [IMAGE_APPS], expect=refused())
+case("deploy without git repository commit latest", A + ["deploy"] + N + ["--commit-id", "latest"], [IMAGE_APPS], expect=refused())
 case("deploy multi one without git repository", A + ["deploy", "--applications", "other-app,my-app"], [IMAGE_APPS, SVC_DEPLOY])
 case("deploy multi latest one without git repository", A + ["deploy", "--applications", "other-app,my-app", "-c", "latest"],
-     [IMAGE_APPS, SVC_DEPLOY, COMMITS, COMMITS2])
-case("deploy without git repository commit id --watch", A + ["deploy"] + N + ["-c", "abcdef", "--watch"],
-     [IMAGE_APPS, SVC_DEPLOY, watch(stages(st("app-1", "DEPLOYED", "e0")), stages(st("app-1", "DEPLOYED", "e1")))])
+     [IMAGE_APPS], expect=refused())
+case("deploy without git repository commit id --watch", A + ["deploy"] + N + ["-c", "abcdef", "--watch"], [IMAGE_APPS], expect=refused())
 case("deploy both flags", A + ["deploy", "-n", "my-app", "--applications", "my-app"])
 case("deploy no flags", A + ["deploy"])
 case("deploy not found", A + ["deploy", "-n", "nope"])
@@ -184,9 +187,8 @@ case("redeploy no deployed commit", A + ["redeploy", "-n", "other-app"],
      [{"method": "GET", "path": "/environment/env-1/application", "body": {"results": [dict(APP2, git_repository={"provider": "GITHUB", "owner": "me", "url": "u", "name": "n"})]}},
       ok("POST", "/application/app-2/deploy", STATUS_OK, 202)])
 case("redeploy without git repository", A + ["redeploy"] + N, [IMAGE_APPS, APP_DEPLOY])
-case("redeploy without git repository commit", A + ["redeploy"] + N + ["-c", "abcdef"], [IMAGE_APPS, APP_DEPLOY])
-case("redeploy without git repository commit latest", A + ["redeploy"] + N + ["-c", "latest", "-w"],
-     [IMAGE_APPS, APP_DEPLOY, COMMITS, watch(stages(st("app-1", "DEPLOYED", "e0")))])
+case("redeploy without git repository commit", A + ["redeploy"] + N + ["-c", "abcdef"], [IMAGE_APPS], expect=refused())
+case("redeploy without git repository commit latest", A + ["redeploy"] + N + ["-c", "latest", "-w"], [IMAGE_APPS], expect=refused())
 case("redeploy missing app flag", A + ["redeploy"])
 case("redeploy not found", A + ["redeploy", "-n", "nope"])
 case("redeploy api error", A + ["redeploy"] + N, [err("POST", "/application/app-1/deploy", 500)])
@@ -294,7 +296,8 @@ case("update without git repository", A + ["update"] + N, [IMAGE_APPS, UPD])
 case("update git repository null", A + ["update"] + N,
      [{"method": "GET", "path": "/environment/env-1/application", "body": {"results": [dict(IMAGE_APP, git_repository=None)]}}, UPD])
 case("update without git repository auto-preview", A + ["update"] + N + ["--auto-preview"], [IMAGE_APPS, UPD])
-case("update without git repository branch", A + ["update"] + N + ["--branch", "feature", "--auto-preview"], [IMAGE_APPS, UPD])
+case("update without git repository branch", A + ["update"] + N + ["--branch", "feature", "--auto-preview"], [IMAGE_APPS],
+     expect=refused("--branch"))
 case("update api error", A + ["update"] + N, [err("PUT", "/application/app-1", 400)])
 case("update not found", A + ["update", "-n", "nope"])
 case("update missing flag", A + ["update"])

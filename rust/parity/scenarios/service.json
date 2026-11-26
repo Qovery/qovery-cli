@@ -1153,18 +1153,19 @@
        }
       ]
      }
-    },
-    {
-     "method": "POST",
-     "path": "/environment/env-1/service/deploy",
-     "status": 202,
-     "body": {
-      "id": "env-1",
-      "state": "DEPLOYING",
-      "last_deployment_state": "DEPLOYED"
-     }
     }
-   ]
+   ],
+   "expect": {
+    "exit": 1,
+    "stdout_contains": "application my-app runs an image, not a Git repository: --version only applies to Git applications",
+    "requests": [
+     "GET /environment/env-1/application",
+     "GET /environment/env-1/container",
+     "GET /environment/env-1/database",
+     "GET /environment/env-1/job",
+     "GET /environment/env-1/helm"
+    ]
+   }
   },
   {
    "name": "deploy services app without git repository version",
@@ -1213,18 +1214,19 @@
        }
       ]
      }
-    },
-    {
-     "method": "POST",
-     "path": "/environment/env-1/service/deploy",
-     "status": 202,
-     "body": {
-      "id": "env-1",
-      "state": "DEPLOYING",
-      "last_deployment_state": "DEPLOYED"
-     }
     }
-   ]
+   ],
+   "expect": {
+    "exit": 1,
+    "stdout_contains": "application my-app runs an image, not a Git repository: --version only applies to Git applications",
+    "requests": [
+     "GET /environment/env-1/application",
+     "GET /environment/env-1/container",
+     "GET /environment/env-1/database",
+     "GET /environment/env-1/job",
+     "GET /environment/env-1/helm"
+    ]
+   }
   },
   {
    "name": "deploy services app without git repository version watch",
@@ -1274,121 +1276,19 @@
        }
       ]
      }
-    },
-    {
-     "method": "POST",
-     "path": "/environment/env-1/service/deploy",
-     "status": 202,
-     "body": {
-      "id": "env-1",
-      "state": "DEPLOYING",
-      "last_deployment_state": "DEPLOYED"
-     }
-    },
-    {
-     "method": "GET",
-     "path": "/environment/env-1/statusesWithStages",
-     "responses": [
-      {
-       "body": {
-        "environment": {
-         "id": "env-1",
-         "state": "DEPLOYED",
-         "last_deployment_state": "DEPLOYED",
-         "last_deployment_date": "2024-06-02T11:30:00Z",
-         "last_deployment_id": "dep-1",
-         "total_deployment_duration_in_seconds": 42
-        },
-        "stages": [
-         {
-          "applications": [
-           {
-            "id": "app-1",
-            "state": "DEPLOYED",
-            "service_deployment_status": "UP_TO_DATE",
-            "is_part_last_deployment": true,
-            "status_details": {
-             "action": "DEPLOY",
-             "status": "SUCCESS",
-             "sub_action": "NONE"
-            },
-            "deployment_request_id": null,
-            "deployment_requests_count": 0,
-            "execution_id": "exec-old"
-           }
-          ]
-         }
-        ]
-       }
-      },
-      {
-       "body": {
-        "environment": {
-         "id": "env-1",
-         "state": "DEPLOYED",
-         "last_deployment_state": "DEPLOYED",
-         "last_deployment_date": "2024-06-02T11:30:00Z",
-         "last_deployment_id": "dep-1",
-         "total_deployment_duration_in_seconds": 42
-        },
-        "stages": [
-         {
-          "applications": [
-           {
-            "id": "app-1",
-            "state": "DEPLOYING",
-            "service_deployment_status": "UP_TO_DATE",
-            "is_part_last_deployment": true,
-            "status_details": {
-             "action": "DEPLOY",
-             "status": "SUCCESS",
-             "sub_action": "NONE"
-            },
-            "deployment_request_id": null,
-            "deployment_requests_count": 0,
-            "execution_id": "exec-new"
-           }
-          ]
-         }
-        ]
-       }
-      },
-      {
-       "body": {
-        "environment": {
-         "id": "env-1",
-         "state": "DEPLOYED",
-         "last_deployment_state": "DEPLOYED",
-         "last_deployment_date": "2024-06-02T11:30:00Z",
-         "last_deployment_id": "dep-1",
-         "total_deployment_duration_in_seconds": 42
-        },
-        "stages": [
-         {
-          "applications": [
-           {
-            "id": "app-1",
-            "state": "DEPLOYED",
-            "service_deployment_status": "UP_TO_DATE",
-            "is_part_last_deployment": true,
-            "status_details": {
-             "action": "DEPLOY",
-             "status": "SUCCESS",
-             "sub_action": "NONE"
-            },
-            "deployment_request_id": null,
-            "deployment_requests_count": 0,
-            "execution_id": "exec-new"
-           }
-          ]
-         }
-        ]
-       }
-      }
-     ]
     }
    ],
-   "timeout": 60
+   "expect": {
+    "exit": 1,
+    "stdout_contains": "application my-app runs an image, not a Git repository: --version only applies to Git applications",
+    "requests": [
+     "GET /environment/env-1/application",
+     "GET /environment/env-1/container",
+     "GET /environment/env-1/database",
+     "GET /environment/env-1/job",
+     "GET /environment/env-1/helm"
+    ]
+   }
   },
   {
    "name": "deploy app without git repository latest",
@@ -1437,18 +1337,19 @@
        }
       ]
      }
-    },
-    {
-     "method": "POST",
-     "path": "/environment/env-1/service/deploy",
-     "status": 202,
-     "body": {
-      "id": "env-1",
-      "state": "DEPLOYING",
-      "last_deployment_state": "DEPLOYED"
-     }
     }
-   ]
+   ],
+   "expect": {
+    "exit": 1,
+    "stdout_contains": "application my-app runs an image, not a Git repository: --version only applies to Git applications",
+    "requests": [
+     "GET /environment/env-1/application",
+     "GET /environment/env-1/container",
+     "GET /environment/env-1/database",
+     "GET /environment/env-1/job",
+     "GET /environment/env-1/helm"
+    ]
+   }
   },
   {
    "name": "deploy database",
