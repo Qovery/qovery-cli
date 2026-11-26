@@ -178,6 +178,11 @@ fn check_orga_valid(orgs: &[Value]) -> Result<(), String> {
     }
 }
 
+fn token_expired(ctx: &crate::context::QoveryContext) -> bool {
+    !ctx.access_token_expiration_time()
+        .is_some_and(|t| t > chrono::Utc::now())
+}
+
 fn list_organizations(token: &str) -> Result<Vec<Value>, qovery_api::ApiError> {
     let client = crate::client::client_for(TokenType::Bearer, token);
     client.list::<Value>("/organization")
@@ -204,11 +209,19 @@ pub fn get_access_token(skip_orga_check: bool) -> Result<(TokenType, String), St
             "access token has not been found. Please, {ERR_SIGN_IN_REQUIRED}. "
         ));
     }
-    if let Ok(orgs) = list_organizations(&token) {
-        if !skip_orga_check {
-            check_orga_valid(&orgs)?;
+    match list_organizations(&token) {
+        Ok(orgs) => {
+            if !skip_orga_check {
+                check_orga_valid(&orgs)?;
+            }
+            return Ok((TokenType::Bearer, token));
         }
-        return Ok((TokenType::Bearer, token));
+        // Refresh only when token rejected (401) or past its stored expiry. Network error or API
+        // outage on a valid token is transient: refresh would not fix it, and fails offline too
+        Err(e) if !e.is_unauthorized() && !token_expired(&ctx) => {
+            return Err(format!("could not validate the access token: {e}"));
+        }
+        Err(_) => {}
     }
     let token = refresh_access_token(&ctx.refresh_token, &oauth_client_of(&ctx.access_token))?;
     match list_organizations(&token) {

@@ -376,7 +376,8 @@ func GetAccessToken(skipOrgaCheck bool) (AccessTokenType, AccessToken, error) {
 	}
 
 	// check the token is valid by trying to list the organizations
-	if orgaList, _, err := GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute(); err == nil {
+	orgaList, response, err := GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute()
+	if err == nil {
 		// everything is fine, return the token
 		if !skipOrgaCheck {
 			if err = checkOrgaValid(orgaList); err != nil {
@@ -386,12 +387,18 @@ func GetAccessToken(skipOrgaCheck bool) (AccessTokenType, AccessToken, error) {
 		return "Bearer", token, nil
 	}
 
-	// Means the token is expired or invalid. Try to refresh it
+	// Refresh only when token rejected (401) or past its stored expiry. Network error or API outage on a valid token is
+	// transient: refresh would not fix it, and fails offline too
+	rejected := response != nil && response.StatusCode == http.StatusUnauthorized
+	if !rejected && context.AccessTokenExpiration.After(time.Now()) {
+		return "", "", fmt.Errorf("could not validate the access token: %w", err)
+	}
+
 	if token, err = RefreshAccessToken(context.RefreshToken, oAuthClientOf(context.AccessToken)); err != nil {
 		return "", "", err
 	}
 
-	orgaList, response, err := GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute()
+	orgaList, response, err = GetQoveryClient("Bearer", token).OrganizationMainCallsAPI.ListOrganization(context2.Background()).Execute()
 	if err == nil {
 		// everything is fine, return the token
 		if !skipOrgaCheck {
