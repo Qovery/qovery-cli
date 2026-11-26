@@ -189,7 +189,8 @@ pub fn deploy_all_services(
 }
 
 /// Port of `utils.DeployApplications(client, envId, applicationList, commitId)`: deploys with `commitId`
-/// (`latest` resolves the newest commit of each application), or the deployed commit when empty.
+/// (`latest` resolves the newest commit of each application), or the deployed commit when empty. An
+/// application without Git repository is sent without commit and rejects a `commitId`.
 pub fn deploy_applications(
     client: &Client,
     env_id: &str,
@@ -201,11 +202,23 @@ pub fn deploy_applications(
     }
     let mut applications = Vec::new();
     for application in application_list {
+        let Some(git_repository) = &application.git_repository else {
+            if !commit_id.is_empty() {
+                return Err(format!(
+                    "application {} is not built from a Git repository: it cannot be deployed at commit {}. \
+                     Deploy it without a commit id",
+                    application.name, commit_id
+                ));
+            }
+            applications.push(DeployAllRequestApplication {
+                application_id: application.id.clone(),
+                git_commit_id: None,
+            });
+            continue;
+        };
         // if commitId is not set, use the deployed commit id
-        let mut application_commit_id = application
-            .git_repository
-            .as_ref()
-            .and_then(|g| g.get("deployed_commit_id"))
+        let mut application_commit_id = git_repository
+            .get("deployed_commit_id")
             .and_then(|c| c.as_str())
             .map(|s| s.to_string());
         if is_latest_commit_keyword(commit_id) {

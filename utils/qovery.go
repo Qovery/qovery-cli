@@ -1525,6 +1525,16 @@ func DeployApplications(client *qovery.APIClient, envId string, applicationList 
 	var applicationsToDeploy []qovery.DeployAllRequestApplicationsInner
 
 	for _, application := range applicationList {
+		if application.GitRepository == nil {
+			if commitId != "" {
+				return fmt.Errorf("application %s is not built from a Git repository: it cannot be deployed at commit %s. "+
+					"Deploy it without a commit id", application.Name, commitId)
+			}
+			applicationsToDeploy = append(applicationsToDeploy, qovery.DeployAllRequestApplicationsInner{
+				ApplicationId: application.Id,
+			})
+			continue
+		}
 
 		// if commitId is not set, use the deployed commit id
 		applicationCommitId := application.GitRepository.DeployedCommitId

@@ -93,6 +93,12 @@ c("deploy git container", ["service", "deploy", "-n", "git-container"], fixtures
 c("deploy git container version", ["service", "deploy", "--services", "my-app,git-container", "-v", "v2"],
   fixtures=[GIT_CONTAINERS, DEPLOY_OK])
 c("deploy git container api error", ["service", "deploy", "-n", "git-container"], fixtures=[GIT_CONTAINERS, DEPLOY_500])
+IMAGE_APP = {k: v for k, v in APP.items() if k not in ("git_repository", "build_mode", "dockerfile_path")}
+IMAGE_APPS = {"method": "GET", "path": "/environment/env-1/application", "status": 200, "body": {"results": [IMAGE_APP]}}
+c("deploy app without git repository", ["service", "deploy", "-n", "my-app"], fixtures=[IMAGE_APPS, DEPLOY_OK])
+c("deploy app without git repository version", ["service", "deploy", "-n", "my-app", "-v", "c0ffee"], fixtures=[IMAGE_APPS, DEPLOY_OK])
+c("deploy services app without git repository version", ["service", "deploy", "--services", "my-container,my-app,my-db", "-v", "v2"],
+  fixtures=[IMAGE_APPS, DEPLOY_OK])
 c("deploy database", ["service", "deploy", "-n", "my-db", "-v", "ignored"], fixtures=[DEPLOY_OK])
 c("deploy cron", ["service", "deploy", "-n", "my-cron"], fixtures=[DEPLOY_OK])
 c("deploy cron version", ["service", "deploy", "-n", "my-cron", "-v", "abcdef"], fixtures=[DEPLOY_OK])

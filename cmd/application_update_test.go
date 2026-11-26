@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/qovery/qovery-client-go"
@@ -64,5 +65,67 @@ func TestApplicationUpdateStillSendsAutoDeployWhenGiven(t *testing.T) {
 	body := requestBody(t, req)
 	if body["auto_deploy"] != false || body["auto_preview"] != true {
 		t.Fatalf("expected auto_deploy false and the stored auto_preview true, got %v", body)
+	}
+}
+
+func gitApplication() *qovery.Application {
+	return &qovery.Application{
+		Id:   "app-git",
+		Name: "api",
+		GitRepository: &qovery.ApplicationGitRepository{
+			Provider:         qovery.GITPROVIDERENUM_GITHUB,
+			Url:              "https://github.com/acme/api.git",
+			Branch:           qovery.PtrString("main"),
+			RootPath:         qovery.PtrString("/"),
+			DeployedCommitId: qovery.PtrString("4f2c1e0"),
+		},
+	}
+}
+
+func applicationWithoutGitRepository() *qovery.Application {
+	return &qovery.Application{
+		Id:          "app-image",
+		Name:        "web",
+		Description: qovery.PtrString("serves the site"),
+		AutoPreview: utils.Bool(false),
+	}
+}
+
+func TestApplicationUpdateWithoutGitRepositoryKeepsTheOtherFields(t *testing.T) {
+	req, err := applicationEditRequest(applicationWithoutGitRepository(), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	body := requestBody(t, req)
+	if _, sent := body["git_repository"]; sent {
+		t.Fatalf("expected no git_repository for an application without one, got %v", body)
+	}
+	if body["name"] != "web" || body["description"] != "serves the site" || body["auto_preview"] != false {
+		t.Fatalf("expected the stored fields to be kept, got %v", body)
+	}
+}
+
+func TestApplicationUpdateBranchWithoutGitRepositoryIsRejected(t *testing.T) {
+	_, err := applicationEditRequest(applicationWithoutGitRepository(), "feature")
+	if err == nil {
+		t.Fatal("expected an error for --branch on an application without Git repository")
+	}
+	for _, expected := range []string{"web", "not built from a Git repository", "--branch"} {
+		if !strings.Contains(err.Error(), expected) {
+			t.Errorf("expected %q in the error, got %v", expected, err)
+		}
+	}
+}
+
+func TestApplicationUpdateBranchOnGitApplicationChangesOnlyTheBranch(t *testing.T) {
+	req, err := applicationEditRequest(gitApplication(), "feature")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	repository := requestBody(t, req)["git_repository"].(map[string]interface{})
+	if repository["branch"] != "feature" || repository["url"] != "https://github.com/acme/api.git" || repository["root_path"] != "/" {
+		t.Fatalf("expected the stored repository on branch feature, got %v", repository)
 	}
 }

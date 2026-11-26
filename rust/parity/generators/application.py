@@ -151,6 +151,14 @@ case("deploy commit latest error", A + ["deploy"] + N + ["--commit-id", "latest"
 case("deploy multi", A + ["deploy", "--applications", "my-app, other-app"], [APPS, SVC_DEPLOY])
 case("deploy multi latest", A + ["deploy", "--applications", "my-app,other-app", "-c", "latest"], [APPS, SVC_DEPLOY, COMMITS, COMMITS2])
 case("deploy multi not found", A + ["deploy", "--applications", "my-app, nope"], [APPS, SVC_DEPLOY])
+IMAGE_APP = {k: v for k, v in APP1.items() if k not in ("git_repository", "build_mode", "dockerfile_path")}
+IMAGE_APPS = {"method": "GET", "path": "/environment/env-1/application", "body": {"results": [IMAGE_APP, APP2]}}
+case("deploy without git repository", A + ["deploy"] + N, [IMAGE_APPS, SVC_DEPLOY])
+case("deploy without git repository commit id", A + ["deploy"] + N + ["-c", "abcdef"], [IMAGE_APPS, SVC_DEPLOY])
+case("deploy without git repository commit latest", A + ["deploy"] + N + ["--commit-id", "latest"], [IMAGE_APPS, SVC_DEPLOY, COMMITS])
+case("deploy multi one without git repository", A + ["deploy", "--applications", "other-app,my-app"], [IMAGE_APPS, SVC_DEPLOY])
+case("deploy multi latest one without git repository", A + ["deploy", "--applications", "other-app,my-app", "-c", "latest"],
+     [IMAGE_APPS, SVC_DEPLOY, COMMITS, COMMITS2])
 case("deploy both flags", A + ["deploy", "-n", "my-app", "--applications", "my-app"])
 case("deploy no flags", A + ["deploy"])
 case("deploy not found", A + ["deploy", "-n", "nope"])
@@ -276,6 +284,11 @@ RICH.update({
 RICH["git_repository"]["git_token_id"] = None
 case("update rich application", A + ["update"] + N + ["--branch", "b2"],
      [{"method": "GET", "path": "/environment/env-1/application", "body": {"results": [RICH]}}, UPD])
+case("update without git repository", A + ["update"] + N, [IMAGE_APPS, UPD])
+case("update git repository null", A + ["update"] + N,
+     [{"method": "GET", "path": "/environment/env-1/application", "body": {"results": [dict(IMAGE_APP, git_repository=None)]}}, UPD])
+case("update without git repository auto-preview", A + ["update"] + N + ["--auto-preview"], [IMAGE_APPS, UPD])
+case("update without git repository branch", A + ["update"] + N + ["--branch", "feature", "--auto-preview"], [IMAGE_APPS, UPD])
 case("update api error", A + ["update"] + N, [err("PUT", "/application/app-1", 400)])
 case("update not found", A + ["update", "-n", "nope"])
 case("update missing flag", A + ["update"])
