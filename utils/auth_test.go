@@ -190,6 +190,13 @@ func TestGetAccessToken_FailedRefreshKeepsTheStoredSession(t *testing.T) {
 			false,
 			"no access token",
 		},
+		{
+			"unreadable answer -> transient error pointing to the support page",
+			http.StatusOK,
+			`not json`,
+			false,
+			"https://www.qovery.com/docs/getting-started/useful-resources/help-and-support",
+		},
 	}
 
 	for _, tt := range tests {
@@ -222,5 +229,33 @@ func TestGetAccessToken_FailedRefreshKeepsTheStoredSession(t *testing.T) {
 				t.Fatalf("a failed refresh replaced the stored access token with %q", stored.AccessToken)
 			}
 		})
+	}
+}
+
+// A shell reconnecting after a network drop refreshes its token while the network is still down: the error has to
+// say the authentication server could not be reached, not ask to contact support
+func TestGetAccessToken_UnreachableAuthenticationServerReportsTheNetworkError(t *testing.T) {
+	// given
+	storedToken := accessTokenIssuedBy(t, testHeadlessClient)
+	setupExpiredSession(t, storedToken, func(w http.ResponseWriter, r *http.Request) {
+		conn, _, err := w.(http.Hijacker).Hijack()
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = conn.Close()
+	})
+
+	// when
+	_, token, err := GetAccessToken(false)
+
+	// then
+	if token != "" {
+		t.Fatalf("GetAccessToken() token = %q, want none", token)
+	}
+	if err == nil || !strings.Contains(err.Error(), "could not reach the authentication server") {
+		t.Fatalf("GetAccessToken() error = %v, want it to report the unreachable authentication server", err)
+	}
+	if errors.Is(err, ErrSignInRequired) {
+		t.Fatalf("errors.Is(err, ErrSignInRequired) = true, want false (err: %v)", err)
 	}
 }

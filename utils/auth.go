@@ -23,6 +23,8 @@ type tokenErrorResponse struct {
 	ErrorDescription string `json:"error_description"`
 }
 
+const SupportUrl = "https://www.qovery.com/docs/getting-started/useful-resources/help-and-support"
+
 var (
 	// oAuthUrlParamValueClient is the client of the browser flow ('qovery auth')
 	oAuthUrlParamValueClient = "MJ2SJpu12PxIzgmc5z5Y7N8m5MnaF7Y0"
@@ -55,7 +57,7 @@ func RefreshAccessToken(token RefreshToken, clientId string) (AccessToken, error
 		"refresh_token": {refreshToken},
 	})
 	if err != nil {
-		return "", errors.New("error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ")
+		return "", fmt.Errorf("could not reach the authentication server: %w. Check your network connection and retry", err)
 	}
 
 	defer func(Body io.ReadCloser) {
@@ -82,7 +84,7 @@ func RefreshAccessToken(token RefreshToken, clientId string) (AccessToken, error
 	tokens := TokensResponse{}
 	err = json.NewDecoder(res.Body).Decode(&tokens)
 	if err != nil {
-		return "", errors.New("error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ")
+		return "", fmt.Errorf("could not read the authentication server answer: %w. If it persists, contact Qovery support: %s", err, SupportUrl)
 	}
 	if tokens.AccessToken == "" {
 		return "", errors.New("could not refresh the access token: the authentication server returned no access token")

@@ -67,7 +67,7 @@ func DoRequestUserToAuthenticate(headless bool, skipVersionCheck bool) {
 	verifier := createCodeVerifier()
 	challenge, err := createCodeChallengeS256(verifier)
 	if err != nil {
-		utils.PrintlnError(errors.New("can not create authorization code challenge. Please contact the #support at 'https://discord.qovery.com'. "))
+		utils.PrintlnError(fmt.Errorf("can not create authorization code challenge. Please contact Qovery support: %s", utils.SupportUrl))
 		os.Exit(0)
 	}
 	// TODO link to web auth
@@ -106,7 +106,7 @@ func DoRequestUserToAuthenticate(headless bool, skipVersionCheck bool) {
 		})
 
 		if err != nil {
-			utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
+			utils.PrintlnError(fmt.Errorf("authentication unsuccessful. Try again later or contact Qovery support: %s", utils.SupportUrl))
 			os.Exit(0)
 		} else {
 			defer func(Body io.ReadCloser) {
@@ -116,7 +116,7 @@ func DoRequestUserToAuthenticate(headless bool, skipVersionCheck bool) {
 			tokens := TokensResponse{}
 			err := json.NewDecoder(res.Body).Decode(&tokens)
 			if err != nil {
-				utils.PrintlnError(errors.New("authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. "))
+				utils.PrintlnError(fmt.Errorf("authentication unsuccessful. Try again later or contact Qovery support: %s", utils.SupportUrl))
 				os.Exit(0)
 			}
 			expiredAt := time.Now().Local().Add(time.Duration(tokens.ExpiresIn-60) * time.Second)
@@ -228,7 +228,7 @@ func deviceFlowParameters() DeviceFlowParameters {
 
 func printContactSupportMessage(msg string) {
 	fmt.Println(msg)
-	fmt.Println("Please contact the #support at 'https://discord.qovery.com'. ")
+	fmt.Println("Please contact Qovery support: " + utils.SupportUrl)
 }
 
 func requestDeviceActivationWith(params DeviceFlowParameters) {
