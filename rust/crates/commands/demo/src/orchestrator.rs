@@ -388,9 +388,10 @@ impl<A: DemoApi, L: DemoLocal, C: Clock, P: Progress> Orchestrator<A, L, C, P> {
             write_to(
                 &self.out,
                 &format!(
-                    "\nThe Qovery Operator is installed in kube context {} and connected to the Qovery cluster {}.\nCluster ID: {cluster_id}\n{deployment}",
+                    "\nThe Qovery Operator is installed in kube context {} and connected to the Qovery cluster {}.\nCluster ID: {cluster_id}\nConsole: https://console.qovery.com/organization/{}/cluster/{cluster_id}/overview\n{deployment}",
                     quote(&cfg.existing_kube_context),
                     quote(&cfg.cluster_name),
+                    cfg.organization_id,
                 ),
             );
             return;
@@ -2284,7 +2285,7 @@ mod tests {
         );
         let out = text(&out);
         assert!(out.contains("installed in kube context \"vcluster_qls-a\""));
-        assert!(out.contains("Cluster ID: cluster-id"));
+        assert!(out.contains("Cluster ID: cluster-id\nConsole: https://console.qovery.com/organization/organization-id/cluster/cluster-id/overview\n"));
         assert!(!out.contains("k3d"));
     }
 

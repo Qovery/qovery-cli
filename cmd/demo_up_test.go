@@ -1646,7 +1646,7 @@ func TestDemoUpWithAnExistingKubeContextSkipsTheLocalCluster(t *testing.T) {
 	}, events)
 	assert.NotContains(t, demoRecordedPhaseNames(progress.phases), demoPhaseLocalCluster)
 	assert.Contains(t, output.String(), "installed in kube context \"vcluster_qls-a\"")
-	assert.Contains(t, output.String(), "Cluster ID: cluster-id")
+	assert.Contains(t, output.String(), "Cluster ID: cluster-id\nConsole: https://console.qovery.com/organization/organization-id/cluster/cluster-id/overview\n")
 	assert.NotContains(t, output.String(), "k3d")
 }
 

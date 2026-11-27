@@ -321,9 +321,11 @@ func (o *demoOrchestrator) printSummary(cfg demoConfig, clusterID string, status
 	if cfg.ExistingKubeContext != "" {
 		_, _ = fmt.Fprintf(
 			o.out,
-			"\nThe Qovery Operator is installed in kube context %q and connected to the Qovery cluster %q.\nCluster ID: %s\n%s",
+			"\nThe Qovery Operator is installed in kube context %q and connected to the Qovery cluster %q.\nCluster ID: %s\nConsole: https://console.qovery.com/organization/%s/cluster/%s/overview\n%s",
 			cfg.ExistingKubeContext,
 			cfg.ClusterName,
+			clusterID,
+			cfg.OrganizationID,
 			clusterID,
 			deployment,
 		)
