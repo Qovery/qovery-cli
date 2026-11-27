@@ -1,13 +1,14 @@
 //! `qovery admin` command. Port of `cmd/admin*.go` (except the cluster related sub-commands, ported in
 //! the `qovery-cmd-admin-cluster` crate and assembled under `admin` by `qovery-cli`).
 //!
-//! Sub-commands owned by this crate: delete, demo, deployment-restriction, download-s3-archive,
+//! Sub-commands owned by this crate: delete, demo, deployment-restriction, detach-database, download-s3-archive,
 //! enable-user-connect, encrypt-secret, enterprise-connection, force-delete-project,
 //! force-failed-deployments-to-internal-error, get-organization-plan, jwt, jwt-qovery-usage,
 //! publish-environment-deployment-rules, require-extended-credentials, transfer-ownership,
 //! update-billing-external-id, update-organization-plan.
 
 mod demo;
+mod detach_database;
 mod enterprise_connection;
 mod gojson;
 mod goutil;
@@ -25,6 +26,7 @@ pub fn command() -> Command {
         organization::delete(),
         demo::command(),
         organization::deployment_restriction(),
+        detach_database::command(),
         s3_archive::command(),
         misc::enable_user_connect(),
         misc::encrypt_secret(),
