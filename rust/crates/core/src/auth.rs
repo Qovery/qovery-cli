@@ -12,6 +12,8 @@ pub const ERR_SIGN_IN_REQUIRED: &str =
 /// OAuth client of the browser flow (`qovery auth`).
 pub const OAUTH_BROWSER_CLIENT_ID: &str = "MJ2SJpu12PxIzgmc5z5Y7N8m5MnaF7Y0";
 pub const OAUTH_TOKEN_ENDPOINT: &str = "https://auth.qovery.com/oauth/token";
+pub const SUPPORT_URL: &str =
+    "https://www.qovery.com/docs/getting-started/useful-resources/help-and-support";
 
 /// `Bearer` or `Token`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -116,7 +118,6 @@ pub fn refresh_access_token(refresh_token: &str, client_id: &str) -> Result<Stri
             "could not reauthenticate automatically. Please, {ERR_SIGN_IN_REQUIRED}. "
         ));
     }
-    let generic = "error authenticating in Qovery. Please, contact the #support on 'https://discord.qovery.com'. ";
     let res = qovery_api::http_client_builder()
         .build()
         .expect("cannot build http client")
@@ -127,7 +128,11 @@ pub fn refresh_access_token(refresh_token: &str, client_id: &str) -> Result<Stri
             ("refresh_token", rt),
         ])
         .send()
-        .map_err(|_| generic.to_string())?;
+        .map_err(|e| {
+            format!(
+                "could not reach the authentication server: {e}. Check your network connection and retry"
+            )
+        })?;
     let status = res.status().as_u16();
     match status {
         200 => {}
@@ -151,7 +156,11 @@ pub fn refresh_access_token(refresh_token: &str, client_id: &str) -> Result<Stri
             ));
         }
     }
-    let tokens: TokensResponse = res.json().map_err(|_| generic.to_string())?;
+    let tokens: TokensResponse = res.json().map_err(|e| {
+        format!(
+            "could not read the authentication server answer: {e}. If it persists, contact Qovery support: {SUPPORT_URL}"
+        )
+    })?;
     if tokens.access_token.is_empty() {
         return Err("could not refresh the access token: the authentication server returned no access token".to_string());
     }
@@ -167,6 +176,11 @@ fn check_orga_valid(orgs: &[Value]) -> Result<(), String> {
     } else {
         Ok(())
     }
+}
+
+fn token_expired(ctx: &crate::context::QoveryContext) -> bool {
+    !ctx.access_token_expiration_time()
+        .is_some_and(|t| t > chrono::Utc::now())
 }
 
 fn list_organizations(token: &str) -> Result<Vec<Value>, qovery_api::ApiError> {
@@ -195,11 +209,19 @@ pub fn get_access_token(skip_orga_check: bool) -> Result<(TokenType, String), St
             "access token has not been found. Please, {ERR_SIGN_IN_REQUIRED}. "
         ));
     }
-    if let Ok(orgs) = list_organizations(&token) {
-        if !skip_orga_check {
-            check_orga_valid(&orgs)?;
+    match list_organizations(&token) {
+        Ok(orgs) => {
+            if !skip_orga_check {
+                check_orga_valid(&orgs)?;
+            }
+            return Ok((TokenType::Bearer, token));
         }
-        return Ok((TokenType::Bearer, token));
+        // Refresh only when token rejected (401) or past its stored expiry. Network error or API
+        // outage on a valid token is transient: refresh would not fix it, and fails offline too
+        Err(e) if !e.is_unauthorized() && !token_expired(&ctx) => {
+            return Err(format!("could not validate the access token: {e}"));
+        }
+        Err(_) => {}
     }
     let token = refresh_access_token(&ctx.refresh_token, &oauth_client_of(&ctx.access_token))?;
     match list_organizations(&token) {

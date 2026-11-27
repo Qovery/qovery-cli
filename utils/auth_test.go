@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -190,6 +191,13 @@ func TestGetAccessToken_FailedRefreshKeepsTheStoredSession(t *testing.T) {
 			false,
 			"no access token",
 		},
+		{
+			"unreadable answer -> transient error pointing to the support page",
+			http.StatusOK,
+			`not json`,
+			false,
+			"https://www.qovery.com/docs/getting-started/useful-resources/help-and-support",
+		},
 	}
 
 	for _, tt := range tests {
@@ -220,6 +228,102 @@ func TestGetAccessToken_FailedRefreshKeepsTheStoredSession(t *testing.T) {
 			}
 			if stored.AccessToken != storedToken {
 				t.Fatalf("a failed refresh replaced the stored access token with %q", stored.AccessToken)
+			}
+		})
+	}
+}
+
+// An expired token whose refresh cannot reach the authentication server reports the network error, not a support link
+func TestGetAccessToken_UnreachableAuthenticationServerReportsTheNetworkError(t *testing.T) {
+	// given
+	storedToken := accessTokenIssuedBy(t, testHeadlessClient)
+	setupExpiredSession(t, storedToken, func(w http.ResponseWriter, r *http.Request) {
+		dropConnection(t, w)
+	})
+
+	// when
+	_, token, err := GetAccessToken(false)
+
+	// then
+	if token != "" {
+		t.Fatalf("GetAccessToken() token = %q, want none", token)
+	}
+	if err == nil || !strings.Contains(err.Error(), "could not reach the authentication server") {
+		t.Fatalf("GetAccessToken() error = %v, want it to report the unreachable authentication server", err)
+	}
+	if errors.Is(err, ErrSignInRequired) {
+		t.Fatalf("errors.Is(err, ErrSignInRequired) = true, want false (err: %v)", err)
+	}
+}
+
+// dropConnection closes the connection without an answer, as a network drop does. It runs on the server goroutine, so
+// it reports with t.Error: t.Fatal is only allowed on the test goroutine
+func dropConnection(t *testing.T, w http.ResponseWriter) {
+	conn, _, err := w.(http.Hijacker).Hijack()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	_ = conn.Close()
+}
+
+// Shell reconnecting while network or API down must not refresh a token still valid, nor call the authentication
+// server. Only a 401 or a token past its stored expiry triggers the refresh
+func TestGetAccessToken_RefreshesOnlyARejectedOrExpiredToken(t *testing.T) {
+	apiUnavailable := func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusServiceUnavailable) }
+	apiForbidden := func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusForbidden) }
+	apiDropped := func(w http.ResponseWriter, r *http.Request) { dropConnection(t, w) }
+
+	tests := []struct {
+		name        string
+		api         http.HandlerFunc
+		expiration  time.Time
+		wantRefresh bool
+	}{
+		{"valid token, API unavailable -> no refresh", apiUnavailable, time.Now().Add(time.Hour), false},
+		{"valid token, API connection dropped -> no refresh", apiDropped, time.Now().Add(time.Hour), false},
+		{"expired token, API answers 403 -> refresh", apiForbidden, time.Now().Add(-time.Minute), true},
+		{"expired token, API unavailable -> refresh", apiUnavailable, time.Now().Add(-time.Minute), true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// given
+			storedToken := accessTokenIssuedBy(t, testBrowserClient)
+			var refreshCalled atomic.Bool
+			setupExpiredSession(t, storedToken, func(w http.ResponseWriter, r *http.Request) {
+				refreshCalled.Store(true)
+				w.WriteHeader(http.StatusServiceUnavailable)
+			})
+			if err := SetAccessToken(storedToken, tt.expiration, "test-refresh-token"); err != nil {
+				t.Fatal(err)
+			}
+			api := httptest.NewServer(tt.api)
+			t.Cleanup(api.Close)
+			t.Setenv("QOVERY_API_URL", api.URL)
+
+			// when
+			_, token, err := GetAccessToken(false)
+
+			// then
+			if token != "" {
+				t.Fatalf("GetAccessToken() token = %q, want none", token)
+			}
+			if got := refreshCalled.Load(); got != tt.wantRefresh {
+				t.Fatalf("refresh called = %v, want %v (err: %v)", got, tt.wantRefresh, err)
+			}
+			if !tt.wantRefresh && (err == nil || !strings.Contains(err.Error(), "could not validate the access token")) {
+				t.Fatalf("GetAccessToken() error = %v, want it to report the failed validation", err)
+			}
+			if errors.Is(err, ErrSignInRequired) {
+				t.Fatalf("errors.Is(err, ErrSignInRequired) = true, want false (err: %v)", err)
+			}
+			stored, err := GetCurrentContext()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if stored.AccessToken != storedToken {
+				t.Fatalf("stored access token replaced with %q", stored.AccessToken)
 			}
 		})
 	}

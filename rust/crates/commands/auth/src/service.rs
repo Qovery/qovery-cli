@@ -198,9 +198,10 @@ fn serve_authorization(mut stream: TcpStream, verifier: &str) -> bool {
                 return false;
             };
             let unsuccessful = || -> ! {
-                qovery_log::println_error(
-                    "authentication unsuccessful. Try again later or contact #support on 'https://discord.qovery.com'. ",
-                );
+                qovery_log::println_error(format!(
+                    "authentication unsuccessful. Try again later or contact Qovery support: {}",
+                    auth::SUPPORT_URL
+                ));
                 exit(0)
             };
             let redirect = oauth_redirect();
@@ -238,7 +239,7 @@ fn serve_authorization(mut stream: TcpStream, verifier: &str) -> bool {
 
 fn print_contact_support_message(msg: &str) {
     println!("{msg}");
-    println!("Please contact the #support at 'https://discord.qovery.com'. ");
+    println!("Please contact Qovery support: {}", auth::SUPPORT_URL);
 }
 
 fn run_headless_flow() {
