@@ -16,6 +16,8 @@ ROOT = RUST
 BIN = "$PARITY/fake-tools/all"
 BIN_NO_HELM = "$PARITY/fake-tools/no-helm"
 BIN_DOCKER_ONLY = "$PARITY/fake-tools/docker-only"
+BIN_HELM_KUBECTL = "$PARITY/fake-tools/helm-kubectl"  # no docker nor k3d: an existing kube context needs neither
+BIN_HELM_ONLY = "$PARITY/fake-tools/helm-only"
 J = lambda v: json.dumps(v, separators=(",", ":"))
 
 def cluster(id, name, is_demo=None):
@@ -279,6 +281,63 @@ case("up rerun with an up-to-date configuration, deployment in progress", RERUN 
                                             "managedConfig": {"qovery-operator": {"cpuArchitectures": "AMD64"}}}),
     status=status_route("demo-1", "DEPLOYING", "READY", "DEPLOYED"), deploy=deploy_route("demo-1", "DEPLOYMENT_QUEUED")),
     ignore=["stdout"], timeout=60)
+
+# --- existing kube context (`--kube-context`): only helm and kubectl are on the PATH ---
+KUBE = ["--kube-context", "vcluster_qls-a", "--kubeconfig", "/kube/qls-a.yaml"]
+KUBE_UP = ["demo", "up", "-c", "my-demo"] + KUBE
+LOCAL_KUBE = {
+    "FAKE_HELM_LIST": "[]",
+    "FAKE_HELM_UPGRADE": "Release \"qovery-operator\" has been upgraded.",
+    "FAKE_KUBECTL": J({"items": [{"metadata": {"name": "qovery-operator"}}]}),
+}
+NO_ORG = {"organization_id": "", "organization_name": ""}
+case("up --kubeconfig without --kube-context", ["demo", "up", "-c", "my-demo", "--kubeconfig", "/kube/qls-a.yaml"], env=env(),
+     ignore=["stderr"])
+case("up --kube-context without organization never prompts", KUBE_UP, env=env(path=BIN_HELM_KUBECTL), context=NO_ORG,
+     ignore=["stderr"])
+case("up --kube-context without helm", KUBE_UP, env=env(path="/nonexistent"), fixtures=[UPLOAD_OK], ignore=UP_FAIL)
+case("up --kube-context, debug log endpoint missing", KUBE_UP, env=env(path="/nonexistent"),
+     fixtures=[{"method": "POST", "path": "/admin/demoDebugLog", "status": 404, "body": {"message": "not found"}}], ignore=UP_FAIL)
+case("up --kube-context helm install fails", KUBE_UP, env=env(LOCAL_KUBE, {"FAKE_HELM_UPGRADE": "Error: timed out", "FAKE_HELM_UPGRADE_EXIT": "1"},
+     path=BIN_HELM_KUBECTL), fixtures=api_ok(), ignore=UP_FAIL_OUT)
+case("up --kube-context --skip-catalog", KUBE_UP + ["--skip-catalog"], env=env(LOCAL_KUBE, path=BIN_HELM_KUBECTL),
+     fixtures=api_ok(status=None, deploy=None, upload=None), ignore=["stdout"])
+case("up --kube-context --organization-id without organization", KUBE_UP + ["--organization-id", "org-1"],
+     env=env(LOCAL_KUBE, path=BIN_HELM_KUBECTL), context=NO_ORG, fixtures=api_ok(), ignore=["stdout"])
+case("up --skip-catalog on k3d", RERUN + ["--skip-catalog"], env=env(LOCAL_RERUN),
+     fixtures=api_ok(status=None, deploy=None, upload=None), ignore=["stdout"])
+
+OPERATOR_RELEASES = J([{"name": "qovery-operator", "namespace": "qovery", "chart": "qovery-operator-1.2.3"},
+                       {"name": "vcluster", "namespace": "qls", "chart": "vcluster-0.20.0"}])
+KUBE_DESTROY = ["demo", "destroy", "-c", "my-demo"] + KUBE
+case("destroy --kubeconfig without --kube-context", ["demo", "destroy", "-c", "my-demo", "--kubeconfig", "/kube/qls-a.yaml"], env=env())
+case("destroy --kube-context without helm", KUBE_DESTROY, env=env(path=BIN_DOCKER_ONLY))
+case("destroy --kube-context uninstalls the Operator", KUBE_DESTROY, env=env({"FAKE_HELM_LIST": OPERATOR_RELEASES}, path=BIN_HELM_ONLY),
+     fixtures=[CLUSTERS])
+case("destroy --kube-context without an Operator release", KUBE_DESTROY, env=env({"FAKE_HELM_LIST": "null"}, path=BIN_HELM_ONLY),
+     fixtures=[CLUSTERS])
+case("destroy --kube-context helm list fails", KUBE_DESTROY,
+     env=env({"FAKE_HELM_LIST": "Error: cluster unreachable", "FAKE_HELM_LIST_EXIT": "1"}, path=BIN_HELM_ONLY), fixtures=[CLUSTERS])
+case("destroy --kube-context invalid release list", KUBE_DESTROY, env=env({"FAKE_HELM_LIST": "{}"}, path=BIN_HELM_ONLY),
+     fixtures=[CLUSTERS])
+# -d reaches the guarded deletion: the requests must show no DELETE
+case("destroy --kube-context -d helm uninstall fails", KUBE_DESTROY + ["-d"],
+     env=env({"FAKE_HELM_LIST": OPERATOR_RELEASES, "FAKE_HELM_UNINSTALL": "Error: timed out", "FAKE_HELM_UNINSTALL_EXIT": "1"}, path=BIN_HELM_ONLY),
+     fixtures=[CLUSTERS, DELETE_OK])
+case("destroy --kube-context refuses a cluster that is not a demo", ["demo", "destroy", "-c", "production"] + KUBE,
+     env=env({"FAKE_HELM_LIST": OPERATOR_RELEASES}, path=BIN_HELM_ONLY), fixtures=[CLUSTERS])
+case("destroy --kube-context lookup fails", KUBE_DESTROY, env=env({"FAKE_HELM_LIST": OPERATOR_RELEASES}, path=BIN_HELM_ONLY),
+     fixtures=[{"method": "GET", "path": "/organization/org-1/cluster", "status": 503, "body": {"message": "down"}}])
+case("destroy --kube-context without organization never prompts", KUBE_DESTROY, env=env(path=BIN_HELM_ONLY), context=NO_ORG)
+case("destroy --kube-context -d deletes the Qovery cluster", KUBE_DESTROY + ["-d"], env=env({"FAKE_HELM_LIST": OPERATOR_RELEASES}, path=BIN_HELM_ONLY),
+     fixtures=[CLUSTERS, DELETE_OK])
+case("destroy --kube-context -d cluster missing in Qovery", ["demo", "destroy", "-c", "other", "-d"] + KUBE,
+     env=env({"FAKE_HELM_LIST": "[]"}, path=BIN_HELM_ONLY), fixtures=[CLUSTERS])
+case("destroy --kube-context -d lookup fails", KUBE_DESTROY + ["-d"], env=env({"FAKE_HELM_LIST": OPERATOR_RELEASES}, path=BIN_HELM_ONLY),
+     fixtures=[{"method": "GET", "path": "/organization/org-1/cluster", "status": 503, "body": {"message": "down"}}])
+case("destroy --kube-context -d without organization never prompts", KUBE_DESTROY + ["-d"], env=env(path=BIN_HELM_ONLY), context=NO_ORG)
+case("destroy --kube-context -d --organization-id", KUBE_DESTROY + ["-d", "--organization-id", "org-1"],
+     env=env({"FAKE_HELM_LIST": OPERATOR_RELEASES}, path=BIN_HELM_ONLY), context=NO_ORG, fixtures=[CLUSTERS, DELETE_OK])
 
 json.dump({"cases": cases}, open(sys.argv[1] if len(sys.argv) > 1 else os.path.join(PARITY, "scenarios", "demo.json"), "w"), indent=1)
 print(len(cases), "cases")

@@ -98,7 +98,7 @@ func demoDiagnosticTail(output []byte, maxLines int, maxBytes int) string {
 func (l *demoLocalCommands) kubectl(ctx context.Context, timeout time.Duration, args ...string) (output []byte, timedOut bool, err error) {
 	commandCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	output, err = l.runner.RunSilent(commandCtx, "kubectl", append([]string{"--context", l.kubeContext, "--request-timeout", demoDiagnosticRequestTimeout}, args...)...)
+	output, err = l.runner.RunSilent(commandCtx, "kubectl", append(append(l.kubectlTarget(), "--request-timeout", demoDiagnosticRequestTimeout), args...)...)
 	return output, err != nil && ctx.Err() == nil && commandCtx.Err() != nil, err
 }
 

@@ -37,6 +37,7 @@ pub fn command() -> Command {
         .subcommand(up())
 }
 
+/// The existing kube context flags are for the Qovery team (qovery-local-stack), so they stay out of the help.
 fn up() -> Command {
     Command::new("up")
         .short("Create a local k3d cluster running the Qovery Operator and Engine v2")
@@ -47,6 +48,22 @@ fn up() -> Command {
                 .default_value(format!("local-demo-{}", demo_safe_username())),
         )
         .flag(Flag::bool("debug", "Enable debug mode"))
+        .flag(Flag::string(
+            "kube-context",
+            "Install the Qovery Operator into this existing kube context instead of creating a local k3d cluster; never prompts",
+        ).hidden())
+        .flag(Flag::string(
+            "kubeconfig",
+            "The kubeconfig file holding --kube-context (default: the kubectl and helm default)",
+        ).hidden())
+        .flag(Flag::string(
+            "organization-id",
+            "The organization ID (default: the current context organization)",
+        ).hidden())
+        .flag(Flag::bool(
+            "skip-catalog",
+            "Do not deploy the platform catalog once the Qovery Operator is connected",
+        ).hidden())
         .run(run_up)
 }
 
@@ -66,6 +83,18 @@ fn destroy() -> Command {
             )
             .short('d'),
         )
+        .flag(Flag::string(
+            "kube-context",
+            "Uninstall the Qovery Operator from this existing kube context instead of deleting a local k3d cluster; the kube cluster is kept",
+        ).hidden())
+        .flag(Flag::string(
+            "kubeconfig",
+            "The kubeconfig file holding --kube-context (default: the kubectl and helm default)",
+        ).hidden())
+        .flag(Flag::string(
+            "organization-id",
+            "The organization ID (default: the current context organization)",
+        ).hidden())
         .run(run_destroy)
 }
 
@@ -168,6 +197,34 @@ fn validate_demo_cluster_name(name: &str) -> Result<(), DemoError> {
         )));
     }
     Ok(())
+}
+
+/// `validateDemoKubeTarget(kubeContext, kubeconfig)`.
+fn validate_demo_kube_target(kube_context: &str, kubeconfig: &str) -> Result<(), DemoError> {
+    if !kubeconfig.is_empty() && kube_context.is_empty() {
+        return Err(DemoError::new("--kubeconfig requires --kube-context"));
+    }
+    Ok(())
+}
+
+/// `resolveDemoOrganization(organizationID, existingKubeContext)`: never prompts with an existing kube
+/// context, which runs unattended, e.g. in a Kubernetes Job.
+fn resolve_demo_organization(
+    organization_id: &str,
+    existing_kube_context: bool,
+) -> Result<String, DemoError> {
+    if !organization_id.is_empty() {
+        return Ok(organization_id.to_string());
+    }
+    match qovery_core::context::current_organization(!existing_kube_context) {
+        Ok(organization) => Ok(organization.id),
+        Err(e) if existing_kube_context => Err(DemoError::new(format!(
+            "cannot resolve the current organization; pass --organization-id or run `qovery context set`: {e}"
+        ))),
+        Err(e) => Err(DemoError::new(format!(
+            "cannot resolve the current organization: {e}"
+        ))),
+    }
 }
 
 // --- demo up ----------------------------------------------------------------------------------------------
@@ -411,13 +468,24 @@ fn run_demo_up(
             )),
         )
     })?;
-    let organization = qovery_core::context::current_organization(true).map_err(|e| {
+    let kube_context = ctx.string("kube-context");
+    let kubeconfig = ctx.string("kubeconfig");
+    validate_demo_kube_target(&kube_context, &kubeconfig).map_err(|e| {
         new_demo_failure(
-            ERROR_ORGANIZATION,
-            "The current organization could not be resolved.",
-            DemoError::new(format!("cannot resolve the current organization: {e}")),
+            ERROR_INVALID_KUBE_TARGET,
+            "The kube context options are invalid.",
+            e,
         )
     })?;
+    let organization_id =
+        resolve_demo_organization(&ctx.string("organization-id"), !kube_context.is_empty())
+            .map_err(|e| {
+                new_demo_failure(
+                    ERROR_ORGANIZATION,
+                    "The current organization could not be resolved.",
+                    e,
+                )
+            })?;
     let cluster_name = ctx.string("cluster-name");
     validate_demo_cluster_name(&cluster_name).map_err(|e| {
         new_demo_failure(
@@ -442,13 +510,15 @@ fn run_demo_up(
         .unwrap_or_default();
     let mut orchestrator = orchestrator::Orchestrator {
         api: api::QoveryApi::new(qovery_core::client::client_for(token_type, &token)),
-        local: local::LocalCommands {
-            runner: exec_runner,
-            goos: go_os().to_string(),
-            temp_dir,
-            kube_context: local::demo_kube_context(&cluster_name),
-            debug_log: debug_log.clone(),
-        },
+        local: local::LocalCommands::for_target(
+            exec_runner,
+            go_os(),
+            debug_log.clone(),
+            &temp_dir,
+            &cluster_name,
+            &kube_context,
+            &kubeconfig,
+        ),
         clock: orchestrator::SystemClock,
         out: Rc::new(RefCell::new(MultiWriter(vec![
             terminal_output,
@@ -459,9 +529,11 @@ fn run_demo_up(
     let result = orchestrator.up(
         cancel,
         orchestrator::Config {
-            organization_id: organization.id.clone(),
+            organization_id: organization_id.clone(),
             cluster_name: cluster_name.clone(),
             cpu_architecture: detect_architecture(),
+            existing_kube_context: kube_context.clone(),
+            skip_catalog: ctx.bool("skip-catalog"),
             ..Default::default()
         },
     );
@@ -478,7 +550,7 @@ fn run_demo_up(
         upload::upload_error_logs(
             token_type,
             &token,
-            &organization.id,
+            &organization_id,
             &cluster_name,
             &debug_logs_path,
         );
@@ -517,19 +589,21 @@ fn run_demo_destroy(cancel: Cancel, ctx: &Ctx) -> Result<(), DemoError> {
     }
     let cluster_name = ctx.string("cluster-name");
     validate_demo_cluster_name(&cluster_name)?;
+    let kube_context = ctx.string("kube-context");
+    let kubeconfig = ctx.string("kubeconfig");
+    validate_demo_kube_target(&kube_context, &kubeconfig)?;
     let delete_qovery_config = ctx.bool("delete-qovery-config");
 
     let mut api = None;
     let mut organization_id = String::new();
-    if delete_qovery_config {
+    if delete_qovery_config || !kube_context.is_empty() {
         let (token_type, token) = qovery_core::auth::get_access_token(false).map_err(|e| {
             DemoError::new(format!(
                 "authentication failed; run `qovery auth` first: {e}"
             ))
         })?;
-        let organization = qovery_core::context::current_organization(true)
-            .map_err(|e| DemoError::new(format!("cannot resolve the current organization: {e}")))?;
-        organization_id = organization.id;
+        organization_id =
+            resolve_demo_organization(&ctx.string("organization-id"), !kube_context.is_empty())?;
         api = Some(api::QoveryApi::new(qovery_core::client::client_for(
             token_type, &token,
         )));
@@ -538,7 +612,7 @@ fn run_demo_destroy(cancel: Cancel, ctx: &Ctx) -> Result<(), DemoError> {
     let terminal_output: Sink = Rc::new(RefCell::new(StdoutWriter));
     let mut orchestrator = orchestrator::DestroyOrchestrator {
         api,
-        local: local::LocalCommands::new(
+        local: local::LocalCommands::for_target(
             runner::ExecRunner {
                 out: Some(terminal_output.clone()),
                 log: None,
@@ -546,6 +620,10 @@ fn run_demo_destroy(cancel: Cancel, ctx: &Ctx) -> Result<(), DemoError> {
             },
             go_os(),
             Rc::new(RefCell::new(std::io::sink())),
+            "",
+            &cluster_name,
+            &kube_context,
+            &kubeconfig,
         ),
         out: terminal_output,
     };
@@ -555,6 +633,7 @@ fn run_demo_destroy(cancel: Cancel, ctx: &Ctx) -> Result<(), DemoError> {
             organization_id,
             cluster_name,
             delete_qovery_config,
+            kube_context,
         },
     )
 }
@@ -589,6 +668,19 @@ mod tests {
         assert_eq!(
             "cluster name must start with a letter, end with a letter or digit, and contain only letters, digits, or hyphens: got \"a\"",
             validate_demo_cluster_name("a").unwrap_err().to_string()
+        );
+    }
+
+    #[test]
+    fn validate_kube_target_requires_a_context_for_a_kubeconfig() {
+        assert!(validate_demo_kube_target("", "").is_ok());
+        assert!(validate_demo_kube_target("ctx", "").is_ok());
+        assert!(validate_demo_kube_target("ctx", "/kube/config").is_ok());
+        assert_eq!(
+            "--kubeconfig requires --kube-context",
+            validate_demo_kube_target("", "/kube/config")
+                .unwrap_err()
+                .to_string()
         );
     }
 }

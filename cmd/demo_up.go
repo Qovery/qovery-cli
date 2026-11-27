@@ -45,8 +45,12 @@ const (
 )
 
 var (
-	demoClusterName string
-	demoDebug       bool
+	demoClusterName       string
+	demoDebug             bool
+	demoTargetKubeContext string
+	demoKubeconfig        string
+	demoOrganizationID    string
+	demoSkipCatalog       bool
 )
 
 type demoAttempt struct {
@@ -119,13 +123,12 @@ func runDemoUp(ctx context.Context, cmd *cobra.Command, progress demoProgress, d
 			fmt.Errorf("authentication failed; run `qovery auth` first: %w", err),
 		)
 	}
-	organizationID, _, err := utils.CurrentOrganization(true)
+	if err := validateDemoKubeTarget(demoTargetKubeContext, demoKubeconfig); err != nil {
+		return newDemoFailure(demoErrorInvalidKubeTarget, "The kube context options are invalid.", err)
+	}
+	organizationID, err := resolveDemoOrganization(demoOrganizationID, demoTargetKubeContext != "")
 	if err != nil {
-		return newDemoFailure(
-			demoErrorOrganization,
-			"The current organization could not be resolved.",
-			fmt.Errorf("cannot resolve the current organization: %w", err),
-		)
+		return newDemoFailure(demoErrorOrganization, "The current organization could not be resolved.", err)
 	}
 	if err := validateDemoClusterName(demoClusterName); err != nil {
 		return newDemoFailure(demoErrorInvalidClusterName, "The cluster name is invalid.", err)
@@ -143,23 +146,21 @@ func runDemoUp(ctx context.Context, cmd *cobra.Command, progress demoProgress, d
 		log:   debugLog,
 		debug: demoDebug,
 	}
+	local := newDemoLocalCommands(runner, filepath.Dir(debugLogsPath), demoClusterName, demoTargetKubeContext, demoKubeconfig)
+	local.debugLog = debugLog
 	orchestrator := demoOrchestrator{
-		api: &demoQoveryAPI{client: utils.GetQoveryClient(tokenType, token)},
-		local: &demoLocalCommands{
-			runner:      runner,
-			goos:        runtime.GOOS,
-			tempDir:     filepath.Dir(debugLogsPath),
-			kubeContext: demoKubeContext(demoClusterName),
-			debugLog:    debugLog,
-		},
+		api:      &demoQoveryAPI{client: utils.GetQoveryClient(tokenType, token)},
+		local:    local,
 		clock:    demoSystemClock{},
 		out:      io.MultiWriter(terminalOutput, debugLog),
 		progress: progress,
 	}
 	err = orchestrator.Up(ctx, demoConfig{
-		OrganizationID:  string(organizationID),
-		ClusterName:     demoClusterName,
-		CPUArchitecture: detectArchitecture(),
+		OrganizationID:      string(organizationID),
+		ClusterName:         demoClusterName,
+		CPUArchitecture:     detectArchitecture(),
+		ExistingKubeContext: demoTargetKubeContext,
+		SkipCatalog:         demoSkipCatalog,
 	})
 	if err != nil {
 		_, _ = fmt.Fprintf(debugLog, "\nERROR: %v\n", err)
@@ -237,6 +238,14 @@ func init() {
 	demoClusterName = "local-demo-" + demoSafeUsername()
 	demoUpCmd.Flags().StringVarP(&demoClusterName, "cluster-name", "c", demoClusterName, "The name of the local demo cluster")
 	demoUpCmd.Flags().BoolVar(&demoDebug, "debug", false, "Enable debug mode")
+	demoUpCmd.Flags().StringVar(&demoTargetKubeContext, "kube-context", "", "Install the Qovery Operator into this existing kube context instead of creating a local k3d cluster; never prompts")
+	demoUpCmd.Flags().StringVar(&demoKubeconfig, "kubeconfig", "", "The kubeconfig file holding --kube-context (default: the kubectl and helm default)")
+	demoUpCmd.Flags().StringVar(&demoOrganizationID, "organization-id", "", "The organization ID (default: the current context organization)")
+	demoUpCmd.Flags().BoolVar(&demoSkipCatalog, "skip-catalog", false, "Do not deploy the platform catalog once the Qovery Operator is connected")
+	// The existing kube context mode is for the Qovery team (qovery-local-stack), so its flags stay out of the help.
+	for _, name := range []string{"kube-context", "kubeconfig", "organization-id", "skip-catalog"} {
+		_ = demoUpCmd.Flags().MarkHidden(name)
+	}
 	demoCmd.AddCommand(demoUpCmd)
 }
 
@@ -265,6 +274,28 @@ func demoSafeUsername() string {
 		return "qovery"
 	}
 	return value
+}
+
+func validateDemoKubeTarget(kubeContext string, kubeconfig string) error {
+	if kubeconfig != "" && kubeContext == "" {
+		return errors.New("--kubeconfig requires --kube-context")
+	}
+	return nil
+}
+
+// resolveDemoOrganization never prompts with an existing kube context: it runs unattended, e.g. in a Kubernetes Job.
+func resolveDemoOrganization(organizationID string, existingKubeContext bool) (utils.Id, error) {
+	if organizationID != "" {
+		return utils.Id(organizationID), nil
+	}
+	id, _, err := utils.CurrentOrganization(!existingKubeContext)
+	if err != nil {
+		if existingKubeContext {
+			return "", fmt.Errorf("cannot resolve the current organization; pass --organization-id or run `qovery context set`: %w", err)
+		}
+		return "", fmt.Errorf("cannot resolve the current organization: %w", err)
+	}
+	return id, nil
 }
 
 func validateDemoClusterName(name string) error {
@@ -722,21 +753,66 @@ type demoLocalCommands struct {
 	tempDir     string
 	kubeContext string
 	debugLog    io.Writer
+	kubeconfig  string
+	// existingCluster is set when kubeContext was given by the user: docker and k3d are not needed.
+	existingCluster bool
+}
+
+func newDemoLocalCommands(runner demoCommandRunner, tempDir string, clusterName string, kubeContext string, kubeconfig string) *demoLocalCommands {
+	local := &demoLocalCommands{
+		runner:      runner,
+		goos:        runtime.GOOS,
+		tempDir:     tempDir,
+		kubeContext: demoKubeContext(clusterName),
+	}
+	if kubeContext != "" {
+		local.kubeContext = kubeContext
+		local.kubeconfig = kubeconfig
+		local.existingCluster = true
+	}
+	return local
 }
 
 func demoKubeContext(clusterName string) string {
 	return "k3d-" + clusterName
 }
 
+func (l *demoLocalCommands) helmTarget() []string {
+	return demoHelmTarget(l.kubeContext, l.kubeconfig)
+}
+
+func demoHelmTarget(kubeContext string, kubeconfig string) []string {
+	target := []string{"--kube-context", kubeContext}
+	if kubeconfig != "" {
+		target = append(target, "--kubeconfig", kubeconfig)
+	}
+	return target
+}
+
+func (l *demoLocalCommands) kubectlTarget() []string {
+	target := []string{"--context", l.kubeContext}
+	if l.kubeconfig != "" {
+		target = append(target, "--kubeconfig", l.kubeconfig)
+	}
+	return target
+}
+
 func (l *demoLocalCommands) CheckDependencies(ctx context.Context) error {
+	dependencies := []string{"docker", "k3d", "helm", "kubectl"}
+	if l.existingCluster {
+		dependencies = []string{"helm", "kubectl"}
+	}
 	var missing []string
-	for _, dependency := range []string{"docker", "k3d", "helm", "kubectl"} {
+	for _, dependency := range dependencies {
 		if err := l.runner.LookPath(dependency); err != nil {
 			missing = append(missing, dependency)
 		}
 	}
 	if len(missing) > 0 {
 		return missingDemoDependenciesError(l.goos, missing)
+	}
+	if l.existingCluster {
+		return nil
 	}
 	if _, err := l.runner.RunQuiet(ctx, "docker", "info"); err != nil {
 		return newDemoFailure(demoErrorDockerNotRunning, "Docker is not running.", errors.New("docker is not running"))
@@ -952,7 +1028,9 @@ func (l *demoLocalCommands) EnsureLoopback(ctx context.Context) error {
 
 func (l *demoLocalCommands) LegacyQoveryReleaseExists(ctx context.Context) (bool, error) {
 	// Helm 4 removed `helm list --all`; listing every status explicitly works on Helm 3 and 4.
-	output, err := l.runner.RunQuiet(ctx, "helm", "list", "--kube-context", l.kubeContext, "--namespace", "qovery", "--deployed", "--failed", "--pending", "--superseded", "--uninstalling", "--output", "json", "--filter", "^qovery$")
+	args := append([]string{"list"}, l.helmTarget()...)
+	args = append(args, "--namespace", "qovery", "--deployed", "--failed", "--pending", "--superseded", "--uninstalling", "--output", "json", "--filter", "^qovery$")
+	output, err := l.runner.RunQuiet(ctx, "helm", args...)
 	if err != nil {
 		return false, commandFailed("helm list", err)
 	}
@@ -970,16 +1048,15 @@ func (l *demoLocalCommands) LegacyQoveryReleaseExists(ctx context.Context) (bool
 	return false, nil
 }
 
-func buildDemoHelmArgs(bootstrap demoBootstrap, valuesPath string, kubeContext string) ([]string, error) {
+func buildDemoHelmArgs(bootstrap demoBootstrap, valuesPath string, target []string) ([]string, error) {
 	if strings.TrimSpace(bootstrap.ReleaseName) == "" || strings.TrimSpace(bootstrap.ChartReference) == "" || strings.TrimSpace(bootstrap.ChartVersion) == "" || strings.TrimSpace(bootstrap.Namespace) == "" {
 		return nil, errors.New("operator bootstrap is missing structured Helm fields")
 	}
 	if path.Base(strings.TrimSuffix(bootstrap.ChartReference, "/")) == "qovery" {
 		return nil, errors.New("refusing to install the legacy Qovery umbrella chart")
 	}
-	return []string{
-		"upgrade", "--install",
-		"--kube-context", kubeContext,
+	args := append([]string{"upgrade", "--install"}, target...)
+	return append(args,
 		bootstrap.ReleaseName,
 		bootstrap.ChartReference,
 		"--version", bootstrap.ChartVersion,
@@ -989,7 +1066,7 @@ func buildDemoHelmArgs(bootstrap demoBootstrap, valuesPath string, kubeContext s
 		"--atomic",
 		"--wait",
 		"--timeout", "15m",
-	}, nil
+	), nil
 }
 
 func (l *demoLocalCommands) InstallOperator(ctx context.Context, bootstrap demoBootstrap) error {
@@ -1010,7 +1087,7 @@ func (l *demoLocalCommands) InstallOperator(ctx context.Context, bootstrap demoB
 	if err := file.Close(); err != nil {
 		return errors.New("cannot close temporary Operator values file")
 	}
-	args, err := buildDemoHelmArgs(bootstrap, path, l.kubeContext)
+	args, err := buildDemoHelmArgs(bootstrap, path, l.helmTarget())
 	if err != nil {
 		return err
 	}
@@ -1021,7 +1098,8 @@ func (l *demoLocalCommands) InstallOperator(ctx context.Context, bootstrap demoB
 }
 
 func (l *demoLocalCommands) ValidateWorkloads(ctx context.Context, namespace string) error {
-	output, err := l.runner.RunQuiet(ctx, "kubectl", "--context", l.kubeContext, "--namespace", namespace, "get", "deployments", "--output", "json")
+	args := append(l.kubectlTarget(), "--namespace", namespace, "get", "deployments", "--output", "json")
+	output, err := l.runner.RunQuiet(ctx, "kubectl", args...)
 	if err != nil {
 		return commandFailed("kubectl get deployments", err)
 	}
@@ -1109,6 +1187,10 @@ func uploadErrorLogs(tokenType utils.AccessTokenType, token utils.AccessToken, o
 	endpoint := fmt.Sprintf("%s/admin/demoDebugLog?%s", client.GetConfig().Servers[0].URL, query.Encode())
 
 	err := postDemoDebugLog(&http.Client{Timeout: 30 * time.Second}, endpoint, utils.GetAuthorizationHeaderValue(tokenType, token), payload, demoDebugLogRetryDelay)
+	if isDemoDebugLogUnsupported(err) {
+		// Non-production APIs may not expose the endpoint: the upload is best effort.
+		return
+	}
 	if err != nil {
 		utils.PrintlnError(fmt.Errorf("error uploading debug logs: %w", err))
 		if isDemoDebugLogAuthFailure(err) {
@@ -1157,6 +1239,11 @@ func postDemoDebugLogOnce(httpClient *http.Client, endpoint string, authorizatio
 	body, _ := io.ReadAll(response.Body)
 	uploadErr := &demoDebugLogUploadError{status: response.Status, statusCode: response.StatusCode, body: body}
 	return response.StatusCode >= http.StatusInternalServerError, uploadErr
+}
+
+func isDemoDebugLogUnsupported(err error) bool {
+	var uploadErr *demoDebugLogUploadError
+	return errors.As(err, &uploadErr) && uploadErr.statusCode == http.StatusNotFound
 }
 
 func isDemoDebugLogAuthFailure(err error) bool {

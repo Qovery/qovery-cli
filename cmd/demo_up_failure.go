@@ -13,6 +13,7 @@ const (
 	demoErrorAuthentication           = "AUTHENTICATION_FAILED"
 	demoErrorOrganization             = "ORGANIZATION_NOT_RESOLVED"
 	demoErrorInvalidClusterName       = "INVALID_CLUSTER_NAME"
+	demoErrorInvalidKubeTarget        = "INVALID_KUBE_TARGET"
 	demoErrorMissingDependency        = "MISSING_DEPENDENCY"
 	demoErrorDockerNotRunning         = "DOCKER_NOT_RUNNING"
 	demoErrorQoveryAPI                = "QOVERY_API_ERROR"

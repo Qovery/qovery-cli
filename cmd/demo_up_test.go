@@ -19,6 +19,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/qovery/qovery-cli/utils"
 	qovery "github.com/qovery/qovery-client-go"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -597,7 +598,7 @@ func TestDemoUpRejectsLegacyQoveryRelease(t *testing.T) {
 func TestBuildDemoHelmArgsUsesStructuredBootstrap(t *testing.T) {
 	bootstrap := testDemoBootstrap()
 
-	args, err := buildDemoHelmArgs(bootstrap, "/tmp/protected-values.yaml", "k3d-local-demo-user")
+	args, err := buildDemoHelmArgs(bootstrap, "/tmp/protected-values.yaml", demoHelmTarget("k3d-local-demo-user", ""))
 
 	require.NoError(t, err)
 	assert.Equal(t, []string{
@@ -612,7 +613,7 @@ func TestBuildDemoHelmArgsRejectsUmbrellaChart(t *testing.T) {
 	bootstrap := testDemoBootstrap()
 	bootstrap.ChartReference = "oci://public.ecr.aws/example/charts/qovery"
 
-	_, err := buildDemoHelmArgs(bootstrap, "/tmp/protected-values.yaml", "k3d-local-demo-user")
+	_, err := buildDemoHelmArgs(bootstrap, "/tmp/protected-values.yaml", demoHelmTarget("k3d-local-demo-user", ""))
 
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "umbrella chart")
@@ -1615,4 +1616,144 @@ func TestOperatorStatusReadyToleratesClockSkewButRejectsStaleHeartbeats(t *testi
 	assert.True(t, operatorStatusReady(at(-time.Minute), now))
 	assert.False(t, operatorStatusReady(at(-3*time.Minute), now))
 	assert.False(t, operatorStatusReady(demoOperatorStatus{Connected: false, LastHeartbeat: at(0).LastHeartbeat}, now))
+}
+
+func testExistingKubeContextDemoConfig() demoConfig {
+	cfg := testDemoConfig()
+	cfg.ExistingKubeContext = "vcluster_qls-a"
+	return cfg
+}
+
+func TestDemoUpWithAnExistingKubeContextSkipsTheLocalCluster(t *testing.T) {
+	now := time.Date(2026, 8, 19, 10, 0, 0, 0, time.UTC)
+	events := []string{}
+	progress := &recordingDemoProgress{}
+	api := &fakeDemoAPI{
+		events:           &events,
+		operatorStatuses: []demoOperatorStatus{readyDemoOperatorStatus(now)},
+		clusterStatuses:  []string{"READY", "DEPLOYED"},
+	}
+	output := &bytes.Buffer{}
+	orchestrator := demoOrchestrator{api: api, local: &fakeDemoLocal{events: &events}, clock: &fakeDemoClock{now: now}, out: output, progress: progress}
+
+	err := orchestrator.Up(context.Background(), testExistingKubeContextDemoConfig())
+
+	require.NoError(t, err)
+	assert.Equal(t, []string{
+		"dependencies", "credentials", "find-cluster",
+		"legacy-release", "create-cluster", "operator-config", "bootstrap", "attach", "install-operator", "operator-status",
+		"cluster-status", "deploy", "cluster-status", "validate-workloads",
+	}, events)
+	assert.NotContains(t, demoRecordedPhaseNames(progress.phases), demoPhaseLocalCluster)
+	assert.Contains(t, output.String(), "installed in kube context \"vcluster_qls-a\"")
+	assert.Contains(t, output.String(), "Cluster ID: cluster-id\nConsole: https://console.qovery.com/organization/organization-id/cluster/cluster-id/overview\n")
+	assert.NotContains(t, output.String(), "k3d")
+}
+
+func TestDemoUpSkipsTheCatalogWhenRequested(t *testing.T) {
+	now := time.Date(2026, 8, 19, 10, 0, 0, 0, time.UTC)
+	events := []string{}
+	progress := &recordingDemoProgress{}
+	api := &fakeDemoAPI{events: &events, operatorStatuses: []demoOperatorStatus{readyDemoOperatorStatus(now)}}
+	output := &bytes.Buffer{}
+	orchestrator := demoOrchestrator{api: api, local: &fakeDemoLocal{events: &events}, clock: &fakeDemoClock{now: now}, out: output, progress: progress}
+	cfg := testExistingKubeContextDemoConfig()
+	cfg.SkipCatalog = true
+
+	err := orchestrator.Up(context.Background(), cfg)
+
+	require.NoError(t, err)
+	assert.NotContains(t, events, "deploy")
+	assert.NotContains(t, events, "cluster-status")
+	assert.Contains(t, events, "operator-status")
+	assert.Equal(t, []string{
+		demoPhaseLocalDependencies,
+		demoPhaseCredentialsAndCluster,
+		demoPhaseLegacyReleaseCheck,
+		demoPhaseOperatorBootstrap,
+		demoPhaseOperatorHeartbeat,
+		demoPhaseWorkloadVerification,
+	}, demoRecordedPhaseNames(progress.phases))
+	assert.Contains(t, output.String(), "The platform catalog was not deployed (--skip-catalog).")
+}
+
+func TestDemoLocalCommandsWithAnExistingKubeContextNeverCallDockerOrK3d(t *testing.T) {
+	runner := &lookPathRecordingDemoRunner{outputs: [][]byte{
+		[]byte("[]"),
+		nil,
+		[]byte(`{"items":[{"metadata":{"name":"qovery-operator"}}]}`),
+	}}
+	local := newDemoLocalCommands(runner, t.TempDir(), "qls-a", "vcluster_qls-a", "/kube/qls-a.yaml")
+	ctx := context.Background()
+
+	require.NoError(t, local.CheckDependencies(ctx))
+	legacy, err := local.LegacyQoveryReleaseExists(ctx)
+	require.NoError(t, err)
+	assert.False(t, legacy)
+	require.NoError(t, local.InstallOperator(ctx, testDemoBootstrap()))
+	require.NoError(t, local.ValidateWorkloads(ctx, "qovery"))
+
+	assert.Equal(t, []string{"helm", "kubectl"}, runner.lookedUp)
+	require.Len(t, runner.calls, 3)
+	for _, call := range runner.calls {
+		assert.NotContains(t, []string{"docker", "k3d", "sudo"}, call[0])
+	}
+	assert.Equal(t, []string{"helm", "list", "--kube-context", "vcluster_qls-a", "--kubeconfig", "/kube/qls-a.yaml"}, runner.calls[0][:6])
+	assert.Equal(t, []string{"helm", "upgrade", "--install", "--kube-context", "vcluster_qls-a", "--kubeconfig", "/kube/qls-a.yaml", "qovery-operator"}, runner.calls[1][:8])
+	assert.Equal(t, []string{"kubectl", "--context", "vcluster_qls-a", "--kubeconfig", "/kube/qls-a.yaml", "--namespace", "qovery"}, runner.calls[2][:7])
+}
+
+func TestDemoLocalCommandsWithoutAKubeContextTargetTheK3dCluster(t *testing.T) {
+	local := newDemoLocalCommands(&recordingDemoRunner{}, "", "local-demo-user", "", "")
+
+	assert.False(t, local.existingCluster)
+	assert.Equal(t, []string{"--kube-context", "k3d-local-demo-user"}, local.helmTarget())
+	assert.Equal(t, []string{"--context", "k3d-local-demo-user"}, local.kubectlTarget())
+}
+
+func TestValidateDemoKubeTargetRequiresAContextForAKubeconfig(t *testing.T) {
+	require.NoError(t, validateDemoKubeTarget("", ""))
+	require.NoError(t, validateDemoKubeTarget("ctx", ""))
+	require.NoError(t, validateDemoKubeTarget("ctx", "/kube/config"))
+	err := validateDemoKubeTarget("", "/kube/config")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "--kubeconfig requires --kube-context")
+}
+
+func TestResolveDemoOrganizationNeverPromptsWithAnExistingKubeContext(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+	t.Setenv("USERPROFILE", os.Getenv("HOME"))
+
+	id, err := resolveDemoOrganization("org-from-flag", true)
+	require.NoError(t, err)
+	assert.Equal(t, utils.Id("org-from-flag"), id)
+
+	// No context file and no flag: a prompt would block here, an error is expected instead.
+	_, err = resolveDemoOrganization("", true)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "pass --organization-id")
+}
+
+type lookPathRecordingDemoRunner struct {
+	recordingDemoRunner
+	lookedUp []string
+}
+
+func (r *lookPathRecordingDemoRunner) LookPath(name string) error {
+	r.lookedUp = append(r.lookedUp, name)
+	return nil
+}
+
+func TestDemoKubeContextFlagsAreHiddenFromTheHelp(t *testing.T) {
+	for cmd, names := range map[*cobra.Command][]string{
+		demoUpCmd:      {"kube-context", "kubeconfig", "organization-id", "skip-catalog"},
+		demoDestroyCmd: {"kube-context", "kubeconfig", "organization-id"},
+	} {
+		for _, name := range names {
+			flag := cmd.Flags().Lookup(name)
+			if assert.NotNil(t, flag, name) {
+				assert.True(t, flag.Hidden, "%s %s", cmd.Name(), name)
+			}
+		}
+	}
 }

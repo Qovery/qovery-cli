@@ -20,6 +20,11 @@ impl std::fmt::Display for UploadError {
     }
 }
 
+/// `isDemoDebugLogUnsupported(err)`.
+pub(crate) fn is_demo_debug_log_unsupported(err: &UploadError) -> bool {
+    err.status_code == Some(404)
+}
+
 /// `isDemoDebugLogAuthFailure(err)`.
 pub(crate) fn is_demo_debug_log_auth_failure(err: &UploadError) -> bool {
     matches!(err.status_code, Some(401) | Some(403))
@@ -159,6 +164,10 @@ pub(crate) fn upload_error_logs(
         payload_json.as_bytes(),
         DEMO_DEBUG_LOG_RETRY_DELAY,
     ) {
+        // Non-production APIs may not expose the endpoint: the upload is best effort.
+        if is_demo_debug_log_unsupported(&err) {
+            return;
+        }
         qovery_log::println_error(format!("error uploading debug logs: {err}"));
         if is_demo_debug_log_auth_failure(&err) {
             qovery_log::println_info(
@@ -234,8 +243,10 @@ mod tests {
             (vec![400], 1, true, false),
             (vec![401], 1, true, true),
             (vec![403], 1, true, true),
+            (vec![404], 1, true, false),
         ];
         for (statuses, want_requests, want_err, want_auth_error) in cases {
+            let want_unsupported = statuses == [404];
             let (url, bodies) = server(statuses);
             let http = qovery_api::http_client_builder()
                 .build()
@@ -257,6 +268,7 @@ mod tests {
                 Err(e) => {
                     assert!(want_err);
                     assert_eq!(want_auth_error, is_demo_debug_log_auth_failure(&e));
+                    assert_eq!(want_unsupported, is_demo_debug_log_unsupported(&e));
                 }
             }
         }

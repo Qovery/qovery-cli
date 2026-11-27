@@ -9090,6 +9090,1690 @@
     "stdout"
    ],
    "timeout": 60
+  },
+  {
+   "name": "up --kubeconfig without --kube-context",
+   "args": [
+    "demo",
+    "up",
+    "-c",
+    "my-demo",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/all"
+   },
+   "ignore": [
+    "stderr"
+   ]
+  },
+  {
+   "name": "up --kube-context without organization never prompts",
+   "args": [
+    "demo",
+    "up",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-kubectl"
+   },
+   "context": {
+    "organization_id": "",
+    "organization_name": ""
+   },
+   "ignore": [
+    "stderr"
+   ]
+  },
+  {
+   "name": "up --kube-context without helm",
+   "args": [
+    "demo",
+    "up",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "/nonexistent"
+   },
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/admin/demoDebugLog",
+     "status": 200
+    }
+   ],
+   "ignore": [
+    "stderr",
+    "requests"
+   ]
+  },
+  {
+   "name": "up --kube-context, debug log endpoint missing",
+   "args": [
+    "demo",
+    "up",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "/nonexistent"
+   },
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/admin/demoDebugLog",
+     "status": 404,
+     "body": {
+      "message": "not found"
+     }
+    }
+   ],
+   "ignore": [
+    "stderr",
+    "requests"
+   ]
+  },
+  {
+   "name": "up --kube-context helm install fails",
+   "args": [
+    "demo",
+    "up",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-kubectl",
+    "FAKE_HELM_LIST": "[]",
+    "FAKE_HELM_UPGRADE": "Error: timed out",
+    "FAKE_KUBECTL": "{\"items\":[{\"metadata\":{\"name\":\"qovery-operator\"}}]}",
+    "FAKE_HELM_UPGRADE_EXIT": "1"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/onPremise/credentials",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cred-1",
+        "name": "on-premise",
+        "object_type": "OTHER"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE"
+       },
+       {
+        "id": "demo-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-demo",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": true
+       },
+       {
+        "id": "prod-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "production",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": false
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster",
+     "status": 201,
+     "body": {
+      "id": "demo-2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "organization": {
+       "id": "org-1"
+      },
+      "name": "new-demo",
+      "region": "on-premise",
+      "cloud_provider": "ON_PREMISE",
+      "is_demo": true
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/platformTemplate",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "key": "qovery-cluster-v0",
+        "version": "0.1.0",
+        "status": "PUBLISHED",
+        "layers": []
+       },
+       {
+        "key": "qovery-demo-v0",
+        "version": "0.2.0",
+        "status": "PUBLISHED",
+        "layers": [
+         {
+          "key": "qovery-stack",
+          "mandatory": false,
+          "enabledByDefault": true,
+          "modes": [
+           "CUSTOMER_MANAGED"
+          ],
+          "componentKeys": [],
+          "components": []
+         },
+         {
+          "key": "observability",
+          "mandatory": false,
+          "enabledByDefault": false,
+          "modes": [
+           "CUSTOMER_MANAGED"
+          ],
+          "componentKeys": [],
+          "components": []
+         },
+         {
+          "key": "dns-certificates",
+          "mandatory": true,
+          "enabledByDefault": true,
+          "modes": [
+           "CUSTOMER_MANAGED"
+          ],
+          "componentKeys": [],
+          "components": []
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/v1/cluster/demo-1/platformConfiguration",
+     "status": 404,
+     "body": {
+      "message": "not found"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/v1/cluster/demo-1/platformConfiguration",
+     "status": 200,
+     "body": {
+      "clusterId": "demo-1",
+      "organizationId": "org-1",
+      "platform": {
+       "templateKey": "qovery-demo-v0",
+       "templateVersion": "0.2.0"
+      },
+      "clusterInputs": {},
+      "layers": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/demo-1/operator/bootstrap",
+     "status": 200,
+     "body": {
+      "chart_repository": "oci://registry.example",
+      "chart_name": "qovery-operator",
+      "chart_version": "1.2.3",
+      "chart_reference": "oci://registry.example/qovery-operator",
+      "namespace": "qovery",
+      "release_name": "qovery-operator",
+      "values": {},
+      "values_yaml": "token: secret\n",
+      "helm_command": "ignored helm command"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/demo-1/operator/attach",
+     "status": 204
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/demo-1/operator/status",
+     "status": 200,
+     "body": {
+      "organization_id": "org-1",
+      "cluster_id": "demo-1",
+      "operator_connected": true,
+      "status": "CURRENT",
+      "reported_runtime": "KUBERNETES",
+      "last_heartbeat": "2099-01-01T00:00:00Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/demo-1/status",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "cluster_id": "demo-1",
+        "status": "READY",
+        "is_deployed": false,
+        "reason": "UNSPECIFIED"
+       }
+      }
+     ]
+    },
+    {
+     "status": 200,
+     "body": {
+      "cluster_id": "demo-1",
+      "status": "DEPLOYED",
+      "is_deployed": true,
+      "reason": "UNSPECIFIED"
+     },
+     "method": "POST",
+     "path": "/organization/org-1/cluster/demo-1/deploy"
+    },
+    {
+     "method": "POST",
+     "path": "/admin/demoDebugLog",
+     "status": 200
+    }
+   ],
+   "ignore": [
+    "stderr",
+    "requests",
+    "stdout"
+   ]
+  },
+  {
+   "name": "up --kube-context --skip-catalog",
+   "args": [
+    "demo",
+    "up",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml",
+    "--skip-catalog"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-kubectl",
+    "FAKE_HELM_LIST": "[]",
+    "FAKE_HELM_UPGRADE": "Release \"qovery-operator\" has been upgraded.",
+    "FAKE_KUBECTL": "{\"items\":[{\"metadata\":{\"name\":\"qovery-operator\"}}]}"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/onPremise/credentials",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cred-1",
+        "name": "on-premise",
+        "object_type": "OTHER"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE"
+       },
+       {
+        "id": "demo-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-demo",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": true
+       },
+       {
+        "id": "prod-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "production",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": false
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster",
+     "status": 201,
+     "body": {
+      "id": "demo-2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "organization": {
+       "id": "org-1"
+      },
+      "name": "new-demo",
+      "region": "on-premise",
+      "cloud_provider": "ON_PREMISE",
+      "is_demo": true
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/platformTemplate",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "key": "qovery-cluster-v0",
+        "version": "0.1.0",
+        "status": "PUBLISHED",
+        "layers": []
+       },
+       {
+        "key": "qovery-demo-v0",
+        "version": "0.2.0",
+        "status": "PUBLISHED",
+        "layers": [
+         {
+          "key": "qovery-stack",
+          "mandatory": false,
+          "enabledByDefault": true,
+          "modes": [
+           "CUSTOMER_MANAGED"
+          ],
+          "componentKeys": [],
+          "components": []
+         },
+         {
+          "key": "observability",
+          "mandatory": false,
+          "enabledByDefault": false,
+          "modes": [
+           "CUSTOMER_MANAGED"
+          ],
+          "componentKeys": [],
+          "components": []
+         },
+         {
+          "key": "dns-certificates",
+          "mandatory": true,
+          "enabledByDefault": true,
+          "modes": [
+           "CUSTOMER_MANAGED"
+          ],
+          "componentKeys": [],
+          "components": []
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/v1/cluster/demo-1/platformConfiguration",
+     "status": 404,
+     "body": {
+      "message": "not found"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/v1/cluster/demo-1/platformConfiguration",
+     "status": 200,
+     "body": {
+      "clusterId": "demo-1",
+      "organizationId": "org-1",
+      "platform": {
+       "templateKey": "qovery-demo-v0",
+       "templateVersion": "0.2.0"
+      },
+      "clusterInputs": {},
+      "layers": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/demo-1/operator/bootstrap",
+     "status": 200,
+     "body": {
+      "chart_repository": "oci://registry.example",
+      "chart_name": "qovery-operator",
+      "chart_version": "1.2.3",
+      "chart_reference": "oci://registry.example/qovery-operator",
+      "namespace": "qovery",
+      "release_name": "qovery-operator",
+      "values": {},
+      "values_yaml": "token: secret\n",
+      "helm_command": "ignored helm command"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/demo-1/operator/attach",
+     "status": 204
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/demo-1/operator/status",
+     "status": 200,
+     "body": {
+      "organization_id": "org-1",
+      "cluster_id": "demo-1",
+      "operator_connected": true,
+      "status": "CURRENT",
+      "reported_runtime": "KUBERNETES",
+      "last_heartbeat": "2099-01-01T00:00:00Z"
+     }
+    }
+   ],
+   "ignore": [
+    "stdout"
+   ]
+  },
+  {
+   "name": "up --kube-context --organization-id without organization",
+   "args": [
+    "demo",
+    "up",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml",
+    "--organization-id",
+    "org-1"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-kubectl",
+    "FAKE_HELM_LIST": "[]",
+    "FAKE_HELM_UPGRADE": "Release \"qovery-operator\" has been upgraded.",
+    "FAKE_KUBECTL": "{\"items\":[{\"metadata\":{\"name\":\"qovery-operator\"}}]}"
+   },
+   "context": {
+    "organization_id": "",
+    "organization_name": ""
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/onPremise/credentials",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cred-1",
+        "name": "on-premise",
+        "object_type": "OTHER"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE"
+       },
+       {
+        "id": "demo-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-demo",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": true
+       },
+       {
+        "id": "prod-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "production",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": false
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster",
+     "status": 201,
+     "body": {
+      "id": "demo-2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "organization": {
+       "id": "org-1"
+      },
+      "name": "new-demo",
+      "region": "on-premise",
+      "cloud_provider": "ON_PREMISE",
+      "is_demo": true
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/platformTemplate",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "key": "qovery-cluster-v0",
+        "version": "0.1.0",
+        "status": "PUBLISHED",
+        "layers": []
+       },
+       {
+        "key": "qovery-demo-v0",
+        "version": "0.2.0",
+        "status": "PUBLISHED",
+        "layers": [
+         {
+          "key": "qovery-stack",
+          "mandatory": false,
+          "enabledByDefault": true,
+          "modes": [
+           "CUSTOMER_MANAGED"
+          ],
+          "componentKeys": [],
+          "components": []
+         },
+         {
+          "key": "observability",
+          "mandatory": false,
+          "enabledByDefault": false,
+          "modes": [
+           "CUSTOMER_MANAGED"
+          ],
+          "componentKeys": [],
+          "components": []
+         },
+         {
+          "key": "dns-certificates",
+          "mandatory": true,
+          "enabledByDefault": true,
+          "modes": [
+           "CUSTOMER_MANAGED"
+          ],
+          "componentKeys": [],
+          "components": []
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/v1/cluster/demo-1/platformConfiguration",
+     "status": 404,
+     "body": {
+      "message": "not found"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/v1/cluster/demo-1/platformConfiguration",
+     "status": 200,
+     "body": {
+      "clusterId": "demo-1",
+      "organizationId": "org-1",
+      "platform": {
+       "templateKey": "qovery-demo-v0",
+       "templateVersion": "0.2.0"
+      },
+      "clusterInputs": {},
+      "layers": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/demo-1/operator/bootstrap",
+     "status": 200,
+     "body": {
+      "chart_repository": "oci://registry.example",
+      "chart_name": "qovery-operator",
+      "chart_version": "1.2.3",
+      "chart_reference": "oci://registry.example/qovery-operator",
+      "namespace": "qovery",
+      "release_name": "qovery-operator",
+      "values": {},
+      "values_yaml": "token: secret\n",
+      "helm_command": "ignored helm command"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/demo-1/operator/attach",
+     "status": 204
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/demo-1/operator/status",
+     "status": 200,
+     "body": {
+      "organization_id": "org-1",
+      "cluster_id": "demo-1",
+      "operator_connected": true,
+      "status": "CURRENT",
+      "reported_runtime": "KUBERNETES",
+      "last_heartbeat": "2099-01-01T00:00:00Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/demo-1/status",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "cluster_id": "demo-1",
+        "status": "READY",
+        "is_deployed": false,
+        "reason": "UNSPECIFIED"
+       }
+      }
+     ]
+    },
+    {
+     "status": 200,
+     "body": {
+      "cluster_id": "demo-1",
+      "status": "DEPLOYED",
+      "is_deployed": true,
+      "reason": "UNSPECIFIED"
+     },
+     "method": "POST",
+     "path": "/organization/org-1/cluster/demo-1/deploy"
+    },
+    {
+     "method": "POST",
+     "path": "/admin/demoDebugLog",
+     "status": 200
+    }
+   ],
+   "ignore": [
+    "stdout"
+   ]
+  },
+  {
+   "name": "up --skip-catalog on k3d",
+   "args": [
+    "demo",
+    "up",
+    "-c",
+    "my-demo",
+    "--skip-catalog"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/all",
+    "FAKE_DOCKER_INFO": "Server: fake",
+    "FAKE_K3D_CLUSTER_LIST": "[{\"name\":\"my-demo\"}]",
+    "FAKE_DOCKER_NETWORK_LS": "bridge-id",
+    "FAKE_DOCKER_NETWORK_INSPECT": "[{\"Name\":\"bridge\",\"IPAM\":{\"Config\":[{\"Subnet\":\"172.17.0.0/16\"}]}}]",
+    "FAKE_K3D_CLUSTER_CREATE": "INFO[0000] cluster created",
+    "FAKE_K3D_REGISTRY_LIST": "[{\"name\":\"k3d-qovery-registry.lan\"}]",
+    "FAKE_DOCKER_INSPECT": "[{\"NetworkSettings\":{\"Networks\":{\"k3d-my-demo\":{\"Aliases\":[\"qovery-registry.lan\"]}}}}]",
+    "FAKE_HELM_LIST": "[]",
+    "FAKE_HELM_UPGRADE": "Release \"qovery-operator\" has been upgraded.",
+    "FAKE_KUBECTL": "{\"items\":[{\"metadata\":{\"name\":\"qovery-operator\"}}]}",
+    "FAKE_K3D_CLUSTER_START": "INFO[0000] started"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/onPremise/credentials",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cred-1",
+        "name": "on-premise",
+        "object_type": "OTHER"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE"
+       },
+       {
+        "id": "demo-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-demo",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": true
+       },
+       {
+        "id": "prod-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "production",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": false
+       }
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster",
+     "status": 201,
+     "body": {
+      "id": "demo-2",
+      "created_at": "2024-05-01T10:00:00Z",
+      "organization": {
+       "id": "org-1"
+      },
+      "name": "new-demo",
+      "region": "on-premise",
+      "cloud_provider": "ON_PREMISE",
+      "is_demo": true
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/platformTemplate",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "key": "qovery-cluster-v0",
+        "version": "0.1.0",
+        "status": "PUBLISHED",
+        "layers": []
+       },
+       {
+        "key": "qovery-demo-v0",
+        "version": "0.2.0",
+        "status": "PUBLISHED",
+        "layers": [
+         {
+          "key": "qovery-stack",
+          "mandatory": false,
+          "enabledByDefault": true,
+          "modes": [
+           "CUSTOMER_MANAGED"
+          ],
+          "componentKeys": [],
+          "components": []
+         },
+         {
+          "key": "observability",
+          "mandatory": false,
+          "enabledByDefault": false,
+          "modes": [
+           "CUSTOMER_MANAGED"
+          ],
+          "componentKeys": [],
+          "components": []
+         },
+         {
+          "key": "dns-certificates",
+          "mandatory": true,
+          "enabledByDefault": true,
+          "modes": [
+           "CUSTOMER_MANAGED"
+          ],
+          "componentKeys": [],
+          "components": []
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/v1/cluster/demo-1/platformConfiguration",
+     "status": 404,
+     "body": {
+      "message": "not found"
+     }
+    },
+    {
+     "method": "PUT",
+     "path": "/v1/cluster/demo-1/platformConfiguration",
+     "status": 200,
+     "body": {
+      "clusterId": "demo-1",
+      "organizationId": "org-1",
+      "platform": {
+       "templateKey": "qovery-demo-v0",
+       "templateVersion": "0.2.0"
+      },
+      "clusterInputs": {},
+      "layers": []
+     }
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/demo-1/operator/bootstrap",
+     "status": 200,
+     "body": {
+      "chart_repository": "oci://registry.example",
+      "chart_name": "qovery-operator",
+      "chart_version": "1.2.3",
+      "chart_reference": "oci://registry.example/qovery-operator",
+      "namespace": "qovery",
+      "release_name": "qovery-operator",
+      "values": {},
+      "values_yaml": "token: secret\n",
+      "helm_command": "ignored helm command"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "/organization/org-1/cluster/demo-1/operator/attach",
+     "status": 204
+    },
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster/demo-1/operator/status",
+     "status": 200,
+     "body": {
+      "organization_id": "org-1",
+      "cluster_id": "demo-1",
+      "operator_connected": true,
+      "status": "CURRENT",
+      "reported_runtime": "KUBERNETES",
+      "last_heartbeat": "2099-01-01T00:00:00Z"
+     }
+    }
+   ],
+   "ignore": [
+    "stdout"
+   ]
+  },
+  {
+   "name": "destroy --kubeconfig without --kube-context",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "my-demo",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/all"
+   }
+  },
+  {
+   "name": "destroy --kube-context without helm",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/docker-only"
+   }
+  },
+  {
+   "name": "destroy --kube-context uninstalls the Operator",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-only",
+    "FAKE_HELM_LIST": "[{\"name\":\"qovery-operator\",\"namespace\":\"qovery\",\"chart\":\"qovery-operator-1.2.3\"},{\"name\":\"vcluster\",\"namespace\":\"qls\",\"chart\":\"vcluster-0.20.0\"}]"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE"
+       },
+       {
+        "id": "demo-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-demo",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": true
+       },
+       {
+        "id": "prod-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "production",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "destroy --kube-context without an Operator release",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-only",
+    "FAKE_HELM_LIST": "null"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE"
+       },
+       {
+        "id": "demo-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-demo",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": true
+       },
+       {
+        "id": "prod-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "production",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "destroy --kube-context helm list fails",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-only",
+    "FAKE_HELM_LIST": "Error: cluster unreachable",
+    "FAKE_HELM_LIST_EXIT": "1"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE"
+       },
+       {
+        "id": "demo-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-demo",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": true
+       },
+       {
+        "id": "prod-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "production",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "destroy --kube-context invalid release list",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-only",
+    "FAKE_HELM_LIST": "{}"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE"
+       },
+       {
+        "id": "demo-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-demo",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": true
+       },
+       {
+        "id": "prod-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "production",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "destroy --kube-context -d helm uninstall fails",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml",
+    "-d"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-only",
+    "FAKE_HELM_LIST": "[{\"name\":\"qovery-operator\",\"namespace\":\"qovery\",\"chart\":\"qovery-operator-1.2.3\"},{\"name\":\"vcluster\",\"namespace\":\"qls\",\"chart\":\"vcluster-0.20.0\"}]",
+    "FAKE_HELM_UNINSTALL": "Error: timed out",
+    "FAKE_HELM_UNINSTALL_EXIT": "1"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE"
+       },
+       {
+        "id": "demo-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-demo",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": true
+       },
+       {
+        "id": "prod-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "production",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": false
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/organization/org-1/cluster/demo-1",
+     "status": 204
+    }
+   ]
+  },
+  {
+   "name": "destroy --kube-context refuses a cluster that is not a demo",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "production",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-only",
+    "FAKE_HELM_LIST": "[{\"name\":\"qovery-operator\",\"namespace\":\"qovery\",\"chart\":\"qovery-operator-1.2.3\"},{\"name\":\"vcluster\",\"namespace\":\"qls\",\"chart\":\"vcluster-0.20.0\"}]"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE"
+       },
+       {
+        "id": "demo-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-demo",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": true
+       },
+       {
+        "id": "prod-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "production",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "destroy --kube-context lookup fails",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-only",
+    "FAKE_HELM_LIST": "[{\"name\":\"qovery-operator\",\"namespace\":\"qovery\",\"chart\":\"qovery-operator-1.2.3\"},{\"name\":\"vcluster\",\"namespace\":\"qls\",\"chart\":\"vcluster-0.20.0\"}]"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 503,
+     "body": {
+      "message": "down"
+     }
+    }
+   ]
+  },
+  {
+   "name": "destroy --kube-context without organization never prompts",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-only"
+   },
+   "context": {
+    "organization_id": "",
+    "organization_name": ""
+   }
+  },
+  {
+   "name": "destroy --kube-context -d deletes the Qovery cluster",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml",
+    "-d"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-only",
+    "FAKE_HELM_LIST": "[{\"name\":\"qovery-operator\",\"namespace\":\"qovery\",\"chart\":\"qovery-operator-1.2.3\"},{\"name\":\"vcluster\",\"namespace\":\"qls\",\"chart\":\"vcluster-0.20.0\"}]"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE"
+       },
+       {
+        "id": "demo-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-demo",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": true
+       },
+       {
+        "id": "prod-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "production",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": false
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/organization/org-1/cluster/demo-1",
+     "status": 204
+    }
+   ]
+  },
+  {
+   "name": "destroy --kube-context -d cluster missing in Qovery",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "other",
+    "-d",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-only",
+    "FAKE_HELM_LIST": "[]"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE"
+       },
+       {
+        "id": "demo-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-demo",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": true
+       },
+       {
+        "id": "prod-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "production",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": false
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "destroy --kube-context -d lookup fails",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml",
+    "-d"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-only",
+    "FAKE_HELM_LIST": "[{\"name\":\"qovery-operator\",\"namespace\":\"qovery\",\"chart\":\"qovery-operator-1.2.3\"},{\"name\":\"vcluster\",\"namespace\":\"qls\",\"chart\":\"vcluster-0.20.0\"}]"
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 503,
+     "body": {
+      "message": "down"
+     }
+    }
+   ]
+  },
+  {
+   "name": "destroy --kube-context -d without organization never prompts",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml",
+    "-d"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-only"
+   },
+   "context": {
+    "organization_id": "",
+    "organization_name": ""
+   }
+  },
+  {
+   "name": "destroy --kube-context -d --organization-id",
+   "args": [
+    "demo",
+    "destroy",
+    "-c",
+    "my-demo",
+    "--kube-context",
+    "vcluster_qls-a",
+    "--kubeconfig",
+    "/kube/qls-a.yaml",
+    "-d",
+    "--organization-id",
+    "org-1"
+   ],
+   "env": {
+    "PATH": "$PARITY/fake-tools/helm-only",
+    "FAKE_HELM_LIST": "[{\"name\":\"qovery-operator\",\"namespace\":\"qovery\",\"chart\":\"qovery-operator-1.2.3\"},{\"name\":\"vcluster\",\"namespace\":\"qls\",\"chart\":\"vcluster-0.20.0\"}]"
+   },
+   "context": {
+    "organization_id": "",
+    "organization_name": ""
+   },
+   "fixtures": [
+    {
+     "method": "GET",
+     "path": "/organization/org-1/cluster",
+     "status": 200,
+     "body": {
+      "results": [
+       {
+        "id": "cluster-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-cluster",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE"
+       },
+       {
+        "id": "demo-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "my-demo",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": true
+       },
+       {
+        "id": "prod-1",
+        "created_at": "2024-05-01T10:00:00Z",
+        "organization": {
+         "id": "org-1"
+        },
+        "name": "production",
+        "region": "on-premise",
+        "cloud_provider": "ON_PREMISE",
+        "is_demo": false
+       }
+      ]
+     }
+    },
+    {
+     "method": "DELETE",
+     "path": "/organization/org-1/cluster/demo-1",
+     "status": 204
+    }
+   ]
   }
  ]
 }
