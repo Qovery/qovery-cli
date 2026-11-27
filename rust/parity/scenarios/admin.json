@@ -3401,6 +3401,466 @@
    "ignore": [
     "stderr"
    ]
+  },
+  {
+   "name": "detach-database dry run",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db-1",
+    "-r",
+    "ticket 1234"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/database/db-1/detach",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "database_id": "db-1",
+        "database_name": "orders-db",
+        "database_type": "POSTGRESQL",
+        "database_mode": "MANAGED",
+        "database_version": "16",
+        "environment_id": "env-1",
+        "variables_to_delete": [
+         "QOVERY_POSTGRESQL_ZDB1_HOST",
+         "QOVERY_POSTGRESQL_ZDB1_PASSWORD"
+        ],
+        "blockers": [],
+        "dry_run": true,
+        "detached": false,
+        "audit_logged": false
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "detach-database dry run with blockers",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db-1",
+    "-r",
+    "ticket 1234"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/database/db-1/detach",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "database_id": "db-1",
+        "database_name": "orders-db",
+        "database_type": "POSTGRESQL",
+        "database_mode": "MANAGED",
+        "database_version": "16",
+        "environment_id": "env-1",
+        "variables_to_delete": [
+         "QOVERY_POSTGRESQL_ZDB1_HOST",
+         "QOVERY_POSTGRESQL_ZDB1_PASSWORD"
+        ],
+        "blockers": [
+         "environment env-1 is DEPLOYING: wait for the deployment to finish",
+         "variable DATABASE_HOST (ALIAS, CONTAINER c-1) would be deleted with the built-in variables"
+        ],
+        "dry_run": true,
+        "detached": false,
+        "audit_logged": false
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "detach-database execute yes",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db-1",
+    "-r",
+    "ticket 1234",
+    "-y"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/database/db-1/detach",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "database_id": "db-1",
+        "database_name": "orders-db",
+        "database_type": "POSTGRESQL",
+        "database_mode": "MANAGED",
+        "database_version": "16",
+        "environment_id": "env-1",
+        "variables_to_delete": [
+         "QOVERY_POSTGRESQL_ZDB1_HOST",
+         "QOVERY_POSTGRESQL_ZDB1_PASSWORD"
+        ],
+        "blockers": [],
+        "dry_run": true,
+        "detached": false,
+        "audit_logged": false
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "database_id": "db-1",
+        "database_name": "orders-db",
+        "database_type": "POSTGRESQL",
+        "database_mode": "MANAGED",
+        "database_version": "16",
+        "environment_id": "env-1",
+        "variables_to_delete": [
+         "QOVERY_POSTGRESQL_ZDB1_HOST",
+         "QOVERY_POSTGRESQL_ZDB1_PASSWORD"
+        ],
+        "blockers": [],
+        "dry_run": false,
+        "detached": true,
+        "audit_logged": true
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "detach-database execute answer no",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db-1",
+    "-r",
+    "ticket 1234",
+    "-y"
+   ],
+   "stdin": "no\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/database/db-1/detach",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "database_id": "db-1",
+        "database_name": "orders-db",
+        "database_type": "POSTGRESQL",
+        "database_mode": "MANAGED",
+        "database_version": "16",
+        "environment_id": "env-1",
+        "variables_to_delete": [
+         "QOVERY_POSTGRESQL_ZDB1_HOST",
+         "QOVERY_POSTGRESQL_ZDB1_PASSWORD"
+        ],
+        "blockers": [],
+        "dry_run": true,
+        "detached": false,
+        "audit_logged": false
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "database_id": "db-1",
+        "database_name": "orders-db",
+        "database_type": "POSTGRESQL",
+        "database_mode": "MANAGED",
+        "database_version": "16",
+        "environment_id": "env-1",
+        "variables_to_delete": [
+         "QOVERY_POSTGRESQL_ZDB1_HOST",
+         "QOVERY_POSTGRESQL_ZDB1_PASSWORD"
+        ],
+        "blockers": [],
+        "dry_run": false,
+        "detached": true,
+        "audit_logged": true
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "detach-database audit not logged",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db-1",
+    "-r",
+    "ticket 1234",
+    "-y"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/database/db-1/detach",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "database_id": "db-1",
+        "database_name": "orders-db",
+        "database_type": "POSTGRESQL",
+        "database_mode": "MANAGED",
+        "database_version": "16",
+        "environment_id": "env-1",
+        "variables_to_delete": [
+         "QOVERY_POSTGRESQL_ZDB1_HOST",
+         "QOVERY_POSTGRESQL_ZDB1_PASSWORD"
+        ],
+        "blockers": [],
+        "dry_run": true,
+        "detached": false,
+        "audit_logged": false
+       }
+      },
+      {
+       "status": 200,
+       "body": {
+        "database_id": "db-1",
+        "database_name": "orders-db",
+        "database_type": "POSTGRESQL",
+        "database_mode": "MANAGED",
+        "database_version": "16",
+        "environment_id": "env-1",
+        "variables_to_delete": [
+         "QOVERY_POSTGRESQL_ZDB1_HOST",
+         "QOVERY_POSTGRESQL_ZDB1_PASSWORD"
+        ],
+        "blockers": [],
+        "dry_run": false,
+        "detached": true,
+        "audit_logged": false
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "detach-database execute server error",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db-1",
+    "-r",
+    "ticket 1234",
+    "-y"
+   ],
+   "stdin": "yes\n",
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/database/db-1/detach",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "database_id": "db-1",
+        "database_name": "orders-db",
+        "database_type": "POSTGRESQL",
+        "database_mode": "MANAGED",
+        "database_version": "16",
+        "environment_id": "env-1",
+        "variables_to_delete": [
+         "QOVERY_POSTGRESQL_ZDB1_HOST",
+         "QOVERY_POSTGRESQL_ZDB1_PASSWORD"
+        ],
+        "blockers": [],
+        "dry_run": true,
+        "detached": false,
+        "audit_logged": false
+       }
+      },
+      {
+       "status": 500,
+       "body": {
+        "message": "boom"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "detach-database refused",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db-1",
+    "-r",
+    "ticket 1234"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/database/db-1/detach",
+     "responses": [
+      {
+       "status": 409,
+       "body": {
+        "message": "Database cannot be detached: environment is DEPLOYING"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "detach-database response for another database",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db-1",
+    "-r",
+    "ticket 1234"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/database/db-1/detach",
+     "responses": [
+      {
+       "status": 200,
+       "body": {
+        "database_id": "db-2",
+        "database_name": "orders-db",
+        "database_type": "POSTGRESQL",
+        "database_mode": "MANAGED",
+        "database_version": "16",
+        "environment_id": "env-1",
+        "variables_to_delete": [
+         "QOVERY_POSTGRESQL_ZDB1_HOST",
+         "QOVERY_POSTGRESQL_ZDB1_PASSWORD"
+        ],
+        "blockers": [],
+        "dry_run": true,
+        "detached": false,
+        "audit_logged": false
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "detach-database empty response",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db-1",
+    "-r",
+    "ticket 1234"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/database/db-1/detach",
+     "responses": [
+      {
+       "status": 200,
+       "body": {}
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "detach-database blank reason",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db-1",
+    "-r",
+    "  "
+   ]
+  },
+  {
+   "name": "detach-database missing reason",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db-1"
+   ]
+  },
+  {
+   "name": "detach-database positional arg",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db-1",
+    "-r",
+    "ticket 1234",
+    "extra"
+   ]
+  },
+  {
+   "name": "detach-database escaped id",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db/1?x",
+    "-r",
+    "t"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path_regex": "^/database/.+/detach$",
+     "status": 409,
+     "body": {
+      "message": "no"
+     }
+    }
+   ]
+  },
+  {
+   "name": "detach-database truncated response",
+   "args": [
+    "admin",
+    "detach-database",
+    "-d",
+    "db-1",
+    "-r",
+    "t"
+   ],
+   "fixtures": [
+    {
+     "method": "POST",
+     "path": "/database/db-1/detach",
+     "status": 200,
+     "body_raw": "{"
+    }
+   ]
   }
  ]
 }
